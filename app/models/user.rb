@@ -21,9 +21,12 @@
 class User < ApplicationRecord
 
   # [Devise modules] Provides authentication, registration, recovery, and security features.
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable,
-         :lockable, :trackable
+  devise :database_authenticatable,
+         :registerable,
+         :recoverable,
+         :rememberable,
+         :validatable,
+         :trackable
 
   # [Associations] Connects user to owned and accessible portfolios and related report logs.
   has_many :portfolios, dependent: :destroy
