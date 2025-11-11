@@ -1,15 +1,35 @@
+# === routes
+#
+# @author Moisés Reis
+# @added 11/11/2025
+# @package *Meta*
+# @description Defines all route mappings for the application. It connects HTTP requests
+#              to the appropriate **controllers** and **actions**. It organizes navigation flow
+#              between authenticated and unauthenticated users using **Devise** helpers.
+# @category *Routing*
+#
+# Usage:: - *[what]* maps application endpoints and manages user access flow
+#         - *[how]* uses **Devise** to generate authentication routes and defines custom root paths
+#                  depending on user authentication state
+#         - *[why]* ensures users access the correct views and controllers according to their
+#                  authentication status, maintaining consistent navigation throughout the app
+#
+# Attributes:: - *[:user]* @symbol - namespace key used by **Devise** to handle user sessions
+#
 Rails.application.routes.draw do
   devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  devise_scope :user do
+    # [Authenticated route] Defines the root path for logged-in users
+    #                       and redirects to **HomeController#index**.
+    authenticated :user do
+      root 'home#index', as: :authenticated_root
+    end
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
-  # root "posts#index"
+    # [Unauthenticated route] Defines the root path for guests
+    #                         and redirects to **Devise::SessionsController#new**.
+    unauthenticated do
+      root 'devise/sessions#new', as: :unauthenticated_root
+    end
+  end
 end
