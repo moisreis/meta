@@ -1,1 +1,229 @@
-@import "tailwindcss";
+@import 'tailwindcss'; /* Import Tailwind core utilities */
+
+/*
+ * File: application
+ * Date: 11/12/2025
+ * Author: Moisés Reis
+ * Package: Meta
+ *
+ * Description: Sets up the global theme variables for the application.
+ *              Defines spacing, font, and core color palette.
+ *
+ * Usage: - What: Provides base CSS variables that drive spacing, typography, and colors
+ *        - How: Uses `@theme` block to declare reusable CSS custom properties
+ *        - Why: Ensures consistent design tokens across components and Tailwind utilities
+ *
+ * Example:
+ *   body {
+ *     font-family: var(--font-body);
+ *     color: var(--color-driftwood);
+ *     margin: var(--spacing);
+ *   }
+ */
+@theme {
+
+    /**
+     * Resets all unknown theme variables to their initial values
+     * Ensures clean and predictable overrides for custom properties
+     */
+    --*: initial;
+
+    /*
+     * ------------------------------
+     *  Spacing
+     *
+     *  Sets the base spacing unit used throughout the application.
+     *  This value scales margins, paddings, and gaps to maintain visual rhythm.
+     * ------------------------------
+     */
+    --spacing: 4px;
+
+    /*
+     * ------------------------------
+     *  Font families
+     *
+     *  Sets the default typeface for all text content.
+     *  Ensures readability and consistency across UI components.
+     * ------------------------------
+     */
+    --font-body: 'Inter', sans-serif;
+    --font-heading: 'Inter Tight', sans-serif;
+
+    /*
+     * ------------------------------
+     *  Color palette
+     *
+     *  Defines the core color tokens of the design system.
+     *  Each color serves a specific functional or aesthetic role.
+     * ------------------------------
+     */
+
+    /*
+     *  Sets the primary color used for key actions, highlights, and
+     *  interactive components such as buttons, links, and icons.
+     *  This palette defines lighter and darker shades for hover,
+     *  focus, and disabled states.
+     */
+    --color-primary-50: #f3faf9;
+    --color-primary-100: #d5f2eb;
+    --color-primary-200: #ace3d8;
+    --color-primary-300: #7acebf;
+    --color-primary-400: #4eb3a4;
+    --color-primary-500: #38a193;
+    --color-primary-600: #287970;
+    --color-primary-700: #24615c;
+    --color-primary-800: #204f4b;
+    --color-primary-900: #1f423f;
+    --color-primary-950: #0d2625;
+
+    /*
+     *  Sets the text colors used throughout the application.
+     *  These variables define the visual hierarchy between headings,
+     *  body text, and muted or secondary content. They ensure clarity,
+     *  accessibility, and proper contrast across backgrounds.
+     */
+    --color-heading: #1a1a1a;
+    --color-body: #333333;
+    --color-muted: #8a8a8a;
+
+    /*
+     *  Sets the neutral colors used for structural and background elements.
+     *  These variables define surfaces, borders, and accent layers that
+     *  balance vibrant colors and maintain visual clarity across layouts.
+     */
+    --color-white: #ffffff;
+    --color-transparent: transparent;
+    --color-border: #e7e7e7;
+    --color-accent: #f7f7f7;
+
+    /*
+     *  Sets the neutral colors used for structural and background elements.
+     *  These variables define surfaces, borders, and accent layers that
+     *  balance vibrant colors and maintain visual clarity across layouts.
+     */
+    --color-white: #ffffff;
+    --color-transparent: transparent;
+    --color-border: #e7e7e7;
+    --color-accent: #f7f7f7;
+
+    /*
+     *  Sets the success colors used for positive feedback, confirmations,
+     *  and status indicators. This palette communicates completion, validation,
+     *  or healthy system states. Lighter tones serve as backgrounds or tints,
+     *  while darker ones reinforce emphasis and contrast.
+     */
+    --color-success-50: #f1fcf3;
+    --color-success-100: #dff9e6;
+    --color-success-200: #c0f2ce;
+    --color-success-300: #8fe6a7;
+    --color-success-400: #56d279;
+    --color-success-500: #30b757;
+    --color-success-600: #24a148;
+    --color-success-700: #1e7738;
+    --color-success-800: #1d5e31;
+    --color-success-900: #194e2a;
+    --color-success-950: #082b14;
+
+    /*
+     *  Sets the alert colors used for warnings, cautions, and attention-grabbing
+     *  elements. These hues convey urgency without aggression, helping users
+     *  recognize potential issues or important information that needs review.
+     *  Lighter tones are suitable for subtle backgrounds or soft banners,
+     *  while deeper tones emphasize icons or key alert messages.
+     */
+    --color-alert-50: #fffbeb;
+    --color-alert-100: #fef4c7;
+    --color-alert-200: #fde78a;
+    --color-alert-300: #fddc69;
+    --color-alert-400: #fcc123;
+    --color-alert-500: #f6a10a;
+    --color-alert-600: #da7905;
+    --color-alert-700: #b55508;
+    --color-alert-800: #92410e;
+    --color-alert-900: #78360f;
+    --color-alert-950: #451b03;
+
+    /*
+     *  Sets the danger colors used for destructive actions, critical errors,
+     *  or states that require immediate user attention. These hues are bold
+     *  and high-contrast to clearly communicate urgency and importance.
+     *  Light tones are suited for backgrounds in warning banners, while
+     *  darker tones emphasize buttons, icons, or key danger messages.
+     */
+    --color-danger-50: #fef2f3;
+    --color-danger-100: #ffe1e3;
+    --color-danger-200: #ffc9cc;
+    --color-danger-300: #fea3a8;
+    --color-danger-400: #fb6e76;
+    --color-danger-500: #f3404a;
+    --color-danger-600: #da1e28;
+    --color-danger-700: #bd1821;
+    --color-danger-800: #9c181f;
+    --color-danger-900: #811b20;
+    --color-danger-950: #46090c;
+
+    /*
+     *  Sets the secondary color used for complementary elements and
+     *  accent components. It supports visual hierarchy and provides
+     *  contrast with the primary palette in layouts and UI details.
+     */
+    --color-secondary-50: #f2f8fc;
+    --color-secondary-100: #e2eef7;
+    --color-secondary-200: #cbe2f2;
+    --color-secondary-300: #a8d1e8;
+    --color-secondary-400: #7eb7dc;
+    --color-secondary-500: #609ed2;
+    --color-secondary-600: #4b85c5;
+    --color-secondary-700: #4172b4;
+    --color-secondary-800: #3a5e93;
+    --color-secondary-900: #334f75;
+    --color-secondary-950: #233148;
+
+    /*
+     *  Sets the tertiary color used for highlights, decorative accents,
+     *  and subtle background tints. It enhances depth and vibrancy
+     *  without competing with primary and secondary tones.
+     */
+    --color-tertiary-50: #eefdfc;
+    --color-tertiary-100: #d3f9fa;
+    --color-tertiary-200: #adf1f4;
+    --color-tertiary-300: #74e4ec;
+    --color-tertiary-400: #34cfdc;
+    --color-tertiary-500: #17abba;
+    --color-tertiary-600: #1790a3;
+    --color-tertiary-700: #197485;
+    --color-tertiary-800: #1d5e6d;
+    --color-tertiary-900: #1d4e5c;
+    --color-tertiary-950: #0d343f;
+
+    /*
+     *  Sets the quaternary color used for highlights, supporting tones,
+     *  and secondary backgrounds. This palette introduces warmth and
+     *  contrast to neutral layouts, often complementing typography,
+     *  borders, or subtle state indicators.
+     */
+    --color-quaternary-50: #fcf9ee;
+    --color-quaternary-100: #f4ebbe;
+    --color-quaternary-200: #eee099;
+    --color-quaternary-300: #e5cb64;
+    --color-quaternary-400: #dfb740;
+    --color-quaternary-500: #d69c2a;
+    --color-quaternary-600: #bd7a22;
+    --color-quaternary-700: #9d5a20;
+    --color-quaternary-800: #81471f;
+    --color-quaternary-900: #6a3c1d;
+    --color-quaternary-950: #3c1f0c;
+
+    /*
+     * ------------------------------
+     *  Radius
+     *
+     *  Sets the default border radius values used across the theme.
+     *  Use smaller values for subtle rounding on cards, buttons,
+     *  and inputs, and the full radius for fully rounded shapes
+     *  like badges, chips, or circular icons.
+     * ------------------------------
+     */
+    --radius-base: 0.125rem;
+    --radius-full: 999px;
+}
