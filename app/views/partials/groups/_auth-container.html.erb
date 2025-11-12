@@ -1,8 +1,22 @@
-<section class="flex flex-col items-start justify-center col-span-3 h-full min-h-screen w-2/3 gap-9 overflow-x-hidden m-auto py-6">
-  <div class="absolute top-3 right-3">
-    <%= render 'partials/modules/logo' %>
-  </div>
+<%#
+  # Partial: _auth-container.html
+  # Date: 11/12/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the main container for authentication pages.
+  #              Organizes the logo, welcome message, form, and footer sections in a vertical layout.
+  #              Uses Tailwind utilities for responsive alignment and spacing.
+  #
+  # Usage: - What: Serves as the central structure for authentication views such as sign up and login.
+  #                Displays the brand logo, introductory text, and form content with consistent spacing.
+  #        - How:  Called with dynamic `welcome_message` and `welcome_feedback` content.
+  #                Yields inner form components (e.g., registration or login forms) to the layout.
+  #        - Why:  Ensures a unified, vertically aligned composition across all authentication pages.
+  %>
+<section class="flex flex-col items-center justify-center col-span-3 h-full min-h-screen w-full gap-9 overflow-x-hidden m-auto py-6">
   <div class="flex flex-col items-start justify-start gap-1.5 w-1/3">
+    <%= render 'partials/modules/logo' %>
     <%= content_tag :h1, welcome_message, class: "text-heading font-heading text-4xl font-bold text-left" %>
     <%= content_tag :p, welcome_feedback, class: "text-muted font-body text-base font-normal text-left" %>
   </div>
@@ -10,4 +24,5 @@
     <%= yield %>
     <%= render "devise/shared/links" %>
   </div>
+  <%= render 'partials/modules/copyright' %>
 </section>

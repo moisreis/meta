@@ -1,0 +1,19 @@
+<%#
+  # Partial: _logo.html
+  # Date: 11/12/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the application logo component.
+  #              Uses a simple horizontal flex layout to center the logo visually.
+  #              Ensures consistent sizing and accessibility attributes.
+  #
+  # Usage: - What: Displays the main application logo using the `image_tag` helper.
+  #                Maintains proper padding and alignment across layouts.
+  #        - How:  Called as a standalone partial or within a header/footer partial.
+  #                Adjusts logo source or dimensions by passing new parameters if needed.
+  #        - Why:  Centralizes logo markup for consistency and easy updates across the app.
+  %>
+<div class="flex flex-row py-6">
+  <%= image_tag("logo.svg", size: "64x64", alt: "Logo") %>
+</div>

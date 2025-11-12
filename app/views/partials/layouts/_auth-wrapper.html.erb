@@ -1,0 +1,19 @@
+<%#
+  # Partial: _auth-wrapper.html
+  # Date: 11/12/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the structural wrapper for authentication views.
+  #              Uses a four-column grid layout to organize background and content sections.
+  #              Provides a flexible layout foundation for login and registration screens.
+  #
+  # Usage: - What: Wraps authentication-related partials such as backgrounds, forms, and containers.
+  #                Serves as the outermost grid layout element for the auth UI.
+  #        - How:  Called using `render 'partials/layouts/auth-wrapper' do ... end`
+  #                Yields inner content (e.g., background and container blocks) to the grid.
+  #        - Why:  Ensures consistent grid-based alignment and visual balance across all auth pages.
+  %>
+<section class="grid grid-cols-4">
+  <%= yield %>
+</section>

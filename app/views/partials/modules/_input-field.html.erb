@@ -28,7 +28,7 @@
 <%# [Variable] Defines the CSS classes for the input element.
   #            Handles spacing, borders, focus rings, colors, and disabled states.
   %>
-<% input_classes = "placeholder:text-muted selection:bg-primary border border-border h-9 w-full min-w-0 rounded-base bg-white px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-primary-600 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
+<% input_classes = "placeholder:text-muted border border-border h-9 w-full min-w-0 rounded-base bg-white px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-secondary-600 focus-visible:ring-secondary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
 
 <%# [Variable] Defines the CSS classes for the field description text.
   #            Controls typography, spacing, and appearance for helper text.
@@ -55,8 +55,8 @@
 </div>
 
 <style>
-  .field_with_errors > input {
-      border-color: var(--color-danger-600);
-      box-shadow: none;
-  }
+    .field_with_errors > input {
+        border-color: var(--color-danger-600);
+        box-shadow: none;
+    }
 </style>

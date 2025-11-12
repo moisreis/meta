@@ -68,6 +68,16 @@
 
     /*
      * ------------------------------
+     *  Font sizes
+     *
+     *  Sets additional text sizes beyond Tailwind defaults.
+     *  Used for fine-grained typography control in compact UI elements.
+     * ------------------------------
+     */
+    --text-2xs: 0.725rem;
+
+    /*
+     * ------------------------------
      *  Color palette
      *
      *  Defines the core color tokens of the design system.
@@ -296,7 +306,7 @@
     input[type=submit],
     button,
     .button {
-        @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base text-xs text-primary-50 uppercase font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 text-body hover:bg-primary-600/90 h-9 px-3 py-1.5 has-[>svg]:px-3;
+        @apply inline-flex items-center justify-center gap-1.5 tracking-wider whitespace-nowrap rounded-base text-2xs text-primary-50 uppercase font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 text-body hover:bg-primary-600/90 h-9 px-3 py-1.5 has-[>svg]:px-3;
     }
 
     /*
@@ -309,6 +319,6 @@
      * ------------------------------
      */
     .button-outline {
-        @apply border border-border text-body bg-white hover:bg-accent/90;
+        @apply border border-border text-body bg-white hover:!bg-accent/90;
     }
 }

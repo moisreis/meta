@@ -1,0 +1,19 @@
+<%#
+  # Partial: _auth-background.html
+  # Date: 11/12/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the visual background section for authentication layouts.
+  #              Displays a decorative image on the left side of the auth grid.
+  #              Uses Tailwind utilities to control positioning, scaling, and rotation.
+  #
+  # Usage: - What: Renders the background area of authentication pages.
+  #                Receives a dynamic `bg_path` to display different background images.
+  #        - How:  Called within the `auth-wrapper` partial using
+  #                `render 'partials/blocks/auth-background', bg_path: "path/to/image.png"`.
+  #        - Why:  Provides visual contrast and branding identity for the authentication interface.
+  %>
+<section class="flex flex-col items-center justify-center col-span-1 border-r border-border relative h-full overflow-hidden [&>img]:w-[200%] [&>img]:max-w-[200%] [&>img]:rotate-12">
+  <%= image_tag(bg_path, alt: "Background") %>
+</section>
