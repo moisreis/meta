@@ -1,0 +1,62 @@
+<%#
+  # Partial: _input-field.html
+  # Date: 11/12/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines a reusable input field component for forms.
+  #              Handles labels, validation states, and descriptions in a consistent way.
+  #              Applies Tailwind-based utility classes for styling and accessibility.
+  #
+  # Usage: - What: Renders an input field with an optional label, description, and error message.
+  #                Supports dynamic field types (e.g., text_field, email_field, password_field).
+  #        - How:  Uses a form builder (`f`) to render the input with proper ARIA attributes.
+  #                Adds a red error message below when validation fails.
+  #        - Why:  Ensures consistent markup, accessibility, and styling across all form inputs.
+  %>
+
+<%# [State] Defines whether the field is inactive.
+  #         Prevents interaction or modifies visual state when true.
+  %>
+<% is_inactive ||= nil %>
+
+<%# [Variable] Defines the CSS classes for the input label.
+  #            Controls spacing, font style, and disabled appearance.
+  %>
+<% label_classes = "flex items-center gap-1.5 text-xs font-heading uppercase leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
+
+<%# [Variable] Defines the CSS classes for the input element.
+  #            Handles spacing, borders, focus rings, colors, and disabled states.
+  %>
+<% input_classes = "placeholder:text-muted selection:bg-primary border border-border h-9 w-full min-w-0 rounded-base bg-white px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-primary-600 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
+
+<%# [Variable] Defines the CSS classes for the field description text.
+  #            Controls typography, spacing, and appearance for helper text.
+  %>
+<% desc_classes = "flex items-center gap-1.5 text-xs text-muted leading-none font-normal select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
+
+<%# [Variable] Defines the CSS classes for the description text when errors are present.
+  #            Adds a red color modifier to highlight validation messages.
+  %>
+<% desc_classes_with_error = desc_classes + " !text-danger-600" %>
+
+<div class="flex flex-col justify-start gap-1.5">
+  <%= f.label name, label, class: label_classes %>
+  <% placeholder ||= nil %>
+  <% if placeholder.present? %>
+    <%= f.send(field_type || :text_field, name, placeholder: placeholder, class: input_classes, aria: { describedby: "#{name}-desc" }) %>
+  <% else %>
+    <%= f.send(field_type || :text_field, name, class: input_classes, aria: { describedby: "#{name}-desc" }) %>
+  <% end %>
+  <% if f.object.errors[name].present? %>
+    <%= content_tag :span, f.object.errors.full_messages_for(name).first, class: desc_classes_with_error %>
+  <% end %>
+  <%= content_tag :p, desc, class: desc_classes, id: "#{name}-desc" if desc.present? %>
+</div>
+
+<style>
+  .field_with_errors > input {
+      border-color: var(--color-danger-600);
+      box-shadow: none;
+  }
+</style>

@@ -1,4 +1,7 @@
-@import 'tailwindcss'; /* Import Tailwind core utilities */
+@import 'tailwindcss';
+/* Import Tailwind core utilities */
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
 
 /*
  * File: application
@@ -20,13 +23,27 @@
  *     margin: var(--spacing);
  *   }
  */
+
+/*
+ * ------------------------------
+ *  @theme
+ *
+ *  Defines the global design tokens for the application.
+ *  This block declares custom CSS variables used for spacing,
+ *  typography, color palettes, and component radii.
+ *
+ *  These variables ensure consistency across Tailwind utilities
+ *  and maintain visual harmony between components.
+ * ------------------------------
+ */
 @theme {
 
     /**
      * Resets all unknown theme variables to their initial values
      * Ensures clean and predictable overrides for custom properties
      */
-    --*: initial;
+    --color-*: initial;
+    --radius-*: initial;
 
     /*
      * ------------------------------
@@ -57,7 +74,6 @@
      *  Each color serves a specific functional or aesthetic role.
      * ------------------------------
      */
-
     /*
      *  Sets the primary color used for key actions, highlights, and
      *  interactive components such as buttons, links, and icons.
@@ -85,16 +101,6 @@
     --color-heading: #1a1a1a;
     --color-body: #333333;
     --color-muted: #8a8a8a;
-
-    /*
-     *  Sets the neutral colors used for structural and background elements.
-     *  These variables define surfaces, borders, and accent layers that
-     *  balance vibrant colors and maintain visual clarity across layouts.
-     */
-    --color-white: #ffffff;
-    --color-transparent: transparent;
-    --color-border: #e7e7e7;
-    --color-accent: #f7f7f7;
 
     /*
      *  Sets the neutral colors used for structural and background elements.
@@ -226,4 +232,83 @@
      */
     --radius-base: 0.125rem;
     --radius-full: 999px;
+}
+
+/*
+ * ------------------------------
+ *  @layer base
+ *
+ *  Sets the global foundational styles, including element
+ *  resets, base typography, and default structural rules.
+ *  Ensures consistent behavior across components and aligns
+ *  with theme variables defined in `@theme`.
+ * ------------------------------
+ */
+@layer base {
+
+    /*
+     * ------------------------------
+     *  body
+     *
+     *  Sets the global default text and background styles
+     *  for the application. Defines the base font family,
+     *  font weight, and background color applied to all layouts.
+     * ------------------------------
+     */
+    body {
+        @apply bg-white font-body font-normal
+    }
+
+    /*
+     * ------------------------------
+     *  form
+     *
+     *  Sets the default layout for forms.
+     *  Applies vertical stacking, spacing, and full-width layout
+     *  to ensure consistent alignment and readability.
+     * ------------------------------
+     */
+    form {
+        @apply flex flex-col gap-6 w-full
+    }
+}
+
+/*
+ * ------------------------------
+ *  @layer components
+ *
+ *  Defines reusable UI components such as buttons and input styles.
+ *  Provides consistent design tokens and interactivity across the app.
+ * ------------------------------
+ */
+@layer components {
+
+    /*
+     * ------------------------------
+     *  button
+     *
+     *  Sets the base button style.
+     *  Defines typography, colors, spacing, and interactive states.
+     *  Ensures visual consistency for <button>, <input type="submit">,
+     *  and .button class components.
+     * ------------------------------
+     */
+    input[type=submit],
+    button,
+    .button {
+        @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base text-xs text-primary-50 uppercase font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 text-body hover:bg-primary-600/90 h-9 px-3 py-1.5 has-[>svg]:px-3;
+    }
+
+    /*
+     * ------------------------------
+     *  button-outline
+     *
+     *  Sets the outline variant for buttons.
+     *  Uses a bordered style with a neutral background
+     *  and a hover accent to convey secondary actions.
+     * ------------------------------
+     */
+    .button-outline {
+        @apply border border-border text-body bg-white hover:bg-accent/90;
+    }
 }

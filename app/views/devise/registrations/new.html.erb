@@ -1,29 +1,8 @@
-<h2 class="bg-quaternary-100">Sign up</h2>
-
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :password %>
-    <% if @minimum_password_length %>
-    <em>(<%= @minimum_password_length %> characters minimum)</em>
-    <% end %><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Sign up" %>
-  </div>
+<%= render 'partials/groups/auth-container', welcome_message: "Seja bem-vindo à <i><b>Meta!</b></i>".html_safe, welcome_feedback: "Falta pouco para começar sua jornada. Vamos lá?" do %>
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+    <%= render 'partials/modules/input-field', f: f, name: :email, label: "Informe seu e-mail", field_type: :email_field, placeholder: "seuemail@email.com", desc: "Informe um e-mail válido" %>
+    <%= render 'partials/modules/input-field', f: f, name: :password, label: "Crie uma senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Crie uma senha segura com, pelo menos, 6 caracteres" %>
+    <%= render 'partials/modules/input-field', f: f, name: :password_confirmation, label: "Confirme sua senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Repita sua senha" %>
+    <%= f.submit "Criar conta", class: "button w-full" %>
+  <% end %>
 <% end %>
-
-<%= render "devise/shared/links" %>
