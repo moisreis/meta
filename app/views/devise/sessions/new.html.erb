@@ -1,26 +1,26 @@
-<h2 class="bg-driftwood">Log in</h2>
-
-<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :password %><br />
-    <%= f.password_field :password, autocomplete: "current-password" %>
-  </div>
-
-  <% if devise_mapping.rememberable? %>
-    <div class="field">
-      <%= f.check_box :remember_me %>
-      <%= f.label :remember_me %>
-    </div>
+<%#
+  # Partial: new.html
+  # Date: 11/12/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the user login page for Devise.
+  #              Builds a cohesive authentication layout using reusable partials and consistent visual hierarchy.
+  #
+  # Usage: - What: Displays the login form, authentication container, and background visuals.
+  #                Uses shared layout components for branding and interface consistency.
+  #        - How:  Invokes partials for layout and form elements, wrapping them.
+  #                Submits the session form through Devise’s `session_path` helper.
+  #        - Why:  Provides a modular and maintainable structure for authentication pages,
+  #                ensuring reusability, clarity, and aesthetic uniformity across the app.
+  %>
+<%= render 'partials/route/auth/wrapper' do %>
+  <%= render 'partials/route/auth/background', bg_path: "pixeltrue/authentication-74.svg" %>
+  <%= render 'partials/route/auth/container', welcome_message: "Bem-vindo de volta", welcome_feedback: "É hora de acompanhar seus resultados, realizar novos aportes e planejar os próximos passos da sua carteira de investimentos" do %>
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+      <%= render 'partials/modules/input-field', f: f, name: :email, label: "Informe seu e-mail", field_type: :email_field, placeholder: "seuemail@email.com", desc: "Informe um e-mail válido" %>
+      <%= render 'partials/modules/input-field', f: f, name: :password, label: "Crie uma senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Crie uma senha segura com, pelo menos, 6 caracteres" %>
+      <%= f.submit "Entrar", class: "button" %>
+    <% end %>
   <% end %>
-
-  <div class="actions">
-    <%= f.submit "Log in" %>
-  </div>
 <% end %>
-
-<%= render "devise/shared/links" %>

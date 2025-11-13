@@ -1,0 +1,19 @@
+<%#
+  # Partial: _wrapper.html
+  # Date: 11/13/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the main layout wrapper for dashboard views.
+  #              Ensures consistent structure and spacing across all dashboard pages.
+  #              Provides a flexible container that adapts to nested sections.
+  #
+  # Usage: - What: Wraps inner dashboard content within a main layout section.
+  #                Keeps a unified visual and structural hierarchy.
+  #        - How:  Uses a <main> tag as a semantic container and yields inner content dynamically.
+  #        - Why:  Ensures visual consistency and predictable layout behavior for all dashboard pages.
+  %>
+<main class="relative flex flex-col w-full">
+  <%= render 'partials/route/dashboard/header' %>
+  <%= yield %>
+</main>

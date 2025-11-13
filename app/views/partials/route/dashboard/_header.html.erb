@@ -1,0 +1,27 @@
+<%#
+  # Partial: _header.html
+  # Date: 11/13/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the main header structure for dashboard pages.
+  #              Acts as a persistent navigation and identity area across the application.
+  #              Supports placement of brand elements, user info, and session actions.
+  #
+  # Usage: - What: Renders the top navigation section for dashboard views.
+  #                Usually includes logo, user information, and logout controls.
+  #        - How:  Uses a <header> tag as a semantic container, styled with Tailwind utilities.
+  #        - Why:  Ensures a consistent top-level layout and accessible navigation experience.
+  %>
+<header class="w-full py-3 px-9 grid grid-cols-2">
+  <div class="flex flex-row justify-start items-center gap-1.5">
+    <%= link_to "Carteiras", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
+    <%= link_to "Fundos de investimento", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
+    <%= link_to "Aplicações", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
+    <%= link_to "Relatórios", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
+    <%= link_to "Usuários", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
+  </div>
+  <div class="flex flex-row justify-end items-center">
+    <%= render 'partials/modules/avatar' %>
+  </div>
+</header>

@@ -65,6 +65,7 @@
      */
     --font-body: 'Inter', sans-serif;
     --font-heading: 'Inter Tight', sans-serif;
+    --font-display: 'Merriweather', serif;
 
     /*
      * ------------------------------
@@ -95,7 +96,7 @@
     --color-primary-200: #ace3d8;
     --color-primary-300: #7acebf;
     --color-primary-400: #4eb3a4;
-    --color-primary-500: #38a193;
+    --color-primary-500: #38a193; /* main color */
     --color-primary-600: #287970;
     --color-primary-700: #24615c;
     --color-primary-800: #204f4b;
@@ -121,6 +122,7 @@
     --color-transparent: transparent;
     --color-border: #e7e7e7;
     --color-accent: #f7f7f7;
+    --color-link: #0000ee;
 
     /*
      *  Sets the success colors used for positive feedback, confirmations,
@@ -240,7 +242,7 @@
      *  like badges, chips, or circular icons.
      * ------------------------------
      */
-    --radius-base: 0.125rem;
+    --radius-base: 8px;
     --radius-full: 999px;
 }
 
@@ -306,7 +308,7 @@
     input[type=submit],
     button,
     .button {
-        @apply inline-flex items-center justify-center gap-1.5 tracking-wider whitespace-nowrap rounded-base text-2xs text-primary-50 uppercase font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 text-body hover:bg-primary-600/90 h-9 px-3 py-1.5 has-[>svg]:px-3;
+        @apply inline-flex items-center justify-center gap-1.5 tracking-wider whitespace-nowrap rounded-base text-2xs text-primary-50 uppercase font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 text-body hover:bg-primary-600/90 h-9 px-3 py-1.5 has-[>svg]:px-3 shadow-xs leading-[0] [&>span]:leading-[0]
     }
 
     /*
@@ -319,6 +321,32 @@
      * ------------------------------
      */
     .button-outline {
-        @apply border border-border text-body bg-white hover:!bg-accent/90;
+        @apply border border-border text-body bg-white hover:!bg-accent/90
+    }
+
+    /*
+     * ------------------------------
+     *  button-ghost
+     *
+     *  Sets the transparent ghost-style button.
+     *  Removes background and border for minimal visual weight.
+     *  Adds hover feedback to maintain interactivity.
+     * ------------------------------
+     */
+    .button-ghost {
+        @apply bg-transparent border-none shadow-none text-body hover:!bg-accent/90;
+    }
+
+    /*
+     * ------------------------------
+     *  button-link
+     *
+     *  Sets the transparent link-style button.
+     *  Removes background and border for minimal weight.
+     *  Adds hover feedback to maintain interactivity.
+     * ------------------------------
+     */
+    .button-link {
+        @apply bg-transparent border-none shadow-none text-link hover:!bg-accent/90;
     }
 }

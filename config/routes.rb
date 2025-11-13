@@ -23,7 +23,7 @@ Rails.application.routes.draw do
     # [Authenticated route] Defines the root path for logged-in users
     #                       and redirects to **HomeController#index**.
     authenticated :user do
-      root 'home#index', as: :authenticated_root
+      root 'dashboard#index', as: :authenticated_root
     end
 
     # [Unauthenticated route] Defines the root path for guests

@@ -14,6 +14,6 @@
   #                `render 'partials/blocks/auth-background', bg_path: "path/to/image.png"`.
   #        - Why:  Provides visual contrast and branding identity for the authentication interface.
   %>
-<section class="flex flex-col items-center justify-center col-span-1 border-r border-border relative h-full overflow-hidden [&>img]:w-[200%] [&>img]:max-w-[200%] [&>img]:rotate-12">
+<section class="relative flex flex-col bg-quaternary-50 border-r border-border items-center justify-center col-span-1 relative h-full overflow-hidden [&>img]:w-[200%] [&>img]:max-w-[200%] [&>img]:absolute [&>img]:-bottom-[5%]">
   <%= image_tag(bg_path, alt: "Background") %>
 </section>
