@@ -18,10 +18,10 @@
   <%= render 'partials/route/auth/container', welcome_message: "Seja bem-vindo à Meta".html_safe, welcome_feedback: "Crie sua conta em poucos minutos e desbloqueie o potencial máximo da sua carteira de investimentos" do %>
     <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
       <%= render 'partials/modules/input-field', f: f, name: :email, label: "Informe seu e-mail", field_type: :email_field, placeholder: "seuemail@email.com", desc: "Informe um e-mail válido" %>
-      <div class="h-[1px] bg-border"></div>
+      <%= render 'partials/modules/separator' %>
       <%= render 'partials/modules/input-field', f: f, name: :first_name, label: "Primeiro nome", field_type: :text_field, placeholder: "Maria", desc: "Informe seu primeiro nome" %>
       <%= render 'partials/modules/input-field', f: f, name: :last_name, label: "Último nome", field_type: :text_field, placeholder: "Silva", desc: "Informe seu último nome" %>
-      <div class="h-[1px] bg-border"></div>
+      <%= render 'partials/modules/separator' %>
       <%= render 'partials/modules/input-field', f: f, name: :password, label: "Crie uma senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Crie uma senha segura com, pelo menos, 6 caracteres" %>
       <%= render 'partials/modules/input-field', f: f, name: :password_confirmation, label: "Confirme sua senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Repita sua senha" %>
       <%= f.submit "Criar conta", class: "button w-full" %>

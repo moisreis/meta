@@ -1,43 +1,39 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
-
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-  </div>
-
-  <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-    <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+<%#
+  # Partial: edit.html
+  # Date: 11/14/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the user profile edit page.
+  #              Displays a form that updates email, name information, and password credentials.
+  #              Organizes sections with separators for better readability and structure.
+  #
+  # Usage: - What: Loads a Devise registration edit form with structured input fields,
+  #                grouped layouts, and a final danger card for account deletion.
+  #        - How:  Uses a `form_for` builder pointed to `registration_path` with HTTP PUT.
+  #                Passes field parameters to reusable input-field partials.
+  #                Wraps the page inside the dashboard layout wrapper.
+  #        - Why:  Ensures a consistent form layout and improves maintainability through
+  #                modular components and reusable UI building blocks.
+  %>
+<%= render 'partials/route/dashboard/wrapper' do %>
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+    <%= render 'partials/modules/input-field', f: f, name: :email, label: "Informe seu e-mail", field_type: :email_field, placeholder: "seuemail@email.com", desc: "Informe um e-mail válido", is_half_width: true %>
+    <%= render 'partials/modules/separator' %>
+    <div class="grid grid-cols-2 gap-6">
+      <%= render 'partials/modules/input-field', f: f, name: :first_name, label: "Primeiro nome", field_type: :text_field, placeholder: "Maria", desc: "Informe seu primeiro nome" %>
+      <%= render 'partials/modules/input-field', f: f, name: :last_name, label: "Último nome", field_type: :text_field, placeholder: "Silva", desc: "Informe seu último nome" %>
+    </div>
+    <%= render 'partials/modules/separator' %>
+    <div class="grid grid-cols-2 gap-6">
+      <%= render 'partials/modules/input-field', f: f, name: :password, label: "Crie uma nova senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Crie uma nova senha segura com, pelo menos, 6 caracteres. Deixe em branco se não quiser mudá-la" %>
+      <%= render 'partials/modules/input-field', f: f, name: :password_confirmation, label: "Confirme sua nova senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Repita sua senha" %>
+    </div>
+    <%= render 'partials/modules/separator' %>
+    <%= render 'partials/modules/input-field', f: f, name: :current_password, label: "Senha atual", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Precisamos de sua senha atual para autorizar a mudança", is_half_width: true %>
+    <%= f.submit "Atualizar", class: "button w-fit" %>
   <% end %>
-
-  <div class="field">
-    <%= f.label :password %> <i>(leave blank if you don't want to change it)</i><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
-    <% if @minimum_password_length %>
-      <br />
-      <em><%= @minimum_password_length %> characters minimum</em>
-    <% end %>
-  </div>
-
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i><br />
-    <%= f.password_field :current_password, autocomplete: "current-password" %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Update" %>
-  </div>
+  <%= render 'partials/blocks/card', is_danger: true, card_title: "Excluir conta".html_safe, card_desc: "Você deseja deletar sua conta e todos os seus dados? Esta ação é irreversível" do %>
+    <%= button_to "Cancelar minha conta", registration_path(resource_name), data: { confirm: "Você tem certeza?", turbo_confirm: "Você tem certeza?" }, class: "button button-danger w-fit", method: :delete %>
+  <% end %>
 <% end %>
-
-<h3>Cancel my account</h3>
-
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
-
-<%= link_to "Back", :back %>

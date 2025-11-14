@@ -15,13 +15,18 @@
   %>
 <header class="w-full py-3 px-9 grid grid-cols-2">
   <div class="flex flex-row justify-start items-center gap-1.5">
-    <%= link_to "Carteiras", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
-    <%= link_to "Fundos de investimento", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
-    <%= link_to "Aplicações", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
-    <%= link_to "Relatórios", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
-    <%= link_to "Usuários", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
+    <%= link_to "Início", authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
+    <%= link_to "Carteiras <b>(12)</b>".html_safe, authenticated_root_path, method: :get, class: "button button-ghost w-fit" %>
+    <%= link_to "Nova carteira", authenticated_root_path, method: :get, class: "button button-secondary w-fit" %>
   </div>
   <div class="flex flex-row justify-end items-center">
-    <%= render 'partials/modules/avatar' %>
+    <div class="flex flex-row justify-center items-center border border-border p-1.5 rounded-full gap-1.5 shadow-xs">
+      <%= render 'partials/modules/avatar' %>
+      <%= content_tag :span, current_user.full_name, class: "text-2xs uppercase tracking-wider font-semibold" %>
+      <span></span>
+    </div>
   </div>
 </header>
+<section class="flex flex-col gap-1.5 px-9 py-6 border-border border-b">
+  <%= content_tag :h1, "Olá, <b>#{current_user.first_name}</b>".html_safe, class: "text-heading font-heading text-4xl font-normal" %>
+</section>

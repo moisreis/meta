@@ -15,5 +15,8 @@
   #        - Why:  Ensures consistent and accessible avatar rendering across different modules.
   %>
 <span data-slot="avatar" class="relative flex size-8 shrink-0 overflow-hidden rounded-full">
-  <img data-slot="avatar-image" class="aspect-square size-full" alt="@shadcn" src="https://github.com/shadcn.png">
+  <%= image_tag asset_path("userpics/Teamwork-1.svg"),
+                alt: "#{current_user.first_name} #{current_user.last_name}",
+                data: { slot: "avatar-image" },
+                class: "aspect-square size-full" %>
 </span>

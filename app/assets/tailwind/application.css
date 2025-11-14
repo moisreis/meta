@@ -75,6 +75,7 @@
      *  Used for fine-grained typography control in compact UI elements.
      * ------------------------------
      */
+    --text-3xs: 0.625rem;
     --text-2xs: 0.725rem;
 
     /*
@@ -96,7 +97,7 @@
     --color-primary-200: #ace3d8;
     --color-primary-300: #7acebf;
     --color-primary-400: #4eb3a4;
-    --color-primary-500: #38a193; /* main color */
+    --color-primary-500: #38a193;
     --color-primary-600: #287970;
     --color-primary-700: #24615c;
     --color-primary-800: #204f4b;
@@ -242,7 +243,7 @@
      *  like badges, chips, or circular icons.
      * ------------------------------
      */
-    --radius-base: 8px;
+    --radius-base: 2px;
     --radius-full: 999px;
 }
 
@@ -313,6 +314,32 @@
 
     /*
      * ------------------------------
+     *  button-secondary
+     *
+     *  Sets the secondary button appearance.
+     *  Applies a more subtle visual style
+     *  compared to primary buttons while keeping clear interactivity.
+     * ------------------------------
+     */
+    .button-secondary {
+        @apply border border-border text-secondary-700 bg-secondary-50 hover:!bg-secondary-50/90 !border-secondary-100 !shadow-none
+    }
+
+    /*
+     * ------------------------------
+     *  button-danger
+     *
+     *  Sets the visual variant for destructive or high-risk actions.
+     *  Applies a light red background, muted red text color, and a soft border.
+     *  On hover, keeps the danger tone without darkening excessively.
+     * ------------------------------
+     */
+    .button-danger {
+        @apply border border-border text-danger-700 bg-danger-50 hover:!bg-danger-50/90 !border-danger-100 !shadow-none
+    }
+
+    /*
+     * ------------------------------
      *  button-outline
      *
      *  Sets the outline variant for buttons.
@@ -341,12 +368,39 @@
      * ------------------------------
      *  button-link
      *
-     *  Sets the transparent link-style button.
-     *  Removes background and border for minimal weight.
-     *  Adds hover feedback to maintain interactivity.
+     *  Defines the visual style for link-like buttons.
+     *  It presents the element as text-only while keeping
+     *  interactive button behavior and hover feedback.
      * ------------------------------
      */
     .button-link {
         @apply bg-transparent border-none shadow-none text-link hover:!bg-accent/90;
+    }
+
+    /*
+     * ------------------------------
+     *  badge
+     *
+     *  Provides a compact, rounded label for highlighting
+     *  statuses, attributes, or small pieces of contextual
+     *  information. Ensures consistent sizing, alignment,
+     *  and icon handling while adapting to focus, hover,
+     *  and invalid states.
+     * ------------------------------
+     */
+    .badge {
+        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 tracking-wider whitespace-nowrap rounded-base text-3xs uppercase font-bold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none border border-primary-100 bg-primary-50 text-primary-700 h-fit shadow-xs w-fit
+    }
+
+    /*
+     * ------------------------------
+     *  badge-outline
+     *
+     *  Sets the badge variant styled for outlined emphasis, using
+     *  a bordered style with a neutral background
+     * ------------------------------
+     */
+    .badge-outline {
+        @apply bg-transparent border-border text-body;
     }
 }

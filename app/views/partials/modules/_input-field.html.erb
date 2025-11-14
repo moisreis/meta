@@ -40,11 +40,14 @@
   %>
 <% desc_classes_with_error = desc_classes + " !text-danger-600" %>
 
+<%# [Variable] Checks if the input should have half the width. %>
+<% is_half_width ||= false %>
+
 <div class="flex flex-col justify-start gap-1.5">
   <%= f.label name, label, class: label_classes %>
   <% placeholder ||= nil %>
   <% if placeholder.present? %>
-    <%= f.send(field_type || :text_field, name, placeholder: placeholder, class: input_classes, aria: { describedby: "#{name}-desc" }) %>
+    <%= f.send(field_type || :text_field, name, placeholder: placeholder, class: [input_classes, (is_half_width ? "!w-1/2" : nil)].compact.join(" "), aria: { describedby: "#{name}-desc" }) %>
   <% else %>
     <%= f.send(field_type || :text_field, name, class: input_classes, aria: { describedby: "#{name}-desc" }) %>
   <% end %>

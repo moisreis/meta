@@ -1,0 +1,35 @@
+<%#
+  # Partial: _card.html
+  # Date: 11/14/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a generic content card.
+  #              Provides a consistent layout with padding, border, and optional danger styling.
+  #
+  # Usage: - What: Displays a structured block with title, description, and inner content
+  #                injected through a block.
+  #        - How:  Pass `card_title`, `card_desc`, and an optional `is_danger` flag.
+  #                Wrap child elements inside the `yield` block to fill the card body.
+  #        - Why:  Ensures visual consistency across dashboard blocks and allows
+  #                contextual styling such as danger states.
+%>
+
+<%# [Variable] Checks if the wrapper should have a `danger` border. %>
+<% is_danger ||= false %>
+
+<%# [Variable] Defines the CSS classes for the wrapper.
+  #            Controls spacing, font style, and disabled appearance.
+  %>
+<% wrapper_classes = [
+  "border border-border rounded-base p-6 bg-white flex flex-col justify-start gap-3 shadow-xs",
+  ("!border-danger-600" if is_danger),
+].compact.join(" ") %>
+
+<div class="<%= wrapper_classes %>">
+  <div class="flex flex-col gap-0">
+    <%= content_tag :h2, card_title, class: "text-heading font-heading text-base font-semibold uppercase trackind-wider" %>
+    <%= content_tag :p, card_desc, class: "text-muted font-body text-sm font-normal text-left" %>
+  </div>
+  <%= yield %>
+</div>

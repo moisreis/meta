@@ -15,5 +15,10 @@
   %>
 <main class="relative flex flex-col w-full">
   <%= render 'partials/route/dashboard/header' %>
-  <%= yield %>
+  <%= render 'partials/route/dashboard/container' do %>
+    <%= yield %>
+  <% end %>
+  <div class="w-full flex flex-row justify-center items-center p-3">
+    <%= render 'partials/modules/copyright' %>
+  </div>
 </main>
