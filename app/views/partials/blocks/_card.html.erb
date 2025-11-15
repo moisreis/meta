@@ -13,7 +13,7 @@
   #                Wrap child elements inside the `yield` block to fill the card body.
   #        - Why:  Ensures visual consistency across dashboard blocks and allows
   #                contextual styling such as danger states.
-%>
+  %>
 
 <%# [Variable] Checks if the wrapper should have a `danger` border. %>
 <% is_danger ||= false %>
@@ -28,7 +28,7 @@
 
 <div class="<%= wrapper_classes %>">
   <div class="flex flex-col gap-0">
-    <%= content_tag :h2, card_title, class: "text-heading font-heading text-base font-semibold uppercase trackind-wider" %>
+    <%= content_tag :h2, card_title, class: "text-heading font-heading text-base font-semibold" %>
     <%= content_tag :p, card_desc, class: "text-muted font-body text-sm font-normal text-left" %>
   </div>
   <%= yield %>

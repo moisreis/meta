@@ -1,0 +1,24 @@
+<%#
+  # Partial: _composed-avatar.html
+  # Date: 11/14/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a composed user avatar with name and role inside a styled
+  #              horizontal container. Outputs the avatar component followed by
+  #              textual user information.
+  #
+  # Usage: - What: Use when you need a compact identity block displaying the user’s
+  #                profile image, full name, and role.
+  #        - How: Render this partial inside navigation bars, dropdowns, or profile
+  #               summaries.
+  #        - Why: Keeps consistent user-identity presentation across the app and
+  #               centralizes styling and markup.
+  %>
+<div class="flex flex-row justify-center items-center border border-border p-1.5 pr-3 rounded-full gap-1.5 shadow-xs">
+  <%= render 'partials/modules/avatar' %>
+  <div class="flex flex-col gap-0 justify-start items-start">
+    <%= content_tag :span, current_user.full_name, class: "text-2xs uppercase tracking-wider font-semibold" %>
+    <%= content_tag :span, current_user.role, class: "text-3xs text-muted font-semibold uppercase tracking-widers" %>
+  </div>
+</div>

@@ -20,13 +20,9 @@
     <%= link_to "Nova carteira", authenticated_root_path, method: :get, class: "button button-secondary w-fit" %>
   </div>
   <div class="flex flex-row justify-end items-center">
-    <div class="flex flex-row justify-center items-center border border-border p-1.5 rounded-full gap-1.5 shadow-xs">
-      <%= render 'partials/modules/avatar' %>
-      <%= content_tag :span, current_user.full_name, class: "text-2xs uppercase tracking-wider font-semibold" %>
-      <span></span>
-    </div>
+    <%= render 'partials/blocks/composed-avatar' %>
   </div>
 </header>
 <section class="flex flex-col gap-1.5 px-9 py-6 border-border border-b">
-  <%= content_tag :h1, "Olá, <b>#{current_user.first_name}</b>".html_safe, class: "text-heading font-heading text-4xl font-normal" %>
+  <%= content_tag :h1, "Olá, <b>#{current_user.full_name}</b>".html_safe, class: "text-heading font-heading text-4xl font-normal" %>
 </section>

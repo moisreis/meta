@@ -17,6 +17,11 @@
   %>
 <section class="p-9 bg-accent flex flex-col gap-9 rounded-b-[24px]">
   <div class="flex flex-col gap-0">
+    <div class="flex flex-row justify-start items-center gap-3 py-3">
+      <%= link_to "Início", authenticated_root_path, method: :get, class: "text-2xs uppercase tracking-wider text-body font-medium hover:text-link" %>
+      <span class="text-2xs text-muted">/</span>
+      <%= link_to "Editar perfil", authenticated_root_path, method: :get, class: "text-2xs uppercase tracking-wider text-link font-medium hover:text-link" %>
+    </div>
     <%= content_tag :h1, "Editar perfil", class: "text-heading font-heading text-2xl font-semibold text-left" %>
     <%= content_tag :p, "Faça alterações em seus dados de usuário", class: "text-muted font-body text-base font-normal text-left" %>
   </div>

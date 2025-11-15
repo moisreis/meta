@@ -1,3 +1,22 @@
+<%#
+  # Partial: application.html
+  # Date: 11/14/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the main HTML layout for the application. Wraps all
+  #              rendered views inside a consistent page structure with head
+  #              metadata, assets, and the main content area.
+  #
+  # Usage: - What: Serves as the global layout that encloses every view rendered
+  #                through the standard Rails rendering pipeline.
+  #        - How: Rails loads this layout automatically for controllers that do not
+  #               specify a custom layout. You may add content to the `<head>` using
+  #               `content_for :head` or override the page title via
+  #               `content_for :title`.
+  #        - Why: Centralizes HTML boilerplate, ensures consistent metadata, favicon
+  #               configuration, font loading, and asset inclusion across all pages.
+  %>
 <!DOCTYPE html>
 <!--
 ███    ███ ███████ ████████  █████
