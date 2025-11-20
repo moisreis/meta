@@ -1,0 +1,37 @@
+<%#
+  # Partial: _paginator.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Kaminari
+  #
+  # Description: Defines the main structural layout for the Kaminari pagination controls.
+  #              It orchestrates the rendering of all individual pagination components
+  #              (first, previous, page numbers, gaps, next, and last links) within an accessible navigation bar.
+  #
+  # Usage: - What: Renders the complete, self-contained pagination control widget for
+  #                a paginated collection. It serves as the container for all individual
+  #                page links and navigation buttons.
+  #        - How: Renders the elements inside a `<nav>` tag using the Kaminari DSL
+  #               (`paginator.render`). It conditionally displays the first/previous/next/last
+  #               page links and iterates through pages, rendering `page_tag` or `gap_tag`
+  #               as determined by Kaminari's internal logic.
+  #        - Why: Provides the core, accessible interface for navigating large result
+  #               sets (R in CRUD), ensuring a consistent and standardized pagination experience.
+  %>
+<%= paginator.render do -%>
+  <nav class="flex flex-row gap-1.5 justify-start items-center" role="navigation" aria-label="pager">
+    <%= first_page_tag unless current_page.first? %>
+    <%= prev_page_tag unless current_page.first? %>
+    <% each_page do |page| -%>
+      <% if page.display_tag? -%>
+        <%= page_tag page %>
+      <% elsif !page.was_truncated? -%>
+        <%= gap_tag %>
+      <% end -%>
+    <% end -%>
+    <% unless current_page.out_of_range? %>
+      <%= next_page_tag unless current_page.last? %>
+      <%= last_page_tag unless current_page.last? %>
+    <% end %>
+  </nav>
+<% end -%>

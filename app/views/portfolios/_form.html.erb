@@ -1,0 +1,36 @@
+<%#
+  # Partial: _form.html
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Portfolio
+  #
+  # Description: Defines the input structure and submission mechanism for the Portfolio resource.
+  #              It includes the required fields, automatically sets the associated user ID,
+  #              and provides a customized submit button.
+  #
+  # Usage: - What: Renders the standardized form necessary for creating or updating
+  #                a Portfolio object. It requires the 'portfolio' model instance
+  #                to be passed as a local variable.
+  #        - How: Utilizes the Rails `form_with` helper. Renders a reusable
+  #               `_input-field` partial for the name. The user association
+  #               is managed via a hidden field set to `current_user.id`.
+  #        - Why: Provides a consistent and reusable input mechanism for the
+  #               Portfolio resource, abstracting the form layout and guaranteeing
+  #               the correct user association for data integrity.
+  %>
+<%= form_with(model: portfolio, class: "contents") do |form| %>
+  <%= render "partials/modules/input-field",
+             f: form,
+             name: :name,
+             label: "Nome da carteira",
+             placeholder: "Carteira de Longo Prazo",
+             is_half_width: true,
+             desc: "Escolha um nome claro e descritivo.",
+             field_type: :text_field
+  %>
+  <%= form.hidden_field :user_id, value: current_user.id %>
+  <%= form.button :submit, class: "button button-primary w-fit flex items-center gap-2" do %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+    <%= content_tag :span, button_name %>
+  <% end %>
+<% end %>

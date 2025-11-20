@@ -23,12 +23,12 @@
 <%# [Variable] Defines the CSS classes for the input label.
   #            Controls spacing, font style, and disabled appearance.
   %>
-<% label_classes = "flex items-center gap-1.5 text-xs font-heading uppercase leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
+<% label_classes = "flex items-center gap-1.5 text-2xs font-heading uppercase leading-none font-semibold select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
 
 <%# [Variable] Defines the CSS classes for the input element.
   #            Handles spacing, borders, focus rings, colors, and disabled states.
   %>
-<% input_classes = "placeholder:text-muted border border-border h-9 w-full min-w-0 rounded-base bg-white px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-secondary-600 focus-visible:ring-secondary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
+<% input_classes = "placeholder:text-muted border border-border pr-6 h-9 w-full min-w-0 rounded-base bg-white px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-secondary-600 focus-visible:ring-secondary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
 
 <%# [Variable] Defines the CSS classes for the field description text.
   #            Controls typography, spacing, and appearance for helper text.
@@ -38,22 +38,28 @@
 <%# [Variable] Defines the CSS classes for the description text when errors are present.
   #            Adds a red color modifier to highlight validation messages.
   %>
-<% desc_classes_with_error = desc_classes + " !text-danger-600" %>
+<% desc_classes_with_error = desc_classes + " !text-danger-600 !bg-danger-50 p-1.5 px-3 border border-danger-100 rounded-base w-fit" %>
 
 <%# [Variable] Checks if the input should have half the width. %>
 <% is_half_width ||= false %>
 
-<div class="flex flex-col justify-start gap-1.5">
+<%# [Variable] Assigns the icon name passed from the caller, defaulting to nil if not provided. %>
+<% icon_name ||= nil %>
+
+<div class="relative flex flex-col justify-start gap-1.5">
   <%= f.label name, label, class: label_classes %>
-  <% placeholder ||= nil %>
-  <% if placeholder.present? %>
-    <%= f.send(field_type || :text_field, name, placeholder: placeholder, class: [input_classes, (is_half_width ? "!w-1/2" : nil)].compact.join(" "), aria: { describedby: "#{name}-desc" }) %>
-  <% else %>
-    <%= f.send(field_type || :text_field, name, class: input_classes, aria: { describedby: "#{name}-desc" }) %>
-  <% end %>
-  <% if f.object.errors[name].present? %>
-    <%= content_tag :span, f.object.errors.full_messages_for(name).first, class: desc_classes_with_error %>
-  <% end %>
+  <div class="relative">
+    <% placeholder ||= nil %>
+    <% if placeholder.present? %>
+      <%= f.send(field_type || :text_field, name, placeholder: placeholder, class: [input_classes, (is_half_width ? "!w-1/2" : nil)].compact.join(" "), aria: { describedby: "#{name}-desc" }) %>
+    <% else %>
+      <%= f.send(field_type || :text_field, name, class: input_classes, aria: { describedby: "#{name}-desc" }) %>
+    <% end %>
+      <%= inline_svg_tag "icons/#{icon_name}.svg", class: "absolute size-4 right-3 top-1/2 -translate-y-1/2" %>
+  </div>
+  <%# if f.object.errors[name].present? %>
+  <%#= content_tag :span, f.object.errors.full_messages_for(name).first, class: desc_classes_with_error %>
+  <%# end %>
   <%= content_tag :p, desc, class: desc_classes, id: "#{name}-desc" if desc.present? %>
 </div>
 

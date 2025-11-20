@@ -3,20 +3,19 @@
 # @author Moisés Reis
 # @added 11/13/2025
 # @package *Meta*
-# @description Defines the base controller for the entire application.
-#              Ensures shared configuration and behavior are inherited across all controllers.
-#              Integrates **Devise** authentication and manages browser compatibility and cache state.
-#              Extends parameter sanitization to allow additional user attributes during registration and account updates.
+# @description Defines the base controller that all other controllers inherit from.
+#              Provides shared behavior, configuration, and security rules.
+#              Ensures that features from **ActionController::Base** and authentication
+#              from **Devise** integrate consistently across the app.
 # @category *Controller*
 #
-# Usage:: - *[what]* defines global controller-level configuration and authentication rules.
-#         - *[how]* inherits from **ActionController::Base** to provide filters and parameter configuration for **Devise**.
-#                   Uses `before_action` to invoke a method that permits additional attributes in user-related forms.
-#         - *[why]* centralizes logic that should be shared across all controllers, improving maintainability, consistency, and authentication reliability.
+# Usage:: - *[what]* This class serves as the foundational controller for the application.
+#         - *[how]* It configures browser compatibility, manages cache invalidation
+#                   when **Importmap** changes, and extends Devise parameters for user flows.
+#         - *[why]* It centralizes behaviors that must apply to all controllers,
+#                   ensuring consistency, security, and predictable request handling.
 #
-# Attributes:: - *allow_browser* @macro - Restricts access to modern browsers for better compatibility and performance.
-#              - *stale_when_importmap_changes* @method - Triggers cache invalidation when the **Importmap** asset configuration changes.
-#              - *configure_permitted_parameters* @method - Extends **Devise**’s strong parameters to include custom user fields (`first_name`, `last_name`).
+# Attributes:: - *devise_parameter_sanitizer* @object - provides extended Devise params
 #
 class ApplicationController < ActionController::Base
   allow_browser versions: :modern

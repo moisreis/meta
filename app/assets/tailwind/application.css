@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-/* Import Tailwind core utilities */
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 
@@ -63,8 +62,8 @@
      *  Ensures readability and consistency across UI components.
      * ------------------------------
      */
-    --font-body: 'Inter', sans-serif;
-    --font-heading: 'Inter Tight', sans-serif;
+    --font-body: 'Geist', sans-serif;
+    --font-heading: 'Geist', sans-serif;
     --font-display: 'Merriweather', serif;
 
     /*
@@ -121,8 +120,9 @@
      */
     --color-white: #ffffff;
     --color-transparent: transparent;
-    --color-border: #e7e7e7;
-    --color-accent: #f7f7f7;
+    --color-border: #e9e9e9;
+    --color-accent: #fafafe;
+    --color-accent-light: #fdfdfe;
     --color-link: #0000ee;
 
     /*
@@ -243,7 +243,7 @@
      *  like badges, chips, or circular icons.
      * ------------------------------
      */
-    --radius-base: 2px;
+    --radius-base: 8px;
     --radius-full: 999px;
 }
 
@@ -309,7 +309,20 @@
     input[type=submit],
     button,
     .button {
-        @apply inline-flex items-center justify-center gap-1.5 tracking-wider whitespace-nowrap rounded-base text-2xs text-primary-50 uppercase font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 text-body hover:bg-primary-600/90 h-9 px-3 py-1.5 has-[>svg]:px-3 shadow-xs leading-[0] [&>span]:leading-[0]
+        @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full text-xs text-primary-50 uppercase font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 text-body hover:bg-primary-600/90 h-9 px-3 py-1.5 has-[>svg]:px-3 shadow-xs [&>svg]:fill-primary-50 [&>svg]:size-4
+    }
+
+    /*
+     * ------------------------------
+     *  button-small
+     *
+     *  Sets a compact button variant.
+     *  Reduces height and inner spacing.
+     *  Ensures a tighter, more subtle visual footprint for small actions.
+     * ------------------------------
+     */
+    .button-small {
+        @apply !h-fit !px-2.5 !py-0.75
     }
 
     /*
@@ -322,7 +335,7 @@
      * ------------------------------
      */
     .button-secondary {
-        @apply border border-border text-secondary-700 bg-secondary-50 hover:!bg-secondary-50/90 !border-secondary-100 !shadow-none
+        @apply border text-secondary-700 bg-secondary-50 hover:!bg-secondary-50/90 !border-secondary-50 !shadow-none [&>svg]:!fill-secondary-600
     }
 
     /*
@@ -335,7 +348,7 @@
      * ------------------------------
      */
     .button-danger {
-        @apply border border-border text-danger-700 bg-danger-50 hover:!bg-danger-50/90 !border-danger-100 !shadow-none
+        @apply border border-border text-danger-700 bg-white hover:!bg-white !border-danger-100 !shadow-none [&>svg]:!fill-danger-700
     }
 
     /*
@@ -348,7 +361,7 @@
      * ------------------------------
      */
     .button-outline {
-        @apply border border-border text-body bg-white hover:!bg-accent/90
+        @apply border border-border border-dashed text-body bg-white hover:!bg-accent/90 [&>svg]:!fill-body
     }
 
     /*
@@ -361,7 +374,7 @@
      * ------------------------------
      */
     .button-ghost {
-        @apply bg-transparent border-none shadow-none text-body hover:!bg-accent/90;
+        @apply bg-transparent border border-transparent shadow-none text-body hover:!bg-accent/90 [&>svg]:!fill-body
     }
 
     /*
@@ -374,7 +387,7 @@
      * ------------------------------
      */
     .button-link {
-        @apply bg-transparent border-none shadow-none text-link hover:!bg-accent/90;
+        @apply bg-transparent border-none shadow-none text-link hover:!bg-accent/90 [&>svg]:!fill-link
     }
 
     /*
@@ -389,18 +402,45 @@
      * ------------------------------
      */
     .badge {
-        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 tracking-wider whitespace-nowrap rounded-base text-3xs uppercase font-bold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none border border-primary-100 bg-primary-50 text-primary-700 h-fit shadow-xs w-fit
+        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base text-xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none border border-primary-100 bg-primary-50 text-primary-700 h-fit shadow-xs w-fit
     }
 
     /*
      * ------------------------------
      *  badge-outline
      *
-     *  Sets the badge variant styled for outlined emphasis, using
-     *  a bordered style with a neutral background
+     *  Sets the badge variant with a neutral outline.
+     *  Applies a clean white background and subtle border.
+     *  Keeps the badge visually lightweight for low-emphasis labels.
      * ------------------------------
      */
     .badge-outline {
-        @apply bg-transparent border-border text-body;
+        @apply bg-white border-border text-body;
+    }
+
+    /*
+     * ------------------------------
+     *  badge-secondary
+     *
+     *  Sets the badge variant styled with secondary brand colors.
+     *  Applies soft background and border tones.
+     *  Emphasizes supplementary status or category labels.
+     * ------------------------------
+     */
+    .badge-secondary {
+        @apply bg-secondary-50 border-secondary-100 text-secondary-600;
+    }
+
+    /*
+     * ------------------------------
+     *  badge-danger
+     *
+     *  Sets the badge variant with a danger-themed palette.
+     *  Applies alert-focused colors for warnings or critical tags.
+     *  Highlights items that demand immediate visual attention.
+     * ------------------------------
+     */
+    .badge-danger {
+        @apply bg-danger-50 border-danger-100 text-danger-600;
     }
 }

@@ -14,9 +14,6 @@
   #                Accepts a dynamic image source and alt text for accessibility.
   #        - Why:  Ensures consistent and accessible avatar rendering across different modules.
   %>
-<span data-slot="avatar" class="relative flex size-8 shrink-0 overflow-hidden rounded-full">
-  <%= image_tag asset_path("userpics/Teamwork-1.svg"),
-                alt: "#{current_user.first_name} #{current_user.last_name}",
-                data: { slot: "avatar-image" },
-                class: "aspect-square size-full" %>
+<span data-slot="avatar" class="relative flex justify-center items-center h-7 w-7 shrink-0 overflow-hidden rounded-full bg-secondary-600">
+  <%= image_tag "userpics/Upstream-1.svg", alt: "MyApp logo" %>
 </span>

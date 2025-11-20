@@ -4,21 +4,29 @@
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Defines the main layout wrapper for dashboard views.
-  #              Ensures consistent structure and spacing across all dashboard pages.
-  #              Provides a flexible container that adapts to nested sections.
+  # Description: Provides the core grid structure for the dashboard views. It combines
+  #              the persistent sidebar partial with the main content container and
+  #              injects the view-specific content into the defined layout.
   #
-  # Usage: - What: Wraps inner dashboard content within a main layout section.
-  #                Keeps a unified visual and structural hierarchy.
-  #        - How:  Uses a <main> tag as a semantic container and yields inner content dynamically.
-  #        - Why:  Ensures visual consistency and predictable layout behavior for all dashboard pages.
+  # Usage: - What: Renders the full dashboard layout, encompassing the sidebar
+  #                and the main content container, and injects the calling view's
+  #                content (via `yield`) into the appropriate structural position.
+  #                It defaults the `current_view` variable to "form".
+  #        - How: Uses a <main> element with a 16-column grid to position the
+  #               sidebar and the container partials. It passes title and description
+  #               variables to the container.
+  #        - Why: Establishes a uniform and centralized structural wrapper for all
+  #               dashboard-level views, promoting consistency and maintainability.
   %>
-<main class="relative flex flex-col w-full">
-  <%= render 'partials/route/dashboard/header' %>
-  <%= render 'partials/route/dashboard/container' do %>
+
+<%# [Configuration] Defines the default view type (e.g., 'form', 'table') if none is passed.
+  #                 This variable is passed to the container partial to determine
+  #                 specific layout or styling adjustments.
+  %>
+<% current_view ||= "form" %>
+<main class="grid grid-cols-16">
+  <%= render 'partials/route/dashboard/sidebar' %>
+  <%= render 'partials/route/dashboard/container', page_title: page_title, page_desc: page_desc, current_view: current_view do %>
     <%= yield %>
   <% end %>
-  <div class="w-full flex flex-row justify-center items-center p-3">
-    <%= render 'partials/modules/copyright' %>
-  </div>
 </main>

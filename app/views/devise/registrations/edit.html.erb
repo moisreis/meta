@@ -16,7 +16,7 @@
   #        - Why:  Ensures a consistent form layout and improves maintainability through
   #                modular components and reusable UI building blocks.
   %>
-<%= render 'partials/route/dashboard/wrapper' do %>
+<%= render 'partials/route/dashboard/wrapper', page_title: "Editar perfil", page_desc: "Faça alterações nos seus dados de usuário" do %>
   <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
     <%= render 'partials/modules/input-field', f: f, name: :email, label: "Informe seu e-mail", field_type: :email_field, placeholder: "seuemail@email.com", desc: "Informe um e-mail válido", is_half_width: true %>
     <%= render 'partials/modules/separator' %>
@@ -31,9 +31,15 @@
     </div>
     <%= render 'partials/modules/separator' %>
     <%= render 'partials/modules/input-field', f: f, name: :current_password, label: "Senha atual", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Precisamos de sua senha atual para autorizar a mudança", is_half_width: true %>
-    <%= f.submit "Atualizar", class: "button w-fit" %>
+    <%= f.button :submit, class: "button w-fit flex items-center gap-2" do %>
+      <%= inline_svg_tag "icons/refresh.svg" %>
+      <%= content_tag :span, "Atualizar" %>
+    <% end %>
   <% end %>
-  <%= render 'partials/blocks/card', is_danger: true, card_title: "Excluir conta".html_safe, card_desc: "Você deseja deletar sua conta e todos os seus dados? Esta ação é irreversível" do %>
-    <%= button_to "Cancelar minha conta", registration_path(resource_name), data: { confirm: "Você tem certeza?", turbo_confirm: "Você tem certeza?" }, class: "button button-danger w-fit", method: :delete %>
+  <%= render 'partials/blocks/card', bg_path: "pixeltrue/bomb-9.svg", is_danger: true, card_title: "Excluir conta".html_safe, card_desc: "Você deseja deletar sua conta e todos os seus dados? Esta ação é irreversível" do %>
+    <%= button_to registration_path(resource_name), data: { confirm: "Você tem certeza?", turbo_confirm: "Você tem certeza?" }, class: "button button-danger w-fit", method: :delete do %>
+      <%= inline_svg_tag "icons/delete_forever.svg" %>
+      <%= content_tag :span, "Deletar minha conta" %>
+    <% end %>
   <% end %>
 <% end %>

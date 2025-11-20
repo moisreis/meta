@@ -1,0 +1,61 @@
+<%#
+  # View: index.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Portfolio
+  #
+  # Description: Constructs the main index page for Portfolio resources. It renders a
+  #              dynamic data table to display the list of portfolios and includes
+  #              integrated search and filtering components for efficient data querying.
+  #
+  # Usage: - What: Renders the complete, dynamic index view for the Portfolio resource,
+  #                including a fully functional, filterable, and Turbo-integrated data table.
+  #        - How: Renders the `_wrapper` for the page layout, followed by the
+  #               `_data-table` partial to display the `@portfolios` collection and
+  #               the `_filters` partial to handle searching via Ransack (`@q`).
+  #               All components are linked via the `portfolios_table` Turbo Frame ID.
+  #        - Why: Provides an efficient and interactive interface for users to browse
+  #               and manage the Portfolio list while promoting UI consistency through
+  #               the use of shared dashboard partials.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Lista de carteiras",
+           page_desc: "Lista de carteiras com permissão de visualização.",
+           current_view: "datatable" do %>
+  <%= render partial: "partials/blocks/data-table", locals: {
+    columns_header: ["Nome", "Proprietário"],
+    columns_icons: ["label", "person"],
+    columns_body: [
+      :name,
+      ->(portfolio) { content_tag(:span, portfolio.user.first_name, class: "badge badge-secondary") },
+    ],
+    models: @portfolios,
+    sort_options: [],
+    q_object: @q,
+    search_url: portfolios_path,
+    turbo_frame_id: "portfolios_table",
+    export_url: nil
+  } %>
+<% end %>
+<%= render partial: "partials/route/dashboard/filters", locals: {
+  q_object: @q,
+  search_url: portfolios_path,
+  filters: [
+    {
+      key: :name_cont,
+      label: "Nome",
+      description: "Mostra carteiras cujo nome contém estes caracteres.",
+      placeholder: "Nome da carteira",
+      icon_name: "wallet"
+    },
+    {
+      key: :user_first_name_cont,
+      label: "Usuário",
+      description: "Mostra carteiras pertencentes a um usuário cujo nome corresponde a este filtro.",
+      placeholder: "Nome do responsável",
+      icon_name: "account_circle"
+    }
+
+  ],
+  turbo_frame_id: "portfolios_table"
+} %>

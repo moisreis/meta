@@ -1,0 +1,68 @@
+<%#
+  # Partial: _form.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: User
+  #
+  # Description: Defines the input structure and submission mechanism for the User resource.
+  #              It includes required fields for identification and authentication (email,
+  #              names, and passwords) and arranges them logically for user input.
+  #
+  # Usage: - What: Renders the standardized form necessary for creating or updating
+  #                a User object. It requires the 'user' model instance to be
+  #                passed as a local variable.
+  #        - How: Utilizes the Rails `form_with` helper. It organizes fields (email,
+  #               names, passwords) using grid layouts and `_separator` partials,
+  #               delegating input rendering to the `_input-field` partial.
+  #        - Why: Provides a consistent and reusable form for managing user data,
+  #               ensuring logical grouping and a uniform UI across different user
+  #               management contexts.
+  %>
+<%= form_with(model: user, class: "contents") do |form| %>
+  <%= render "partials/modules/input-field",
+             f: form,
+             name: :email,
+             label: "Informe seu e-mail",
+             field_type: :email_field,
+             placeholder: "seuemail@email.com",
+             is_half_width: true,
+             desc: "Informe um e-mail válido" %>
+  <%= render "partials/modules/separator" %>
+  <div class="grid grid-cols-2 gap-6">
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :first_name,
+               label: "Primeiro nome",
+               field_type: :text_field,
+               placeholder: "Maria",
+               desc: "Informe seu primeiro nome" %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :last_name,
+               label: "Último nome",
+               field_type: :text_field,
+               placeholder: "Silva",
+               desc: "Informe seu último nome" %>
+  </div>
+  <%= render "partials/modules/separator" %>
+  <div class="grid grid-cols-2 gap-6">
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :password,
+               label: "Crie uma senha",
+               field_type: :password_field,
+               placeholder: "SuaSenha123@",
+               desc: "Crie uma senha segura com, pelo menos, 6 caracteres" %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :password_confirmation,
+               label: "Confirme sua senha",
+               field_type: :password_field,
+               placeholder: "SuaSenha123@",
+               desc: "Repita sua senha" %>
+  </div>
+  <%= form.button :submit, class: "button button-primary w-fit flex items-center gap-2" do %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+    <%= content_tag :span, button_name %>
+  <% end %>
+<% end %>

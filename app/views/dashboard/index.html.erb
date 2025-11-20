@@ -4,15 +4,15 @@
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Displays the logged user's profile summary within the dashboard.
-  #              Shows the user's full name and associated role for quick identification.
+  # Description: Wraps the dashboard home view inside the shared wrapper component.
+  #              Passes title and description so the layout renders contextual information.
   #
-  # Usage: - What: Renders a simple dashboard view showing the current user's name and role.
-  #                Acts as the initial page after login.
-  #        - How:  Uses **current_user** helper from **Devise** to access session data.
-  #                Fetches **first_name**, **last_name**, and **role** attributes dynamically.
-  #        - Why:  Confirms user authentication and personalizes the dashboard interface.
+  # Usage: - What: Defines how the dashboard home page appears inside the global UI shell.
+  #                Supplies localized metadata such as title and description to the wrapper.
+  #        - How:  Calls the **partials/route/dashboard/wrapper** partial and yields content into it.
+  #        - Why:  Ensures dashboard pages follow a consistent structure and inherit shared layout behavior.
   %>
-
-<%= render 'partials/route/dashboard/wrapper' do %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Início",
+           page_desc: "Gerencie seus fundos de investimento" do %>
 <% end %>

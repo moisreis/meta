@@ -1,0 +1,23 @@
+<%#
+  # View: new.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: User
+  #
+  # Description: Renders the page dedicated to creating a new User resource. It initializes
+  #              a blank User object and displays the required input fields via the
+  #              shared form partial.
+  #
+  # Usage: - What: Renders the complete view for creating a new User instance.
+  #                It is responsible for wrapping the input form within the standard
+  #                dashboard layout.
+  #        - How: Renders the `_wrapper` for the page layout, setting the title and
+  #               description for user creation. It delegates rendering of the input fields
+  #               to the reusable `_form` partial, passing the new `@user` object and
+  #               the customized "Criar usuário" (Create user) button details.
+  #        - Why: Provides the interface necessary to execute the 'Create' function
+  #               (C in CRUD) for the User resource using a consistent UI structure.
+  %>
+<%= render 'partials/route/dashboard/wrapper', page_title: "Criar nova carteira", page_desc: "Defina os detalhes da sua nova carteira para começar a acompanhar seus investimentos." do %>
+  <%= render "form", user: @user, icon_name: "add", button_name: "Criar usuário" %>
+<% end %>

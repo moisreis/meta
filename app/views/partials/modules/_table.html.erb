@@ -1,0 +1,109 @@
+<%#
+  # Partial: _table.html
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a dynamic data table. Presents sortable headers,
+  #              structured rows, and action buttons for each record.
+  #
+  # Usage: - What: Displays a complete HTML table using the provided columns
+  #                and models. Allows sorting and record-level actions.
+  #        - How:  Pass locals: columns_header, columns_icons, columns_body,
+  #                and models. The partial renders each cell based on symbols,
+  #                strings, or lambdas inside columns_body.
+  #        - Why:  Enables consistent, reusable table rendering across the
+  #                application while keeping logic centralized.
+  %>
+<table class="max-w-full [&>thead]:max-w-full [&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 [&>thead>tr]:border-b [&>tbody>tr]:border-b [&>thead>tr]:border-border [&>tbody>tr]:border-border w-full text-sm table-auto">
+  <thead>
+  <tr class="[&>th]:w-auto [&>th]:text-left [&>th]:p-1.5 [&>th]:px-3 [&>th]:text-sm [&>th]:text-left [&>th]:font-semibold [&>th]:bg-white">
+    <%# [Variable] Ensures columns_header exists.
+      #            Provides a fallback empty array when no header is given.
+      %>
+    <% columns_header ||= [] %>
+
+    <%# [Variable] Ensures columns_icons exists.
+      #            Provides a fallback empty array for column-level icons.
+      %>
+    <% columns_icons ||= [] %>
+
+    <%# [Loop] Iterates through each header with its index.
+      #        Renders a table header cell and applies sorting behavior.
+      %>
+    <% columns_header.each_with_index do |col_header, i| %>
+
+      <%# [Renderer] Builds the <th> element and inserts the sortable helper.
+        #            Passes the header label, the column body, and its icon.
+        %>
+      <th class="border-r border-border text-body [&>svg]:fill-body">
+        <%# [Renderer] Calls the sortable helper.
+          #            Builds a sortable column header using the label, body key, and icon.
+          %>
+        <%= sortable(col_header, columns_body[i], columns_icons[i]) %>
+      </th>
+    <% end %>
+    <th>
+    </th>
+  </tr>
+  </thead>
+  <tbody>
+  <%# [Loop] Ensures columns_body is available.
+    #        Prepares the structure for rendering each table row.
+    %>
+  <% columns_body ||= [] %>
+
+  <%# [Loop] Iterates through each model.
+    #        Produces one table row per record.
+    %>
+  <% models.each_with_index do |model, row_index| %>
+    <tr class="[&>td]:w-auto [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm">
+      <%# [Loop] Iterates through each column configuration.
+        #        Selects the correct value for each cell.
+        %>
+      <% columns_body.each_with_index do |col_body, col_index| %>
+        <td class="border-r border-border <%= 'bg-accent/50' if col_index != 0 %> <%= 'font-medium' if col_index == 0 %>">
+          <%# [ValueResolver] Determines the displayed value for the current cell.
+            #                 Handles symbols, strings, and callable Procs.
+            %>
+          <% value = case col_body
+                     when Symbol, String
+                       model.public_send(col_body)
+                     when Proc
+                       col_body.call(model)
+                     else
+                       nil
+                     end
+          %>
+
+          <%# [Output] Renders the resolved value inside the table cell. %>
+          <%= value %>
+        </td>
+      <% end %>
+      <td class="bg-accent/50 h-9 flex flex-row justify-center items-center">
+        <%= link_to edit_polymorphic_path([model]), class: 'button button-ghost button-small' do %>
+          <%= inline_svg_tag "icons/edit.svg" %>
+          <%= content_tag :span, "Editar" %>
+        <% end %>
+        <div class="h-4 w-[1px] bg-border"></div>
+        <%= link_to polymorphic_path(model), class: "button button-ghost button-small" do %>
+          <%= inline_svg_tag "icons/open_in_new.svg" %>
+          <%= content_tag :span, "Ver" %>
+        <% end %>
+        <div class="h-4 w-[1px] bg-border"></div>
+        <%= link_to polymorphic_path(model), class: "button button-ghost button-small" do %>
+          <%= inline_svg_tag "icons/delete_forever.svg" %>
+          <%= content_tag :span, "Deletar" %>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+  <tfoot>
+  <tr class="h-9 border-y border-border bg-white">
+    <td class="px-3" colspan="<%= columns_body.size + 2 %>">
+      <%= content_tag :span, "<b>#{models.size}</b> itens".html_safe, class: "font-normal text-sm text-muted" %>
+    </td>
+  </tr>
+  </tfoot>
+</table>

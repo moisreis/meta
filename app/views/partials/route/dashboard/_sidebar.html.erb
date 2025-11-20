@@ -1,0 +1,39 @@
+<%#
+  # Partial: _sidebar.html
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the main navigation sidebar for the application. It displays
+  #              the user's profile avatar and provides CRUD (Create, Read, Update, Delete)
+  #              navigation links for the Portfolio and User entities.
+  #
+  # Usage: - What: Renders the primary application sidebar navigation. It displays
+  #                the user's profile avatar and includes essential CRUD links
+  #                for the Portfolio and User entities.
+  #        - How: Uses a sticky, full-height header with flex layout. The navigation
+  #               links are dynamically generated using the `crud_nav_for` helper
+  #               with localized labels and custom icons.
+  #        - Why: Provides a consistent, accessible, and always-visible component
+  #               for the main application navigation and identity display, ensuring
+  #               quick access to core entity management.
+  %>
+<header class="flex flex-col col-span-2 border-r border-border h-screen max-h-screen sticky top-0 [&>div]:px-3 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-accent-light shadow-sm">
+  <div class="h-12">
+    <%= render 'partials/blocks/composed-avatar' %>
+  </div>
+  <div class="flex flex-col !gap-3 py-3">
+    <%# [Navigation] Render CRUD navigation entries for Portfolio and User.
+      #              Provide singular/plural labels and associated icons.
+      #              Build each menu using the helper crud_nav_for.
+      %>
+    <%= crud_nav_for Portfolio,
+                     singular: "Carteira",
+                     plural: "Carteiras",
+                     icons: { index: "wallet.svg", new: "add.svg" } %>
+    <%= crud_nav_for User,
+                     singular: "Usuário",
+                     plural: "Usuários",
+                     icons: { index: "person.svg", new: "add.svg" } %>
+  </div>
+</header>

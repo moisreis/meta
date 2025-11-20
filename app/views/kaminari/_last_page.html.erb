@@ -1,0 +1,20 @@
+<%#
+  # Partial: _last_page.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Kaminari
+  #
+  # Description: Renders a navigation link to the last page of the paginated resource list.
+  #              It ensures the link is only active when the current page is not the final page of the collection.
+  #
+  # Usage: - What: Renders the control link for accessing the last page of a paginated data set.
+  #                It is styled as a small outlined button with the label "Última".
+  #        - How: Utilizes the Kaminari `link_to_unless` helper, which checks the
+  #               `current_page.last?` status to disable the link when unnecessary.
+  #               The link targets the provided `url` and respects the `remote` setting.
+  #        - Why: Provides a quick, consistent, and intuitive mechanism for users
+  #               to navigate directly to the end of a large paginated collection.
+  %>
+<span class="button button-outline button-small">
+  <%= link_to_unless current_page.last?, "Última".html_safe, url, remote: remote %>
+</span>

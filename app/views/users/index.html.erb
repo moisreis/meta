@@ -1,0 +1,87 @@
+<%#
+  # View: index.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: User
+  #
+  # Description: Constructs the main index page for User resources. It renders a dynamic
+  #              data table to display a list of all users and includes integrated
+  #              search and filtering components for effective data querying.
+  #
+  # Usage: - What: Renders the complete, dynamic index view for the User resource,
+  #                including a fully functional, filterable, and Turbo-integrated data table.
+  #                It displays key user details, role status, and related portfolio count.
+  #        - How: Renders the `_wrapper` for the page layout, followed by the
+  #               `_data-table` partial using complex lambda functions to customize
+  #               column content (e.g., displaying roles as localized badges).
+  #               Ransack (`@q`) and the `_filters` partial handle the searching.
+  #        - Why: Provides an efficient, centralized, and secure interface for administrators
+  #               to manage and audit the application's user base.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Lista de usuários",
+           page_desc: "Lista de carteiras com permissão de visualização.",
+           current_view: "datatable" do %>
+  <%= render partial: "partials/blocks/data-table", locals: {
+    columns_header: ["Nome completo", "E-mail", "Nível", "Criado em", "Atualizado em", "Carteiras"],
+    columns_icons: ["label", "alternate_email", "assignment_ind", "calendar_clock", "history", "wallet"],
+    columns_body: [
+      :full_name,
+      :email,
+      ->(user) do
+        role_name =
+          case user.role.to_s
+          when "admin", "administrator"
+            "Administrador"
+          else
+            "Usuário"
+          end
+        role_class =
+          case user.role.to_s
+          when "admin", "administrator"
+            "badge badge-danger"
+          else
+            "badge"
+          end
+        content_tag(:span, role_name, class: role_class)
+      end,
+      :created_at,
+      :updated_at,
+      ->(user) do
+        count = user.portfolios.size
+        if count.zero?
+          content_tag(:span, "Não há carteiras", class: "text-muted-foreground")
+        else
+          content_tag(:span, count)
+        end
+      end
+    ],
+    models: @users,
+    sort_options: [],
+    q_object: @q,
+    search_url: users_path,
+    turbo_frame_id: "users_table",
+    export_url: nil
+  } %>
+<% end %>
+<%= render partial: "partials/route/dashboard/filters", locals: {
+  q_object: @q,
+  search_url: users_path,
+  filters: [
+    {
+      key: :first_name_cont,
+      label: "Nome",
+      description: "Mostra carteiras cujo nome contém estes caracteres.",
+      placeholder: "Nome da carteira",
+      icon_name: "wallet"
+    },
+    {
+      key: :email_cont,
+      label: "Usuário",
+      description: "Mostra carteiras pertencentes a um usuário cujo nome corresponde a este filtro.",
+      placeholder: "Nome do responsável",
+      icon_name: "account_circle"
+    }
+  ],
+  turbo_frame_id: "users_table"
+} %>

@@ -1,0 +1,66 @@
+<%#
+  # Partial: _filters.html
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Builds the filter sidebar and handles user input for search queries
+  #              in a clear and structured way. Ensures the interface stays consistent
+  #              and easy to navigate.
+  #
+  # Usage: - What: Creates a slide-in sidebar containing a search form.
+  #                Renders input fields dynamically based on provided filter configs.
+  #        - How:  Receives `q_object`, `search_url`, `filters`, and `turbo_frame_id`
+  #                from the parent template. Uses `search_form_for` to submit queries.
+  #        - Why:  Keeps filtering logic reusable and centralized, improving
+  #                maintainability and consistency across pages.
+  %>
+<div id="sidebarFilters" class="absolute h-screen top-0 right-0 translate-x-full bg-accent w-80 bg-white shadow-sm border-l border-border z-50 transition-transform ease-in-out">
+
+<%# [Form] Render search form bound to q_object.
+  #        Send GET parameters to search_url and wrap all fields in the builder 'f'.
+  #        Attach Turbo Frame to enable partial-page updates.
+  %>
+  <%= search_form_for q_object,
+                      url: search_url,
+                      method: :get,
+                      html: { id: "filter_form", class: "flex flex-col h-full" },
+                      data: { turbo_frame: turbo_frame_id } do |f| %>
+    <div class="h-12 flex flex-row justify-between items-center px-3 border-b border-border">
+      <h3 class="font-semibold text-base">Filtros</h3>
+      <%= button_tag id: "closeFiltersBtn", type: "button", class: "button button-ghost button-small" do %>
+        <%= inline_svg_tag "icons/close.svg" %>
+      <% end %>
+    </div>
+    <div class="flex-grow px-3 space-y-6 overflow-y-auto">
+
+      <%# [Loop] Render input-field partial once for each filter entry.
+        #        Pass metadata (label, placeholder, icon) directly as locals.
+        #        Build dynamic filter UI based on the filters array.
+        %>
+      <% filters.each do |filter| %>
+        <%= render partial: "partials/modules/input-field", locals: {
+          f: f,
+          name: filter[:key],
+          label: filter[:label],
+          desc: filter[:description],
+          placeholder: filter[:placeholder],
+          field_type: :text_field,
+          is_half_width: false,
+          icon_name: filter[:icon_name],
+        } %>
+      <% end %>
+      <div class="flex flex-col gap-3">
+        <%= button_tag type: :submit, class: "button button-primary", id: "applyFiltersBtn" do %>
+          <%= inline_svg_tag "icons/filter.svg" %>
+          <%= content_tag :span, "Aplicar" %>
+        <% end %>
+        <%= link_to search_url, class: "button button-secondary", data: { turbo_frame: turbo_frame_id } do %>
+          <%= inline_svg_tag "icons/refresh.svg" %>
+          <%= content_tag :span, "Limpar" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+<div class="h-screen w-screen bg-body/10 z-40 hidden absolute top-0 right-0" id="filterOverlay"></div>

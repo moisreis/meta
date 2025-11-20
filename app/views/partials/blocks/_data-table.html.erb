@@ -1,0 +1,93 @@
+<%#
+  # Partial: _data-table.html
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a complete data-table interface that includes filters,
+  #              export actions, pagination and a Turbo Frame for async updates.
+  #              Organizes UI controls clearly to guide the user through table
+  #              interactions.
+  #
+  # Usage: - What: Displays filter controls when a q_object is present.
+  #                Renders the table via a nested partial with dynamic columns.
+  #                Shows pagination below the main frame.
+  #        - How:  Call this partial from any view where you need a full
+  #                data-table container with filters and pagination.
+  #                Provide the locals: columns_header, columns_icons,
+  #                columns_body, models, and optionally q_object.
+  #        - Why:  Centralizes table UI logic in one reusable layout.
+  #                Keeps views clean and ensures consistent behavior across
+  #                different tables in the application.
+  %>
+<div class="flex flex-col">
+
+  <%# [Condition] Checks if q_object exists.
+    #             Shows the filter and export controls when the condition is true.
+    %>
+  <% if q_object %>
+    <div class="flex flex-row [&>div]:flex [&>div]:flex-row [&>div]:gap-1.5 [&>div]:items-center justify-between items-center gap-6 h-12 border-b border-border px-3">
+      <div class="justify-start">
+        <%= button_tag id: "openFiltersBtn", class: "button button-outline button-small" do %>
+          <%= inline_svg_tag "icons/tune.svg" %>
+          <%= content_tag :span, "Ver filtros" %>
+        <% end %>
+        <div class="h-4 w-[1px] bg-border"></div>
+        <%= link_to search_url, class: "button button-outline button-small", data: { turbo_frame: turbo_frame_id } do %>
+          <%= inline_svg_tag "icons/refresh.svg" %>
+          <%= content_tag :span, "Limpar filtros" %>
+        <% end %>
+      </div>
+      <div class="justify-end">
+        <%= button_tag type: :submit, class: "button button-outline button-small" do %>
+          <%= inline_svg_tag "icons/file_export.svg" %>
+          <%= content_tag :span, "Exportar" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  <turbo-frame id="<%= turbo_frame_id %>">
+    <%= render partial: "partials/modules/table", locals: {
+      columns_header: columns_header,
+      columns_icons: columns_icons,
+      columns_body: columns_body,
+      models: models
+    } %>
+  </turbo-frame>
+  <div class="flex justify-start px-3 mt-3">
+    <%= paginate models %>
+  </div>
+</div>
+
+<script>
+    let sidebar;
+    let openBtn;
+    let closeBtn;
+    let filterOverlay;
+
+    function openSidebar() {
+        sidebar.classList.add('!translate-x-0');
+        filterOverlay.classList.remove('hidden')
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('!translate-x-0');
+        filterOverlay.classList.add('hidden')
+    }
+
+    function setupEventListeners() {
+        sidebar = document.getElementById('sidebarFilters');
+        openBtn = document.getElementById('openFiltersBtn');
+        closeBtn = document.getElementById('closeFiltersBtn');
+        filterOverlay = document.getElementById('filterOverlay')
+
+        if (sidebar && openBtn && closeBtn) {
+            openBtn.addEventListener('click', openSidebar);
+            closeBtn.addEventListener('click', closeSidebar);
+        } else {
+            console.error("Sidebar setup failed: One or more IDs were not found in the HTML.");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', setupEventListeners);
+</script>

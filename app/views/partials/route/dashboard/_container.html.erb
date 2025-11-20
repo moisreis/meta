@@ -4,29 +4,52 @@
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Wraps a page section that displays a title, a subtitle,
-  #              and a styled content area. Provides consistent spacing,
-  #              colors, and layout structure across profile-editing views.
+  # Description: Renders a layout container that organizes the page header and body.
+  #              Structures the title, breadcrumbs, and main content with consistent styling.
   #
-  # Usage: - What: Encapsulates a heading block, a separator,
-  #                and a content container for form elements or components.
-  #        - How:  Render this partial and pass inner content through `yield`
-  #                to compose custom interfaces inside the standardized layout.
-  #        - Why:  Ensures layout consistency, reduces repetition,
-  #                and centralizes styling for editable user pages.
+  # Usage: - What: Presents a unified wrapper that keeps page titles, actions, and content aligned.
+  #                Ensures visual consistency across dashboard pages.
+  #        - How: Wraps the header and content in flexible containers and renders the yielded block
+  #               according to the current view mode.
+  #        - Why: Provides a stable, reusable structure that standardizes page layout and reduces duplication.
   %>
-<section class="p-9 bg-accent flex flex-col gap-9 rounded-b-[24px]">
-  <div class="flex flex-col gap-0">
-    <div class="flex flex-row justify-start items-center gap-3 py-3">
-      <%= link_to "Início", authenticated_root_path, method: :get, class: "text-2xs uppercase tracking-wider text-body font-medium hover:text-link" %>
-      <span class="text-2xs text-muted">/</span>
-      <%= link_to "Editar perfil", authenticated_root_path, method: :get, class: "text-2xs uppercase tracking-wider text-link font-medium hover:text-link" %>
+<section class="flex flex-col col-span-14">
+  <div class="h-12 border-b border-border bg-accent-light px-3 flex flex-row justify-between items-center">
+    <div class="flex flex-row gap-1.5 items-center justify-start">
+      <%= content_tag :h1, page_title, class: "text-heading font-heading text-base font-bold text-left" %>
     </div>
-    <%= content_tag :h1, "Editar perfil", class: "text-heading font-heading text-2xl font-semibold text-left" %>
-    <%= content_tag :p, "Faça alterações em seus dados de usuário", class: "text-muted font-body text-base font-normal text-left" %>
+    <div class="flex flex-row gap-1.5 items-center justify-center">
+      <div class="flex flex-row justify-start items-center gap-1 [&>a]:text-sm [&>a]:text-muted [&>a]:hover:text-link [&>a]:font-normal">
+        <%= link_to authenticated_root_path, method: :get do %>
+          <%= content_tag :span, "Painel" %>
+        <% end %>
+        <%= content_tag :span, "/", class: "text-xs uppercase text-muted" %>
+        <%= link_to authenticated_root_path, class: "!text-link", method: :get do %>
+          <%= content_tag :span, "Carteiras" %>
+        <% end %>
+      </div>
+    </div>
+    <div class="flex flex-row gap-1.5 items-center justify-end">
+      <%= link_to edit_user_registration_path, class: "button button-ghost button-small" do %>
+        <%= inline_svg_tag "icons/settings.svg" %>
+      <% end %>
+      <%= link_to edit_user_registration_path, class: "button button-ghost button-small" do %>
+        <%= inline_svg_tag "icons/logout.svg" %>
+      <% end %>
+      <%= link_to edit_user_registration_path, class: "button button-ghost button-small" do %>
+        <%= inline_svg_tag "icons/more_vert.svg" %>
+      <% end %>
+    </div>
   </div>
-  <%= render "partials/modules/separator" %>
-  <div class="bg-white border border-border rounded-base shadow-xs p-12 flex flex-col gap-12">
-    <%= yield %>
+  <div class="bg-white flex flex-col gap-3 [&>form]:flex [&>form]:!gap-6 [&>form]:p-6">
+
+    <%# [Condition] Renders content differently depending on the current view. %>
+    <% if current_view == "datatable" %>
+      <%= yield %>
+    <% else %>
+      <div class="p-12 px-12 flex flex-col gap-6">
+        <%= yield %>
+      </div>
+    <% end %>
   </div>
 </section>

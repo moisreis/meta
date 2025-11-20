@@ -1,0 +1,20 @@
+<%#
+  # Partial: _prev_page.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Kaminari
+  #
+  # Description: Renders the control link for moving backward to the previous page in the paginated collection.
+  #              It automatically disables the link when the user is viewing the first page of the resource list.
+  #
+  # Usage: - What: Renders the control link for accessing the previous page of a paginated data set.
+  #                It is styled as a small ghost button with the label "Anterior".
+  #        - How: Utilizes the Kaminari `link_to_unless` helper, which checks the
+  #               `current_page.first?` status to disable the link when no preceding
+  #               page exists. It includes `rel='prev'` for context.
+  #        - Why: Provides the essential backward step in the pagination process,
+  #               enhancing sequential browsing capability for the user.
+  %>
+<span class="button button-ghost button-small">
+  <%= link_to_unless current_page.first?, "Anterior".html_safe, url, rel: 'prev', remote: remote %>
+</span>

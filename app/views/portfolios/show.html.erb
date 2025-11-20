@@ -1,0 +1,23 @@
+<%#
+  # View: show.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Portfolio
+  #
+  # Description: Renders the page for viewing the complete details of a specific Portfolio resource.
+  #              It sets the page title dynamically using the portfolio's name and delegates
+  #              content rendering to the model's standard partial.
+  #
+  # Usage: - What: Renders the detailed view of a specific Portfolio object,
+  #                serving as the single-record display page.
+  #        - How: Renders the `_wrapper` for the main dashboard layout, setting the
+  #               page title to the portfolio's name. It uses the implicit render
+  #               call to load the corresponding `_portfolio.html.erb` partial,
+  #               passing the `@portfolio` object as a local.
+  #        - Why: Provides a dedicated, clear page for viewing all associated
+  #               information for a single Portfolio record (R in CRUD), minimizing
+  #               code in the view by relying on the implicit partial.
+  %>
+<%= render 'partials/route/dashboard/wrapper', page_title: @portfolio.name, page_desc: "Detalhes de <span class='badge badge-outline'>#{@portfolio.name}</span>".html_safe do %>
+  <%= render @portfolio %>
+<% end %>

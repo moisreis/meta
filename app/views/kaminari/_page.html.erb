@@ -1,0 +1,22 @@
+<%#
+  # Partial: _page.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Kaminari
+  #
+  # Description: Renders a numbered link corresponding to a specific page number in the collection.
+  #              It dynamically styles the element to highlight the current page versus other navigable pages.
+  #
+  # Usage: - What: Renders an individual, numbered link corresponding to a specific page
+  #                in the paginated sequence. This link is the primary control for
+  #                jumping between pages.
+  #        - How: Uses dynamic classes to style the element: `button-secondary` when
+  #               `page.current?` is true (active page) and `button-ghost` when false.
+  #               The Kaminari `link_to_unless` helper displays the page number and
+  #               disables the link when it's the current page.
+  #        - Why: Provides the central navigational element of the pagination controls,
+  #               enabling users to easily access any page in the collection.
+  %>
+<span class="button button-small rounded-[6px] <%= 'button-ghost' if !page.current? %> <%= 'button-secondary' if page.current? %>">
+  <%= link_to_unless page.current?, page, url, {remote: remote, rel: page.rel} %>
+</span>

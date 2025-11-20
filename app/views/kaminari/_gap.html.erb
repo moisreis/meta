@@ -1,0 +1,19 @@
+<%#
+  # Partial: _gap.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Kaminari
+  #
+  # Description: Renders a placeholder element to signify that a range of page numbers is truncated.
+  #              It is used to shorten the pagination control when the number of total pages is large.
+  #
+  # Usage: - What: Renders the truncation marker (typically an ellipsis) in the pagination
+  #                control area. It acts as a visual placeholder for skipped page numbers.
+  #        - How: Renders a `<span>` element with the classes `page gap`. The content
+  #               is dynamically fetched via the Rails I18n helper using the Kaminari
+  #               truncation key.
+  #        - Why: Optimizes the display of pagination controls for large datasets,
+  #               preventing the page footer from being overwhelmed by an excessive
+  #               number of sequential page links.
+  %>
+<span class="page gap"><%= t('views.pagination.truncate').html_safe %></span>

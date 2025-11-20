@@ -1,0 +1,20 @@
+<%#
+  # Partial: _next_page.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Kaminari
+  #
+  # Description: Renders the control link for moving forward to the next page in the paginated collection.
+  #              It automatically disables the link when the user reaches the end of the resource list.
+  #
+  # Usage: - What: Renders the control link for accessing the next page of a paginated data set.
+  #                It is styled as a small ghost button with the label "Próxima".
+  #        - How: Utilizes the Kaminari `link_to_unless` helper, which checks the
+  #               `current_page.last?` status to disable the link when no subsequent
+  #               page exists. It includes `rel='next'` for context.
+  #        - Why: Provides the essential forward step in the pagination process,
+  #               enhancing sequential browsing capability for the user.
+  %>
+<span class="button button-ghost button-small">
+  <%= link_to_unless current_page.last?, "Próxima".html_safe, url, rel: 'next', remote: remote %>
+</span>

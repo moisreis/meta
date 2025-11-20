@@ -1,0 +1,20 @@
+<%#
+  # Partial: _first_page.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Kaminari
+  #
+  # Description: Renders a navigation link to the first page of the paginated resource list.
+  #              It ensures the link is only active when the current page is not the first one.
+  #
+  # Usage: - What: Renders the control link for accessing the first page of a paginated data set.
+  #                It is styled as a small outlined button with the label "Primeira".
+  #        - How: Utilizes the Kaminari `link_to_unless` helper, which checks the
+  #               `current_page.first?` status to disable the link when unnecessary.
+  #               The link targets the provided `url` and respects the `remote` setting.
+  #        - Why: Provides a quick, consistent, and intuitive mechanism for users
+  #               to return to the start of a large paginated collection.
+  %>
+<span class="button button-outline button-small">
+  <%= link_to_unless current_page.first?, "Primeira".html_safe, url, remote: remote %>
+</span>

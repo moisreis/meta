@@ -22,14 +22,15 @@
   #            Controls spacing, font style, and disabled appearance.
   %>
 <% wrapper_classes = [
-  "border border-border rounded-base p-6 bg-white flex flex-col justify-start gap-3 shadow-xs",
-  ("!border-danger-600" if is_danger),
+  "relative rounded-base overflow-hidden p-6 bg-accent flex flex-col justify-start gap-3 w-fit",
+  ("!bg-danger-50" if is_danger),
 ].compact.join(" ") %>
 
 <div class="<%= wrapper_classes %>">
-  <div class="flex flex-col gap-0">
-    <%= content_tag :h2, card_title, class: "text-heading font-heading text-base font-semibold" %>
-    <%= content_tag :p, card_desc, class: "text-muted font-body text-sm font-normal text-left" %>
+  <div class="flex flex-col gap-0 relative z-20">
+    <%= content_tag :h2, card_title, class: "text-heading font-heading text-lg font-semibold w-1/2" %>
+    <%= content_tag :p, card_desc, class: "text-body font-body text-sm font-normal text-left w-1/2" %>
   </div>
+  <%= image_tag(bg_path, class: "absolute -bottom-12 -right-12 z-10 size-64", alt: "Background") %>
   <%= yield %>
 </div>

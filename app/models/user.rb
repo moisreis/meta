@@ -41,8 +41,26 @@ class User < ApplicationRecord
   # [Enumerations] Defines user roles for access control logic.
   enum :role, { user: 'user', admin: 'admin' }
 
-  # [Instance method] Returns the user's full name in a readable format.
+  # [Method] Returns the user's full name in a readable format.
   def full_name
     "#{first_name} #{last_name}".strip
+  end
+
+  # [Method] Lists the attributes that Ransack allows for searching and filtering.
+  #          Restricts queries to safe fields that represent user identity and activity.
+  def self.ransackable_attributes(auth_object = nil)
+    [
+      "created_at", "current_sign_in_at", "current_sign_in_ip", "email",
+      "encrypted_password", "first_name", "id", "id_value", "last_name",
+      "last_sign_in_at", "last_sign_in_ip", "remember_created_at",
+      "reset_password_sent_at", "reset_password_token", "role",
+      "sign_in_count", "updated_at"
+    ]
+  end
+
+  # [Method] Lists the associations that Ransack allows for relational querying.
+  #          Limits available joins to portfolio-related connections.
+  def self.ransackable_associations(auth_object = nil)
+    ["accessible_portfolios", "portfolios", "user_portfolio_permissions"]
   end
 end
