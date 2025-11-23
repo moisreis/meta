@@ -43,17 +43,21 @@ module NavHelper
       {
         icon: icon_set[:index],
         text: "#{plural} <b>(#{count})</b>",
-        path: url_for(controller: resources, action: :index)
+        # [Correção] Prefixa o nome do controller com '/' para forçar o namespace global
+        # e evitar que Devise ou outros namespaces o prefixem (ex: "devise/portfolios").
+        path: url_for(controller: "/#{resources}", action: :index)
       },
       {
         icon: icon_set[:new],
         text: "Adicionar",
-        path: url_for(controller: resources, action: :new)
+        # [Correção] Aplica a mesma regra para a ação 'new'.
+        path: url_for(controller: "/#{resources}", action: :new)
       },
       {
         icon: icon_set[:reports],
         text: "Relatórios",
-        path: url_for(controller: resources, action: :index, reports: true)
+        # [Correção] Aplica a mesma regra para a rota de relatórios.
+        path: url_for(controller: "/#{resources}", action: :index, reports: true)
       }
     ]
 

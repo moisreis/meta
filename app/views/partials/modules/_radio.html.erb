@@ -1,0 +1,49 @@
+<%#
+  # Partial: _radio.html
+  # Date: 11/23/2025
+  # Author: Gemini AI
+  # Package: Meta
+  #
+  # Description: Renders a form-backed radio button input styled as a selectable card with an icon, title, and description.
+  #              The component hides the native radio button and uses peer-styling for a professional look when selected.
+  #
+  # Usage: - What: Renders a single option card within a group of mutually exclusive choices (e.g., selecting one framework).
+  #                Provides a highly visual and interactive selection experience for radio button groups.
+  #        - How: Requires form builder (`f`), group name (`name`), specific option `value`, `title`, `desc`, and `icon_name`.
+  #               Optional parameters include `is_inactive` (to disable the card).
+  #        - Why: Offers a high-fidelity, custom-styled component for radio groups, improving user engagement and clarity for single-choice decisions.
+  %>
+
+<% is_inactive ||= nil %>
+<% icon_name ||= nil %>
+<% title ||= "" %>
+<% desc ||= "" %>
+<% value ||= "" %>
+<% is_checked ||= false %>
+
+<%# [Variable] Classes for the label card. %>
+<% label_classes = "flex items-center justify-center w-full p-1.5 px-3 text-heading rounded-full cursor-pointer peer-disabled:opacity-50 peer-disabled:cursor-not-allowed [&>div>svg]:size-4 " %>
+
+<%# [Variable] Uses peer-checked to apply selected styles. %>
+<% style_classes = "bg-accent border border-border hover:bg-secondary-50 hover:border-secondary-100 peer-checked:bg-secondary-50 peer-checked:hover:bg-secondary-50 peer-checked:border-secondary-100 peer-checked:text-secondary-700 peer-checked:[&>div>svg]:fill-secondary-700 peer-checked:[&>div>p]:text-secondary-700" %>
+
+<%# [Variable] Generates a unique ID to link the hidden input to the label. %>
+<% input_id = f.object_name.to_s.gsub(/\[|\]/, '_') + "_#{name}_#{value}" %>
+
+<li>
+  <%= f.radio_button name, value, {
+    id: input_id,
+    class: "hidden peer",
+    disabled: is_inactive,
+    checked: is_checked,
+    aria: { invalid: f.object.errors[name].present? }
+  } %>
+  <label for="<%= input_id %>" class="<%= label_classes %> <%= style_classes %>">
+    <div class="flex flex-row gap-1.5 items-center">
+      <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+      <div class="flex flex-col">
+        <%= content_tag :span, title, class: "w-full font-medium text-sm" %>
+      </div>
+    </div>
+  </label>
+</li>

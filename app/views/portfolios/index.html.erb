@@ -23,11 +23,33 @@
            page_desc: "Lista de carteiras com permissão de visualização.",
            current_view: "datatable" do %>
   <%= render partial: "partials/blocks/data-table", locals: {
-    columns_header: ["Nome", "Proprietário"],
-    columns_icons: ["label", "person"],
+    columns_header: ["Nome", "Proprietário", "Compartilhado com"],
+    columns_icons: ["label", "person", "group"],
     columns_body: [
       :name,
-      ->(portfolio) { content_tag(:span, portfolio.user.first_name, class: "badge badge-secondary") },
+      ->(portfolio) do
+        content_tag(
+          :span,
+          portfolio.user.full_name,
+          class: "badge badge-secondary"
+        )
+      end,
+      ->(portfolio) do
+        shared_permissions = portfolio.user_portfolio_permissions.includes(:user)
+        if shared_permissions.any?
+          shared_permissions.map do |perm|
+            user_name = perm.user.full_name
+            permission_desc = perm.permission_description
+            content_tag(
+              :span,
+              "#{user_name}",
+              class: "badge badge-outline mr-1"
+            )
+          end.join.html_safe
+        else
+          content_tag(:span, "Não há compartilhamento", class: "text-muted")
+        end
+      end
     ],
     models: @portfolios,
     sort_options: [],
@@ -55,7 +77,6 @@
       placeholder: "Nome do responsável",
       icon_name: "account_circle"
     }
-
   ],
   turbo_frame_id: "portfolios_table"
 } %>

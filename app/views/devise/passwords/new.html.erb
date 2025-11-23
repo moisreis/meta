@@ -18,7 +18,15 @@
   <%= render 'partials/route/auth/background', bg_path: "pixeltrue/authentication-2-6.svg" %>
   <%= render 'partials/route/auth/container', welcome_message: "Perdeu sua senha?", welcome_feedback: "Vamos recuperá-la para você!" do %>
     <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-      <%= render 'partials/modules/input-field', f: f, name: :email, label: "Informe seu e-mail", field_type: :email_field, placeholder: "seuemail@email.com", desc: "Informe um e-mail válido" %>
+      <%= render "partials/modules/input-field",
+                 f: f,
+                 name: :email,
+                 label: "Informe seu e-mail",
+                 field_type: :email_field,
+                 placeholder: "seuemail@email.com",
+                 desc: "Informe um e-mail válido",
+                 icon_name: "mail"
+      %>
       <%= f.submit "Recuperar minha senha", class: "button" %>
     <% end %>
   <% end %>

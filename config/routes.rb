@@ -26,9 +26,12 @@
 #              - *unauthenticated_root_path* @route - The root path for guest users, pointing to **Devise::SessionsController#new**.
 #
 Rails.application.routes.draw do
+
+  devise_for :users
+
+  resources :user_portfolio_permissions
   resources :portfolios
   resources :users
-  devise_for :users
 
   devise_scope :user do
     # [Authenticated route] Defines the root path for logged-in users

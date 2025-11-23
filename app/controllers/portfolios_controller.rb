@@ -1,7 +1,7 @@
 # === portfolios_controller
 #
 # @author Moisés Reis
-# @added 11/20/2025
+# @added 11/13/2025
 # @package *Meta*
 # @description Defines the controller that manages portfolio records.
 #              Uses shared behaviors from **ApplicationController** and ensures that
@@ -27,6 +27,7 @@ class PortfoliosController < ApplicationController
   # [Action] Lists portfolios with filtering, sorting, and pagination.
   #          Resolves data visibility based on user role and returns HTML or JSON.
   def index
+    # [Scope] Defines the initial dataset based on whether the user has administrative access.
     base_scope =
       if current_user.admin?
         Portfolio.all
@@ -34,14 +35,25 @@ class PortfoliosController < ApplicationController
         Portfolio.for_user(current_user)
       end
 
+    # [Search] Builds a Ransack search object using the filtered portfolio scope.
     @q = base_scope.ransack(params[:q])
+
+    # [Search] Applies the Ransack filters and returns a distinct result set.
     filtered_and_scoped_portfolios = @q.result(distinct: true)
 
+    # [Sorting] Extracts the sorting column from parameters or defaults to the portfolio ID.
     sort = params[:sort].presence || "id"
+
+    # [Sorting] Extracts the sorting direction from parameters or defaults to ascending order.
     direction = params[:direction].presence || "asc"
+
+    # [Sorting] Applies sorting rules to the filtered collection.
     sorted_portfolios = filtered_and_scoped_portfolios.order("#{sort} #{direction}")
 
+    # [Pagination] Splits the sorted results into pages with a fixed number of items per page.
     @models = sorted_portfolios.page(params[:page]).per(20)
+
+    # [View] Exposes the paginated dataset to the views using an intuitive alias.
     @portfolios = @models
 
     respond_to do |format|
@@ -63,10 +75,21 @@ class PortfoliosController < ApplicationController
   def edit
   end
 
-  # [Action] Creates a portfolio and responds with success or validation errors.
+  # [Action] Handle portfolio creation request
   def create
+    @portfolio = Portfolio.new(portfolio_params.except(:shared_user_id))
     respond_to do |format|
       if @portfolio.save
+        shared_user_id = params.dig(:portfolio, :shared_user_id)
+        permission_level = params.dig(:portfolio, :grant_crud_permission) || 'read'
+
+        if shared_user_id.present?
+          UserPortfolioPermission.create!(
+            user_id: shared_user_id,
+            portfolio_id: @portfolio.id,
+            permission_level: permission_level
+          )
+        end
         format.html { redirect_to @portfolio, notice: "Portfolio was successfully created." }
         format.json { render :show, status: :created, location: @portfolio }
       else
@@ -76,10 +99,21 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # [Action] Updates a portfolio with permitted parameters and responds accordingly.
+  # [Action] Handle portfolio updating request
   def update
     respond_to do |format|
-      if @portfolio.update(portfolio_params)
+      if @portfolio.update(portfolio_params.except(:shared_user_id))
+        shared_user_id = params.dig(:portfolio, :shared_user_id)
+        permission_level = params.dig(:portfolio, :grant_crud_permission) || 'read'
+
+        if shared_user_id.present?
+          UserPortfolioPermission.find_or_create_by!(
+            user_id: shared_user_id,
+            portfolio_id: @portfolio.id
+          ) do |permission|
+            permission.permission_level = permission_level
+          end
+        end
         format.html { redirect_to @portfolio, notice: "Portfolio was successfully updated.", status: :see_other }
         format.json { render :show, status: :ok, location: @portfolio }
       else
@@ -92,7 +126,6 @@ class PortfoliosController < ApplicationController
   # [Action] Destroys a portfolio and redirects to the index.
   def destroy
     @portfolio.destroy!
-
     respond_to do |format|
       format.html { redirect_to portfolios_path, notice: "Portfolio was successfully destroyed.", status: :see_other }
       format.json { head :no_content }
@@ -114,11 +147,11 @@ class PortfoliosController < ApplicationController
 
   # [Helper] Loads the portfolio using strong parameter extraction.
   def set_portfolio
-    @portfolio = Portfolio.find(params.expect(:id))
+    @portfolio = Portfolio.find(params[:id])
   end
 
   # [Helper] Whitelists allowed parameters to ensure secure updates.
   def portfolio_params
-    params.require(:portfolio).permit(:name)
+    params.require(:portfolio).permit(:name, :user_id, :shared_user_id)
   end
 end

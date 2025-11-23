@@ -18,8 +18,24 @@
   <%= render 'partials/route/auth/background', bg_path: "pixeltrue/authentication-74.svg" %>
   <%= render 'partials/route/auth/container', welcome_message: "Bem-vindo de volta", welcome_feedback: "É hora de acompanhar seus resultados, realizar novos aportes e planejar os próximos passos da sua carteira de investimentos" do %>
     <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-      <%= render 'partials/modules/input-field', f: f, name: :email, label: "Informe seu e-mail", field_type: :email_field, placeholder: "seuemail@email.com", desc: "Informe um e-mail válido" %>
-      <%= render 'partials/modules/input-field', f: f, name: :password, label: "Crie uma senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Crie uma senha segura com, pelo menos, 6 caracteres" %>
+      <%= render "partials/modules/input-field",
+                 f: f,
+                 name: :email,
+                 label: "Informe seu e-mail",
+                 field_type: :email_field,
+                 placeholder: "seuemail@email.com",
+                 desc: "Informe um e-mail válido",
+                 icon_name: "mail"
+      %>
+      <%= render "partials/modules/input-field",
+                 f: f,
+                 name: :password,
+                 label: "Crie uma senha",
+                 field_type: :password_field,
+                 placeholder: "SuaSenha123@",
+                 desc: "Crie uma senha segura com, pelo menos, 6 caracteres",
+                 icon_name: "passkey"
+      %>
       <%= f.submit "Entrar", class: "button" %>
     <% end %>
   <% end %>

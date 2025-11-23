@@ -1,0 +1,1 @@
+json.partial! "user_portfolio_permissions/user_portfolio_permission", user_portfolio_permission: @user_portfolio_permission

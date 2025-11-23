@@ -26,7 +26,9 @@
              field_type: :email_field,
              placeholder: "seuemail@email.com",
              is_half_width: true,
-             desc: "Informe um e-mail válido" %>
+             desc: "Informe um e-mail válido",
+             icon_name: "mail"
+  %>
   <%= render "partials/modules/separator" %>
   <div class="grid grid-cols-2 gap-6">
     <%= render "partials/modules/input-field",
@@ -35,14 +37,18 @@
                label: "Primeiro nome",
                field_type: :text_field,
                placeholder: "Maria",
-               desc: "Informe seu primeiro nome" %>
+               desc: "Informe seu primeiro nome",
+               icon_name: "person_text"
+    %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :last_name,
                label: "Último nome",
                field_type: :text_field,
                placeholder: "Silva",
-               desc: "Informe seu último nome" %>
+               desc: "Informe seu último nome",
+               icon_name: "person_text"
+    %>
   </div>
   <%= render "partials/modules/separator" %>
   <div class="grid grid-cols-2 gap-6">
@@ -52,14 +58,18 @@
                label: "Crie uma senha",
                field_type: :password_field,
                placeholder: "SuaSenha123@",
-               desc: "Crie uma senha segura com, pelo menos, 6 caracteres" %>
+               desc: "Crie uma senha segura com, pelo menos, 6 caracteres",
+               icon_name: "passkey"
+    %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :password_confirmation,
                label: "Confirme sua senha",
                field_type: :password_field,
                placeholder: "SuaSenha123@",
-               desc: "Repita sua senha" %>
+               desc: "Repita sua senha",
+               icon_name: "passkey"
+    %>
   </div>
   <%= form.button :submit, class: "button button-primary w-fit flex items-center gap-2" do %>
     <%= inline_svg_tag "icons/#{icon_name}.svg" %>

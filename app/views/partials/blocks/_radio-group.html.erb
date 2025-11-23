@@ -1,0 +1,25 @@
+<%#
+  # Partial: _radio-group.html
+  # Date: 11/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the structural wrapper for a group of card-style radio button options.
+  #              It provides a title, descriptive text, and horizontal list container for the choices.
+  #
+  # Usage: - What: Renders the outer container for a set of mutually exclusive radio button cards.
+  #                Ensures consistent styling and context for the radio choices.
+  #        - How: Requires `title` (string) and `desc` (string) local variables to provide context.
+  #               The individual radio options (rendered via `_card_radio.html`) must be passed into the block using `yield`.
+  #        - Why: Centralizes the shared elements (title, description, and list structure)
+  #               that belong to a single radio button group, promoting reusability and clean form design.
+  %>
+<div class="flex flex-col justify-start gap-3">
+  <div class="flex flex-col justify-start gap-1.5">
+    <%= content_tag :h3, title, class: "text-2xs font-heading uppercase leading-none font-semibold" %>
+    <%= content_tag :p, desc, class: "text-xs text-muted leading-none font-normal" %>
+  </div>
+  <ul class="flex items-center gap-1.5">
+    <%= yield %>
+  </ul>
+</div>

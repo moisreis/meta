@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_15_135702) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_21_183534) do
   create_schema "extensions"
 
   # These are extensions that must be enabled in order to support this database
@@ -27,6 +27,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_15_135702) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_portfolios_on_user_id"
+  end
+
+  create_table "public.user_portfolio_permissions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "permission_level"
+    t.bigint "portfolio_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["portfolio_id"], name: "index_user_portfolio_permissions_on_portfolio_id"
+    t.index ["user_id"], name: "index_user_portfolio_permissions_on_user_id"
   end
 
   create_table "public.users", force: :cascade do |t|
@@ -50,5 +60,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_15_135702) do
   end
 
   add_foreign_key "public.portfolios", "public.users"
+  add_foreign_key "public.user_portfolio_permissions", "public.portfolios"
+  add_foreign_key "public.user_portfolio_permissions", "public.users"
 
 end

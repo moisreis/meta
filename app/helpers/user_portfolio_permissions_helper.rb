@@ -1,0 +1,2 @@
+module UserPortfolioPermissionsHelper
+end

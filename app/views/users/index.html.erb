@@ -50,7 +50,7 @@
       ->(user) do
         count = user.portfolios.size
         if count.zero?
-          content_tag(:span, "Não há carteiras", class: "text-muted-foreground")
+          content_tag(:span, "Não há carteiras", class: "text-muted")
         else
           content_tag(:span, count)
         end

@@ -81,17 +81,17 @@
         </td>
       <% end %>
       <td class="bg-accent/50 h-9 flex flex-row justify-center items-center">
-        <%= link_to edit_polymorphic_path([model]), class: 'button button-ghost button-small' do %>
+        <%= link_to edit_polymorphic_path(model), data: { turbo: false }, class: 'button button-ghost button-small' do %>
           <%= inline_svg_tag "icons/edit.svg" %>
           <%= content_tag :span, "Editar" %>
         <% end %>
         <div class="h-4 w-[1px] bg-border"></div>
-        <%= link_to polymorphic_path(model), class: "button button-ghost button-small" do %>
+        <%= link_to polymorphic_path(model), data: { turbo: false }, class: "button button-ghost button-small" do %>
           <%= inline_svg_tag "icons/open_in_new.svg" %>
           <%= content_tag :span, "Ver" %>
         <% end %>
         <div class="h-4 w-[1px] bg-border"></div>
-        <%= link_to polymorphic_path(model), class: "button button-ghost button-small" do %>
+        <%= link_to polymorphic_path(model), data: { turbo: false }, class: "button button-ghost button-small" do %>
           <%= inline_svg_tag "icons/delete_forever.svg" %>
           <%= content_tag :span, "Deletar" %>
         <% end %>

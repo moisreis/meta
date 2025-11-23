@@ -18,19 +18,69 @@
   %>
 <%= render 'partials/route/dashboard/wrapper', page_title: "Editar perfil", page_desc: "Faça alterações nos seus dados de usuário" do %>
   <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-    <%= render 'partials/modules/input-field', f: f, name: :email, label: "Informe seu e-mail", field_type: :email_field, placeholder: "seuemail@email.com", desc: "Informe um e-mail válido", is_half_width: true %>
+    <%= render "partials/modules/input-field",
+               f: f,
+               name: :email,
+               label: "Informe seu e-mail",
+               field_type: :email_field,
+               placeholder: "seuemail@email.com",
+               is_half_width: true,
+               desc: "Informe um e-mail válido",
+               icon_name: "mail"
+    %>
     <%= render 'partials/modules/separator' %>
     <div class="grid grid-cols-2 gap-6">
-      <%= render 'partials/modules/input-field', f: f, name: :first_name, label: "Primeiro nome", field_type: :text_field, placeholder: "Maria", desc: "Informe seu primeiro nome" %>
-      <%= render 'partials/modules/input-field', f: f, name: :last_name, label: "Último nome", field_type: :text_field, placeholder: "Silva", desc: "Informe seu último nome" %>
+      <%= render "partials/modules/input-field",
+                 f: f,
+                 name: :first_name,
+                 label: "Primeiro nome",
+                 field_type: :text_field,
+                 placeholder: "Maria",
+                 desc: "Informe seu primeiro nome",
+                 icon_name: "person_text"
+      %>
+      <%= render "partials/modules/input-field",
+                 f: f,
+                 name: :last_name,
+                 label: "Último nome",
+                 field_type: :text_field,
+                 placeholder: "Silva",
+                 desc: "Informe seu último nome",
+                 icon_name: "person_text"
+      %>
     </div>
     <%= render 'partials/modules/separator' %>
     <div class="grid grid-cols-2 gap-6">
-      <%= render 'partials/modules/input-field', f: f, name: :password, label: "Crie uma nova senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Crie uma nova senha segura com, pelo menos, 6 caracteres. Deixe em branco se não quiser mudá-la" %>
-      <%= render 'partials/modules/input-field', f: f, name: :password_confirmation, label: "Confirme sua nova senha", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Repita sua senha" %>
+      <%= render "partials/modules/input-field",
+                 f: f,
+                 name: :password,
+                 label: "Crie uma senha",
+                 field_type: :password_field,
+                 placeholder: "SuaSenha123@",
+                 desc: "Crie uma senha segura com, pelo menos, 6 caracteres",
+                 icon_name: "passkey"
+      %>
+      <%= render "partials/modules/input-field",
+                 f: f,
+                 name: :password_confirmation,
+                 label: "Confirme sua senha",
+                 field_type: :password_field,
+                 placeholder: "SuaSenha123@",
+                 desc: "Repita sua senha",
+                 icon_name: "passkey"
+      %>
     </div>
     <%= render 'partials/modules/separator' %>
-    <%= render 'partials/modules/input-field', f: f, name: :current_password, label: "Senha atual", field_type: :password_field, placeholder: "SuaSenha123@", desc: "Precisamos de sua senha atual para autorizar a mudança", is_half_width: true %>
+    <%= render "partials/modules/input-field",
+               f: f,
+               name: :current_password,
+               label: "Crie uma senha",
+               field_type: :password_field,
+               placeholder: "SuaSenha123@",
+               desc: "Precisamos de sua senha atual para autorizar a mudança",
+               icon_name: "passkey",
+               is_half_width: true
+    %>
     <%= f.button :submit, class: "button w-fit flex items-center gap-2" do %>
       <%= inline_svg_tag "icons/refresh.svg" %>
       <%= content_tag :span, "Atualizar" %>
