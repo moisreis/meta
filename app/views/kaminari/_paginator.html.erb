@@ -18,19 +18,59 @@
   #        - Why: Provides the core, accessible interface for navigating large result
   #               sets (R in CRUD), ensuring a consistent and standardized pagination experience.
   %>
+
+<%# [Container]: The `paginator.render` method executes the block content,
+  #              which contains the HTML structure for the entire pagination widget.
+  %>
 <%= paginator.render do -%>
   <nav class="flex flex-row gap-1.5 justify-start items-center" role="navigation" aria-label="pager">
+
+    <%# [Conditional]: The `first_page_tag` renders a link to the first page.
+      #                It only displays this link if the user is not currently viewing the first page.
+      %>
     <%= first_page_tag unless current_page.first? %>
+
+    <%# [Conditional]: The `prev_page_tag` renders a link to the previous page.
+      #                This link is omitted when the user is already on the first page.
+      %>
     <%= prev_page_tag unless current_page.first? %>
+
+    <%# [Iteration]: This loop iterates through the pages required for the pagination display.
+      #              It uses Kaminari's logic to determine which pages should be shown as links or gaps.
+      %>
     <% each_page do |page| -%>
+
+      <%# [Conditional]: This checks if the current page in the loop should be rendered as a clickable link.
+        #                Kaminari determines this if the page number is near the current page or the boundaries.
+        %>
       <% if page.display_tag? -%>
+
+        <%# [Link]: The `page_tag` renders the actual page number link,
+          #         including the current page highlight and correct link URL.
+          %>
         <%= page_tag page %>
+
+        <%# [Conditional]: This checks if the page iteration resulted in a gap (truncated page list).
+        #                  If the page tag was not displayed and the list was truncated, a gap is inserted.
+        %>
       <% elsif !page.was_truncated? -%>
         <%= gap_tag %>
       <% end -%>
     <% end -%>
+
+    <%# [Conditional]: This outer block ensures that next and last links only appear
+      #                if the current page number is within the valid range.
+      %>
     <% unless current_page.out_of_range? %>
+
+      <%# [Conditional]: The `next_page_tag` renders a link to the next page.
+        #                This link only displays if the user is not currently on the last page.
+        %>
       <%= next_page_tag unless current_page.last? %>
+
+      <%# [Conditional]: The `last_page_tag` renders a link to the last page.
+        #                It only displays this link if the user is not currently viewing the last page.
+        %>
       <%= last_page_tag unless current_page.last? %>
     <% end %>
   </nav>

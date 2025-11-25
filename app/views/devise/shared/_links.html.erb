@@ -1,25 +1,45 @@
+<%#
+  # Partial: _links.html
+  # Date: 11/25/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders navigation links to other authentication actions (login, registration, password recovery) based on the current controller context.
+  #              This partial ensures that only relevant links appear on each Devise view.
+  #
+  # Usage: - What: Displays contextual links that guide the user to different parts of the authentication flow (e.g., login from sign-up).
+  #                This allows users to switch actions without navigating back manually.
+  #        - How: Is rendered within various Devise views (sessions, registrations, passwords).
+  #               Uses conditional logic based on the controller name to determine which link to display.
+  #        - Why: Improves user experience by providing quick access to related authentication pages, reducing friction in the sign-in/sign-up process.
+  %>
+
+<%# [Condition]: It checks if the current page is not the 'sessions' controller (login page),
+  #              which ensures the login link does not appear when the user is already on the login page.
+  %>
 <%- if controller_name != 'sessions' %>
-  <%= link_to "Já tenho uma conta", new_session_path(resource_name), class: "button button-outline w-full" %>
+  <%= link_to "Já tenho uma conta",
+              new_session_path(resource_name),
+              class: "button button-outline w-full"
+  %>
 <% end %>
 
+<%# [Condition]: It checks if Devise registration is enabled AND the current page is not the 'registrations' controller (sign-up page),
+  #              which ensures the sign-up link does not appear if registration is disabled or if the user is currently on the sign-up page.
+  %>
 <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
-  <%= link_to "Não tenho uma conta", new_registration_path(resource_name), class: "button button-outline w-full" %>
+  <%= link_to "Não tenho uma conta",
+              new_registration_path(resource_name),
+              class: "button button-outline w-full"
+  %>
 <% end %>
 
+<%# [Condition]: It checks if Devise recovery is enabled AND the current page is not the 'passwords' or 'registrations' controller,
+  #              which ensures the recovery link is only visible when relevant to the user's current context.
+  %>
 <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
-  <%= link_to "Esqueceu sua senha?", new_password_path(resource_name), class: "button button-ghost w-full" %>
-<% end %>
-
-<%- if devise_mapping.confirmable? && controller_name != 'confirmations' %>
-  <%= link_to "Didn't receive confirmation instructions?", new_confirmation_path(resource_name) %>
-<% end %>
-
-<%- if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) && controller_name != 'unlocks' %>
-  <%= link_to "Didn't receive unlock instructions?", new_unlock_path(resource_name) %>
-<% end %>
-
-<%- if devise_mapping.omniauthable? %>
-  <%- resource_class.omniauth_providers.each do |provider| %>
-    <%= button_to "Sign in with #{OmniAuth::Utils.camelize(provider)}", omniauth_authorize_path(resource_name, provider), data: { turbo: false } %>
-  <% end %>
+  <%= link_to "Esqueceu sua senha?",
+              new_password_path(resource_name),
+              class: "button button-ghost w-full"
+  %>
 <% end %>

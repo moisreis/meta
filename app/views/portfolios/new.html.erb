@@ -18,6 +18,13 @@
   #        - Why: Provides the interface necessary to execute the 'Create' function
   #               (C in CRUD) for the Portfolio resource using a consistent UI structure.
   %>
-<%= render 'partials/route/dashboard/wrapper', page_title: "Criar nova carteira", page_desc: "Defina os detalhes da sua nova carteira para começar a acompanhar seus investimentos." do %>
-  <%= render "form", portfolio: @portfolio, button_name: "Adicionar", icon_name: "add" %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Criar nova carteira",
+           page_desc: "Defina os detalhes da sua nova carteira para começar a acompanhar seus investimentos." do
+%>
+  <%= render "form",
+             portfolio: @portfolio,
+             button_name: "Adicionar",
+             icon_name: "add"
+  %>
 <% end %>

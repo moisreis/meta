@@ -14,6 +14,10 @@
   #        - Why: Provides a reusable, accessible, and visually consistent select input component.
   #               Centralizes the styling and error presentation logic for form selects across the application.
   %>
+
+<%# [Variable]: Defines whether the select input is disabled.
+  #             It defaults to `nil` (false) if not explicitly passed by the caller.
+  %>
 <% is_inactive ||= nil %>
 
 <%# [Variable] Defines the CSS classes for the input label. (Reused from _input-field) %>
@@ -39,17 +43,19 @@
       disabled: is_inactive,
       aria: { describedby: "#{name}-desc", invalid: f.object.errors[name].present? }
     } %>
-    <%= inline_svg_tag "icons/keyboard_arrow_down.svg", class: "size-4 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 fill-muted" %>
+    <%= inline_svg_tag "icons/keyboard_arrow_down.svg",
+                       class: "size-4 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 fill-muted"
+    %>
   </div>
   <% if f.object.errors[name].present? %>
-    <%= content_tag :span, f.object.errors.full_messages_for(name).first, class: desc_classes_with_error %>
+    <%= content_tag :span,
+                    f.object.errors.full_messages_for(name).first,
+                    class: desc_classes_with_error
+    %>
   <% end %>
-  <%= content_tag :p, desc, class: desc_classes, id: "#{name}-desc" if desc.present? %>
+  <%= content_tag :p,
+                  desc,
+                  class: desc_classes,
+                  id: "#{name}-desc" if desc.present?
+  %>
 </div>
-
-<style>
-    .field_with_errors > select {
-        border-color: var(--color-danger-600);
-        box-shadow: none;
-    }
-</style>

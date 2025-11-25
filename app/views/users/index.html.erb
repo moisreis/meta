@@ -21,13 +21,44 @@
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Lista de usuários",
            page_desc: "Lista de carteiras com permissão de visualização.",
-           current_view: "datatable" do %>
+           current_view: "datatable" do
+%>
   <%= render partial: "partials/blocks/data-table", locals: {
-    columns_header: ["Nome completo", "E-mail", "Nível", "Criado em", "Atualizado em", "Carteiras"],
-    columns_icons: ["label", "alternate_email", "assignment_ind", "calendar_clock", "history", "wallet"],
+
+    # [Explanation]: This array defines the titles for each column in the table header.
+    #                The names correspond directly to the data fields displayed, providing context
+    #                for the user regarding the user's identity, role, and activity within the system.
+    columns_header: [
+      "Nome completo",
+      "E-mail",
+      "Nível",
+      "Criado em",
+      "Atualizado em",
+      "Carteiras"
+    ],
+
+    # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
+    #                in the table header. The icons visually distinguish and reinforce the meaning
+    #                of the corresponding data column.
+    columns_icons: [
+      "label",
+      "alternate_email",
+      "assignment_ind",
+      "calendar_clock",
+      "history",
+      "wallet"
+    ],
+
+    # [Explanation]: This is the core array containing lambda functions and symbols that define how
+    #                each cell's content is processed and formatted. These functions receive the
+    #                user object (`user`) as an argument.
     columns_body: [
       :full_name,
       :email,
+
+      # [Explanation]: This lambda function determines and displays the user's role (Administrator or Regular User).
+      #                It checks the `user.role` string and applies a specific badge class for visibility,
+      #                using a red badge (`badge-danger`) for administrators.
       ->(user) do
         role_name =
           case user.role.to_s
@@ -45,8 +76,13 @@
           end
         content_tag(:span, role_name, class: role_class)
       end,
+
       :created_at,
       :updated_at,
+
+      # [Explanation]: This lambda function counts the number of portfolios owned by the user.
+      #                If the count is zero, it displays a muted "Não há carteiras" (No portfolios) message;
+      #                otherwise, it displays the numeric count.
       ->(user) do
         count = user.portfolios.size
         if count.zero?
@@ -56,17 +92,47 @@
         end
       end
     ],
+
+    # [Explanation]: This variable contains the collection of User model instances
+    #                to be displayed in the data table. This is the primary dataset
+    #                for the table rows.
     models: @users,
+
+    # [Explanation]: This parameter defines options for sorting the data within the table.
+    #                Since the array is currently empty, default Ransack sorting options are used.
     sort_options: [],
+
+    # [Explanation]: This is the Ransack search object (`@q`). It contains the current search
+    #                and filter parameters applied to the `@users` collection, used for generating sort links.
     q_object: @q,
+
+    # [Explanation]: This defines the URL used for both searching and pagination of the table.
+    #                It ensures that search parameters are correctly routed
+    #                back to the User index action.
     search_url: users_path,
+
+    # [Explanation]: This is the ID of the Turbo Frame that wraps the data table.
+    #                It ensures that sorting and searching actions update only the table content
+    #                without reloading the entire page.
     turbo_frame_id: "users_table",
+
+    # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
+    #                Since the value is nil, the export functionality is currently disabled.
     export_url: nil
   } %>
 <% end %>
 <%= render partial: "partials/route/dashboard/filters", locals: {
+
+  # [Explanation]: This is the Ransack search object (`@q`). The filter partial uses this object
+  #                to initialize the filter fields with current search values.
   q_object: @q,
+
+  # [Explanation]: This defines the URL where the filter form submits its search parameters.
+  #                The submission triggers an update to the `users_path`.
   search_url: users_path,
+
+  # [Explanation]: This array defines the individual filter fields available to the user.
+  #                Each hash specifies the Ransack key, label, description, and icon for the filter input.
   filters: [
     {
       key: :first_name_cont,
@@ -83,5 +149,8 @@
       icon_name: "account_circle"
     }
   ],
+
+  # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.
+  #                It ensures that applying filters updates the data table content within the corresponding frame.
   turbo_frame_id: "users_table"
 } %>

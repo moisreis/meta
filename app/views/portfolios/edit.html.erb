@@ -17,10 +17,26 @@
   #        - Why: Provides the interface necessary to execute the 'Update' and 'Delete'
   #               functions (U and D in CRUD) for the Portfolio resource.
   %>
-<%= render 'partials/route/dashboard/wrapper', page_title: @portfolio.name, page_desc: "Atualize as informações da sua carteira conforme necessário." do %>
-  <%= render "form", portfolio: @portfolio, button_name: "Atualizar", icon_name: "refresh" %>
-  <%= render 'partials/blocks/card', bg_path: "pixeltrue/bomb-9.svg", is_danger: true, card_title: "Excluir carteira".html_safe, card_desc: "Você deseja deletar esta carteira e todos os seus dados? Esta ação é irreversível" do %>
-    <%= button_to @portfolio, method: :delete, class: "button button-danger w-fit", data: { turbo_confirm: "Are you sure?" } do %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @portfolio.name,
+           page_desc: "Atualize as informações da sua carteira conforme necessário." do
+%>
+  <%= render "form",
+             portfolio: @portfolio,
+             button_name: "Atualizar",
+             icon_name: "refresh"
+  %>
+  <%= render 'partials/blocks/card',
+             bg_path: "pixeltrue/bomb-9.svg",
+             is_danger: true,
+             card_title: "Excluir carteira".html_safe,
+             card_desc: "Você deseja deletar esta carteira e todos os seus dados? Esta ação é irreversível" do
+  %>
+    <%= button_to @portfolio,
+                  method: :delete,
+                  class: "button button-danger w-fit",
+                  data: { turbo_confirm: "Are you sure?" } do
+    %>
       <%= inline_svg_tag "icons/delete_forever.svg" %>
       <%= content_tag :span, "Deletar minha conta" %>
     <% end %>

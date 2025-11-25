@@ -1,0 +1,25 @@
+<%#
+  # Partial: new.html
+  # Date: 11/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Displays the view required to initiate and create a new investment transaction or allocation record.
+  #              The page uses the dashboard wrapper and renders the generic transaction form partial.
+  #
+  # Usage: - What: Renders the interface for a user to start creating a new financial application or transaction.
+  #                This file acts as the primary layout wrapper for the transaction form.
+  #        - How: Accessed via the route for creating a new application resource (e.g., GET /applications/new).
+  #               Passes the `@application` instance variable to the form partial.
+  #        - Why: Provides the entry point for users to input new financial data and record new investments or redemptions.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Criar nova alocação",
+           page_desc: "Preencha os dados para registrar uma nova alocação financeira." do
+%>
+  <%= render "form",
+             application: @application,
+             button_name: "Adicionar",
+             icon_name: "add"
+  %>
+<% end %>

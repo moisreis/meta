@@ -47,25 +47,33 @@
 <% icon_name ||= nil %>
 
 <div class="relative flex flex-col justify-start gap-1.5">
-  <%= f.label name, label, class: label_classes %>
+  <%= f.label name,
+              label,
+              class: label_classes
+  %>
   <div class="relative <%= is_half_width ? '!w-1/2' : '' %>">
     <% placeholder ||= nil %>
     <% if placeholder.present? %>
-      <%= f.send(field_type || :text_field, name, placeholder: placeholder, class: input_classes, aria: { describedby: "#{name}-desc" }) %>
+      <%= f.send(field_type || :text_field,
+                 name,
+                 placeholder: placeholder,
+                 class: input_classes,
+                 aria: { describedby: "#{name}-desc" })
+      %>
     <% else %>
-      <%= f.send(field_type || :text_field, name, class: input_classes, aria: { describedby: "#{name}-desc" }) %>
+      <%= f.send(field_type || :text_field,
+                 name,
+                 class: input_classes,
+                 aria: { describedby: "#{name}-desc" })
+      %>
     <% end %>
-    <%= inline_svg_tag "icons/#{icon_name}.svg", class: "absolute size-4 right-3 top-1/2 -translate-y-1/2" %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg",
+                       class: "absolute size-4 right-3 top-1/2 -translate-y-1/2 fill-secondary-600"
+    %>
   </div>
-  <%# if f.object.errors[name].present? %>
-  <%#= content_tag :span, f.object.errors.full_messages_for(name).first, class: desc_classes_with_error %>
-  <%# end %>
-  <%= content_tag :p, desc, class: desc_classes, id: "#{name}-desc" if desc.present? %>
+  <%= content_tag :p,
+                  desc,
+                  class: desc_classes,
+                  id: "#{name}-desc" if desc.present?
+  %>
 </div>
-
-<style>
-    .field_with_errors > input {
-        border-color: var(--color-danger-600);
-        box-shadow: none;
-    }
-</style>

@@ -14,20 +14,49 @@
   #        - Why: Offers a high-fidelity, custom-styled component for radio groups, improving user engagement and clarity for single-choice decisions.
   %>
 
+<%# [Variable]: Defines whether the radio button card is disabled.
+  #             It defaults to `nil` (false) if not explicitly passed by the caller.
+  %>
 <% is_inactive ||= nil %>
+
+<%# [Variable]: Defines the filename of the SVG icon to display on the card.
+  #             This is used by `inline_svg_tag` to render a visual indicator.
+  %>
 <% icon_name ||= nil %>
+
+<%# [Variable]: Defines the main label text displayed on the radio card.
+  #             It defaults to an empty string.
+  %>
 <% title ||= "" %>
+
+<%# [Variable]: Defines the secondary descriptive text for the option (unused in the final HTML of this specific partial).
+  #             It defaults to an empty string.
+  %>
 <% desc ||= "" %>
+
+<%# [Variable]: Defines the value assigned to the radio button input when selected.
+  #             This is the value submitted to the server.
+  %>
 <% value ||= "" %>
+
+<%# [Variable]: Defines the initial checked state of the radio button.
+  #             It determines if the option card is pre-selected upon rendering.
+  %>
 <% is_checked ||= false %>
 
-<%# [Variable] Classes for the label card. %>
+<%# [Variable]: Defines the base CSS classes applied to the visible `<label>` card.
+  #             These classes control alignment, padding, text color, and size.
+  %>
 <% label_classes = "flex items-center justify-center w-full p-1.5 px-3 text-heading rounded-full cursor-pointer peer-disabled:opacity-50 peer-disabled:cursor-not-allowed [&>div>svg]:size-4 " %>
 
-<%# [Variable] Uses peer-checked to apply selected styles. %>
+<%# [Variable]: Defines the dynamic CSS classes that handle hover, default, and selection styles.
+  #             It uses the `peer-checked` utility to style the label when the hidden input is selected.
+  %>
 <% style_classes = "bg-accent border border-border hover:bg-secondary-50 hover:border-secondary-100 peer-checked:bg-secondary-50 peer-checked:hover:bg-secondary-50 peer-checked:border-secondary-100 peer-checked:text-secondary-700 peer-checked:[&>div>svg]:fill-secondary-700 peer-checked:[&>div>p]:text-secondary-700" %>
 
-<%# [Variable] Generates a unique ID to link the hidden input to the label. %>
+<%# [Variable]: Generates a unique HTML ID to correctly associate the hidden radio input with its visible label.
+  #             The ID combines the form object name, group name, and option value.
+  %>
 <% input_id = f.object_name.to_s.gsub(/\[|\]/, '_') + "_#{name}_#{value}" %>
 
 <li>
@@ -42,7 +71,10 @@
     <div class="flex flex-row gap-1.5 items-center">
       <%= inline_svg_tag "icons/#{icon_name}.svg" %>
       <div class="flex flex-col">
-        <%= content_tag :span, title, class: "w-full font-medium text-sm" %>
+        <%= content_tag :span,
+                        title,
+                        class: "w-full font-medium text-sm"
+        %>
       </div>
     </div>
   </label>

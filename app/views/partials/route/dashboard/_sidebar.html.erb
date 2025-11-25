@@ -18,11 +18,19 @@
   #               for the main application navigation and identity display, ensuring
   #               quick access to core entity management.
   %>
-<header class="flex flex-col col-span-2 border-r border-border h-screen max-h-screen sticky top-0 [&>div]:px-3 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-accent-light">
+<header class="flex flex-col col-span-2 h-screen max-h-screen sticky top-0 [&>div]:px-6 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-quaternary-50 border-r border-border">
   <div class="h-12">
-    <%= render 'partials/blocks/composed-avatar' %>
+    <div class="flex flex-row items-center justify-between gap-1 w-full">
+      <%= render 'partials/modules/logo', size: "32x32" %>
+      <%= link_to edit_user_registration_path,
+                  class: "p-0" do
+      %>
+        <%= inline_svg_tag "icons/right_panel_open.svg", class: "size-4" %>
+      <% end %>
+    </div>
   </div>
-  <div class="flex flex-col !gap-3 py-3">
+  <div class="flex flex-col !gap-6 py-6">
+
     <%# [Navigation] Render CRUD navigation entries for Portfolio and User.
       #              Provide singular/plural labels and associated icons.
       #              Build each menu using the helper crud_nav_for.
@@ -30,10 +38,37 @@
     <%= crud_nav_for Portfolio,
                      singular: "Carteira",
                      plural: "Carteiras",
-                     icons: { index: "wallet.svg", new: "add.svg" } %>
+                     icons: {
+                       index: "wallet.svg",
+                       new: "add.svg"
+                     } %>
     <%= crud_nav_for User,
                      singular: "Usuário",
                      plural: "Usuários",
-                     icons: { index: "person.svg", new: "add.svg" } %>
+                     icons: {
+                       index: "person.svg",
+                       new: "add.svg"
+                     } %>
+    <%= crud_nav_for InvestmentFund,
+                     singular: "Fundo",
+                     plural: "Fundos",
+                     icons: {
+                       index: "pie_chart.svg",
+                       new: "add.svg"
+                     } %>
+    <%= crud_nav_for FundInvestment,
+                     singular: "Alocação",
+                     plural: "Alocações",
+                     icons: {
+                       index: "percent_discount.svg",
+                       new: "add.svg"
+                     } %>
+    <%= crud_nav_for Application,
+                     singular: "Aplicação",
+                     plural: "Aplicações",
+                     icons: {
+                       index: "swap_horiz.svg",
+                       new: "add.svg"
+                     } %>
   </div>
 </header>

@@ -1,22 +1,30 @@
 <%#
   # Partial: new.html
-  # Date: 11/12/2025
+  # Date: 11/25/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Renders the user registration page for Devise.
-  #              Uses nested partials to compose a cohesive authentication layout with reusable blocks.
+  # Description: Displays the complete form required for a new user to register an account with the application.
+  #              The view collects essential personal and security credentials to create a new user resource.
   #
-  # Usage: - What: Displays the registration form, background illustration, and container layout.
-  #                Wraps the entire structure inside the wrapper for consistent presentation.
-  #        - How: Calls nested partials for layout and form input fields.
-  #               Submits the registration form through Devise's `registration_path` helper.
-  #        - Why: Maintains visual and functional consistency across all authentication-related views.
+  # Usage: - What: Renders the interface necessary for users to create a new account within the investment platform.
+  #                It includes fields for email, full name, and password creation.
+  #        - How: Accessed through the registration sign-up route (GET /users/sign_up).
+  #               Submits the collected data via a POST request to the registration path to create a new user.
+  #        - Why: Provides the primary entry point for new customers to begin using the application's investment features.
   %>
 <%= render 'partials/route/auth/wrapper' do %>
-  <%= render 'partials/route/auth/background', bg_path: "pixeltrue/finance-app-1-67.svg" %>
-  <%= render 'partials/route/auth/container', welcome_message: "Seja bem-vindo à Meta".html_safe, welcome_feedback: "Crie sua conta em poucos minutos e desbloqueie o potencial máximo da sua carteira de investimentos" do %>
-    <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+  <%= render 'partials/route/auth/background',
+             bg_path: "pixeltrue/finance-app-1-67.svg"
+  %>
+  <%= render 'partials/route/auth/container',
+             welcome_message: "Seja bem-vindo à Meta".html_safe,
+             welcome_feedback: "Crie sua conta em poucos minutos e desbloqueie o potencial máximo da sua carteira de investimentos" do
+  %>
+    <%= form_for(resource,
+                 as: resource_name,
+                 url: registration_path(resource_name)) do |f|
+    %>
       <%= render "partials/modules/input-field",
                  f: f,
                  name: :email,

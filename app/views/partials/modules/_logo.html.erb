@@ -14,6 +14,10 @@
   #                Adjusts logo source or dimensions by passing new parameters if needed.
   #        - Why:  Centralizes logo markup for consistency and easy updates across the app.
   %>
+
+<%# [Variable] Defines the size for the logo image. %>
+<% size ||= "64x64" %>
+
 <div class="flex flex-row">
-  <%= image_tag("logo.svg", size: "40x40", alt: "Logo") %>
+  <%= image_tag("logo.svg", size: size, alt: "Logo") %>
 </div>

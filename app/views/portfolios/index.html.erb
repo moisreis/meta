@@ -21,12 +21,76 @@
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Lista de carteiras",
            page_desc: "Lista de carteiras com permissão de visualização.",
-           current_view: "datatable" do %>
+           current_view: "datatable" do
+%>
   <%= render partial: "partials/blocks/data-table", locals: {
-    columns_header: ["Nome", "Proprietário", "Compartilhado com"],
-    columns_icons: ["label", "person", "group"],
+
+    # [Explanation]: This array defines the titles for each column in the table header.
+    #                The titles provide clear context about the essential information
+    #                of each portfolio, such as name, invested value, and permissions.
+    columns_header: [
+      "Nome",
+      "Valor investido",
+      "Cotas",
+      "Proprietário",
+      "Compartilhado com"
+    ],
+
+    # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
+    #                in the table header. The icons help visually categorize the type of data
+    #                presented in the corresponding column.
+    columns_icons: [
+      "label",
+      "person",
+      "group"
+    ],
+
+    # [Explanation]: This is the core array containing lambda functions and symbols that define how
+    #                each cell's content is processed and formatted. These functions receive the
+    #                portfolio object (`portfolio`) as an argument.
     columns_body: [
       :name,
+
+      # [Explanation]: This lambda calculates and displays the total monetary value currently invested in the portfolio.
+      #                If the value is positive, it is formatted as currency (R$);
+      #                otherwise, it displays the message "Não há investimentos" (No investments) in muted text.
+      ->(portfolio) do
+        if portfolio.total_invested_value.to_f > 0
+          content_tag(
+            :span,
+            number_to_currency(portfolio.total_invested_value, unit: "R$"),
+            class: "font-medium"
+          )
+        else
+          content_tag(
+            :span,
+            "Não há investimentos",
+            class: "text-muted"
+          )
+        end
+      end,
+
+      # [Explanation]: This lambda displays the total number of investment quotas held in the portfolio.
+      #                If there are quotas, the value is formatted with number delimiters;
+      #                otherwise, it displays "Sem cotas" (No quotas) in muted text.
+      ->(portfolio) do
+        if portfolio.total_quotas_held.to_f > 0
+          content_tag(
+            :span,
+            number_with_delimiter(portfolio.total_quotas_held),
+            class: "text-link font-medium"
+          )
+        else
+          content_tag(
+            :span,
+            "Sem cotas",
+            class: "text-muted"
+          )
+        end
+      end,
+
+      # [Explanation]: This lambda displays the full name of the user who owns the portfolio.
+      #                The owner's name is rendered within a secondary styled badge element.
       ->(portfolio) do
         content_tag(
           :span,
@@ -34,6 +98,10 @@
           class: "badge badge-secondary"
         )
       end,
+
+      # [Explanation]: This lambda displays the names of users with whom the portfolio is shared.
+      #                If sharing permissions exist, each user's name is displayed in an outline badge;
+      #                otherwise, it displays "Não há compartilhamento" (No sharing).
       ->(portfolio) do
         shared_permissions = portfolio.user_portfolio_permissions.includes(:user)
         if shared_permissions.any?
@@ -51,17 +119,47 @@
         end
       end
     ],
+
+    # [Explanation]: This variable contains the collection of Portfolio model instances
+    #                to be displayed in the data table. This is the primary dataset
+    #                for the table rows.
     models: @portfolios,
+
+    # [Explanation]: This parameter defines options for sorting the data within the table.
+    #                Since the array is currently empty, default Ransack sorting options are used.
     sort_options: [],
+
+    # [Explanation]: This is the Ransack search object (`@q`). It contains the current search
+    #                and filter parameters applied to the `@portfolios` collection, used for generating sort links.
     q_object: @q,
+
+    # [Explanation]: This defines the URL used for both searching and pagination of the table.
+    #                It ensures that search parameters are correctly routed
+    #                back to the Portfolio index action.
     search_url: portfolios_path,
+
+    # [Explanation]: This is the ID of the Turbo Frame that wraps the data table.
+    #                It ensures that sorting and searching actions update only the table content
+    #                without reloading the entire page.
     turbo_frame_id: "portfolios_table",
+
+    # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
+    #                Since the value is nil, the export functionality is currently disabled.
     export_url: nil
   } %>
 <% end %>
 <%= render partial: "partials/route/dashboard/filters", locals: {
+
+  # [Explanation]: This is the Ransack search object (`@q`). The filter partial uses this object
+  #                to initialize the filter fields with current search values.
   q_object: @q,
+
+  # [Explanation]: This defines the URL where the filter form submits its search parameters.
+  #                The submission triggers an update to the `portfolios_path`.
   search_url: portfolios_path,
+
+  # [Explanation]: This array defines the individual filter fields available to the user.
+  #                Each hash specifies the Ransack key, label, description, and icon for the filter input.
   filters: [
     {
       key: :name_cont,
@@ -78,5 +176,8 @@
       icon_name: "account_circle"
     }
   ],
+
+  # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.
+  #                It ensures that applying filters updates the data table content within the corresponding frame.
   turbo_frame_id: "portfolios_table"
 } %>

@@ -1,23 +1,30 @@
 <%#
   # Partial: new.html
-  # Date: 11/12/2025
+  # Date: 11/25/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Renders the user login page for Devise.
-  #              Builds a cohesive authentication layout using reusable partials and consistent visual hierarchy.
+  # Description: Presents the form that allows an existing user to log in and establish an active session.
+  #              The view collects the user's email and password credentials for authentication.
   #
-  # Usage: - What: Displays the login form, authentication container, and background visuals.
-  #                Uses shared layout components for branding and interface consistency.
-  #        - How:  Invokes partials for layout and form elements, wrapping them.
-  #                Submits the session form through Devise’s `session_path` helper.
-  #        - Why:  Provides a modular and maintainable structure for authentication pages,
-  #                ensuring reusability, clarity, and aesthetic uniformity across the app.
+  # Usage: - What: Renders the interface for existing users to enter their credentials and access the application dashboard.
+  #                It handles the core process of session creation for authenticated access.
+  #        - How: Accessed via the Devise login route (GET /users/sign_in).
+  #               Submits the credentials using a POST request to the session path.
+  #        - Why: Provides the essential security gateway for authenticated users to reach their account and investment data.
   %>
 <%= render 'partials/route/auth/wrapper' do %>
-  <%= render 'partials/route/auth/background', bg_path: "pixeltrue/authentication-74.svg" %>
-  <%= render 'partials/route/auth/container', welcome_message: "Bem-vindo de volta", welcome_feedback: "É hora de acompanhar seus resultados, realizar novos aportes e planejar os próximos passos da sua carteira de investimentos" do %>
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+  <%= render 'partials/route/auth/background',
+             bg_path: "pixeltrue/authentication-74.svg"
+  %>
+  <%= render 'partials/route/auth/container',
+             welcome_message: "Bem-vindo de volta",
+             welcome_feedback: "É hora de acompanhar seus resultados, realizar novos aportes e planejar os próximos passos da sua carteira de investimentos" do
+  %>
+    <%= form_for(resource,
+                 as: resource_name,
+                 url: session_path(resource_name)) do |f|
+    %>
       <%= render "partials/modules/input-field",
                  f: f,
                  name: :email,

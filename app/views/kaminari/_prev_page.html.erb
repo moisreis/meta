@@ -16,5 +16,10 @@
   #               enhancing sequential browsing capability for the user.
   %>
 <span class="button button-ghost button-small">
-  <%= link_to_unless current_page.first?, "Anterior".html_safe, url, rel: 'prev', remote: remote %>
+  <%= link_to_unless current_page.first?,
+                     "Anterior".html_safe,
+                     url,
+                     rel: 'prev',
+                     remote: remote
+  %>
 </span>

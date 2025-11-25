@@ -28,18 +28,25 @@
   <% if q_object %>
     <div class="flex flex-row [&>div]:flex [&>div]:flex-row [&>div]:gap-1.5 [&>div]:items-center justify-between items-center gap-6 h-12 border-b border-border px-3">
       <div class="justify-start">
-        <%= button_tag id: "openFiltersBtn", class: "button button-outline button-small" do %>
+        <%= button_tag id: "openFiltersBtn",
+                       class: "button button-outline button-small" do
+        %>
           <%= inline_svg_tag "icons/tune.svg" %>
           <%= content_tag :span, "Ver filtros" %>
         <% end %>
         <div class="h-4 w-[1px] bg-border"></div>
-        <%= link_to search_url, class: "button button-outline button-small", data: { turbo_frame: turbo_frame_id } do %>
+        <%= link_to search_url,
+                    class: "button button-outline button-small",
+                    data: { turbo_frame: turbo_frame_id } do
+        %>
           <%= inline_svg_tag "icons/refresh.svg" %>
           <%= content_tag :span, "Limpar filtros" %>
         <% end %>
       </div>
       <div class="justify-end">
-        <%= button_tag type: :submit, class: "button button-outline button-small" do %>
+        <%= button_tag type: :submit,
+                       class: "button button-outline button-small" do
+        %>
           <%= inline_svg_tag "icons/file_export.svg" %>
           <%= content_tag :span, "Exportar" %>
         <% end %>
@@ -59,6 +66,10 @@
   </div>
 </div>
 
+<!--
+[Script] Render the JavaScript code to
+         close and open the filter's sidebar
+-->
 <script>
     let sidebar;
     let openBtn;

@@ -1,25 +1,38 @@
 # === dashboard_controller
 #
 # @author Moisés Reis
-# @added 11/13/2025
+# @added 11/24/2025
 # @package *Meta*
-# @description Defines the controller that manages the dashboard interface.
-#              Keeps the dashboard logic isolated and organized inside **DashboardController**,
-#              which inherits behavior and configuration from **ApplicationController**.
+# @description This controller manages the main personalized overview page (dashboard)
+#              for the currently authenticated user. It serves as the primary landing
+#              page after login and displays summary data from modules like **FundInvestment**
+#              and **Application**.
 # @category *Controller*
 #
-# Usage:: - *[what]* This controller handles requests related to the dashboard.
-#         - *[how]* It renders the dashboard view through the *index* action
-#                   using the default rendering pipeline from **ActionController::Base**.
-#         - *[why]* It separates dashboard presentation logic from other controllers,
-#                   ensuring clear routing, maintenance, and access structure.
+# Usage:: - *[What]* This code block controls the initial page a user sees, which
+#           summarizes their activity and key metrics.
+#         - *[How]* It typically fetches aggregated data from several models (though
+#           the current version only renders) before instructing the system to display the page.
+#         - *[Why]* It provides the user with immediate context and quick access to
+#           the most important application features.
 #
-# Attributes:: - None
+# Attributes:: - @controller_variable - This minimal version does not set instance variables.
 #
 class DashboardController < ApplicationController
 
-  # [Action] Renders the dashboard *index* view.
-  #          Uses the default rendering pipeline and returns the associated template.
+  # Explanation:: This runs before any action and ensures the current user is
+  #               successfully logged into the system before they can access the dashboard.
+  before_action :authenticate_user!
+
+  # == index
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: This action serves as the main entry point for the dashboard.
+  #        It simply instructs the system to load and display the associated
+  #        index view template to the user.
+  #
   def index
     render
   end

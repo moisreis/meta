@@ -14,31 +14,27 @@
   #        - Why: Provides a stable, reusable structure that standardizes page layout and reduces duplication.
   %>
 <section class="flex flex-col col-span-14">
-  <div class="h-12 border-b border-border bg-accent-light px-3 flex flex-row justify-between items-center">
+  <div class="h-12 px-6 flex grid grid-cols-2">
     <div class="flex flex-row gap-1.5 items-center justify-start">
-      <%= content_tag :h1, page_title, class: "text-heading font-heading text-base font-bold text-left" %>
-    </div>
-    <div class="flex flex-row gap-1.5 items-center justify-center">
-      <div class="flex flex-row justify-start items-center gap-1 [&>a]:text-sm [&>a]:text-muted [&>a]:hover:text-link [&>a]:font-normal">
-        <%= link_to authenticated_root_path, method: :get do %>
-          <%= content_tag :span, "Painel" %>
-        <% end %>
-        <%= content_tag :span, "/", class: "text-xs uppercase text-muted" %>
-        <%= link_to authenticated_root_path, class: "!text-link", method: :get do %>
-          <%= content_tag :span, "Carteiras" %>
-        <% end %>
-      </div>
+      <%= content_tag :h1,
+                      page_title,
+                      class: "text-heading font-heading text-base font-medium text-left"
+      %>
     </div>
     <div class="flex flex-row gap-1.5 items-center justify-end">
-      <%= link_to edit_user_registration_path, class: "button button-ghost button-small" do %>
+      <%= link_to edit_user_registration_path,
+                  class: "button button-ghost button-icon" do
+      %>
         <%= inline_svg_tag "icons/accounts.svg" %>
       <% end %>
       <%= link_to destroy_user_session_path,
                   data: { "turbo-method": :delete },
-                  class: "button button-ghost button-small" do %>
+                  class: "button button-ghost button-icon" do %>
         <%= inline_svg_tag "icons/logout.svg" %>
       <% end %>
-      <%= link_to edit_user_registration_path, class: "button button-ghost button-small" do %>
+      <%= link_to edit_user_registration_path,
+                  class: "button button-ghost button-icon" do
+      %>
         <%= inline_svg_tag "icons/more_vert.svg" %>
       <% end %>
     </div>

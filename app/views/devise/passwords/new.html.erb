@@ -1,23 +1,31 @@
 <%#
   # Partial: new.html
-  # Date: 11/13/2025
+  # Date: 11/25/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Defines the password recovery view for users who forgot their credentials.
-  #              Presents a form where users can submit their registered email to receive reset instructions.
-  #              Uses a consistent layout, styling, and accessibility patterns shared across authentication views.
+  # Description: Displays the view for a user to request a password reset email.
+  #              The page uses a series of nested partials to structure the authentication interface and form.
   #
-  # Usage: - What: Renders a password reset form wrapped within the standard authentication layout.
-  #                Displays contextual text guiding the user through the recovery process.
-  #        - How:  Uses **Devise’s** `password_path(resource_name)` helper to handle password recovery requests.
-  #                Employs the reusable **input-field** partial for consistent form field rendering.
-  #        - Why:  Provides a user-friendly and cohesive interface for password recovery within the **Meta** authentication flow.
+  # Usage: - What: Renders the necessary form and interface for a user who has forgotten their password.
+  #                This allows the user to submit their email address to receive password recovery instructions.
+  #        - How: Accessed via the Devise /users/password/new route (GET request).
+  #               Submits the email to the password path (POST request) to initiate the reset process.
+  #        - Why: Provides the critical functionality for users to regain access to their accounts securely, reducing support overhead.
   %>
 <%= render 'partials/route/auth/wrapper' do %>
-  <%= render 'partials/route/auth/background', bg_path: "pixeltrue/authentication-2-6.svg" %>
-  <%= render 'partials/route/auth/container', welcome_message: "Perdeu sua senha?", welcome_feedback: "Vamos recuperá-la para você!" do %>
-    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+  <%= render 'partials/route/auth/background',
+             bg_path: "pixeltrue/authentication-2-6.svg"
+  %>
+  <%= render 'partials/route/auth/container',
+             welcome_message: "Perdeu sua senha?",
+             welcome_feedback: "Vamos recuperá-la para você!" do
+  %>
+    <%= form_for(resource,
+                 as: resource_name,
+                 url: password_path(resource_name),
+                 html: { method: :post }) do |f|
+    %>
       <%= render "partials/modules/input-field",
                  f: f,
                  name: :email,

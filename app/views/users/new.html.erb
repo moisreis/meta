@@ -18,6 +18,13 @@
   #        - Why: Provides the interface necessary to execute the 'Create' function
   #               (C in CRUD) for the User resource using a consistent UI structure.
   %>
-<%= render 'partials/route/dashboard/wrapper', page_title: "Criar nova carteira", page_desc: "Defina os detalhes da sua nova carteira para começar a acompanhar seus investimentos." do %>
-  <%= render "form", user: @user, icon_name: "add", button_name: "Criar usuário" %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Criar nova carteira",
+           page_desc: "Defina os detalhes da sua nova carteira para começar a acompanhar seus investimentos." do
+%>
+  <%= render "form",
+             user: @user,
+             icon_name: "add",
+             button_name: "Criar usuário"
+  %>
 <% end %>

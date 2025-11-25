@@ -1,23 +1,27 @@
 <%#
   # Partial: edit.html
-  # Date: 11/14/2025
+  # Date: 11/25/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Renders the user profile edit page.
-  #              Displays a form that updates email, name information, and password credentials.
-  #              Organizes sections with separators for better readability and structure.
+  # Description: Presents the form for the current user to update their account details, including email, name, and password.
+  #              The view also provides a separate action block for account deletion.
   #
-  # Usage: - What: Loads a Devise registration edit form with structured input fields,
-  #                grouped layouts, and a final danger card for account deletion.
-  #        - How:  Uses a `form_for` builder pointed to `registration_path` with HTTP PUT.
-  #                Passes field parameters to reusable input-field partials.
-  #                Wraps the page inside the dashboard layout wrapper.
-  #        - Why:  Ensures a consistent form layout and improves maintainability through
-  #                modular components and reusable UI building blocks.
+  # Usage: - What: Renders the interface where an authenticated user modifies their profile information (email, name, password).
+  #                This page requires the user's current password to authorize any changes for security purposes.
+  #        - How: Accessed via the Devise edit registration path (e.g., /users/edit).
+  #               Submits updates using a PUT request to the registration path.
+  #        - Why: Enables user management of their personal data and security credentials, fulfilling common application requirements.
   %>
-<%= render 'partials/route/dashboard/wrapper', page_title: "Editar perfil", page_desc: "Faça alterações nos seus dados de usuário" do %>
-  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Editar perfil",
+           page_desc: "Faça alterações nos seus dados de usuário" do
+%>
+  <%= form_for(resource,
+               as: resource_name,
+               url: registration_path(resource_name),
+               html: { method: :put }) do |f|
+  %>
     <%= render "partials/modules/input-field",
                f: f,
                name: :email,
@@ -86,8 +90,17 @@
       <%= content_tag :span, "Atualizar" %>
     <% end %>
   <% end %>
-  <%= render 'partials/blocks/card', bg_path: "pixeltrue/bomb-9.svg", is_danger: true, card_title: "Excluir conta".html_safe, card_desc: "Você deseja deletar sua conta e todos os seus dados? Esta ação é irreversível" do %>
-    <%= button_to registration_path(resource_name), data: { confirm: "Você tem certeza?", turbo_confirm: "Você tem certeza?" }, class: "button button-danger w-fit", method: :delete do %>
+  <%= render 'partials/blocks/card',
+             bg_path: "pixeltrue/bomb-9.svg",
+             is_danger: true,
+             card_title: "Excluir conta".html_safe,
+             card_desc: "Você deseja deletar sua conta e todos os seus dados? Esta ação é irreversível" do
+  %>
+    <%= button_to registration_path(resource_name),
+                  data: { confirm: "Você tem certeza?", turbo_confirm: "Você tem certeza?" },
+                  class: "button button-danger w-fit",
+                  method: :delete do
+    %>
       <%= inline_svg_tag "icons/delete_forever.svg" %>
       <%= content_tag :span, "Deletar minha conta" %>
     <% end %>

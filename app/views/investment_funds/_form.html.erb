@@ -1,0 +1,66 @@
+<%#
+  # Partial: _form.html
+  # Date: 11/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the core form fields necessary for creating a new **InvestmentFund** or
+  #              editing an existing one. It includes fields for essential identification details
+  #              like name, administrator, and CNPJ.
+  #
+  # Usage: - What: Displays the structured input fields required to capture all mandatory and optional metadata for an investment fund
+  #        - How: Utilizes the `form_with` helper and nested partials like `input-field` to generate UI components for fund attributes
+  #        - Why: Centralizes the logic for fund data input, ensuring consistency across both the new and edit views
+  %>
+<%= form_with(model: investment_fund, class: "contents") do |form| %>
+  <%= render "partials/modules/input-field",
+             f: form,
+             name: :fund_name,
+             label: "Nome do Fundo",
+             placeholder: "Fundo de Investimento XYZ",
+             is_half_width: true,
+             desc: "Nome comercial do fundo.",
+             field_type: :text_field,
+             icon_name: "folder"
+  %>
+  <div class="grid grid-cols-2 gap-6">
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :administrator_name,
+               label: "Administrador",
+               placeholder: "Nome da instituição administradora",
+               is_half_width: false,
+               desc: "Nome da entidade responsável pela administração do fundo.",
+               field_type: :text_field,
+               icon_name: "badge"
+    %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :originator_fund,
+               label: "Fundo Originador",
+               placeholder: "Nome do fundo originador",
+               is_half_width: false,
+               desc: "Informe caso este fundo seja derivado de outro.",
+               field_type: :text_field,
+               icon_name: "sync_alt"
+    %>
+  </div>
+  <%= render "partials/modules/separator" %>
+  <%= render "partials/modules/input-field",
+             f: form,
+             name: :cnpj,
+             label: "CNPJ",
+             placeholder: "00.000.000/0000-00",
+             is_half_width: true,
+             desc: "O CNPJ precisa ser único no sistema.",
+             field_type: :text_field,
+             icon_name: "123"
+  %>
+  <%= form.button :submit,
+                  name: nil,
+                  class: "button button-primary w-fit flex items-center gap-2" do
+  %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+    <%= content_tag :span, button_name %>
+  <% end %>
+<% end %>

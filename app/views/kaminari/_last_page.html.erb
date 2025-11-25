@@ -16,5 +16,9 @@
   #               to navigate directly to the end of a large paginated collection.
   %>
 <span class="button button-outline button-small">
-  <%= link_to_unless current_page.last?, "Última".html_safe, url, remote: remote %>
+  <%= link_to_unless current_page.last?,
+                     "Última".html_safe,
+                     url,
+                     remote: remote
+  %>
 </span>

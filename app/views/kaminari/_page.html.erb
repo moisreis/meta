@@ -18,5 +18,12 @@
   #               enabling users to easily access any page in the collection.
   %>
 <span class="button button-small rounded-[6px] <%= 'button-ghost' if !page.current? %> <%= 'button-secondary' if page.current? %>">
-  <%= link_to_unless page.current?, page, url, {remote: remote, rel: page.rel} %>
+  <%= link_to_unless page.current?,
+                     page,
+                     url,
+                     {
+                       remote: remote,
+                       rel: page.rel
+                     }
+  %>
 </span>

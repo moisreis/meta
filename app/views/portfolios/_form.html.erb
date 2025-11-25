@@ -30,18 +30,15 @@
              icon_name: "wallet"
   %>
   <%= render "partials/modules/separator" %>
+
 <%# [Variable] Initializes `available_users_for_sharing`.
   #            It selects all User IDs and their full names (concatenated in the database)
   #            except the current user, ensuring optimal performance via SQL.
   %>
   <% available_users_for_sharing ||= User
-  # Excludes the current user
     .where.not(id: current_user.id)
-  # Selects the ID and uses CONCAT_WS (MySQL) to create a 'full_name' field,
-  # handling NULL values gracefully by skipping the missing part.
     .pluck(Arel.sql("CONCAT_WS(' ', first_name, last_name)"), :id)
   %>
-
   <%= render "partials/modules/select",
              f: form,
              name: :shared_user_id,
@@ -71,8 +68,13 @@
                icon_name: "edit_square"
     %>
   <% end %>
-  <%= form.hidden_field :user_id, value: current_user.id %>
-  <%= form.button :submit, name: nil, class: "button button-primary w-fit flex items-center gap-2" do %>
+  <%= form.hidden_field :user_id,
+                        value: current_user.id
+  %>
+  <%= form.button :submit,
+                  name: nil,
+                  class: "button button-primary w-fit flex items-center gap-2" do
+  %>
     <%= inline_svg_tag "icons/#{icon_name}.svg" %>
     <%= content_tag :span, button_name %>
   <% end %>

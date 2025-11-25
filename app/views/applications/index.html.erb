@@ -1,0 +1,177 @@
+<%#
+  # Partial: index.html
+  # Date: 11/25/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Displays a comprehensive, filterable data table containing the entire history of investment applications and redemption transactions.
+  #              The view fetches and presents application data using a customizable data table partial.
+  #
+  # Usage: - What: Renders a structured page that allows the user to review, sort, and filter all registered investment transactions.
+  #                This serves as the central history log for financial activity.
+  #        - How: Accessed via the resource index route (GET /applications).
+  #               Utilizes Ransack (`@q` object) for searching and filtering the `@applications` collection.
+  #        - Why: Provides necessary transparency and auditing capabilities for the user's investment portfolio history.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Histórico de Aplicações",
+           page_desc: "Visualize todas as transações de investimento e resgate registradas.",
+           current_view: "datatable" do
+%>
+  <%= render partial: "partials/blocks/data-table", locals: {
+
+    # [Explanation]: This array defines the titles for each column in the table header.
+    #                The names correspond directly to the data fields displayed in the table body.
+    #                They provide context for the user viewing the transaction history.
+    columns_header: [
+      "Fundo / Carteira",
+      "Valor financeiro",
+      "Cotas",
+      "Valor da cota",
+      "Data do pedido",
+      "Data de liquidação"
+    ],
+
+    # [Explanation]: This array holds the names of Material Symbols icons used for visual emphasis
+    #                in the table header. The icons visually represent the type of data
+    #                contained in the corresponding column header.
+    columns_icons: [
+      "receipt_long",
+      "attach_money",
+      "layers",
+      "price_change",
+      "calendar_today",
+      "receipt_long"
+    ],
+
+    # [Explanation]: This is the core array containing lambda functions, where each function
+    #                is responsible for processing and formatting the content for a single cell
+    #                in the table body. These functions receive the application object (`app`) as an argument.
+    columns_body: [
+
+      # [Explanation]: This lambda function constructs the content for the first column, displaying
+      #                the name of the Investment Fund and the Portfolio. It includes fallback text
+      #                ("Indefinido") if the associated objects are missing.
+      ->(app) do
+        fund_name = app.fund_investment&.investment_fund&.fund_name || "Fundo Indefinido"
+        portfolio_name = app.fund_investment&.portfolio&.name || "Carteira Indefinida"
+        content_tag(:div, fund_name, class: "font-semibold") +
+          content_tag(:small, "em: #{portfolio_name}", class: "text-gray-500")
+      end,
+
+      # [Explanation]: This lambda function displays the financial value of the transaction.
+      #                It uses the `number_to_currency` helper to format the value as Brazilian Reais (R$),
+      #                or displays a dash if the value is not present.
+      ->(app) do
+        app.financial_value.present? ?
+          number_to_currency(app.financial_value, unit: "R$ ", separator: ",", delimiter: ".") :
+          content_tag(:span, "—", class: "text-muted")
+      end,
+
+      # [Explanation]: This lambda function displays the number of quotas transacted.
+      #                It uses the `number_with_delimiter` helper for standard number formatting,
+      #                or displays a dash if the number of quotas is not present.
+      ->(app) do
+        app.number_of_quotas.present? ?
+          number_with_delimiter(app.number_of_quotas) :
+          content_tag(:span, "—", class: "text-muted")
+      end,
+
+      # [Explanation]: This lambda function displays the quota value at the time of the application.
+      #                It formats the value as currency (R$) using the appropriate helper,
+      #                or displays a dash if the quota value is not recorded.
+      ->(app) do
+        app.quota_value_at_application.present? ?
+          number_to_currency(app.quota_value_at_application, unit: "R$ ", separator: ",", delimiter: ".") :
+          content_tag(:span, "—", class: "text-muted")
+      end,
+
+      # [Explanation]: This lambda function displays the date the transaction was requested.
+      #                It formats the date using the short localization format (`l` helper),
+      #                or displays a dash if the request date is missing.
+      ->(app) do
+        app.request_date.present? ?
+          l(app.request_date, format: :short) :
+          content_tag(:span, "—", class: "text-muted")
+      end,
+
+      # [Explanation]: This lambda function displays the date the transaction was settled (liquidated).
+      #                It formats the date using the short localization format (`l` helper),
+      #                or displays a dash if the liquidation date is missing.
+      ->(app) do
+        app.liquidation_date.present? ?
+          l(app.liquidation_date, format: :short) :
+          content_tag(:span, "—", class: "text-muted")
+      end
+    ],
+
+    # [Explanation]: This variable contains the collection of Application model instances
+    #                to be displayed in the data table. This is the primary dataset
+    #                for the table rows.
+    models: @applications,
+
+    # [Explanation]: This parameter defines options for sorting the data within the table.
+    #                Since the array is currently empty, no custom sorting options are available.
+    sort_options: [],
+
+    # [Explanation]: This is the Ransack search object (`@q`). It contains the current search
+    #                and filter parameters applied to the `@applications` collection.
+    #                The data table uses this object to generate proper sort links.
+    q_object: @q,
+
+    # [Explanation]: This defines the URL used for both searching and pagination of the table.
+    #                It ensures that search parameters and page numbers are correctly routed
+    #                back to the applications index action.
+    search_url: applications_path,
+
+    # [Explanation]: This is the ID of the Turbo Frame that wraps the data table.
+    #                It ensures that sorting and searching actions update only the table content
+    #                without reloading the entire page.
+    turbo_frame_id: "applications_table",
+
+    # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
+    #                Since the value is nil, the export functionality is currently disabled.
+    export_url: nil
+  } %>
+<% end %>
+
+<%= render partial: "partials/route/dashboard/filters", locals: {
+
+  # [Explanation]: This is the Ransack search object (`@q`). The filter partial uses this object
+  #                to initialize the filter fields with current search values.
+  q_object: @q,
+
+  # [Explanation]: This defines the URL where the filter form submits its search parameters.
+  #                The submission triggers an update to the `applications_path`.
+  search_url: applications_path,
+
+  # [Explanation]: This array defines the individual filter fields available to the user.
+  #                Each hash specifies the Ransack key, label, description, and icon for the filter input.
+  filters: [
+    {
+      key: :fund_investment_investment_fund_fund_name_cont,
+      label: "Fundo",
+      description: "Exibe aplicações vinculadas a um fundo específico.",
+      placeholder: "Nome do fundo",
+      icon_name: "pie_chart"
+    },
+    {
+      key: :financial_value_gteq,
+      label: "Valor Transacionado",
+      description: "Filtra transações com valor igual ou superior ao informado.",
+      placeholder: "Valor mínimo R$",
+      icon_name: "attach_money"
+    },
+    {
+      key: :request_date_gteq,
+      label: "Data do Pedido (Min)",
+      description: "Filtra transações solicitadas a partir desta data.",
+      placeholder: "DD/MM/AAAA",
+      icon_name: "calendar_today"
+    }
+  ],
+
+  # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.
+  #                It ensures that applying filters updates the data table content within the corresponding frame.
+  turbo_frame_id: "applications_table"
+} %>

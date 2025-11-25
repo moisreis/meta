@@ -1,0 +1,172 @@
+<%#
+  # Partial: index.html
+  # Date: 11/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Lists fund allocations made within portfolios, showing their
+  #              allocation percentages, invested amounts, and related links.
+  #              This view presents the data using a filterable and sortable table component.
+  #
+  # Usage: - What: Renders a structured page that allows the user to review how each investment fund is distributed
+  #                across various portfolios, enabling visualization and management of asset distribution.
+  #        - How: Rendered through the FundInvestments#index controller action.
+  #               Uses Ransack (`@q` object) for searching and filtering the `@fund_investments` collection.
+  #        - Why: Helps visualize and manage how each investment fund is distributed
+  #               across portfolios, which is crucial for asset management and portfolio rebalancing.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Alocações",
+           page_desc: "Acompanhe como os fundos estão distribuídos entre as carteiras.",
+           current_view: "datatable" do
+%>
+  <%= render partial: "partials/blocks/data-table", locals: {
+
+    # [Explanation]: This array defines the titles for each column in the table header.
+    #                The names correspond directly to the data fields displayed, providing context
+    #                for the user regarding the fund allocation details.
+    columns_header: [
+      "Carteira",
+      "Fundo",
+      "Alocação",
+      "Valor investido",
+      "Cotas totais",
+      "Criado em"
+    ],
+
+    # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
+    #                in the table header. Each icon visually represents the type of financial data
+    #                contained in the corresponding column.
+    columns_icons: [
+      "wallet",
+      "pie_chart",
+      "percent_discount",
+      "attach_money",
+      "layers",
+      "calendar_clock"
+    ],
+
+    # [Explanation]: This is the core array containing lambda functions, where each function
+    #                is responsible for processing and formatting the content for a single cell
+    #                in the table body. These functions receive the fund investment object (`fi`) as an argument.
+    columns_body: [
+
+      # [Explanation]: This lambda function safely displays the name of the associated portfolio.
+      #                It uses the safe navigation operator (`&.`) to prevent errors if the portfolio object
+      #                is null, displaying a dash (`—`) as a fallback.
+      ->(fi) { fi.portfolio&.name || "—" },
+
+      # [Explanation]: This lambda function safely displays the name of the associated investment fund.
+      #                It uses the safe navigation operator (`&.`) to prevent errors if the investment fund
+      #                object is null, displaying a dash (`—`) as a fallback.
+      ->(fi) { fi.investment_fund&.fund_name || "—" },
+
+      # [Explanation]: This lambda function displays the percentage of the portfolio allocated to the fund.
+      #                It appends a percent sign (`%`) to the value if present,
+      #                or displays a muted dash if the allocation percentage is missing.
+      ->(fi) do
+        fi.percentage_allocation.present? ?
+          "#{fi.percentage_allocation}%" :
+          content_tag(:span, "—", class: "text-muted")
+      end,
+
+      # [Explanation]: This lambda function displays the total monetary value currently invested in the fund.
+      #                It uses the `number_to_currency` helper to format the value as Brazilian Reais (R$),
+      #                or displays a muted dash if the total invested value is not present.
+      ->(fi) do
+        fi.total_invested_value.present? ?
+          number_to_currency(fi.total_invested_value, unit: "R$ ", separator: ",", delimiter: ".") :
+          content_tag(:span, "—", class: "text-muted")
+      end,
+
+      # [Explanation]: This lambda function displays the total number of quotas held in the fund.
+      #                It converts the quota count to a string,
+      #                or displays a muted dash if the total quota count is not present.
+      ->(fi) do
+        fi.total_quotas_held.present? ?
+          fi.total_quotas_held.to_s :
+          content_tag(:span, "—", class: "text-muted")
+      end,
+
+      # [Explanation]: This refers to the 'created_at' attribute of the fund investment record.
+      #                The data table partial uses this symbol to access the timestamp directly
+      #                and display the creation date of the allocation.
+      :created_at
+    ],
+
+    # [Explanation]: This variable contains the collection of FundInvestment model instances
+    #                to be displayed in the data table. This is the primary dataset
+    #                for the table rows.
+    models: @fund_investments,
+
+    # [Explanation]: This parameter defines options for sorting the data within the table.
+    #                Since the array is currently empty, no custom sorting options are available.
+    sort_options: [],
+
+    # [Explanation]: This is the Ransack search object (`@q`). It contains the current search
+    #                and filter parameters applied to the `@fund_investments` collection.
+    #                The data table uses this object to generate proper sort links.
+    q_object: @q,
+
+    # [Explanation]: This defines the URL used for both searching and pagination of the table.
+    #                It ensures that search parameters and page numbers are correctly routed
+    #                back to the fund investments index action.
+    search_url: fund_investments_path,
+
+    # [Explanation]: This is the ID of the Turbo Frame that wraps the data table.
+    #                It ensures that sorting and searching actions update only the table content
+    #                without reloading the entire page.
+    turbo_frame_id: "fund_investments_table",
+
+    # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
+    #                Since the value is nil, the export functionality is currently disabled.
+    export_url: nil
+  } %>
+<% end %>
+<%= render partial: "partials/route/dashboard/filters", locals: {
+
+  # [Explanation]: This is the Ransack search object (`@q`). The filter partial uses this object
+  #                to initialize the filter fields with current search values.
+  q_object: @q,
+
+  # [Explanation]: This defines the URL where the filter form submits its search parameters.
+  #                The submission triggers an update to the `fund_investments_path`.
+  search_url: fund_investments_path,
+
+  # [Explanation]: This array defines the individual filter fields available to the user.
+  #                Each hash specifies the Ransack key, label, description, and icon for the filter input.
+  filters: [
+    {
+      key: :portfolio_name_cont,
+      label: "Carteira",
+      description: "Exibe alocações vinculadas a carteiras cujo nome corresponda.",
+      placeholder: "Nome da carteira",
+      icon_name: "wallet"
+    },
+    {
+      key: :investment_fund_fund_name_cont,
+      label: "Fundo",
+      description: "Filtra alocações pelo fundo investido.",
+      placeholder: "Nome do fundo",
+      icon_name: "pie_chart"
+    },
+    {
+      key: :percentage_allocation_gteq,
+      label: "Alocação",
+      description: "Exibe alocações com percentual igual ou superior ao informado.",
+      placeholder: "Percentual mínimo",
+      icon_name: "percent_discount"
+    },
+    {
+      key: :total_invested_value_gteq,
+      label: "Valor investido",
+      description: "Filtra alocações com valor investido acima do indicado.",
+      placeholder: "Valor mínimo",
+      icon_name: "attach_money"
+    }
+  ],
+
+  # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.
+  #                It ensures that applying filters updates the data table content within the corresponding frame.
+  turbo_frame_id: "fund_investments_table"
+} %>

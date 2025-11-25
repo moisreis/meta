@@ -1,33 +1,48 @@
 # === portfolios_controller
 #
 # @author Moisés Reis
-# @added 11/13/2025
+# @added 11/24/2025
 # @package *Meta*
-# @description Defines the controller that manages portfolio records.
-#              Uses shared behaviors from **ApplicationController** and ensures that
-#              access control, filtering, sorting, and pagination remain consistent
-#              across all dashboard and administrative flows.
+# @description This controller manages a user's **Portfolio** records, handling the
+#              listing, creation, modification, and deletion of financial portfolios.
+#              It also manages permissions for sharing portfolios with other users via
+#              the **UserPortfolioPermission** model.
 # @category *Controller*
 #
-# Usage:: - *[what]* This controller handles CRUD actions for **Portfolio** records.
-#         - *[how]* It authenticates users, loads portfolios, applies search and sort logic through **Ransack**,
-#                   paginates results, and responds to both HTML and JSON formats.
-#         - *[why]* It structures how portfolio data moves between the application and the user interface,
-#                   ensuring clear separation of concerns and predictable behavior for user-facing features.
+# Usage:: - *[What]* This code block controls the set of financial portfolios owned by the user or shared with them.
+#         - *[How]* It filters portfolios based on the current user's role and ID, handles search/sort requests, and manages the creation and updating of sharing permissions.
+#         - *[Why]* It provides the secure and personalized environment for users to manage their investment holdings.
 #
-# Attributes:: - *@portfolio* @object - stores the portfolio in context for actions
-#              - *@models* @collection - stores paginated portfolio records
-#              - *@q* @object - holds the Ransack search object
-#              - *@portfolios* @collection - alias for *@models* for view access
+# Attributes:: - *@portfolio* @object - The specific portfolio being handled (show, update, destroy).
+#              - *@portfolios* @collection - The filtered and paginated list of portfolios for the index view.
 #
 class PortfoliosController < ApplicationController
+
+  # Explanation:: This command confirms that a user is successfully logged into
+  #               the system before allowing access to any actions within this controller.
   before_action :authenticate_user!
+
+  # Explanation:: This runs before actions like show, edit, update, or destroy.
+  #               It calls the private method `set_portfolio` to find the specific **Portfolio**
+  #               record from the database using the ID provided in the web address.
   before_action :set_portfolio, only: %i[ show edit update destroy ]
 
-  # [Action] Lists portfolios with filtering, sorting, and pagination.
-  #          Resolves data visibility based on user role and returns HTML or JSON.
+  # == index
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: This action retrieves and displays a list of financial portfolios.
+  #        It applies search, filtering, and sorting based on user permissions before displaying the results.
+  #
+  # Attributes:: - *@models* - The paginated list of **Portfolio** records.
+  #              - *@portfolios* - An alias for the paginated list of portfolios used in the view.
+  #
   def index
-    # [Scope] Defines the initial dataset based on whether the user has administrative access.
+
+    # Explanation:: This determines the initial set of portfolios to display. If the current user
+    #               is an administrator, they see all portfolios; otherwise, they only see
+    #               portfolios owned by or shared with them via a scope defined in the **Portfolio** model.
     base_scope =
       if current_user.admin?
         Portfolio.all
@@ -35,25 +50,32 @@ class PortfoliosController < ApplicationController
         Portfolio.for_user(current_user)
       end
 
-    # [Search] Builds a Ransack search object using the filtered portfolio scope.
+    # Explanation:: This initializes the search object using the **Ransack** gem,
+    #               applying any search criteria passed by the user in the web address.
     @q = base_scope.ransack(params[:q])
 
-    # [Search] Applies the Ransack filters and returns a distinct result set.
+    # Explanation:: This executes the search query defined by **Ransack**, returning a
+    #               unique list of portfolios that match the search criteria.
     filtered_and_scoped_portfolios = @q.result(distinct: true)
 
-    # [Sorting] Extracts the sorting column from parameters or defaults to the portfolio ID.
+    # Explanation:: This checks the web address for a specific column to sort by, defaulting
+    #               to sorting by the primary `id` if no sort column is specified.
     sort = params[:sort].presence || "id"
 
-    # [Sorting] Extracts the sorting direction from parameters or defaults to ascending order.
+    # Explanation:: This checks the web address for a specific sort direction, defaulting
+    #               to ascending order (lowest ID first) if none is specified.
     direction = params[:direction].presence || "asc"
 
-    # [Sorting] Applies sorting rules to the filtered collection.
+    # Explanation:: This applies the determined sort column and direction to the
+    #               filtered list of portfolios.
     sorted_portfolios = filtered_and_scoped_portfolios.order("#{sort} #{direction}")
 
-    # [Pagination] Splits the sorted results into pages with a fixed number of items per page.
+    # Explanation:: This prepares the final data for the page, dividing the complete
+    #               list into pages of 20 items to improve performance and readability.
     @models = sorted_portfolios.page(params[:page]).per(20)
 
-    # [View] Exposes the paginated dataset to the views using an intuitive alias.
+    # Explanation:: This sets the instance variable that the view expects, using the
+    #               paginated data prepared in the previous step.
     @portfolios = @models
 
     respond_to do |format|
@@ -62,27 +84,81 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # [Action] Shows a specific portfolio using the loaded instance.
+  # == show
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: This action prepares the specific portfolio record that was loaded earlier.
+  #        It makes the data available for the view to display all its details to the user.
+  #
+  # Attributes:: - *@portfolio* - The single portfolio object found by the `set_portfolio` filter.
+  #
   def show
   end
 
-  # [Action] Initializes a new portfolio instance for the form.
+  # == new
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: This action creates a new, blank **Portfolio** object.
+  #        This empty object is used by the form to gather input from the user for creation.
+  #
+  # Attributes:: - *@portfolio* - A new, unsaved portfolio instance.
+  #
   def new
     @portfolio = Portfolio.new
   end
 
-  # [Action] Renders the edit form for the selected portfolio.
+  # == edit
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: This action prepares the view to display the existing portfolio's
+  #        data, allowing the user to make changes to the record.
+  #
+  # Attributes:: - *@portfolio* - The existing portfolio object loaded by the `before_action` filter.
+  #
   def edit
   end
 
-  # [Action] Handle portfolio creation request
+  # == create
+  #
+  # @author Moisés Reis
+  # @category *Create*
+  #
+  # Create:: This action attempts to save a new portfolio record to the database.
+  #          If successful, it checks for sharing information and creates the necessary
+  #          permissions before redirecting the user.
+  #
+  # Attributes:: - *portfolio_params* - The sanitized input data from the user form.
+  #
   def create
+
+    # Explanation:: This creates a new **Portfolio** object using the allowed parameters
+    #               but temporarily excludes any sharing-specific parameters like the `shared_user_id`.
     @portfolio = Portfolio.new(portfolio_params.except(:shared_user_id))
+
+    # Explanation:: This block handles the response format, either a traditional
+    #               web page redirect (`format.html`) or a JSON response (`format.json`).
     respond_to do |format|
+
+      # Explanation:: This checks if the new portfolio object successfully passes
+      #               all database validations and saves the record.
       if @portfolio.save
+
+        # Explanation:: This retrieves the ID of the user that the current user wants
+        #               to share the newly created portfolio with, if present in the form data.
         shared_user_id = params.dig(:portfolio, :shared_user_id)
+
+        # Explanation:: This retrieves the level of permission (e.g., 'read' or 'manage')
+        #               to grant the shared user, defaulting to 'read' if not specified.
         permission_level = params.dig(:portfolio, :grant_crud_permission) || 'read'
 
+        # Explanation:: This condition checks if a user ID for sharing was provided.
+        #               If so, it proceeds to create the permission record.
         if shared_user_id.present?
           UserPortfolioPermission.create!(
             user_id: shared_user_id,
@@ -99,13 +175,43 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # [Action] Handle portfolio updating request
+  # == update
+  #
+  # @author Moisés Reis
+  # @category *Update*
+  #
+  # Update:: This action attempts to modify an existing portfolio record.
+  #          If successful, it updates the associated sharing permission for another user
+  #          before redirecting the user.
+  #
+  # Attributes:: - *portfolio_params* - The sanitized input data for updating the record.
+  #
   def update
-    respond_to do |format|
-      if @portfolio.update(portfolio_params.except(:shared_user_id))
-        shared_user_id = params.dig(:portfolio, :shared_user_id)
-        permission_level = params.dig(:portfolio, :grant_crud_permission) || 'read'
 
+    # Explanation:: This block handles the response format for the update request,
+    #               either a traditional web page redirect (`format.html`) or a JSON response (`format.json`).
+    respond_to do |format|
+
+      # Explanation:: This attempts to update the portfolio object with the new data,
+      #               excluding sharing parameters, and checks for validation success.
+      if @portfolio.update(portfolio_params.except(:shared_user_id))
+
+        # Explanation:: This retrieves the ID of the user that the current user wants
+        #               to share the portfolio with, if present in the form data.
+        shared_user_id = params.dig(
+          :portfolio,
+          :shared_user_id
+        )
+
+        # Explanation:: This retrieves the new permission level (e.g., 'read' or 'manage')
+        #               to grant the shared user, defaulting to 'read' if not specified.
+        permission_level = params.dig(
+          :portfolio,
+          :grant_crud_permission
+        ) || 'read'
+
+        # Explanation:: This checks if a user ID for sharing was provided.
+        #               If so, it proceeds to create or update the permission record.
         if shared_user_id.present?
           UserPortfolioPermission.find_or_create_by!(
             user_id: shared_user_id,
@@ -123,7 +229,17 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # [Action] Destroys a portfolio and redirects to the index.
+  # == destroy
+  #
+  # @author Moisés Reis
+  # @category *Delete*
+  #
+  # Delete:: This action deletes the portfolio record from the database.
+  #          It also automatically destroys all associated records like
+  #          **FundInvestment**s and **UserPortfolioPermission**s due to database dependencies.
+  #
+  # Attributes:: - *@portfolio* - The portfolio object to be destroyed.
+  #
   def destroy
     @portfolio.destroy!
     respond_to do |format|
@@ -134,24 +250,68 @@ class PortfoliosController < ApplicationController
 
   private
 
-  # [Helper] Loads a portfolio by ID for legacy or auxiliary use.
+  # == load_portfolio
+  #
+  # @author Moisés Reis
+  # @category *Utility*
+  #
+  # Utility:: This private method finds a single portfolio record in the
+  #           database using the ID from the web request. It stores the record for
+  #           use by other controller methods.
+  #
+  # Attributes:: - *params[:id]* - The identifier of the portfolio record being requested.
+  #
   def load_portfolio
     @portfolio = Portfolio.find(params[:id])
   end
 
-  # [Helper] Authorizes portfolio access depending on the action.
+  # == authorize_portfolio
+  #
+  # @author Moisés Reis
+  # @category *Security*
+  #
+  # Security:: This private method checks the current action being performed
+  #            and verifies the user's permissions (**read** or **manage**)
+  #            on the loaded portfolio record using **CanCan**.
+  #
+  # Attributes:: - *action_name* - The name of the current controller action (e.g., 'show').
+  #
   def authorize_portfolio
     authorize! :read, @portfolio if action_name == 'show'
     authorize! :manage, @portfolio if %w[update destroy].include?(action_name)
   end
 
-  # [Helper] Loads the portfolio using strong parameter extraction.
+  # == set_portfolio
+  #
+  # @author Moisés Reis
+  # @category *Utility*
+  #
+  # Utility:: This private method finds a single portfolio record in the
+  #           database using the ID from the web request. This method is called by the
+  #           `before_action` filter.
+  #
+  # Attributes:: - *params[:id]* - The identifier of the portfolio record being requested.
+  #
   def set_portfolio
     @portfolio = Portfolio.find(params[:id])
   end
 
-  # [Helper] Whitelists allowed parameters to ensure secure updates.
+  # == portfolio_params
+  #
+  # @author Moisés Reis
+  # @category *Security*
+  #
+  # Security:: This private method sanitizes all incoming data from the
+  #            portfolio form. It ensures that only specifically permitted fields,
+  #            like `name`, `user_id`, and `shared_user_id`, are allowed to be processed.
+  #
+  # Attributes:: - *params* - The raw data hash received from the user form submission.
+  #
   def portfolio_params
-    params.require(:portfolio).permit(:name, :user_id, :shared_user_id)
+    params.require(:portfolio).permit(
+      :name,
+      :user_id,
+      :shared_user_id
+    )
   end
 end

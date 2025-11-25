@@ -1,1 +1,15 @@
+<%#
+  # Partial: mailer.text
+  # Date: 11/25/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the plain text layout for all emails, ensuring readability in clients that do not render HTML.
+  #              This file serves as the fallback format for email content.
+  #
+  # Usage: - What: Renders the raw text content of an email without any HTML formatting,
+  #                serving as the container for the text-only version of the message.
+  #        - How: Is automatically wrapped around the content of specific mailer view files (e.g., `confirmation_instructions.text.erb`).
+  #        - Why: Guarantees email deliverability and accessibility for all users, especially those using text-only or mobile email clients.
+  %>
 <%= yield %>

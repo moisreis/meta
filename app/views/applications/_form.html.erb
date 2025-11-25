@@ -1,0 +1,104 @@
+<%#
+  # Partial: _form.html
+  # Date: 11/25/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the input fields and structure for creating or updating a financial transaction record (e.g., investment application or redemption).
+  #              The form collects all necessary monetary, quota, and date details for the transaction.
+  #
+  # Usage: - What: Renders the core interface used by the user to input data for an investment transaction.
+  #                It includes fields for the investment target, financial amounts, and relevant transaction dates.
+  #        - How: Is rendered by the 'new' or 'edit' views of the transaction resource (e.g., applications controller).
+  #               Submits data via AJAX or standard form submission using the `form_with` helper.
+  #        - Why: Provides the essential mechanism for users to record detailed financial operations within their investment portfolios.
+  %>
+<%= form_with(model: application, class: "contents") do |form| %>
+  <div class="grid grid-cols-2 gap-6">
+    <%= render "partials/modules/select",
+               f: form,
+               name: :fund_investment_id,
+               label: "Investimento Alvo",
+               options_collection: @fund_investments.map { |fi| ["#{fi.investment_fund.fund_name} (Carteira: #{fi.portfolio.name})", fi.id] },
+               is_half_width: false,
+               desc: "Escolha o fundo e a carteira onde a transação será registrada.",
+               is_inactive: false,
+               icon_name: "account_balance_wallet"
+    %>
+  </div>
+  <%= render "partials/modules/separator" %>
+  <div class="grid grid-cols-3 gap-6">
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :financial_value,
+               label: "Valor Financeiro da Transação",
+               placeholder: "Ex: 5000.00",
+               is_half_width: false,
+               desc: "O valor total (R$) investido ou resgatado na transação.",
+               field_type: :number_field,
+               icon_name: "universal_currency_alt",
+               step: 0.01
+    %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :number_of_quotas,
+               label: "Número de Cotas",
+               placeholder: "Ex: 100.50",
+               is_half_width: false,
+               desc: "A quantidade de cotas compradas ou vendidas.",
+               field_type: :number_field,
+               icon_name: "layers",
+               step: 0.0001
+    %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :quota_value_at_application,
+               label: "Valor da Cota na Aplicação",
+               placeholder: "Ex: 50.00",
+               is_half_width: false,
+               desc: "O valor (R$) da cota no momento da transação.",
+               field_type: :number_field,
+               icon_name: "price_change",
+               step: 0.0001
+    %>
+  </div>
+  <%= render "partials/modules/separator" %>
+  <div class="grid grid-cols-3 gap-6">
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :request_date,
+               label: "Data do Pedido",
+               placeholder: "DD/MM/AAAA",
+               is_half_width: false,
+               desc: "Data em que o pedido de aplicação/resgate foi feito.",
+               field_type: :date_field,
+               icon_name: "calendar_today"
+    %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :cotization_date,
+               label: "Data de Cotização",
+               placeholder: "DD/MM/AAAA",
+               is_half_width: false,
+               desc: "Data em que a cota foi calculada e a transação efetivada.",
+               field_type: :date_field,
+               icon_name: "calculate"
+    %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :liquidation_date,
+               label: "Data de Liquidação",
+               placeholder: "DD/MM/AAAA",
+               is_half_width: false,
+               desc: "Data em que o dinheiro efetivamente entra/sai da conta.",
+               field_type: :date_field,
+               icon_name: "receipt_long"
+    %>
+  </div>
+  <%= form.button :submit,
+                  name: nil,
+                  class: "button button-primary w-fit flex items-center gap-2" do %>
+    <%= inline_svg_tag "icons/add.svg" %>
+    <%= content_tag :span, "Adicionar" %>
+  <% end %>
+<% end %>

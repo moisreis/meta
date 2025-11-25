@@ -26,9 +26,13 @@
                       method: :get,
                       html: { id: "filter_form", class: "flex flex-col h-full" },
                       data: { turbo_frame: turbo_frame_id } do |f| %>
+
     <div class="h-12 flex flex-row justify-between items-center px-3 border-b border-border">
       <h3 class="font-semibold text-base">Filtros</h3>
-      <%= button_tag id: "closeFiltersBtn", type: "button", class: "button button-ghost button-small" do %>
+      <%= button_tag id: "closeFiltersBtn",
+                     type: "button",
+                     class: "button button-ghost button-small" do
+      %>
         <%= inline_svg_tag "icons/close.svg" %>
       <% end %>
     </div>
@@ -51,11 +55,17 @@
         } %>
       <% end %>
       <div class="flex flex-col gap-3">
-        <%= button_tag type: :submit, class: "button button-primary", id: "applyFiltersBtn" do %>
+        <%= button_tag type: :submit,
+                       class: "button button-primary",
+                       id: "applyFiltersBtn" do
+        %>
           <%= inline_svg_tag "icons/filter.svg" %>
           <%= content_tag :span, "Aplicar" %>
         <% end %>
-        <%= link_to search_url, class: "button button-secondary", data: { turbo_frame: turbo_frame_id } do %>
+        <%= link_to search_url,
+                    class: "button button-secondary",
+                    data: { turbo_frame: turbo_frame_id } do
+        %>
           <%= inline_svg_tag "icons/refresh.svg" %>
           <%= content_tag :span, "Limpar" %>
         <% end %>

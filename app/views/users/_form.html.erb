@@ -71,7 +71,9 @@
                icon_name: "passkey"
     %>
   </div>
-  <%= form.button :submit, class: "button button-primary w-fit flex items-center gap-2" do %>
+  <%= form.button :submit,
+                  class: "button button-primary w-fit flex items-center gap-2" do
+  %>
     <%= inline_svg_tag "icons/#{icon_name}.svg" %>
     <%= content_tag :span, button_name %>
   <% end %>
