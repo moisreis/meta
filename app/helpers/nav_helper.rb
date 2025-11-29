@@ -56,8 +56,8 @@ module NavHelper
     #               three standard navigation links (Index, New, Reports).
     default_icons = {
       index: "wallet.svg",
-      new: "add.svg",
-      reports: "article.svg"
+      new: "plus.svg",
+      reports: "file-text.svg"
     }
 
     # Explanation:: This combines the `default_icons` with any custom icons provided
@@ -69,7 +69,7 @@ module NavHelper
     items = [
       {
         icon: icon_set[:index],
-        text: "#{plural} <b>(#{count})</b>",
+        text: "#{plural}",
         path: url_for(controller: "/#{resources}", action: :index)
       },
       {
@@ -90,14 +90,17 @@ module NavHelper
       safe_join([
                   content_tag(:div, class: "flex flex-row justify-between items-center w-full") do
                     safe_join([
-                                content_tag(:h3, plural, class: "text-2xs font-semibold uppercase text-quaternary-600 leading-0"),
-                                inline_svg_tag("icons/keyboard_arrow_down.svg", class: "size-4"),
+                                content_tag(:h3, plural, class: "text-2xs font-mono font-semibold uppercase text-muted leading-0"),
+                                inline_svg_tag("icons/chevron-down.svg", class: "size-3.5 stroke-muted"),
                               ])
                   end,
 
                   # Explanation:: This iterates over the `items` array and calls `crud_nav_button`
                   #               to generate the HTML link for each item in the list.
-                  safe_join(items.map { |item| crud_nav_button(item) })
+                  content_tag(:div, class: "flex flex-col gap-1 items-start justify-start w-full") do
+                    safe_join(items.map { |item| crud_nav_button(item) })
+                  end,
+
                 ])
     end
   end
@@ -125,14 +128,14 @@ module NavHelper
       "button-small",
       "w-full",
       "!justify-start",
-      ("button-secondary" if active),
+      ("button-sidebar" if active),
       ("button-link" unless active)
     ].compact.join(" ")
 
     # Explanation:: This generates the final HTML link, embedding the SVG icon and the
     #               HTML-safe text, and applying the calculated `classes` for styling.
     link_to item[:path], class: classes do
-      inline_svg_tag("icons/#{item[:icon]}", class: "size-4") +
+      inline_svg_tag("icons/#{item[:icon]}", class: "size-3.5") +
         content_tag(:span, item[:text].html_safe, class: "relative")
     end
   end

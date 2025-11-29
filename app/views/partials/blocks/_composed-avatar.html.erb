@@ -18,7 +18,7 @@
 <div class="flex flex-row justify-center items-center p-1 pr-3 pr-6 rounded-full h-9 gap-1.5">
   <%= render 'partials/modules/avatar' %>
   <div class="flex flex-col justify-start items-start -space-y-1">
-    <%= content_tag :span, current_user.full_name, class: "text-2xs uppercase tracking-wider font-semibold" %>
-    <%= content_tag :span, current_user.role, class: "text-3xs text-muted font-semibold uppercase tracking-widers" %>
+    <%= content_tag :span, "Oi, #{current_user.first_name}", class: "text-sm font-medium" %>
+    <%= content_tag :span, "@#{current_user.role}", class: "text-2xs text-muted" %>
   </div>
 </div>

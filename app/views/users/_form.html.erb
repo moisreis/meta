@@ -27,7 +27,7 @@
              placeholder: "seuemail@email.com",
              is_half_width: true,
              desc: "Informe um e-mail válido",
-             icon_name: "mail"
+             icon_name: "at-sign"
   %>
   <%= render "partials/modules/separator" %>
   <div class="grid grid-cols-2 gap-6">
@@ -38,7 +38,7 @@
                field_type: :text_field,
                placeholder: "Maria",
                desc: "Informe seu primeiro nome",
-               icon_name: "person_text"
+               icon_name: "user-round-pen"
     %>
     <%= render "partials/modules/input-field",
                f: form,
@@ -47,7 +47,7 @@
                field_type: :text_field,
                placeholder: "Silva",
                desc: "Informe seu último nome",
-               icon_name: "person_text"
+               icon_name: "user-round-pen"
     %>
   </div>
   <%= render "partials/modules/separator" %>
@@ -59,7 +59,7 @@
                field_type: :password_field,
                placeholder: "SuaSenha123@",
                desc: "Crie uma senha segura com, pelo menos, 6 caracteres",
-               icon_name: "passkey"
+               icon_name: "key"
     %>
     <%= render "partials/modules/input-field",
                f: form,
@@ -68,7 +68,7 @@
                field_type: :password_field,
                placeholder: "SuaSenha123@",
                desc: "Repita sua senha",
-               icon_name: "passkey"
+               icon_name: "key"
     %>
   </div>
   <%= form.button :submit,

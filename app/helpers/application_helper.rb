@@ -136,23 +136,173 @@ module ApplicationHelper
     #               an upward arrow for ascending, a downward arrow for descending, or a default arrow if the column is not sorted.
     icon =
       if current_column != column.to_s
-        "keyboard_arrow_down"
+        "arrow-down"
       elsif current_direction == "asc"
-        "keyboard_arrow_up"
+        "arrow-up"
       else
-        "keyboard_arrow_down"
+        "arrow-down"
       end
 
     # Explanation:: This generates the final HTML link, merging the new sort parameter into the
     #               existing web address parameters and wrapping the custom icon, column name, and arrow icon inside it.
     link_to params.permit!.merge(q: (params[:q] || {}).merge(s: new_sort)) do
-      content_tag(:div, class: "flex flex-row gap-1 items-center [&>svg]:size-4 [&>svg]:fill-primary-50") do
+      content_tag(:div, class: "flex flex-row gap-1 items-center [&>svg]:size-3.5 [&>svg]:stroke-body") do
         safe_join([
-                    inline_svg_tag("icons/#{custom_icon}.svg"),
                     name,
                     inline_svg_tag("icons/#{icon}.svg")
                   ])
       end
     end
+  end
+
+  # Explanation:: Defines a fixed list of numeric shade levels used to
+  #               determine how strong the color intensity should be.
+  #               Freezing prevents accidental modifications.
+  SHADE_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].freeze
+
+  # == shade_for_value
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: Calculates a shade level based on how large the value is.
+  #        Converts the number into a proportional color intensity
+  #        that becomes stronger with higher values.
+  #
+  def shade_for_value(value, max_value: 100_000)
+
+    # Explanation:: Returns the lowest shade when the value is zero or
+    #               negative to avoid unnecessary calculations.
+    return 50 if value.to_f <= 0
+
+    # Explanation:: Ensures the value does not exceed the allowed limit.
+    #               This keeps the ratio calculation within safe bounds.
+    v = [value.to_f, max_value].min
+
+    # Explanation:: Converts the capped value into a 0–1 scale so it can
+    #               be mapped proportionally to the shade list.
+    ratio = v / max_value
+
+    # Explanation:: Calculates which shade index best represents the ratio.
+    #               Rounds to the nearest available shade step.
+    index = (ratio * (SHADE_STEPS.size - 1)).round
+
+    # Explanation:: Returns the chosen shade based on the computed index.
+    #               This shade is later used to build the CSS class.
+    SHADE_STEPS[index]
+  end
+
+  # == colored_currency
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: Displays a currency amount with a background color that
+  #        becomes darker for larger values. Helps users visually
+  #        compare monetary figures at a glance.
+  #
+  def colored_currency(value, additional_class = "")
+
+    # Explanation:: Returns a neutral placeholder when the value is blank or zero.
+    #               Prevents meaningless values from being styled or displayed.
+    return content_tag(:span, "N/A", class: "text-muted") unless value.present? && value.to_f != 0
+
+    # Explanation:: Determines how intense the color should be for the value.
+    #               Uses shade_for_value to pick the correct shade step.
+    shade = shade_for_value(value)
+
+    # Explanation:: Builds the HTML span showing the formatted currency and
+    #               applies a class that encodes the chosen shade level.
+    content_tag(
+      :span,
+      number_to_currency(value, unit: "R$ ", separator: ",", delimiter: "."),
+      class: "shade font-mono px-3 py-0.5 min-h-9 max-h-12 flex items-center currency-shade-#{shade} #{additional_class}"
+    )
+  end
+
+  # == colored_numerical
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: Displays a numerical amount with a background color that
+  #        becomes darker for larger values. Helps users visually
+  #        compare numerical figures at a glance.
+  #
+  def colored_numerical(value, additional_class = "")
+
+    # Explanation:: Returns a neutral placeholder when the value is blank or zero.
+    #               Prevents meaningless values from being styled or displayed.
+    return content_tag(:span, "N/A", class: "text-muted") unless value.present? && value.to_f != 0
+
+    # Explanation:: Determines how intense the color should be for the value.
+    #               Uses shade_for_value to pick the correct shade step.
+    shade = shade_for_value(value)
+
+    # Explanation:: Limits the precision of the numerical value
+    value = number_with_precision(value, precision: 3)
+
+    # Explanation:: Builds the HTML span showing the formatted numerical and
+    #               applies a class that encodes the chosen shade level.
+    content_tag(
+      :span,
+      value,
+      class: "shade font-mono px-3 py-0.5 min-h-9 max-h-12 flex items-center numerical-shade-#{shade} #{additional_class}"
+    )
+  end
+
+  # == colored_percentage
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: Displays a percentage amount with a background color that
+  #        becomes darker for larger values. Helps users visually
+  #        compare percentage figures at a glance.
+  #
+  def colored_percentage(value, additional_class = "")
+
+    # Explanation:: Returns a neutral placeholder when the value is blank or zero.
+    #               Prevents meaningless values from being styled or displayed.
+    return content_tag(:span, "N/A", class: "text-muted") unless value.present? && value.to_f != 0
+
+    # Explanation:: Determines how intense the color should be for the value.
+    #               Uses shade_for_value to pick the correct shade step.
+    shade = shade_for_value(value, max_value: 100)
+
+    # Explanation:: Limits the precision of the numerical value
+    value = number_with_precision(value, precision: 3)
+
+    # Explanation:: Builds the HTML span showing the formatted percentage and
+    #               applies a class that encodes the chosen shade level.
+    content_tag(
+      :span,
+      "#{value}%",
+      class: "shade font-mono px-3 py-0.5 min-h-9 max-h-12 flex items-center percentage-shade-#{shade} #{additional_class}"
+    )
+  end
+
+  # == formatted_timestamp
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: Formats a date and time into a readable string and wraps it
+  #        in a styled HTML element. Presents timestamps consistently
+  #        across the interface for better readability.
+  #
+  def formatted_timestamp(datetime, formatter: ->(t) { t.strftime("%d/%m/%Y") })
+
+    # Explanation:: Returns a placeholder when the datetime value is missing.
+    #               Prevents errors and keeps the visual layout stable.
+    return content_tag(:span, "N/A", class: "font-mono text-muted") unless datetime.present?
+
+    # Explanation:: Uses the formatter to turn the datetime into a formatted
+    #               string. Allows injecting alternative formatting logic.
+    formatted = formatter.call(datetime)
+
+    # Explanation:: Builds a span containing the formatted date string and
+    #               applies a consistent monospaced style for alignment.
+    content_tag(:span, formatted, class: "font-mono")
   end
 end

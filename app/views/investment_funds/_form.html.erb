@@ -21,8 +21,9 @@
              is_half_width: true,
              desc: "Nome comercial do fundo.",
              field_type: :text_field,
-             icon_name: "folder"
+             icon_name: "folder-open"
   %>
+  <%= render "partials/modules/separator" %>
   <div class="grid grid-cols-2 gap-6">
     <%= render "partials/modules/input-field",
                f: form,
@@ -32,17 +33,17 @@
                is_half_width: false,
                desc: "Nome da entidade responsável pela administração do fundo.",
                field_type: :text_field,
-               icon_name: "badge"
+               icon_name: "id-card"
     %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :originator_fund,
-               label: "Fundo Originador",
+               label: "Fundo originador",
                placeholder: "Nome do fundo originador",
                is_half_width: false,
                desc: "Informe caso este fundo seja derivado de outro.",
                field_type: :text_field,
-               icon_name: "sync_alt"
+               icon_name: "arrow-left-right"
     %>
   </div>
   <%= render "partials/modules/separator" %>
@@ -54,7 +55,7 @@
              is_half_width: true,
              desc: "O CNPJ precisa ser único no sistema.",
              field_type: :text_field,
-             icon_name: "123"
+             icon_name: "hash"
   %>
   <%= form.button :submit,
                   name: nil,

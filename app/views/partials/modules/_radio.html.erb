@@ -47,12 +47,19 @@
 <%# [Variable]: Defines the base CSS classes applied to the visible `<label>` card.
   #             These classes control alignment, padding, text color, and size.
   %>
-<% label_classes = "flex items-center justify-center w-full p-1.5 px-3 text-heading rounded-full cursor-pointer peer-disabled:opacity-50 peer-disabled:cursor-not-allowed [&>div>svg]:size-4 " %>
+<% label_classes = "flex items-center justify-center w-full px-2 py-0.5 text-heading rounded-base cursor-pointer peer-disabled:opacity-50 peer-disabled:cursor-not-allowed [&>div>svg]:size-3.5 shadow-xs" %>
 
-<%# [Variable]: Defines the dynamic CSS classes that handle hover, default, and selection styles.
-  #             It uses the `peer-checked` utility to style the label when the hidden input is selected.
+<%# [Variable]: Defines the dynamic CSS classes that handle the general styles.
   %>
-<% style_classes = "bg-accent border border-border hover:bg-secondary-50 hover:border-secondary-100 peer-checked:bg-secondary-50 peer-checked:hover:bg-secondary-50 peer-checked:border-secondary-100 peer-checked:text-secondary-700 peer-checked:[&>div>svg]:fill-secondary-700 peer-checked:[&>div>p]:text-secondary-700" %>
+<% style_classes = "bg-quaternary-50 border border-border hover:bg-secondary-50 hover:border-secondary-100" %>
+
+<%# [Variable]: Defines the dynamic CSS classes that handle the hover states.
+  %>
+<% style_classes_on_hover = "peer-checked:hover:bg-secondary-700/90" %>
+
+<%# [Variable]: Defines the dynamic CSS classes that handle the selection styles.
+  %>
+<% style_classes_on_peer = "peer-checked:bg-secondary-700 peer-checked:border-secondary-100 peer-checked:ring-3 peer-checked:ring-secondary-100 peer-checked:text-secondary-50 peer-checked:[&>div>svg]:stroke-secondary-50 peer-checked:[&>div>p]:text-secondary-50" %>
 
 <%# [Variable]: Generates a unique HTML ID to correctly associate the hidden radio input with its visible label.
   #             The ID combines the form object name, group name, and option value.
@@ -67,7 +74,7 @@
     checked: is_checked,
     aria: { invalid: f.object.errors[name].present? }
   } %>
-  <label for="<%= input_id %>" class="<%= label_classes %> <%= style_classes %>">
+  <label for="<%= input_id %>" class="<%= label_classes %> <%= style_classes %> <%= style_classes_on_peer %> <%= style_classes_on_hover %>">
     <div class="flex flex-row gap-1.5 items-center">
       <%= inline_svg_tag "icons/#{icon_name}.svg" %>
       <div class="flex flex-col">

@@ -15,9 +15,9 @@
   #        - Why:  Enables consistent, reusable table rendering across the
   #                application while keeping logic centralized.
   %>
-<table class="max-w-full [&>thead]:max-w-full [&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 [&>thead>tr]:border-b [&>tbody>tr]:border-b [&>thead>tr]:border-border [&>tbody>tr]:border-border w-full text-sm table-auto">
+<table class="max-w-full [&>thead]:max-w-full [&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 [&>thead>tr]:border-b [&>tbody>tr]:border-b [&>thead>tr]:border-border [&>tbody>tr]:border-border w-full text-sm table-auto border border-border rounded-base shadow-xs">
   <thead>
-  <tr class="[&>th]:w-auto [&>th]:text-left [&>th]:p-1.5 [&>th]:px-3 [&>th]:text-sm [&>th]:text-left [&>th]:font-semibold [&>th]:bg-primary-600">
+  <tr class="[&>th]:w-auto [&>th]:text-left [&>th]:p-1.5 [&>th]:px-3 [&>th]:text-sm [&>th]:text-body [&>th]:text-left [&>th]:font-medium [&>th]:bg-table-strong">
 
     <%# [Variable] Ensures columns_header exists.
       #            Provides a fallback empty array when no header is given.
@@ -37,7 +37,7 @@
       <%# [Renderer] Builds the <th> element and inserts the sortable helper.
         #            Passes the header label, the column body, and its icon.
         %>
-      <th class="text-primary-50">
+      <th>
         <%# [Renderer] Calls the sortable helper.
           #            Builds a sortable column header using the label, body key, and icon.
           %>
@@ -60,13 +60,13 @@
     %>
   <% models.each_with_index do |model, row_index| %>
 
-    <tr class="[&>td]:w-auto [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm">
+    <tr class="odd:bg-table-bg [&>td]:w-auto [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm hover:bg-table-hover">
 
       <%# [Loop] Iterates through each column configuration.
         #        Selects the correct value for each cell.
         %>
       <% columns_body.each_with_index do |col_body, col_index| %>
-        <td class="<%= 'bg-table' if col_index != 0 %> <%= 'font-medium border-r border-border' if col_index == 0 %>">
+        <td class="<%= 'font-medium' if col_index == 0 %>">
           <div class="line-clamp-1">
             <%# [ValueResolver] Determines the displayed value for the current cell.
             #                 Handles symbols, strings, and callable Procs.
@@ -85,13 +85,38 @@
           </div>
         </td>
       <% end %>
-      <td class="bg-table h-9 flex flex-row justify-center items-center">
-        <%= link_to edit_polymorphic_path(model),
-                    data: { turbo: false },
-                    class: 'button button-ghost button-small' do
-        %>
-          <%= inline_svg_tag "icons/more_horiz.svg" %>
+      <td class="min-h-9 flex flex-col justify-center items-center">
+        <%= button_tag type: 'button',
+                       class: 'button button-ghost button-small row-options' do %>
+          <%= inline_svg_tag "icons/ellipsis.svg" %>
         <% end %>
+
+        <div class="template" style="display: none;">
+          <div class="flex flex-col gap-1.5 w-full justify-start items-start">
+            <%= link_to edit_polymorphic_path(model),
+                        data: { turbo: false },
+                        class: 'button button-ghost button-small w-full justify-start' do
+            %>
+              <%= inline_svg_tag "icons/settings-2.svg" %>
+              <%= content_tag :span, "Editar" %>
+            <% end %>
+            <%= link_to polymorphic_path(model),
+                        data: { turbo: false },
+                        class: 'button button-ghost button-small w-full justify-start' do %>
+              <%= inline_svg_tag "icons/external-link.svg" %>
+              <%= content_tag :span, "Ver" %>
+            <% end %>
+            <%= link_to polymorphic_path(model),
+                        data: {
+                          turbo_method: :delete,
+                          turbo_confirm: "Tem certeza que deseja deletar este registro?"
+                        },
+                        class: 'button button-ghost button-small w-full justify-start' do %>
+              <%= inline_svg_tag "icons/trash.svg" %>
+              <%= content_tag :span, "Deletar" %>
+            <% end %>
+          </div>
+        </div>
       </td>
     </tr>
   <% end %>

@@ -1,0 +1,233 @@
+/*
+ * File: flatpicker
+ * Date: 11/27/2025
+ * Author: Moisés Reis
+ * Package: Meta
+ *
+ * Description: Implements the visual styling for all Flatpickr calendar components.
+ *              Ensures full consistency between third-party datepickers and the app’s
+ *              design system. Normalizes colors, spacing, layout structure, icon
+ *              behavior, and interaction states to match the rest of the UI.
+ *
+ * Usage: - What: Applies custom styles to days, months, navigation arrows, input wrappers,
+ *                hover states, selected dates, and the calendar container itself. *
+ *        - How: Overrides Flatpickr’s default CSS classes using design-system variables
+ *               (spacing, typography, colors, radius, and shadows). This allows every
+ *               visual change to cascade from a single source of truth.
+ *        - Why: Guarantees that calendar elements remain visually aligned with the
+ *               application, preventing mismatches in contrast, typography, and spacing.
+ *               Provides a stable and predictable interface for users interacting with
+ *               date inputs across the entire product.
+ */
+
+/*
+ *  Sets the calendar container's border, shadow, and rounded corners to match
+ *  the design system and unify Flatpickr with the application's UI.
+ */
+.flatpickr-calendar {
+    border: 1px solid var(--color-border);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    font-family: var(--font-body);
+    border-radius: var(--radius-base) !important;
+}
+
+/*
+ *  Sets the internal calendar grid’s top border and bottom rounding to ensure
+ *  the days section visually integrates with the calendar container.
+ */
+.flatpickr-days {
+    border-top: 1px solid var(--color-border);
+    border-bottom-left-radius: var(--radius-base) !important;
+    border-bottom-right-radius: var(--radius-base) !important;
+}
+
+/*
+ *  Sets the month and year text style by adjusting size, weight, and color
+ *  for improved readability and hierarchy.
+ */
+.cur-month, .cur-year {
+    font-size: var(--text-base) !important;
+    font-weight: 500 !important;
+    color: var(--color-muted) !important;
+}
+
+/*
+ *  Sets the number input wrapper used for year selection, applying background,
+ *  borders, and radius to visually integrate the input with the navigation bar.
+ */
+.flatpickr-current-month .numInputWrapper {
+    background-color: var(--color-accent) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-base) !important;
+}
+
+/*
+ *  Sets the weekday headers (Mon, Tue, etc.) by defining their size, weight,
+ *  and muted color to distinguish them from the interactive days.
+ */
+.flatpickr-weekday {
+    font-size: var(--text-sm) !important;
+    font-weight: 600 !important;
+    color: var(--color-muted) !important;
+}
+
+/*
+ *  Sets the base style for each calendar day, including typography and color,
+ *  while applying rounded corners for hover/selection aesthetics.
+ */
+.flatpickr-day {
+    border-radius: var(--radius-base) !important;
+    color: var(--color-muted);
+    font-family: var(--font-mono) !important;
+    font-size: var(--text-sm) !important;
+}
+
+/*
+ *  Sets the hover interaction behavior for days, giving feedback through
+ *  accent background and border visibility.
+ */
+.flatpickr-day:hover {
+    background-color: var(--color-accent);
+    border-color: var(--color-border);
+}
+
+/*
+ *  Sets the appearance of the current day by highlighting it with primary
+ *  palette colors while maintaining rounded visuals.
+ */
+.flatpickr-day.today {
+    background-color: var(--color-primary-50);
+    border-radius: var(--radius-base) !important;
+    color: var(--color-primary-900);
+    border-color: var(--color-primary-100);
+}
+
+/*
+ *  Sets consistent internal padding for the month header, weekdays row,
+ *  and individual day containers to maintain uniform spacing.
+ */
+.dayContainer, .flatpickr-weekdays, .flatpickr-months {
+    padding: calc(var(--spacing) * 3);
+}
+
+/*
+ *  Sets the background and border radius for the main group of days,
+ *  visually separating it from other calendar sections.
+ */
+.dayContainer {
+    background-color: var(--color-table-bg) !important;
+    border-radius: var(--radius-base) !important;
+}
+
+/*
+ *  Sets the layout and height of the previous/next month navigation buttons,
+ *  ensuring centered icons and consistent sizing.
+ */
+.flatpickr-prev-month, .flatpickr-next-month {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(var(--spacing) * 12) !important;
+}
+
+/*
+ *  Sets the horizontal spacing for the previous-month button.
+ */
+.flatpickr-prev-month {
+    margin-left: calc(var(--spacing) * 3) !important;
+}
+
+/*
+ *  Sets the horizontal spacing for the next-month button.
+ */
+.flatpickr-next-month {
+    margin-right: calc(var(--spacing) * 3) !important;
+}
+
+/*
+ *  Sets the default color of navigation arrow icons, matching muted UI elements.
+ */
+.flatpickr-prev-month svg, .flatpickr-next-month svg {
+    stroke: var(--color-muted);
+}
+
+/*
+ *  Sets the overall month selector bar height and centers its content
+ *  to maintain clean alignment of text and navigation controls.
+ */
+.flatpickr-months {
+    height: calc(var(--spacing) * 12) !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/*
+ *  Sets hover behavior for navigation icons by increasing stroke contrast
+ *  to indicate interactivity.
+ */
+.flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg {
+    stroke: var(--color-body);
+    fill: transparent !important;
+}
+
+/*
+ *  Sets spacing between the month title and the year input.
+ */
+.numInputWrapper {
+    margin-left: calc(var(--spacing) * 1.5) !important;
+}
+
+/*
+ *  Sets the selected-day styling, applying strong primary contrast and
+ *  clearly differentiating it from hover and today states.
+ */
+.flatpickr-day.selected {
+    background-color: var(--color-primary-900) !important;
+    color: var(--color-primary-50) !important;
+    border-color: var(--color-primary-900) !important;
+}
+
+/*
+ *  Sets base neutralization for arrow button borders inside the number input.
+ */
+.numInputWrapper span {
+    border-color: transparent !important;
+}
+
+/*
+ *  Sets full border reset for up and down arrows maintaining consistent appearance.
+ */
+.arrowUp span, .arrowDown span {
+    border-color: transparent !important;
+}
+
+/*
+ *  Sets the down-arrow icon by injecting an inline SVG and positioning it
+ *  inside the year input control.
+ */
+.numInputWrapper span.arrowDown:after {
+    content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+    border: none;
+    top: -15% !important;
+    right: 10% !important;
+}
+
+/*
+ *  Sets the up-arrow icon using inline SVG and positions it symmetrically
+ *  with the down arrow for visual balance.
+ */
+.numInputWrapper span.arrowUp:after {
+    content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m18 15-6-6-6 6'/></svg>");
+    border: none;
+    top: -15% !important;
+    right: 10% !important;
+}
+
+/*
+ *  Sets hover/active behavior for the input arrows, preventing Flatpickr's
+ *  default button shading and keeping the UI minimal and clean.
+ */
+.arrowUp:hover, .arrowDown:hover, .arrowUp:active, .arrowDown:active {
+    background-color: transparent !important;
+}

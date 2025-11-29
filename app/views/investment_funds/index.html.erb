@@ -24,25 +24,18 @@
     #                The names correspond directly to the data fields displayed, providing clear
     #                context about the investment fund's registration details and status.
     columns_header: [
-      "Nome do Fundo",
+      "Nome",
       "Administrador",
       "CNPJ",
-      "Valor total investido",
-      "Fundo Originador",
+      "Valor investido",
+      "Fundo",
       "Criado em"
     ],
 
     # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
     #                in the table header. The icons visually distinguish and reinforce the meaning
     #                of the corresponding data column.
-    columns_icons: [
-      "label",
-      "badge",
-      "123",
-      "attach_money",
-      "sync_alt",
-      "calendar_clock"
-    ],
+    columns_icons: [],
 
     # [Explanation]: This is the core array containing lambda functions and symbols that define how
     #                each cell's content is processed and formatted. These functions receive the
@@ -50,25 +43,21 @@
     columns_body: [
       :fund_name,
       :administrator_name,
-      :cnpj,
+
+      # [Explanation]: This lambda function displays the styled CNPJ.
+      ->(investment_fund) do
+        content_tag(
+          :span,
+          investment_fund.cnpj,
+          class: "font-mono"
+        )
+      end,
 
       # [Explanation]: This lambda function calculates and displays the total capital invested in the fund.
       #                If the value is greater than zero, it is formatted as currency (R$);
       #                otherwise, a muted "Sem capital" message appears.
       ->(investment_fund) do
-        if investment_fund.total_invested.to_f > 0
-          content_tag(
-            :span,
-            number_to_currency(investment_fund.total_invested, unit: "R$"),
-            class: "font-medium"
-          )
-        else
-          content_tag(
-            :span,
-            "Sem capital",
-            class: "text-muted"
-          )
-        end
+        colored_currency(investment_fund.total_invested)
       end,
 
       # [Explanation]: This lambda function checks if the fund has an originator fund (a parent fund).
@@ -78,12 +67,16 @@
         if investment_fund.originator_fund.present?
           content_tag(:span,
                       investment_fund.originator_fund,
-                      class: "badge badge-secondary")
+                      class: "font-medium")
         else
-          content_tag(:span, "—", class: "text-muted")
+          content_tag(:span, "N/A", class: "text-muted")
         end
       end,
-      :created_at,
+
+      # [Explanation]: This lambda function loads the value in Brazilian time and format.
+      ->(investment_fund) do
+        formatted_timestamp(investment_fund.created_at)
+      end
     ],
 
     # [Explanation]: This variable contains the collection of InvestmentFund model instances
@@ -130,31 +123,31 @@
   filters: [
     {
       key: :fund_name_cont,
-      label: "Nome do Fundo",
+      label: "Nome do fundo",
       description: "Exibe fundos cujo nome contenha estes caracteres.",
       placeholder: "Nome do fundo",
-      icon_name: "label"
+      icon_name: "folder-open"
     },
     {
       key: :administrator_name_cont,
       label: "Administrador",
       description: "Filtra fundos pelo nome da instituição administradora.",
       placeholder: "Administrador",
-      icon_name: "badge"
+      icon_name: "id-card"
     },
     {
       key: :cnpj_cont,
       label: "CNPJ",
       description: "Filtra fundos pelo CNPJ informado.",
       placeholder: "00.000.000/0000-00",
-      icon_name: "123"
+      icon_name: "hash"
     },
     {
       key: :originator_fund_cont,
-      label: "Fundo Originador",
+      label: "Fundo originador",
       description: "Mostra fundos derivados do fundo informado.",
       placeholder: "Originador",
-      icon_name: "sync_alt"
+      icon_name: "arrow-left-right"
     }
   ],
 

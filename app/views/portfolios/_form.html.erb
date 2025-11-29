@@ -48,6 +48,7 @@
              include_blank: "Nenhum usuário para compartilhar",
              is_half_width: true
   %>
+  <%= render "partials/modules/separator" %>
   <%= render "partials/blocks/radio-group",
              title: "Permissão de acesso",
              desc: "Escolha o nível de acesso para ceder ao usuário acima." do %>
@@ -57,15 +58,15 @@
                value: "read",
                title: "Leitura",
                desc: "O usuário pode apenas visualizar o portfólio e os ativos.",
-               icon_name: "visibility"
+               icon_name: "eye"
     %>
     <%= render "partials/modules/radio",
                f: form,
                name: :grant_crud_permission,
                value: "crud",
-               title: "Edição e Remoção",
+               title: "Edição e remoção",
                desc: "O usuário pode adicionar, editar e remover ativos.",
-               icon_name: "edit_square"
+               icon_name: "pencil"
     %>
   <% end %>
   <%= form.hidden_field :user_id,

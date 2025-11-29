@@ -1,0 +1,193 @@
+/*
+ * File: table-shade
+ * Date: 11/27/2025
+ * Author: Moisés Reis
+ * Package: Meta
+ *
+ * Description: Provides predefined background and text color combinations
+ *              used to visually represent currency intensity levels.
+ *              Helps create a clear gradient effect for data values.
+ *
+ * Usage: - What: Assigns a CSS class that matches the shade returned
+ *                 by the Ruby helper responsible for color mapping.
+ *        - How: Each class uses CSS variables to apply a specific
+ *                background tone and readable text contrast.
+ *        - Why: Allows the UI to highlight low, medium, and high
+ *               currency values without manual styling.
+ */
+
+td:has(div > .shade) {
+    padding: 0 !important;
+    border: 1px solid var(--color-body);
+}
+
+/*
+ * ------------------------------
+ *  Shades for currency values
+ *
+ *  Defines the shades for currency values.
+ * ------------------------------
+ */
+.currency-shade-50 {
+    background-color: var(--color-currency-50);
+    color: var(--color-currency-900);
+}
+
+.currency-shade-100 {
+    background-color: var(--color-currency-100);
+    color: var(--color-currency-900);
+}
+
+.currency-shade-200 {
+    background-color: var(--color-currency-200);
+    color: var(--color-currency-900);
+}
+
+.currency-shade-300 {
+    background-color: var(--color-currency-300);
+    color: var(--color-currency-900);
+}
+
+.currency-shade-400 {
+    background-color: var(--color-currency-400);
+    color: var(--color-currency-900);
+}
+
+.currency-shade-500 {
+    background-color: var(--color-currency-500);
+    color: var(--color-currency-900);
+}
+
+.currency-shade-600 {
+    background-color: var(--color-currency-600);
+    color: var(--color-currency-50);
+}
+
+.currency-shade-700 {
+    background-color: var(--color-currency-700);
+    color: var(--color-currency-50);
+}
+
+.currency-shade-800 {
+    background-color: var(--color-currency-800);
+    color: var(--color-currency-50);
+}
+
+.currency-shade-900 {
+    background-color: var(--color-currency-900);
+    color: var(--color-currency-50);
+}
+
+/*
+ * ------------------------------
+ *  Shades for numerical values
+ *
+ *  Defines the shades for currency values.
+ * ------------------------------
+ */
+.numerical-shade-50 {
+    background-color: var(--color-numerical-50);
+    color: var(--color-numerical-900);
+}
+
+.numerical-shade-100 {
+    background-color: var(--color-numerical-100);
+    color: var(--color-numerical-900);
+}
+
+.numerical-shade-200 {
+    background-color: var(--color-numerical-200);
+    color: var(--color-numerical-900);
+}
+
+.numerical-shade-300 {
+    background-color: var(--color-numerical-300);
+    color: var(--color-numerical-900);
+}
+
+.numerical-shade-400 {
+    background-color: var(--color-numerical-400);
+    color: var(--color-numerical-900);
+}
+
+.numerical-shade-500 {
+    background-color: var(--color-numerical-500);
+    color: var(--color-numerical-900);
+}
+
+.numerical-shade-600 {
+    background-color: var(--color-numerical-600);
+    color: var(--color-numerical-50);
+}
+
+.numerical-shade-700 {
+    background-color: var(--color-numerical-700);
+    color: var(--color-numerical-50);
+}
+
+.numerical-shade-800 {
+    background-color: var(--color-numerical-800);
+    color: var(--color-numerical-50);
+}
+
+.numerical-shade-900 {
+    background-color: var(--color-numerical-900);
+    color: var(--color-numerical-50);
+}
+
+/*
+ * ------------------------------
+ *  Shades for percentage values
+ *
+ *  Defines the shades for currency values.
+ * ------------------------------
+ */
+.percentage-shade-50 {
+    background-color: var(--color-percentage-50);
+    color: var(--color-percentage-900);
+}
+
+.percentage-shade-100 {
+    background-color: var(--color-percentage-100);
+    color: var(--color-percentage-900);
+}
+
+.percentage-shade-200 {
+    background-color: var(--color-percentage-200);
+    color: var(--color-percentage-900);
+}
+
+.percentage-shade-300 {
+    background-color: var(--color-percentage-300);
+    color: var(--color-percentage-900);
+}
+
+.percentage-shade-400 {
+    background-color: var(--color-percentage-400);
+    color: var(--color-percentage-900);
+}
+
+.percentage-shade-500 {
+    background-color: var(--color-percentage-500);
+    color: var(--color-percentage-900);
+}
+
+.percentage-shade-600 {
+    background-color: var(--color-percentage-600);
+    color: var(--color-percentage-50);
+}
+
+.percentage-shade-700 {
+    background-color: var(--color-percentage-700);
+    color: var(--color-percentage-50);
+}
+
+.percentage-shade-800 {
+    background-color: var(--color-percentage-800);
+    color: var(--color-percentage-50);
+}
+
+.percentage-shade-900 {
+    background-color: var(--color-percentage-900);
+    color: var(--color-percentage-50);
+}

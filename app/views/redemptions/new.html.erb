@@ -1,0 +1,25 @@
+<%#
+  # Partial: new.html
+  # Date: 11/28/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the page structure for the new redemption creation form.
+  #              It sets the page title and description and embeds the reusable redemption form partial.
+  #
+  # Usage: - What: Displays the page where users can input data for a new redemption.
+  #                It provides the context and layout for the creation process.
+  #        - How: Uses the 'wrapper' partial to establish the dashboard layout
+  #               and then renders the '_form' partial, passing the `@redemption` object and button labels.
+  #        - Why: Provides the interface necessary for the user to initiate and register a new redemption transaction in the system.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Criar novo resgate",
+           page_desc: "Preencha os dados para registrar um resgate." do
+%>
+  <%= render "form",
+             redemption: @redemption,
+             button_name: "Adicionar",
+             icon_name: "plus"
+  %>
+<% end %>

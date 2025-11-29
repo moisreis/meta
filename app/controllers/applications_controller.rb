@@ -311,7 +311,9 @@ class ApplicationsController < ApplicationController
       :request_date,
       :financial_value,
       :number_of_quotas,
-      :quota_value_at_application
+      :quota_value_at_application,
+      :cotization_date,
+      :liquidation_date
     )
   end
 

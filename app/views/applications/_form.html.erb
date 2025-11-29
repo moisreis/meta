@@ -18,12 +18,11 @@
     <%= render "partials/modules/select",
                f: form,
                name: :fund_investment_id,
-               label: "Investimento Alvo",
+               label: "Investimento alvo",
                options_collection: @fund_investments.map { |fi| ["#{fi.investment_fund.fund_name} (Carteira: #{fi.portfolio.name})", fi.id] },
                is_half_width: false,
                desc: "Escolha o fundo e a carteira onde a transação será registrada.",
-               is_inactive: false,
-               icon_name: "account_balance_wallet"
+               is_inactive: false
     %>
   </div>
   <%= render "partials/modules/separator" %>
@@ -31,12 +30,12 @@
     <%= render "partials/modules/input-field",
                f: form,
                name: :financial_value,
-               label: "Valor Financeiro da Transação",
-               placeholder: "Ex: 5000.00",
+               label: "Valor financeiro da transação",
+               placeholder: "5000.00",
                is_half_width: false,
                desc: "O valor total (R$) investido ou resgatado na transação.",
                field_type: :number_field,
-               icon_name: "universal_currency_alt",
+               icon_name: "banknote",
                step: 0.01
     %>
     <%= render "partials/modules/input-field",
@@ -58,23 +57,23 @@
                is_half_width: false,
                desc: "O valor (R$) da cota no momento da transação.",
                field_type: :number_field,
-               icon_name: "price_change",
+               icon_name: "banknote-arrow-up",
                step: 0.0001
     %>
   </div>
   <%= render "partials/modules/separator" %>
   <div class="grid grid-cols-3 gap-6">
-    <%= render "partials/modules/input-field",
+    <%= render "partials/modules/date-field",
                f: form,
                name: :request_date,
-               label: "Data do Pedido",
+               label: "Data do pedido",
                placeholder: "DD/MM/AAAA",
                is_half_width: false,
-               desc: "Data em que o pedido de aplicação/resgate foi feito.",
+               desc: "Data em que o pedido de aplicação ou resgate foi feito.",
                field_type: :date_field,
-               icon_name: "calendar_today"
+               icon_name: "calendar"
     %>
-    <%= render "partials/modules/input-field",
+    <%= render "partials/modules/date-field",
                f: form,
                name: :cotization_date,
                label: "Data de Cotização",
@@ -82,9 +81,9 @@
                is_half_width: false,
                desc: "Data em que a cota foi calculada e a transação efetivada.",
                field_type: :date_field,
-               icon_name: "calculate"
+               icon_name: "calculator"
     %>
-    <%= render "partials/modules/input-field",
+    <%= render "partials/modules/date-field",
                f: form,
                name: :liquidation_date,
                label: "Data de Liquidação",
@@ -92,7 +91,7 @@
                is_half_width: false,
                desc: "Data em que o dinheiro efetivamente entra/sai da conta.",
                field_type: :date_field,
-               icon_name: "receipt_long"
+               icon_name: "file-text"
     %>
   </div>
   <%= form.button :submit,

@@ -14,38 +14,24 @@
   #        - Why: Provides a stable, reusable structure that standardizes page layout and reduces duplication.
   %>
 <section class="flex flex-col col-span-14">
-  <div class="h-12 px-6 flex grid grid-cols-2">
+  <div class="h-12 px-6 flex flex-row items-center justify-between border-b border-border">
     <div class="flex flex-row gap-1.5 items-center justify-start">
       <%= content_tag :h1,
                       page_title,
-                      class: "text-heading font-heading text-base font-medium text-left"
+                      class: "text-heading font-mono text-sm uppercase font-medium text-left"
       %>
     </div>
-    <div class="flex flex-row gap-1.5 items-center justify-end">
-      <%= link_to edit_user_registration_path,
-                  class: "button button-ghost button-icon" do
-      %>
-        <%= inline_svg_tag "icons/accounts.svg" %>
-      <% end %>
-      <%= link_to destroy_user_session_path,
-                  data: { "turbo-method": :delete },
-                  class: "button button-ghost button-icon" do %>
-        <%= inline_svg_tag "icons/logout.svg" %>
-      <% end %>
-      <%= link_to edit_user_registration_path,
-                  class: "button button-ghost button-icon" do
-      %>
-        <%= inline_svg_tag "icons/more_vert.svg" %>
-      <% end %>
-    </div>
+    <%= render "partials/blocks/composed-avatar" %>
   </div>
   <div class="bg-white flex flex-col gap-3 [&>form]:flex [&>form]:!gap-6 [&>form]:p-6">
 
     <%# [Condition] Renders content differently depending on the current view. %>
     <% if current_view == "datatable" %>
-      <%= yield %>
+      <div class="p-6 py-3 flex flex-col gap-6">
+        <%= yield %>
+      </div>
     <% else %>
-      <div class="p-12 px-12 flex flex-col gap-6">
+      <div class="py-12 px-32 flex flex-col gap-6">
         <%= yield %>
       </div>
     <% end %>

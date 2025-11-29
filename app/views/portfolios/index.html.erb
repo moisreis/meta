@@ -39,11 +39,7 @@
     # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
     #                in the table header. The icons help visually categorize the type of data
     #                presented in the corresponding column.
-    columns_icons: [
-      "label",
-      "person",
-      "group"
-    ],
+    columns_icons: [],
 
     # [Explanation]: This is the core array containing lambda functions and symbols that define how
     #                each cell's content is processed and formatted. These functions receive the
@@ -55,38 +51,14 @@
       #                If the value is positive, it is formatted as currency (R$);
       #                otherwise, it displays the message "Não há investimentos" (No investments) in muted text.
       ->(portfolio) do
-        if portfolio.total_invested_value.to_f > 0
-          content_tag(
-            :span,
-            number_to_currency(portfolio.total_invested_value, unit: "R$"),
-            class: "font-medium"
-          )
-        else
-          content_tag(
-            :span,
-            "Não há investimentos",
-            class: "text-muted"
-          )
-        end
+        colored_currency(portfolio.total_invested_value)
       end,
 
       # [Explanation]: This lambda displays the total number of investment quotas held in the portfolio.
       #                If there are quotas, the value is formatted with number delimiters;
       #                otherwise, it displays "Sem cotas" (No quotas) in muted text.
       ->(portfolio) do
-        if portfolio.total_quotas_held.to_f > 0
-          content_tag(
-            :span,
-            number_with_delimiter(portfolio.total_quotas_held),
-            class: "text-link font-medium"
-          )
-        else
-          content_tag(
-            :span,
-            "Sem cotas",
-            class: "text-muted"
-          )
-        end
+        colored_numerical(portfolio.total_quotas_held)
       end,
 
       # [Explanation]: This lambda displays the full name of the user who owns the portfolio.
@@ -115,7 +87,7 @@
             )
           end.join.html_safe
         else
-          content_tag(:span, "Não há compartilhamento", class: "text-muted")
+          content_tag(:span, "N/A", class: "text-muted")
         end
       end
     ],
@@ -173,7 +145,7 @@
       label: "Usuário",
       description: "Mostra carteiras pertencentes a um usuário cujo nome corresponde a este filtro.",
       placeholder: "Nome do responsável",
-      icon_name: "account_circle"
+      icon_name: "circle-user"
     }
   ],
 

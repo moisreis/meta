@@ -1,10 +1,42 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
+ * File: application
+ * Date: 11/28/2025
+ * Author: Moisés Reis
+ * Package: Meta
  *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
+ * Description: Central stylesheet aggregator for the application.
+ *              This file links together all core third-party and helper styles
+ *              that must be globally available across views.
  *
- * Consider organizing styles into separate files for maintainability.
+ * Usage: - What: Collects and loads foundational CSS assets used throughout the app.
+ *        - How: Uses @import statements to pull in library and helper stylesheets.
+ *        - Why: Ensures consistent styling and shared UI behavior without repeating
+ *               imports in individual components.
  */
+
+/*
+ * Loads the Tom Select base stylesheet.
+ * This provides enhanced dropdown components with searchable and taggable UI.
+ * Required wherever select inputs need advanced client-side behavior.
+ */
+@import "libraries/tom-select.css";
+
+/*
+ * Loads the Flatpickr date/time picker stylesheet.
+ * Enables lightweight and customizable calendar widgets for forms.
+ * Necessary for any view that uses date or datetime inputs.
+ */
+@import "libraries/flatpicker.css";
+
+/*
+ * Loads the Tippy.js's library.
+ * Sets the default Tippy.js to match the app's brand.
+ */
+@import "libraries/tippy.css";
+
+/*
+ * Loads helper styles that apply alternating row shading to tables.
+ * Improves readability of tabular data by increasing visual separation.
+ * Useful anywhere tabular layouts are rendered.
+ */
+@import "helpers/table-shade.css";

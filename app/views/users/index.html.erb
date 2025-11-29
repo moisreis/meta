@@ -32,8 +32,6 @@
       "Nome completo",
       "E-mail",
       "Nível",
-      "Criado em",
-      "Atualizado em",
       "Carteiras"
     ],
 
@@ -44,8 +42,6 @@
       "label",
       "alternate_email",
       "assignment_ind",
-      "calendar_clock",
-      "history",
       "wallet"
     ],
 
@@ -77,16 +73,13 @@
         content_tag(:span, role_name, class: role_class)
       end,
 
-      :created_at,
-      :updated_at,
-
       # [Explanation]: This lambda function counts the number of portfolios owned by the user.
       #                If the count is zero, it displays a muted "Não há carteiras" (No portfolios) message;
       #                otherwise, it displays the numeric count.
       ->(user) do
         count = user.portfolios.size
         if count.zero?
-          content_tag(:span, "Não há carteiras", class: "text-muted")
+          content_tag(:span, "N/A", class: "text-muted")
         else
           content_tag(:span, count)
         end
@@ -137,16 +130,16 @@
     {
       key: :first_name_cont,
       label: "Nome",
-      description: "Mostra carteiras cujo nome contém estes caracteres.",
-      placeholder: "Nome da carteira",
-      icon_name: "wallet"
+      description: "Mostra usuários cujo nome contém estes caracteres.",
+      placeholder: "Maria da Silva",
+      icon_name: "circle-user"
     },
     {
       key: :email_cont,
-      label: "Usuário",
-      description: "Mostra carteiras pertencentes a um usuário cujo nome corresponde a este filtro.",
-      placeholder: "Nome do responsável",
-      icon_name: "account_circle"
+      label: "E-mail",
+      description: "Mostra usuários cujo e-mail contém estes caracteres.",
+      placeholder: "emaildousuario@email.com",
+      icon_name: "at-sign"
     }
   ],
 

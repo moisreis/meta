@@ -1,0 +1,93 @@
+<%#
+  # Partial: _date-field.html
+  # Date: 11/27/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a date input field with label, optional icon,
+  #              and contextual description. Ensures consistent styling
+  #              and behavior across the interface.
+  #
+  # Usage: - What: Builds a fully styled date field using FormBuilder.
+  #                Supports disabled states, placeholders, icons,
+  #                half-width layouts, and contextual helper text.
+  #        - How:  Include within a form and pass the required locals
+  #                such as name, label, desc, icon_name, or placeholder.
+  #                The component automatically applies proper classes
+  #                and accessibility attributes.
+  #        - Why:  Centralizes all date field presentation rules to keep
+  #                forms consistent, accessible, and easy to maintain.
+  %>
+
+<%# [State] Defines whether the field is inactive.
+  #         Prevents interaction or modifies visual state when true.
+  %>
+<% is_inactive ||= nil %>
+
+<%# [Variable] Defines the CSS classes for the input label.
+  #            Controls spacing, font style, and disabled appearance.
+  %>
+<% label_classes = "flex items-center gap-1.5 text-2xs font-heading uppercase leading-none font-semibold select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
+
+<%# [Variable] Defines the CSS classes for the input element.
+  #            Handles spacing, borders, focus rings, colors, and disabled states.
+  %>
+<% input_classes = "placeholder:text-muted bg-table-bg border border-border pr-6 h-9 w-full min-w-0 rounded-base px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
+
+<%# [Variable] Defines the CSS classes for the input element.
+  #            It handles the state of the element when it is being hovered.
+  %>
+<% input_classes_on_hover = "hover:bg-table-hover" %>
+
+<%# [Variable] Defines the CSS classes for the input element.
+  #            It handles the state of the element when it is being focused.
+  %>
+<% input_classes_on_focus = "focus-visible:border-secondary-600 focus-visible:ring-secondary-100/50 focus-visible:ring-[3px]" %>
+
+<%# [Variable] Defines the CSS classes for the field description text.
+  #            Controls typography, spacing, and appearance for helper text.
+  %>
+<% desc_classes = "flex items-center gap-1.5 text-xs text-muted leading-none font-normal select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
+
+<%# [Variable] Defines the CSS classes for the description text when errors are present.
+  #            Adds a red color modifier to highlight validation messages.
+  %>
+<% desc_classes_with_error = desc_classes + " !text-danger-600 !bg-danger-50 p-1.5 px-3 border border-danger-100 rounded-base w-fit" %>
+
+<%# [Variable] Checks if the input should have half the width. %>
+<% is_half_width ||= false %>
+
+<%# [Variable] Assigns the icon name passed from the caller, defaulting to nil if not provided. %>
+<% icon_name ||= nil %>
+
+<div class="relative flex flex-col justify-start gap-1.5">
+  <%= f.label name,
+              label,
+              class: label_classes
+  %>
+  <div class="relative <%= is_half_width ? '!w-1/2' : '' %>">
+    <% placeholder ||= nil %>
+    <% if placeholder.present? %>
+      <%= f.send(field_type || :date_field,
+                 name,
+                 placeholder: placeholder,
+                 class: "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus} datetime",
+                 aria: { describedby: "#{name}-desc" })
+      %>
+    <% else %>
+      <%= f.send(field_type || :date_field,
+                 name,
+                 class: "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus} datetime",
+                 aria: { describedby: "#{name}-desc" })
+      %>
+    <% end %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg",
+                       class: "absolute size-4 right-3 top-1/2 -translate-y-1/2 stroke-muted"
+    %>
+  </div>
+  <%= content_tag :p,
+                  desc,
+                  class: desc_classes,
+                  id: "#{name}-desc" if desc.present?
+  %>
+</div>

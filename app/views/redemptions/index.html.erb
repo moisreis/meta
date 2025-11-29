@@ -1,0 +1,183 @@
+<%#
+  # Partial: index.html
+  # Date: 11/28/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Defines the main page structure for displaying the redemption history data table and its filters.
+  #              It integrates a table component to show redemption records and a separate filter component.
+  #
+  # Usage: - What: Displays a data table with detailed redemption history.
+  #                Renders the associated filters for the redemption records.
+  #        - How: Uses the 'wrapper' partial for the dashboard layout, followed by the 'data-table' partial for the main content,
+  #               and finally the 'filters' partial for the search and filtering controls.
+  #        - Why: Provides a user interface for users to visualize, search, and filter all redemption transactions across various funds.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Histórico de resgates",
+           page_desc: "Visualize todos os resgates realizados em todos os fundos.",
+           current_view: "datatable" do
+%>
+  <%= render partial: "partials/blocks/data-table", locals: {
+
+    # [Explanation]: The 'columns_header' defines the **title** for each column in the data table.
+    #                This array of strings sets the visible text that appears at the top of the table.
+    columns_header: [
+      "Resgate",
+      "Valor líquido",
+      "Porcentagem",
+      "Cotas resgatadas",
+      "Tipo",
+      "Pedido em",
+      "Cotizado em",
+      "Liquidado em",
+      "Status"
+    ],
+
+    # [Explanation]: The 'columns_icons' specifies **icons** that may appear next to the column headers.
+    #                This array is currently empty, meaning no icons display in the header row.
+    columns_icons: [],
+
+    # [Explanation]: The 'columns_body' defines **how the data for each row is rendered**.
+    #                It is an array of lambda functions (`->(r) do...end`), where each
+    #                function processes a single redemption record (`r`) and returns the HTML content for a specific cell/column.
+    columns_body: [
+
+      # [Explanation]: This function **displays the fund and portfolio names** for the redemption.
+      #                It retrieves the `fund_name` and `portfolio_name` from the redemption record (`r`)
+      #                and wraps them in separate `<span>` tags within a parent `<div>` for a stacked display.
+      ->(r) do
+        fund_name = r.fund_investment&.investment_fund&.fund_name
+        portfolio_name = r.fund_investment&.portfolio&.name
+        content_tag(:div, class: "flex flex-col -space-y-0.5 py-1.5 justify-start") do
+          safe_join([
+                      content_tag(:span, fund_name.to_s, class: "font-medium line-clamp-1"),
+                      content_tag(:span, portfolio_name.to_s, class: "font-normal text-muted")
+                    ])
+        end
+      end,
+
+      # [Explanation]: This function **formats and displays the net redeemed value** (liquid value) as currency.
+      #                It calls a helper method, `colored_currency`, passing the `redeemed_liquid_value` and a CSS class for styling.
+      ->(r) {
+        colored_currency(r.redeemed_liquid_value, "h-16")
+      },
+
+      # [Explanation]: This function **formats and displays the return percentage**.
+      #                It calls a helper method, `colored_numerical`, passing the `return_percentage` and a CSS class for styling.
+      ->(r) {
+        colored_percentage(r.return_percentage, "h-16")
+      },
+
+      # [Explanation]: This function **formats and displays the number of redeemed quotas**.
+      #                It calls a helper method, `colored_numerical`, passing the `redeemed_quotas` and a CSS class for styling.
+      ->(r) {
+        colored_numerical(r.redeemed_quotas, "h-16")
+      },
+
+      # [Explanation]: This function **displays the redemption type** with badge styling.
+      #                It capitalizes the `redemption_type` (if present) or shows a hyphen (`-`)
+      #                and wraps the result in a `<span>` tag with the `badge badge-outline` CSS class.
+      ->(r) do
+        value = r.redemption_type.present? ? r.redemption_type.capitalize : "-"
+        content_tag(:span, value, class: "badge badge-outline")
+      end,
+
+      # [Explanation]: This function **formats and displays the request date and time** of the redemption.
+      #                It calls the `formatted_timestamp` helper method with the `request_date`.
+      ->(r) {
+        formatted_timestamp(r.request_date)
+      },
+
+      # [Explanation]: This function **formats and displays the cotization date and time** of the redemption.
+      #                It calls the `formatted_timestamp` helper method with the `cotization_date`.
+      ->(r) {
+        formatted_timestamp(r.cotization_date)
+      },
+
+      # [Explanation]: This function **formats and displays the liquidation date and time** of the redemption.
+      #                It calls the `formatted_timestamp` helper method with the `liquidation_date`.
+      ->(r) {
+        formatted_timestamp(r.liquidation_date)
+      },
+
+      # [Explanation]: This function **displays the status** (Completed or Pending) using a colored badge.
+      #                It checks the `completed?` status of the redemption and renders a
+      #                green success badge for "Concluída" or a red danger badge for "Pendente".
+      ->(r) {
+        r.completed? ? tag.span("Concluída", class: "badge badge-success") : tag.span("Pendente", class: "badge badge-danger")
+      },
+    ],
+
+    # [Explanation]: The 'models' variable **provides the data collection** (`@redemptions`) to be displayed in the table.
+    #                The table component iterates over this collection to build the rows.
+    models: @redemptions,
+
+    # [Explanation]: The 'sort_options' defines available **custom sorting options** for the table.
+    #                This array is currently empty, meaning default or standard sorting applies.
+    sort_options: [],
+
+    # [Explanation]: The 'q_object' passes the **Ransack query object** (`@q`) used for searching and filtering.
+    #                The table component uses this object to handle state related to filtering.
+    q_object: @q,
+
+    # [Explanation]: The 'search_url' specifies the **URL endpoint** (`redemptions_path`) where the search and filtering requests are sent.
+    search_url: redemptions_path,
+
+    # [Explanation]: The 'turbo_frame_id' assigns a **unique Turbo Frame ID** (`redemptions_table`) to the table component.
+    #                This allows the component to be dynamically updated via AJAX (e.g., after filtering or sorting) without reloading the entire page.
+    turbo_frame_id: "redemptions_table",
+
+    # [Explanation]: The 'export_url' provides the **URL for exporting** the table data (e.g., to CSV or Excel).
+    #                The value is currently `nil`, meaning the export functionality is disabled or not provided here.
+    export_url: nil
+  } %>
+<% end %>
+<%= render partial: "partials/route/dashboard/filters", locals: {
+
+  # [Explanation]: The 'q_object' passes the **Ransack query object** (`@q`) to the filter component.
+  #                The component uses this object to pre-fill filter fields with current search values.
+  q_object: @q,
+
+  # [Explanation]: The 'search_url' specifies the **URL endpoint**
+  #                (`redemptions_path`) where the filter form submits its data.
+  search_url: redemptions_path,
+
+  # [Explanation]: The 'turbo_frame_id' assigns the **target Turbo Frame ID** (`redemptions_table`) for the filter form submission.
+  #                This ensures that submitting the filters updates only the data table, not the entire page.
+  turbo_frame_id: "redemptions_table",
+
+  # [Explanation]: The 'filters' array defines the structure and configuration for each individual filter field.
+  #                Each hash specifies the field `key` (for Ransack),
+  #                the display `label`, a helpful `description`, an input `placeholder`, and an `icon_name`.
+  filters: [
+    {
+      key: :fund_investment_investment_fund_fund_name_cont,
+      label: "Fundo",
+      description: "Mostra resgates vinculados a um fundo específico.",
+      placeholder: "Nome do fundo",
+      icon_name: "chart-pie"
+    },
+    {
+      key: :redeemed_liquid_value_gteq,
+      label: "Valor líquido",
+      description: "Filtra resgates com valor igual ou superior ao informado.",
+      placeholder: "Valor mínimo",
+      icon_name: "banknote"
+    },
+    {
+      key: :redemption_type_eq,
+      label: "Tipo de resgate",
+      description: "Filtra resgates por tipo",
+      placeholder: "Tipo",
+      icon_name: "circle-minus"
+    },
+    {
+      key: :request_date_gteq,
+      label: "Data do pedido",
+      description: "Filtra resgates solicitados a partir desta data.",
+      placeholder: "01/01/2020",
+      icon_name: "calendar"
+    }
+  ]
+} %>

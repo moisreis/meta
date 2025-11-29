@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_24_132503) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_25_154148) do
   create_schema "extensions"
 
   # These are extensions that must be enabled in order to support this database
@@ -65,6 +65,20 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_132503) do
     t.index ["user_id"], name: "index_portfolios_on_user_id"
   end
 
+  create_table "public.redemptions", force: :cascade do |t|
+    t.date "cotization_date"
+    t.datetime "created_at", null: false
+    t.bigint "fund_investment_id", null: false
+    t.date "liquidation_date"
+    t.decimal "redeemed_liquid_value"
+    t.decimal "redeemed_quotas"
+    t.string "redemption_type"
+    t.decimal "redemption_yield"
+    t.date "request_date"
+    t.datetime "updated_at", null: false
+    t.index ["fund_investment_id"], name: "index_redemptions_on_fund_investment_id"
+  end
+
   create_table "public.user_portfolio_permissions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "permission_level"
@@ -99,6 +113,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_132503) do
   add_foreign_key "public.fund_investments", "public.investment_funds"
   add_foreign_key "public.fund_investments", "public.portfolios"
   add_foreign_key "public.portfolios", "public.users"
+  add_foreign_key "public.redemptions", "public.fund_investments"
   add_foreign_key "public.user_portfolio_permissions", "public.portfolios"
   add_foreign_key "public.user_portfolio_permissions", "public.users"
 

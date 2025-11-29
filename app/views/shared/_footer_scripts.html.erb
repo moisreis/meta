@@ -1,0 +1,103 @@
+<%#
+  # Partial: _footer_scripts.html
+  # Date: 11/26/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Loads and initializes client-side JavaScript needed by views
+  #              that rely on enhanced form controls. Ensures the TomSelect
+  #              component is properly attached to its corresponding input field.
+  #
+  # Usage:
+  #   - What: Injects page-specific scripts at the bottom of the layout.
+  #           Initializes TomSelect for elements that require advanced select UI.
+  #   - How: Render this partial inside the main layout or inside a view that
+  #          needs TomSelect active on an element with id `tom-select-it`.
+  #   - Why: Keeps script initialization centralized, improves readability,
+  #          avoids duplicate JavaScript blocks in multiple templates, and
+  #          ensures consistent behavior across pages using the same widgets.
+  %>
+<script>
+    var settings = {
+        create: false,
+        allowEmptyOption: true,
+        maxItems: 1,
+        sortField: {
+            field: 'text',
+            direction: 'asc'
+        },
+        placeholder: 'Escolha uma opção',
+        searchField: ['text'],
+        plugins: {
+            dropdown_input: {},
+            remove_button: {title: 'Remover'}
+        },
+        render: {
+            option: function (data, escape) {
+                return '<div class="option">' + escape(data.text) + '</div>';
+            }
+        }
+    };
+
+    document.querySelectorAll('.js-tomselect').forEach(function (selectEl) {
+        new TomSelect(selectEl, settings);
+    });
+</script>
+<script>
+    flatpickr(".datetime", {
+        dateFormat: "d/m/Y",
+        altInput: true,
+        altFormat: "d/m/Y",
+        allowInput: false,
+        disableMobile: true,
+        monthSelectorType: "static",
+        yearSelectorType: "static",
+        prevArrow: `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+                   `,
+        nextArrow: `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+                   `,
+
+        locale: {
+            firstDayOfWeek: 1,
+            weekdays: {
+                shorthand: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+                longhand: [
+                    "Domingo",
+                    "Segunda-feira",
+                    "Terça-feira",
+                    "Quarta-feira",
+                    "Quinta-feira",
+                    "Sexta-feira",
+                    "Sábado",
+                ]
+            },
+            months: {
+                shorthand: [
+                    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+                    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+                ],
+                longhand: [
+                    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+                ]
+            }
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const template = document.querySelector('.template');
+
+        tippy('.row-options', {
+            content: template.innerHTML,
+            allowHTML: true,
+            placement: 'bottom',
+            theme: 'meta',
+            arrow: false,
+            interactive: true,
+            offset: [0, 0]
+        });
+    });
+</script>

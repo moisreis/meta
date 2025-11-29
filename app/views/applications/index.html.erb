@@ -24,25 +24,18 @@
     #                The names correspond directly to the data fields displayed in the table body.
     #                They provide context for the user viewing the transaction history.
     columns_header: [
-      "Fundo / Carteira",
-      "Valor financeiro",
+      "Aplicação",
+      "Valor",
       "Cotas",
       "Valor da cota",
-      "Data do pedido",
-      "Data de liquidação"
+      "Pedido em",
+      "Liquidado em"
     ],
 
     # [Explanation]: This array holds the names of Material Symbols icons used for visual emphasis
     #                in the table header. The icons visually represent the type of data
     #                contained in the corresponding column header.
-    columns_icons: [
-      "receipt_long",
-      "attach_money",
-      "layers",
-      "price_change",
-      "calendar_today",
-      "receipt_long"
-    ],
+    columns_icons: [],
 
     # [Explanation]: This is the core array containing lambda functions, where each function
     #                is responsible for processing and formatting the content for a single cell
@@ -53,55 +46,49 @@
       #                the name of the Investment Fund and the Portfolio. It includes fallback text
       #                ("Indefinido") if the associated objects are missing.
       ->(app) do
-        fund_name = app.fund_investment&.investment_fund&.fund_name || "Fundo Indefinido"
-        portfolio_name = app.fund_investment&.portfolio&.name || "Carteira Indefinida"
-        content_tag(:div, fund_name, class: "font-semibold") +
-          content_tag(:small, "em: #{portfolio_name}", class: "text-gray-500")
+        fund_name      = app.fund_investment&.investment_fund&.fund_name
+        portfolio_name = app.fund_investment&.portfolio&.name
+        content_tag(:div, class: "flex flex-col -space-y-0.5 py-1.5 justify-start") do
+          safe_join([
+                      content_tag(:span, "#{fund_name}", class: "font-medium"),
+                      content_tag(:span, "#{portfolio_name}", class: "font-normal text-muted")
+                    ])
+        end
       end,
 
       # [Explanation]: This lambda function displays the financial value of the transaction.
       #                It uses the `number_to_currency` helper to format the value as Brazilian Reais (R$),
       #                or displays a dash if the value is not present.
       ->(app) do
-        app.financial_value.present? ?
-          number_to_currency(app.financial_value, unit: "R$ ", separator: ",", delimiter: ".") :
-          content_tag(:span, "—", class: "text-muted")
+        colored_currency(app.financial_value, "h-16")
       end,
 
       # [Explanation]: This lambda function displays the number of quotas transacted.
       #                It uses the `number_with_delimiter` helper for standard number formatting,
       #                or displays a dash if the number of quotas is not present.
       ->(app) do
-        app.number_of_quotas.present? ?
-          number_with_delimiter(app.number_of_quotas) :
-          content_tag(:span, "—", class: "text-muted")
+        colored_numerical(app.number_of_quotas, "h-16")
       end,
 
       # [Explanation]: This lambda function displays the quota value at the time of the application.
       #                It formats the value as currency (R$) using the appropriate helper,
       #                or displays a dash if the quota value is not recorded.
       ->(app) do
-        app.quota_value_at_application.present? ?
-          number_to_currency(app.quota_value_at_application, unit: "R$ ", separator: ",", delimiter: ".") :
-          content_tag(:span, "—", class: "text-muted")
+        colored_currency(app.quota_value_at_application, "h-16")
       end,
 
       # [Explanation]: This lambda function displays the date the transaction was requested.
       #                It formats the date using the short localization format (`l` helper),
       #                or displays a dash if the request date is missing.
       ->(app) do
-        app.request_date.present? ?
-          l(app.request_date, format: :short) :
-          content_tag(:span, "—", class: "text-muted")
+        formatted_timestamp(app.request_date)
       end,
 
       # [Explanation]: This lambda function displays the date the transaction was settled (liquidated).
       #                It formats the date using the short localization format (`l` helper),
       #                or displays a dash if the liquidation date is missing.
       ->(app) do
-        app.liquidation_date.present? ?
-          l(app.liquidation_date, format: :short) :
-          content_tag(:span, "—", class: "text-muted")
+        formatted_timestamp(app.liquidation_date)
       end
     ],
 
@@ -153,21 +140,21 @@
       label: "Fundo",
       description: "Exibe aplicações vinculadas a um fundo específico.",
       placeholder: "Nome do fundo",
-      icon_name: "pie_chart"
+      icon_name: "chart-pie"
     },
     {
       key: :financial_value_gteq,
-      label: "Valor Transacionado",
+      label: "Valor transacionado",
       description: "Filtra transações com valor igual ou superior ao informado.",
-      placeholder: "Valor mínimo R$",
-      icon_name: "attach_money"
+      placeholder: "Valor mínimo em reais",
+      icon_name: "banknote"
     },
     {
       key: :request_date_gteq,
-      label: "Data do Pedido (Min)",
+      label: "Data do pedido (Min.)",
       description: "Filtra transações solicitadas a partir desta data.",
-      placeholder: "DD/MM/AAAA",
-      icon_name: "calendar_today"
+      placeholder: "28/02/2019",
+      icon_name: "calendar"
     }
   ],
 

@@ -63,8 +63,8 @@
      * ------------------------------
      */
     --font-body: 'Geist', sans-serif;
-    --font-heading: 'Sora', sans-serif;
-    --font-display: 'Merriweather', serif;
+    --font-heading: 'Geist', sans-serif;
+    --font-mono: 'Geist Mono', serif;
 
     /*
      * ------------------------------
@@ -121,9 +121,12 @@
     --color-white: #ffffff;
     --color-transparent: transparent;
     --color-border: #e9e9e9;
-    --color-table: #fafafe;
-    --color-accent: var(--color-quaternary-100);
-    --color-accent-strong: var(--color-quaternary-200);
+    --color-table-bg: #fcfcfe;
+    --color-table-hover: #fbfbfe;
+    --color-table-strong: #fafafa;
+    --color-sidebar: #fafafa;
+    --color-accent: var(--color-quaternary-50);
+    --color-accent-strong: var(--color-quaternary-100);
     --color-link: #0000ee;
 
     /*
@@ -222,17 +225,65 @@
      *  contrast to neutral layouts, often complementing typography,
      *  borders, or subtle state indicators.
      */
-    --color-quaternary-50: #f9f9f9;
-    --color-quaternary-100: #efefef;
-    --color-quaternary-200: #dcdcdc;
-    --color-quaternary-300: #bdbdbd;
-    --color-quaternary-400: #989898;
-    --color-quaternary-500: #7c7c7c;
-    --color-quaternary-600: #656565;
-    --color-quaternary-700: #525252;
-    --color-quaternary-800: #464646;
-    --color-quaternary-900: #3d3d3d;
-    --color-quaternary-950: #292929;
+    --color-quaternary-50: #fafafe;
+    --color-quaternary-100: #e1e1f8;
+    --color-quaternary-200: #c9c9f4;
+    --color-quaternary-300: #a5a7eb;
+    --color-quaternary-400: #7a7be0;
+    --color-quaternary-500: #625ad7;
+    --color-quaternary-600: #5746ca;
+    --color-quaternary-700: #523cb9;
+    --color-quaternary-800: #493697;
+    --color-quaternary-900: #3c3078;
+    --color-quaternary-950: #2a214a;
+
+    /*
+     *  Sets the currency shade background color
+     *  to be shown in the datatables
+     */
+    --color-currency-50: #f1f7fd;
+    --color-currency-100: #dfedfa;
+    --color-currency-200: #c7e0f6;
+    --color-currency-300: #a0cdf0;
+    --color-currency-400: #73b1e7;
+    --color-currency-500: #5295df;
+    --color-currency-600: #3d7ad3;
+    --color-currency-700: #3466c1;
+    --color-currency-800: #30539d;
+    --color-currency-900: #2c497f;
+    --color-currency-950: #1e2d4d;
+
+    /*
+     *  Sets the numerical values shade background color
+     *  to be shown in the datatables
+     */
+    --color-numerical-50: #f9ffe6;
+    --color-numerical-100: #f0ffc8;
+    --color-numerical-200: #dbfe87;
+    --color-numerical-300: #c8fa5c;
+    --color-numerical-400: #b0f02b;
+    --color-numerical-500: #91d60c;
+    --color-numerical-600: #6fab05;
+    --color-numerical-700: #548209;
+    --color-numerical-800: #45660e;
+    --color-numerical-900: #3a5710;
+    --color-numerical-950: #1c3003;
+
+    /*
+     *  Sets the percentage values shade background color
+     *  to be shown in the datatables
+     */
+    --color-percentage-50: #f6f5fd;
+    --color-percentage-100: #efecfb;
+    --color-percentage-200: #dcd6f7;
+    --color-percentage-300: #cac0f2;
+    --color-percentage-400: #b09bea;
+    --color-percentage-500: #9573df;
+    --color-percentage-600: #8454d3;
+    --color-percentage-700: #7442bf;
+    --color-percentage-800: #6137a0;
+    --color-percentage-900: #512f83;
+    --color-percentage-950: #321c59;
 
     /*
      * ------------------------------
@@ -244,7 +295,7 @@
      *  like badges, chips, or circular icons.
      * ------------------------------
      */
-    --radius-base: 6px;
+    --radius-base: 7px;
     --radius-full: 999px;
 }
 
@@ -285,6 +336,22 @@
     form {
         @apply flex flex-col gap-6 w-full
     }
+
+    /*
+     * ------------------------------
+     *  number input
+     *
+     *  Sets the browser’s numeric input fields to render without
+     *  the default increment and decrement buttons. Improves visual
+     *  consistency and prevents unwanted UI chrome across WebKit-based
+     *  browsers.
+     * ------------------------------
+     */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
 }
 
 /*
@@ -310,7 +377,7 @@
     input[type=submit],
     button,
     .button {
-        @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full text-sm text-primary-50 font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 text-body hover:bg-primary-600/90 h-9 px-3 py-1.5 has-[>svg]:px-3 shadow-xs [&>svg]:fill-primary-50 [&>svg]:size-4
+        @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base text-sm text-primary-50 font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus:border-primary-100 focus:ring-primary-100/50 focus:ring-[3px] focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 hover:bg-primary-600/90 active:bg-primary-600/80 px-3 py-1.5 has-[>svg]:px-3 shadow-xs [&>svg]:stroke-primary-50 [&>svg]:size-3.5 cursor-pointer
     }
 
     /*
@@ -347,7 +414,7 @@
      * ------------------------------
      */
     .button-secondary {
-        @apply border text-primary-900 bg-primary-50 hover:!bg-primary-50/90 border-primary-100 [&>svg]:!fill-primary-900
+        @apply border text-primary-900 bg-primary-50 hover:!bg-primary-50/90 border-primary-100 [&>svg]:!stroke-primary-900
     }
 
     /*
@@ -360,7 +427,7 @@
      * ------------------------------
      */
     .button-danger {
-        @apply border border-border text-danger-700 bg-white hover:!bg-white !border-danger-100 !shadow-none [&>svg]:!fill-danger-700
+        @apply border border-border text-danger-700 bg-white hover:!bg-white !border-danger-100 !shadow-none [&>svg]:!stroke-danger-700
     }
 
     /*
@@ -373,7 +440,7 @@
      * ------------------------------
      */
     .button-outline {
-        @apply border border-border border-dashed text-body bg-white hover:!bg-accent/90 [&>svg]:!fill-body
+        @apply border border-border text-body bg-white hover:!bg-accent/90 [&>svg]:!stroke-body
     }
 
     /*
@@ -386,7 +453,7 @@
      * ------------------------------
      */
     .button-ghost {
-        @apply bg-transparent border border-transparent shadow-none text-body hover:!bg-accent/90 [&>svg]:!fill-body
+        @apply bg-transparent border border-transparent shadow-none text-body hover:!bg-accent/90 [&>svg]:!stroke-body
     }
 
     /*
@@ -399,7 +466,19 @@
      * ------------------------------
      */
     .button-link {
-        @apply bg-transparent border !border-transparent shadow-none text-body hover:!bg-accent-strong hover:!border-accent [&>svg]:!fill-body
+        @apply bg-transparent border !border-transparent shadow-none text-body hover:!bg-accent hover:!border-accent [&>svg]:!stroke-body
+    }
+
+    /*
+     * ------------------------------
+     *  button-sidebar
+     *
+     *  Defines the visual style for the buttons
+     *  that live in the sidebar
+     * ------------------------------
+     */
+    .button-sidebar {
+        @apply bg-accent border !border-border shadow-xs text-body hover:!bg-accent/90 active:!bg-accent/80 [&>svg]:!stroke-body
     }
 
     /*

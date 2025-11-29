@@ -1,0 +1,122 @@
+<%#
+  # Partial: _form.html
+  # Date: 11/28/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a form for creating or editing a redemption record.
+  #              The form collects essential financial data, dates, and the type of the redemption.
+  #
+  # Usage: - What: Provides a comprehensive form interface for managing redemption data.
+  #                Collects the target investment, financial values (liquid value, quotas, yield), key dates, and redemption type.
+  #        - How: Uses `form_with` bound to a `redemption` object and renders several modular partials (select, input-field, date-field, separator) to structure the form fields.
+  #        - Why: Enables users to input all necessary details for a new redemption or update an existing one within the application.
+  %>
+<%= form_with(model: redemption, class: "contents") do |form| %>
+  <div class="grid grid-cols-2 gap-6">
+    <%= render "partials/modules/select",
+               f: form,
+               name: :fund_investment_id,
+               label: "Investimento alvo",
+               options_collection: @fund_investments.map { |fi|
+                 ["#{fi.investment_fund.fund_name} (Carteira: #{fi.portfolio.name})", fi.id]
+               },
+               is_half_width: false,
+               desc: "Escolha o fundo de onde o resgate será realizado.",
+               is_inactive: false
+    %>
+  </div>
+  <%= render "partials/modules/separator" %>
+  <div class="grid grid-cols-3 gap-6">
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :redeemed_liquid_value,
+               label: "Valor líquido resgatado",
+               placeholder: "Ex: 5000.00",
+               is_half_width: false,
+               desc: "O valor total (R$) recebido no resgate após cotização.",
+               field_type: :number_field,
+               icon_name: "banknote-arrow-down",
+               step: 0.01
+    %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :redeemed_quotas,
+               label: "Cotas resgatadas",
+               placeholder: "Ex: 100.50",
+               is_half_width: false,
+               desc: "Número de cotas efetivamente resgatadas.",
+               field_type: :number_field,
+               icon_name: "layers",
+               step: 0.0001
+    %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :redemption_yield,
+               label: "Rendimento do resgate",
+               placeholder: "Ex: 120.50",
+               is_half_width: false,
+               desc: "Resultado financeiro proveniente do resgate (R$).",
+               field_type: :number_field,
+               icon_name: "chart-no-axes-column",
+               step: 0.01
+    %>
+  </div>
+  <%= render "partials/modules/separator" %>
+  <div class="grid grid-cols-3 gap-6">
+    <%= render "partials/modules/date-field",
+               f: form,
+               name: :request_date,
+               label: "Data do pedido",
+               placeholder: "DD/MM/AAAA",
+               is_half_width: false,
+               desc: "Data em que o pedido de resgate foi realizado.",
+               field_type: :date_field,
+               icon_name: "calendar"
+    %>
+    <%= render "partials/modules/date-field",
+               f: form,
+               name: :cotization_date,
+               label: "Data de Cotização",
+               placeholder: "DD/MM/AAAA",
+               is_half_width: false,
+               desc: "Data em que o valor da cota do resgate foi consolidado.",
+               field_type: :date_field,
+               icon_name: "calculator"
+    %>
+    <%= render "partials/modules/date-field",
+               f: form,
+               name: :liquidation_date,
+               label: "Data de Liquidação",
+               placeholder: "DD/MM/AAAA",
+               is_half_width: false,
+               desc: "Data em que o dinheiro entrou na conta.",
+               field_type: :date_field,
+               is_half_width: true,
+               icon_name: "file-text"
+    %>
+  </div>
+  <%= render "partials/modules/separator" %>
+  <div class="grid grid-cols-1 gap-6">
+    <%= render "partials/modules/select",
+               f: form,
+               name: :redemption_type,
+               label: "Tipo de Resgate",
+               options_collection: [
+                 ["Parcial", "partial"],
+                 ["Total", "total"],
+                 ["Emergencial", "emergency"],
+                 ["Programado", "scheduled"]
+               ],
+               is_half_width: true,
+               desc: "Escolha o tipo de resgate conforme a operação.",
+               is_inactive: false
+    %>
+  </div>
+  <%= form.button :submit,
+                  name: nil,
+                  class: "button button-primary w-fit flex items-center gap-2" do %>
+    <%= inline_svg_tag "icons/plus.svg" %>
+    <%= content_tag :span, redemption.persisted? ? "Atualizar" : "Adicionar" %>
+  <% end %>
+<% end %>
