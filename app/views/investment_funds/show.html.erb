@@ -1,0 +1,530 @@
+<%#
+  # View: show.html.erb
+  # Date: 12/01/2025
+  # Author: Moisés Reis
+  # Package: InvestmentFunds
+  #
+  # Description: Displays a comprehensive dashboard view for a single InvestmentFund record.
+  #              Shows fund details, portfolio allocations, valuation history, performance metrics,
+  #              and recent transaction activity across all portfolios holding this fund.
+  #
+  # Usage: - What: Renders the complete show view for the InvestmentFund resource with interactive
+  #                charts, portfolio breakdowns, valuation trends, and transaction history.
+  #        - How: Accessed via GET /investment_funds/:id. Uses the @investment_fund instance variable
+  #               loaded by InvestmentFundsController#show along with pre-calculated chart data.
+  #        - Why: Provides users and administrators with a centralized dashboard to monitor fund
+  #               performance, adoption across portfolios, pricing trends, and overall activity.
+  %>
+
+<%# [Partial] Renders the main dashboard layout wrapper.
+  #           This partial establishes the standardized structure and title for the page.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @investment_fund.fund_name,
+           page_desc: "CNPJ: #{@investment_fund.cnpj}",
+           current_view: "show" do
+%>
+
+  <%# [Section] Displays the primary cadastral information for the Investment Fund.
+    #           It includes the CNPJ, administrator, originator fund status, and creation date.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Informações do Fundo",
+             section_desc: "Dados cadastrais e identificação oficial",
+             is_four_col: true,
+             has_action: true,
+             button_route: edit_investment_fund_path(@investment_fund),
+             button_name: "Editar",
+             button_icon: "pencil" do
+  %>
+
+    <%# [Summary] Displays the official CNPJ of the investment fund.
+      #           The card data indicates its uniqueness.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "CNPJ",
+               card_icon: "file-text",
+               card_data: "Único",
+               card_data_icon: "check",
+               is_success: true do
+    %>
+      <%= @investment_fund.cnpj %>
+    <% end %>
+
+    <%# [Summary] Displays the name of the fund's administrator.
+      #           The card data provides a generic descriptor ("Instituição").
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Administrador",
+               card_icon: "building-2",
+               card_data: "Instituição",
+               card_data_icon: "briefcase" do
+    %>
+      <%= @investment_fund.administrator_name %>
+    <% end %>
+
+    <%# [Summary] Displays the name of the fund's originator fund, if applicable.
+      #           The card data indicates whether the fund is linked or not.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Fundo Originador",
+               card_icon: "git-branch",
+               card_data: @investment_fund.originator_fund.present? ? "Vinculado" : "N/A",
+               card_data_icon: "link" do
+    %>
+      <%= @investment_fund.originator_fund.presence || "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the date the investment fund was registered in the system.
+      #           The card data shows the elapsed time since creation using relative phrasing.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Cadastrado em",
+               card_icon: "calendar-plus",
+               card_data: "Há #{time_ago_in_words(@investment_fund.created_at)}",
+               card_data_icon: "clock" do
+    %>
+      <%= formatted_timestamp(@investment_fund.created_at) %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays key adoption metrics and financial statistics for the fund.
+    #           This section shows how widely the fund is used across user portfolios.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Métricas de Adoção",
+             section_desc: "Estatísticas de uso do fundo em portfólios",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the count of unique user portfolios currently invested in this fund.
+      #           The card uses success styling to highlight adoption.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Portfólios Ativos",
+               card_icon: "briefcase",
+               card_data: "+ 100%",
+               card_data_icon: "trending-up",
+               is_success: true do
+    %>
+      <%= @investment_fund.portfolios.count %>
+    <% end %>
+
+    <%# [Summary] Displays the total financial value invested in this fund across all portfolios.
+      #           The card uses success styling to highlight the total capital invested.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Total Investido",
+               card_icon: "banknote",
+               card_data: "+ 56%",
+               card_data_icon: "trending-up",
+               is_success: true do
+    %>
+      <%= standard_currency(@investment_fund.total_invested) %>
+    <% end %>
+
+    <%# [Summary] Displays the latest available quota (share) value for the fund.
+      #           The card data indicates whether the quota value is currently available.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Cotação Atual",
+               card_icon: "chart-line",
+               card_data: @investment_fund.latest_quota_value ? "Atualizado" : "N/A",
+               card_data_icon: "refresh-cw" do
+    %>
+      <%= @investment_fund.latest_quota_value ? standard_currency(@investment_fund.latest_quota_value) : "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the total number of active investment allocations in the fund.
+      #           This counts the records linking the fund to portfolios.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Alocações Ativas",
+               card_icon: "chart-pie",
+               card_data: "Total",
+               card_data_icon: "target" do
+    %>
+      <%= @investment_fund.fund_investments.count %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays charts related to fund distribution and historical performance.
+    #           This section uses a two-column layout for visualizations.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visualizações",
+             is_two_col: true do
+  %>
+
+    <%# [Preparation] Prepares the data for the portfolio distribution pie chart.
+      #               It calculates the total invested value grouped by portfolio name and owner.
+      %>
+    <%
+      # Prepare portfolio distribution data
+      portfolio_distribution = @investment_fund.fund_investments.includes(portfolio: :user).map do |fi|
+        ["#{fi.portfolio.name} (#{fi.portfolio.user.full_name})", fi.total_invested_value || 0]
+      end.to_h
+    %>
+
+    <%# [Chart] Renders a donut pie chart showing the fund's value distribution across all investing portfolios.
+      #         The chart uses Brazilian currency formatting.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: portfolio_distribution,
+               chart_title: "Distribuição por Portfólio",
+               empty_message: "N/A" do
+    %>
+      <%= pie_chart portfolio_distribution,
+                    prefix: "R$ ",
+                    thousands: ".",
+                    decimal: ",",
+                    donut: true,
+                    legend: "right" %>
+    <% end %>
+
+    <%# [Preparation] Prepares the historical quota value data for the line chart (last 30 days).
+      #               It fetches, orders, and formats the valuation data points.
+      %>
+    <%
+      quota_history = @investment_fund.fund_valuation
+                                      .where("date >= ?", 30.days.ago)
+                                      .order(date: :asc)
+                                      .pluck(:date, :quota_value)
+                                      .map { |date, value| [date.strftime("%d/%m"), value] }
+                                      .to_h
+    %>
+
+    <%# [Chart] Renders a line chart showing the fund's quota value history over the last 30 days.
+      #         The chart includes custom scaling and currency formatting for the y-axis.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: quota_history,
+               chart_title: "Histórico de Cotação (30 dias)",
+               empty_message: "N/A" do
+    %>
+      <%= line_chart quota_history,
+                     prefix: "R$ ",
+                     thousands: ".",
+                     decimal: ",",
+                     curve: true,
+                     library: {
+                       scales: {
+                         y: {
+                           ticks: {
+                             callback: "function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); }"
+                           }
+                         }
+                       }
+                     }
+      %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays a table listing all user portfolios that currently hold an investment in this fund.
+    #           This provides a detailed breakdown of adoption.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Carteiras que Investem Neste Fundo",
+             is_one_col: true,
+             has_action: false do
+  %>
+    <%# [Conditional] Checks if there are any active fund investments linked to this fund.
+      #               The table rendering block executes only if adoption exists.
+      %>
+    <% if @investment_fund.fund_investments.any? %>
+
+      <%# [Variable] Assigns the fund investments collection (including associated portfolio and user) to a local variable.
+        #            This variable serves as the dataset for the table.
+        %>
+      <% models = @investment_fund.fund_investments.includes(portfolio: :user) %>
+
+      <%# [Array] Defines the column headers for the list of investing portfolios.
+        #         This array provides the visible titles for the data columns.
+        %>
+      <% columns_header = [
+        "Carteira",
+        "Proprietário",
+        "Alocação",
+        "Valor Investido",
+        "Cotas Detidas"
+      ] %>
+
+      <%# [Array] Defines the column icons for the table (currently none are used).
+        %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         Each lambda receives a fund investment object (fi) and returns the formatted cell content.
+        %>
+      <% columns_body = [
+        # Explanation:: This lambda function displays the name of the portfolio.
+        #               It wraps the name in a link that navigates to the portfolio's show page.
+        #               The result is a clickable link for the portfolio.
+        ->(fi) do
+          link_to(fi.portfolio.name, portfolio_path(fi.portfolio), class: "hover:underline")
+        end,
+
+        # Explanation:: This lambda displays the full name of the portfolio owner.
+        #               It uses a simple `content_tag` for text display.
+        #               The result is the owner's name.
+        ->(fi) do
+          content_tag(:span, fi.portfolio.user.full_name)
+        end,
+
+        # Explanation:: This lambda returns the percentage allocated to the fund in that specific portfolio.
+        #               It uses the `colored_percentage` helper for visual formatting.
+        #               The result is the allocation percentage as a formatted string.
+        ->(fi) { colored_percentage(fi.percentage_allocation) },
+
+        # Explanation:: This lambda returns the total monetary value invested from that portfolio into this fund.
+        #               It uses the `colored_currency` helper for proper financial formatting.
+        #               The result is the total capital allocated from that specific portfolio.
+        ->(fi) { colored_currency(fi.total_invested_value) },
+
+        # Explanation:: This lambda returns the total number of quotas held in this fund by that specific portfolio.
+        #               It uses the `colored_numerical` helper for numerical formatting.
+        #               The result is the quantity of units held by the portfolio.
+        ->(fi) { colored_numerical(fi.total_quotas_held) }
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the fund investments linked to portfolios using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 } %>
+    <% else %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Creates a two-column layout for displaying recent applications and redemptions related to this fund.
+    #           This allows for a quick review of transactional activity.
+    %>
+  <%= render "partials/route/dashboard/section",
+             is_two_col: true,
+             has_action: false do
+  %>
+
+    <%# [Section] Displays the Recent Applications Activity section.
+      #           This section lists the five most recent investments made into this fund across all portfolios.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Aplicações Recentes",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [ActiveRecord] Retrieves the five latest application records for this specific fund, including the portfolio details.
+        #                It uses joins and includes to efficiently fetch the related data and orders by request date.
+        %>
+      <% recent_applications = Application.joins(:fund_investment)
+                                          .where(fund_investments: { investment_fund_id: @investment_fund.id })
+                                          .includes(fund_investment: { portfolio: :user })
+                                          .order(request_date: :desc)
+                                          .limit(5) %>
+
+      <%# [Conditional] Checks if any recent applications were found.
+        #               The following block executes only if there is recent investment activity in the fund.
+        %>
+      <% if recent_applications.any? %>
+
+        <%# [Iteration] Iterates over each recent application record.
+          #             The block renders an info card summarizing the investment.
+          %>
+        <% recent_applications.each do |app| %>
+
+          <%# [Info] Displays the details of a single investment application.
+            #        It shows the portfolio name, owner, financial value, and quota count in green (success).
+            %>
+          <%= render "partials/blocks/info-card",
+                     title: app.fund_investment.portfolio.name,
+                     subtitle: "#{app.fund_investment.portfolio.user.full_name}",
+                     main_value: "+ R$#{app.financial_value}",
+                     sub_value: "#{app.number_of_quotas} cotas",
+                     icon_name: "arrow-up-right",
+                     main_color: "success"
+          %>
+        <% end %>
+
+        <%# [Link] Renders a link to view all applications filtered by the current investment fund.
+          #        This allows navigation to the full transaction history.
+          %>
+        <%= link_to applications_path(q: { fund_investment_investment_fund_id_eq: @investment_fund.id }), class: "button button-outline w-fit" do %>
+          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+          <%= content_tag :span, "Ver todos" %>
+        <% end %>
+      <% else %>
+
+        <%# [Content] Displays a message when no recent applications exist for this fund.
+          %>
+        <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+      <% end %>
+    <% end %>
+
+    <%# [Section] Displays the Recent Redemptions Activity section.
+      #           This section lists the five most recent withdrawals made from this fund across all portfolios.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Resgates Recentes",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [ActiveRecord] Retrieves the five latest redemption records for this specific fund, including the portfolio details.
+        #                It uses joins and includes to efficiently fetch the related data and orders by request date.
+        %>
+      <% recent_redemptions = Redemption.joins(:fund_investment)
+                                        .where(fund_investments: { investment_fund_id: @investment_fund.id })
+                                        .includes(fund_investment: { portfolio: :user })
+                                        .order(request_date: :desc)
+                                        .limit(5) %>
+
+      <%# [Conditional] Checks if any recent redemptions were found.
+        #               The following block executes only if there is recent withdrawal activity from the fund.
+        %>
+      <% if recent_redemptions.any? %>
+
+        <%# [Iteration] Iterates over each recent redemption record.
+          #             The block renders an info card summarizing the withdrawal.
+          %>
+        <% recent_redemptions.each do |red| %>
+
+          <%# [Info] Displays the details of a single redemption.
+            #        It shows the portfolio name, owner, financial value, and quota count in red (danger).
+            %>
+          <%= render "partials/blocks/info-card",
+                     title: red.fund_investment.portfolio.name,
+                     subtitle: "#{red.fund_investment.portfolio.user.full_name}",
+                     main_value: "- R$#{red.redeemed_liquid_value}",
+                     sub_value: "#{red.redeemed_quotas} cotas",
+                     icon_name: "arrow-down-left",
+                     main_color: "danger"
+          %>
+        <% end %>
+        <%= link_to redemptions_path(q: { fund_investment_investment_fund_id_eq: @investment_fund.id }), class: "button button-outline w-fit" do %>
+          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+          <%= content_tag :span, "Ver todos" %>
+        <% end %>
+      <% else %>
+        <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays a table summarizing the fund's historical quota valuations.
+    #           It shows the last 10 valuation updates for quick performance review.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Histórico de Cotações",
+             section_desc: "Últimas 10 atualizações de valor",
+             is_one_col: true,
+             has_action: false do
+  %>
+
+    <%# [ActiveRecord] Retrieves the 10 most recent fund valuation records, ordered by date.
+      %>
+    <% recent_valuations = @investment_fund.fund_valuation.order(date: :desc).limit(10) %>
+
+    <%# [Conditional] Checks if any recent valuation records are available.
+      #               The table rendering block executes only if valuation data exists.
+      %>
+    <% if recent_valuations.any? %>
+
+      <%# [Variable] Assigns the recent valuation collection as the model data for the table.
+        %>
+      <% models = recent_valuations %>
+
+      <%# [Array] Defines the column headers for the valuation table.
+        %>
+      <% columns_header = [
+        "Data",
+        "Valor da Cota",
+        "Variação",
+        "Atualizado há"
+      ] %>
+
+      <%# [Array] Defines the column icons for the table (currently none are used).
+        %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         These lambdas handle date formatting, currency display, and dynamic change calculation/coloring.
+        %>
+      <% columns_body = [
+        # Explanation:: This lambda function displays the date of the valuation.
+        #               It uses the `formatted_timestamp` helper for consistent date presentation.
+        #               The result is the formatted date.
+        ->(val) { formatted_timestamp(val.date) },
+
+        # Explanation:: This lambda displays the quota value for that valuation date.
+        #               It uses the `colored_currency` helper to format the value as currency.
+        #               The result is the formatted quota value.
+        ->(val) { colored_currency(val.quota_value, "h-auto") },
+
+        # Explanation:: This lambda calculates the percentage change from the previous valuation.
+        #               It fetches the preceding record and styles the output as a colored badge (success/danger/muted) based on the change.
+        #               The result is a dynamically styled percentage change badge.
+        ->(val) do
+          previous_val = @investment_fund.fund_valuation.where("date < ?", val.date).order(date: :desc).first
+          if previous_val && previous_val.quota_value
+            change = ((val.quota_value - previous_val.quota_value) / previous_val.quota_value * 100).round(2)
+            if change > 0
+              content_tag(:span, "+#{change}%", class: "badge badge-success")
+            elsif change < 0
+              content_tag(:span, "#{change}%", class: "badge badge-danger")
+            else
+              content_tag(:span, "0%", class: "text-muted font-mono")
+            end
+          else
+            content_tag(:span, "N/A", class: "text-muted")
+          end
+        end,
+
+        # Explanation:: This lambda displays the time elapsed since the valuation date.
+        #               It uses the `time_ago_in_words` helper for relative time display.
+        #               The result is the time elapsed in words (e.g., "about 3 days").
+        ->(val) { "#{time_ago_in_words(val.date)}" }
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the historical valuation data using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 }
+      %>
+    <% else %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+<% end %>

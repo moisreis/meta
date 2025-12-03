@@ -1,0 +1,643 @@
+<%#
+  # View: show.html.erb
+  # Date: 12/01/2025
+  # Author: Moisés Reis
+  # Package: Applications
+  #
+  # Description: Displays a comprehensive dashboard view for a single Application record.
+  #              Shows investment transaction details, lifecycle status, quota calculations,
+  #              allocation tracking, and consistency validation with visual indicators.
+  #
+  # Usage: - What: Renders the complete show view for the Application resource with detailed
+  #                transaction information, quota availability, redemption allocations, and status tracking.
+  #        - How: Accessed via GET /applications/:id. Uses the @application instance variable
+  #               loaded by ApplicationsController#show along with calculated metrics.
+  #        - Why: Provides users with a centralized dashboard to monitor a specific investment
+  #               application's details, track its lifecycle, and understand quota usage.
+  %>
+
+<%# [Partial] Renders the main dashboard layout wrapper.
+  #           This partial establishes the standardized structure and title for the page, using the application ID and fund name.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Aplicação ##{@application.id}",
+           page_desc: "Investimento em #{@application.fund_investment.investment_fund.fund_name}",
+           current_view: "show" do
+%>
+
+  <%# [Section] Displays the primary identifying information and associated records for the Application.
+    #           It links the Application back to the Investment Fund, Portfolio, and Fund Investment record.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Informações da Aplicação",
+             section_desc: "Dados da transação de investimento",
+             is_four_col: true,
+             has_action: true,
+             button_route: edit_application_path(@application),
+             button_name: "Editar",
+             button_icon: "pencil" do
+  %>
+
+    <%# [Summary] Displays the Investment Fund name related to this application.
+      #           The card content is a clickable link to the fund's detail page.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Fundo de Investimento",
+               card_icon: "building-2",
+               card_data: @application.fund_investment.investment_fund.administrator_name,
+               card_data_icon: "briefcase" do
+    %>
+      <%= link_to @application.fund_investment.investment_fund.fund_name,
+                  investment_fund_path(@application.fund_investment.investment_fund),
+                  class: "hover:underline" %>
+    <% end %>
+
+    <%# [Summary] Displays the Portfolio name where the investment was made.
+      #           The card content is a clickable link to the portfolio's detail page.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Portfólio",
+               card_icon: "wallet",
+               card_data: @application.fund_investment.portfolio.user.full_name,
+               card_data_icon: "user" do
+    %>
+      <%= link_to @application.fund_investment.portfolio.name,
+                  portfolio_path(@application.fund_investment.portfolio),
+                  class: "hover:underline" %>
+    <% end %>
+
+    <%# [Summary] Displays the related FundInvestment record ID.
+      #           The card content is a clickable link to the FundInvestment's detail page.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Investimento Relacionado",
+               card_icon: "link",
+               card_data: "Alocação #{number_with_precision(@application.fund_investment.percentage_allocation, precision: 2)}%",
+               card_data_icon: "chart-pie" do
+    %>
+      <%= link_to "FundInvestment ##{@application.fund_investment.id}",
+                  fund_investment_path(@application.fund_investment),
+                  class: "hover:underline" %>
+    <% end %>
+
+    <%# [Summary] Displays the current status of the application (Complete or Pending).
+      #           The card uses conditional icons and styling based on the completion status.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Status da Aplicação",
+               card_icon: @application.completed? ? "circle-check" : "clock",
+               card_data: @application.completed? ? "Finalizada" : "Em processamento",
+               card_data_icon: @application.completed? ? "check" : "hourglass",
+               is_success: @application.completed? do
+    %>
+      <%= @application.completed? ? "Completa" : "Pendente" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the financial values, quota counts, and quota prices related to the transaction.
+    #           It includes a check for consistency between stored and calculated quota values.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Valores Financeiros",
+             section_desc: "Montantes e cotações da aplicação",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the total financial value applied.
+      #           The card uses success styling to highlight the positive cash flow.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valor Financeiro Investido",
+               card_icon: "banknote",
+               card_data: "Capital aplicado",
+               card_data_icon: "arrow-up-right",
+               is_success: true do
+    %>
+      <%= standard_currency(@application.financial_value) %>
+    <% end %>
+
+    <%# [Summary] Displays the number of quotas acquired in the application.
+      #           The card status indicates whether the quota value has been calculated and stored (cotizado).
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Número de Cotas Adquiridas",
+               card_icon: "coins",
+               card_data: @application.number_of_quotas ? "Cotizado" : "Aguardando",
+               card_data_icon: @application.number_of_quotas ? "check" : "clock" do
+    %>
+      <%= @application.number_of_quotas ? number_with_precision(@application.number_of_quotas, precision: 4) : "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the quota value used to execute the application (the stored value).
+      #           The card status indicates whether the quota price has been fixed.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valor da Cota na Aplicação",
+               card_icon: "chart-line",
+               card_data: @application.quota_value_at_application ? "Fixado" : "Pendente",
+               card_data_icon: @application.quota_value_at_application ? "lock" : "lock-open" do
+    %>
+      <%= @application.quota_value_at_application ? standard_currency(@application.quota_value_at_application) : "N/A" %>
+    <% end %>
+
+    <%# [Calculation] Calculates the derived quota value
+      #               (Financial Value / Quotas Acquired) for consistency checking.
+      %>
+    <%
+      calculated = @application.calculated_quota_value
+      stored = @application.quota_value_at_application
+      is_consistent = calculated && stored && (calculated - stored).abs <= 0.01
+    %>
+
+    <%# [Summary] Displays the calculated quota value and validates it against the stored quota value.
+      #           The card uses conditional coloring (success/danger) based on consistency.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valor Calculado da Cota",
+               card_icon: "calculator",
+               card_data: is_consistent ? "Consistente" : (calculated ? "Divergente" : "N/A"),
+               card_data_icon: is_consistent ? "check" : "alert-circle",
+               is_success: is_consistent,
+               is_danger: calculated && !is_consistent do
+    %>
+      <%= calculated ? standard_currency(calculated) : "N/A" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the dates that define the transaction's lifecycle.
+    #           It tracks the progression from request to cotization and final liquidation.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Ciclo de Vida da Transação",
+             section_desc: "Datas e etapas do processo de investimento",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the initial date the application was requested.
+      #           This marks the beginning of the transaction lifecycle.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Data de Solicitação",
+               card_icon: "calendar-plus",
+               card_data: "Início da transação",
+               card_data_icon: "play",
+               is_success: true do
+    %>
+      <%= formatted_timestamp(@application.request_date) %>
+    <% end %>
+
+    <%# [Summary] Displays the date the quota value was fixed (cotization date).
+      #           The card data shows the relative time elapsed since cotization.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Data de Cotização",
+               card_icon: "calendar-check-2",
+               card_data: @application.cotization_date ? "Há #{time_ago_in_words(@application.cotization_date)}" : "Não cotizado",
+               card_data_icon: @application.cotization_date ? "check" : "x" do
+    %>
+      <%= @application.cotization_date ? formatted_timestamp(@application.cotization_date) : "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the date the funds were settled (liquidation date).
+      #           The card uses success styling if the liquidation is complete.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Data de Liquidação",
+               card_icon: "calendar-check-2",
+               card_data: @application.liquidation_date ? "Há #{time_ago_in_words(@application.liquidation_date)}" : "Não liquidado",
+               card_data_icon: @application.liquidation_date ? "check" : "clock",
+               is_success: @application.liquidation_date.present? do
+    %>
+      <%= @application.liquidation_date ? formatted_timestamp(@application.liquidation_date) : "N/A" %>
+    <% end %>
+
+    <%# [Calculation] Calculates the total number of days
+      #               taken to process the application from request to liquidation.
+      %>
+    <%
+      if @application.request_date && @application.liquidation_date
+        processing_days = (@application.liquidation_date - @application.request_date).to_i
+      else
+        processing_days = nil
+      end
+    %>
+
+    <%# [Summary] Displays the total processing time in days.
+      #           If the transaction is not complete, it shows the status as "Em andamento" (In progress).
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Tempo de Processamento",
+               card_icon: "hourglass",
+               card_data: processing_days ? "#{processing_days} dias úteis" : "Em andamento",
+               card_data_icon: "calendar-clock" do
+    %>
+      <%= processing_days ? "#{processing_days} dias" : "Calculando..." %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays metrics related to the management and usage of quotas from this application for subsequent redemptions.
+    #           It tracks available quotas and quotas already allocated to withdrawals.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Gestão de Cotas",
+             section_desc: "Disponibilidade e alocação para resgates",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the number of quotas from this application still available for redemption.
+      #           The card status indicates whether the application is fully allocated to redemptions.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Cotas Disponíveis",
+               card_icon: "package",
+               card_data: @application.fully_allocated? ? "Totalmente alocado" : "Disponível para resgate",
+               card_data_icon: @application.fully_allocated? ? "package-x" : "package-check",
+               is_success: !@application.fully_allocated?,
+               is_danger: @application.fully_allocated? do
+    %>
+      <%= number_with_precision(@application.available_quotas, precision: 4) %>
+    <% end %>
+
+    <%# [Calculation] Calculates the total number of quotas from this application
+      #               that have been allocated to redemptions.
+      %>
+    <%
+      allocated_quotas = @application.redemption_allocations.sum(:quotas_used) || 0
+    %>
+
+    <%# [Summary] Displays the total number of quotas that have been used (allocated) in redemptions.
+      #           The card uses danger styling if any quotas have been allocated.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Cotas Já Alocadas",
+               card_icon: "package-minus",
+               card_data: "Em resgates",
+               card_data_icon: "arrow-down-left",
+               is_danger: allocated_quotas > 0 do
+    %>
+      <%= number_with_precision(allocated_quotas, precision: 4) %>
+    <% end %>
+
+    <%# [Calculation] Calculates the percentage of total acquired quotas
+      #               that have been allocated to redemptions.
+      %>
+    <%
+      allocation_percentage = @application.number_of_quotas && @application.number_of_quotas > 0 ?
+                                (allocated_quotas / @application.number_of_quotas * 100) : 0
+    %>
+
+    <%# [Summary] Displays the allocation percentage.
+      #           This shows how much of the original application has been withdrawn.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Percentual Alocado",
+               card_icon: "badge-percent",
+               card_data: "de 100%",
+               card_data_icon: "chart-pie" do
+    %>
+      <%= number_with_precision(allocation_percentage, precision: 2) %>%
+    <% end %>
+
+    <%# [Summary] Displays the count of associated redemption allocation records.
+      #           This indicates the number of times these quotas have been used in withdrawals.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Resgates Vinculados",
+               card_icon: "git-branch",
+               card_data: @application.redemption_allocations.count > 0 ? "Ativo" : "Nenhum",
+               card_data_icon: "link" do
+    %>
+      <%= @application.redemption_allocations.count %> alocações
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays charts for visual analysis of the application lifecycle and quota distribution.
+    #           It uses a two-column layout for visualizations.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visualizações",
+             is_two_col: true do
+  %>
+
+    <%# [Preparation] Prepares the data for the transaction lifecycle column chart.
+      #               It maps key dates (request, cotization, liquidation) to numerical stages.
+      %>
+    <%
+      lifecycle_data = {}
+      lifecycle_data[@application.request_date] = 1 if @application.request_date
+      lifecycle_data[@application.cotization_date] = 2 if @application.cotization_date
+      lifecycle_data[@application.liquidation_date] = 3 if @application.liquidation_date
+    %>
+
+    <%# [Chart] Renders a column chart illustrating the progression of the transaction through its lifecycle stages over time.
+      #         Custom callback functions are used to label the numerical stages on the y-axis.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: lifecycle_data,
+               chart_title: "Linha do Tempo da Transação",
+               empty_message: "N/A" do
+    %>
+      <%= column_chart lifecycle_data,
+                       library: {
+                         legend: { display: false },
+                         scales: {
+                           y: {
+                             ticks: {
+                               callback: "function(value) {
+                                 const stages = ['', 'Solicitação', 'Cotização', 'Liquidação'];
+                                 return stages[value] || '';
+                               }"
+                             }
+                           }
+                         }
+                       } %>
+    <% end %>
+
+    <%# [Preparation] Prepares the data for the quota distribution pie chart.
+      #               It compares quotas that are still available versus those already allocated to redemptions.
+      %>
+    <%
+      allocated_quotas = @application.redemption_allocations.sum(:quotas_used) || 0
+    %>
+    <%
+      quota_allocation = {
+        "Disponíveis" => @application.available_quotas,
+        "Alocadas" => allocated_quotas
+      }
+    %>
+
+    <%# [Chart] Renders a donut pie chart showing the distribution
+      #         of acquired quotas into "available" and "allocated" categories.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: quota_allocation,
+               chart_title: "Distribuição de Cotas",
+               empty_message: "N/A" do
+    %>
+      <%= pie_chart quota_allocation,
+                    donut: true,
+                    legend: "right"
+      %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays a table listing all Redemption Allocation records linked to this application.
+    #           These are the specific instances where quotas from this application were used for a withdrawal.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Alocações de Resgate",
+             section_desc: "Cotas desta aplicação utilizadas em resgates",
+             is_one_col: true,
+             has_action: false do
+  %>
+
+    <%# [Conditional] Checks if there are any redemption allocation records.
+      #               The table rendering block executes only if allocations exist.
+      %>
+    <% if @application.redemption_allocations.any? %>
+
+      <%# [Variable] Assigns the redemption allocations collection,
+        #            including nested associated records, as the model data for the table.
+        %>
+      <% models = @application.redemption_allocations.includes(redemption: { fund_investment: [:portfolio, :investment_fund] }) %>
+
+      <%# [Array] Defines the column headers for the redemption allocations table. %>
+      <% columns_header = [
+        "Resgate",
+        "Carteira",
+        "Cotas Utilizadas",
+        "Valor da Cota",
+        "Valor Total",
+        "Data de Resgate"
+      ] %>
+
+      <%# [Array] Defines the column icons for the table. %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         These lambdas handle linking, nested data display, numerical formatting, currency display, and dynamic calculation.
+        %>
+      <% columns_body = [
+
+        # Explanation:: This lambda displays the Redemption ID and type.
+        #               It links to the specific Redemption show page.
+        #               The result is a linked redemption identifier.
+        ->(alloc) do
+          content_tag(:div, class: "flex flex-col") do
+            concat link_to("Resgate ##{alloc.redemption.id}",
+                           redemption_path(alloc.redemption),
+                           class: "font-medium hover:underline")
+            concat content_tag(:span, alloc.redemption.redemption_type || "Padrão", class: "text-sm text-muted")
+          end
+        end,
+
+        # Explanation:: This lambda displays the Portfolio name and the owner's full name.
+        #               It fetches the portfolio details via nested associations.
+        #               The result is the portfolio and owner name stacked.
+        ->(alloc) do
+          content_tag(:div, class: "flex flex-col") do
+            concat content_tag(:span, alloc.redemption.fund_investment.portfolio.name, class: "font-medium")
+            concat content_tag(:span, alloc.redemption.fund_investment.portfolio.user.full_name, class: "text-sm text-muted")
+          end
+        end,
+
+        # Explanation:: This lambda displays the number of quotas used in this allocation.
+        #               It uses the `colored_numerical` helper for consistent formatting.
+        #               The result is the formatted quantity of quotas used.
+        ->(alloc) { colored_numerical(alloc.quotas_used, "h-auto") },
+
+        # Explanation:: This lambda displays the quota value used at the time of redemption.
+        #               It uses `standard_currency` or "N/A" if the value is missing.
+        #               The result is the formatted quota value.
+        ->(alloc) { alloc.quota_value_at_redemption ? standard_currency(alloc.quota_value_at_redemption) : "N/A" },
+
+        # Explanation:: This lambda calculates the total financial value of the allocated quotas (quotas * quota value).
+        #               It uses the `colored_currency` helper to display the calculated total.
+        #               The result is the total calculated financial value.
+        ->(alloc) do
+          if alloc.quotas_used && alloc.quota_value_at_redemption
+            total = alloc.quotas_used * alloc.quota_value_at_redemption
+            colored_currency(total, "h-auto")
+          else
+            "N/A"
+          end
+        end,
+
+        # Explanation:: This lambda displays the date the redemption was requested.
+        #               It uses the `formatted_timestamp` helper for consistent date presentation.
+        #               The result is the formatted redemption request date.
+        ->(alloc) { formatted_timestamp(alloc.redemption.request_date) }
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the redemption allocation history data using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 } %>
+    <% else %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Creates a two-column layout for displaying key data and financial validation results.
+    #           This section provides a quick status check on the record's integrity.
+    %>
+  <%= render "partials/route/dashboard/section",
+             is_two_col: true,
+             has_action: false do
+  %>
+
+    <%# [Section] Displays the validation results related
+      #           to the chronological order of transaction dates.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Validações de Data",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [Validation] Defines variables to check if the cotization date occurs
+        #              after the request date and if the liquidation date occurs after the cotization date.
+        %>
+      <%
+        cotization_valid = !@application.cotization_date ||
+                           !@application.request_date ||
+                           @application.cotization_date >= @application.request_date
+
+        liquidation_valid = !@application.liquidation_date ||
+                            !@application.cotization_date ||
+                            @application.liquidation_date >= @application.cotization_date
+      %>
+
+      <%# [Info] Displays the validation result for the cotization date being after the request date.
+        #        The card uses success/danger styling based on the chronological validity.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: "Cotização após Solicitação",
+                 subtitle: cotization_valid ? "Válido" : "Inválido - data inconsistente",
+                 main_value: cotization_valid ? "Ok!" : "Erro",
+                 sub_value: cotization_valid ? "Cronologia correta" : "Requer correção",
+                 icon_name: cotization_valid ? "circle-check" : "circle-alert",
+                 main_color: cotization_valid ? "success" : "danger"
+      %>
+
+      <%# [Info] Displays the validation result for the liquidation date being after the cotization date.
+        #        The card uses success/danger styling based on the chronological validity.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: "Liquidação após Cotização",
+                 subtitle: liquidation_valid ? "Válido" : "Inválido - data inconsistente",
+                 main_value: liquidation_valid ? "Ok!" : "Erro",
+                 sub_value: liquidation_valid ? "Cronologia correta" : "Requer correção",
+                 icon_name: liquidation_valid ? "circle-check" : "circle-alert",
+                 main_color: liquidation_valid ? "success" : "danger"
+      %>
+    <% end %>
+
+    <%# [Section] Displays the validation results related to
+      #           the financial integrity and consistency of values.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Validações Financeiras",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [Validation] Defines variables to check the consistency between
+        #              calculated and stored quota values, and to check for positive transaction values.
+        %>
+      <%
+        calc_consistent = @application.calculated_quota_value &&
+                          @application.quota_value_at_application &&
+                          (@application.calculated_quota_value - @application.quota_value_at_application).abs <= 0.01
+
+        positive_values = @application.financial_value && @application.financial_value > 0 &&
+                          (!@application.number_of_quotas || @application.number_of_quotas > 0)
+      %>
+
+      <%# [Info] Displays the validation result for financial calculation consistency.
+        #        Checks if financial value / number of quotas matches the stored quota value within tolerance.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: "Consistência de Cálculo",
+                 subtitle: calc_consistent ? "Divisão de valores por cotas é igual à cotação" : "Requer verificação",
+                 main_value: calc_consistent ? "Ok!" : (@application.calculated_quota_value ? "Divergente" : "N/A"),
+                 sub_value: calc_consistent ? "Matemática correta" : "Verificar valores",
+                 icon_name: calc_consistent ? "circle-check" : "circle-alert",
+                 main_color: calc_consistent ? "success" : (@application.calculated_quota_value ? "danger" : "secondary")
+      %>
+
+      <%# [Info] Displays the validation result for ensuring all key transaction values are positive.
+        #        This is a basic integrity check against zero or negative amounts.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: "Valores Positivos",
+                 subtitle: positive_values ? "Todos os valores são válidos" : "Verificar integridade",
+                 main_value: positive_values ? "Ok!" : "Atenção",
+                 sub_value: positive_values ? "Valores são maiores que zero" : "Valores inválidos detectados",
+                 icon_name: positive_values ? "circle-check" : "circle-alert",
+                 main_color: positive_values ? "success" : "danger"
+      %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays generic system metadata, such as creation and last update timestamps.
+    #           This is useful for tracking the record's history in the database.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Metadados do Sistema",
+             is_two_col: true,
+             has_action: false do
+  %>
+
+    <%# [Info] Displays the creation date and the relative time elapsed since creation.
+      #        The card uses secondary coloring for system metadata.
+      %>
+    <%= render "partials/blocks/info-card",
+               title: "Registro Criado",
+               subtitle: formatted_timestamp(@application.created_at),
+               main_value: "Há #{time_ago_in_words(@application.created_at)}",
+               sub_value: "Data de criação",
+               icon_name: "calendar-plus",
+               main_color: "secondary"
+    %>
+
+    <%# [Info] Displays the last updated date and the relative time elapsed since the last modification.
+      #        The card uses secondary coloring for system metadata.
+      %>
+    <%= render "partials/blocks/info-card",
+               title: "Última Atualização",
+               subtitle: formatted_timestamp(@application.updated_at),
+               main_value: "Há #{time_ago_in_words(@application.updated_at)}",
+               sub_value: "Modificação mais recente",
+               icon_name: "refresh-cw",
+               main_color: "secondary"
+    %>
+  <% end %>
+<% end %>

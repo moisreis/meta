@@ -106,10 +106,6 @@ class RedemptionsController < ApplicationController
   # Attributes:: - *@redemption* @Redemption - the specific record loaded by the `before_action`.
   #
   def show
-    render json: {
-      status: 'Success',
-      data: RedemptionSerializer.new(@redemption).serializable_hash[:data][:attributes]
-    }
   end
 
   # == new

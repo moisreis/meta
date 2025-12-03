@@ -1,0 +1,2 @@
+class RedemptionAllocation < ApplicationRecord
+end

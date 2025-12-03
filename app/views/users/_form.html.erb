@@ -18,7 +18,9 @@
   #               ensuring logical grouping and a uniform UI across different user
   #               management contexts.
   %>
-<%= form_with(model: user, class: "contents") do |form| %>
+<%= form_with(
+      model: user,
+      class: "contents") do |form| %>
   <%= render "partials/modules/input-field",
              f: form,
              name: :email,

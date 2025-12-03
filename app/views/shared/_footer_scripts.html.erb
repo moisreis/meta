@@ -17,6 +17,8 @@
   #          avoids duplicate JavaScript blocks in multiple templates, and
   #          ensures consistent behavior across pages using the same widgets.
   %>
+
+<!-- [Libary] TomSelect -->
 <script>
     var settings = {
         create: false,
@@ -30,7 +32,6 @@
         searchField: ['text'],
         plugins: {
             dropdown_input: {},
-            remove_button: {title: 'Remover'}
         },
         render: {
             option: function (data, escape) {
@@ -43,6 +44,8 @@
         new TomSelect(selectEl, settings);
     });
 </script>
+
+<!-- [Libary] Flatpickr -->
 <script>
     flatpickr(".datetime", {
         dateFormat: "d/m/Y",
@@ -86,14 +89,47 @@
         }
     });
 </script>
+
+<!-- [Libary] Tippy -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const template = document.querySelector('.template');
 
-        tippy('.row-options', {
-            content: template.innerHTML,
+        tippy('.row-options-button', {
+
+            content(reference) {
+                const targetSelector = reference.dataset.tippyTarget;
+
+                if (targetSelector) {
+                    const contentElement = document.querySelector(targetSelector);
+
+                    return contentElement ? contentElement.innerHTML : 'Menu not found';
+                }
+                return 'Error loading menu content.';
+            },
+
             allowHTML: true,
             placement: 'bottom',
+            theme: 'meta',
+            arrow: false,
+            interactive: true,
+            offset: [0, 0]
+        });
+
+        tippy('.section-desc-button', {
+
+            content(reference) {
+                const targetSelector = reference.dataset.tippyTarget;
+
+                if (targetSelector) {
+                    const contentElement = document.querySelector(targetSelector);
+
+                    return contentElement ? contentElement.innerHTML : 'Description not found';
+                }
+                return 'Error loading description content.';
+            },
+
+            allowHTML: true,
+            placement: 'right',
             theme: 'meta',
             arrow: false,
             interactive: true,

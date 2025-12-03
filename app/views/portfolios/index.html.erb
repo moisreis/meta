@@ -19,7 +19,7 @@
   #               the use of shared dashboard partials.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Lista de carteiras",
+           page_title: "Carteiras",
            page_desc: "Lista de carteiras com permissão de visualização.",
            current_view: "datatable" do
 %>
@@ -30,10 +30,10 @@
     #                of each portfolio, such as name, invested value, and permissions.
     columns_header: [
       "Nome",
-      "Valor investido",
-      "Cotas",
       "Proprietário",
-      "Compartilhado com"
+      "Compartilhado com",
+      "Valor investido",
+      "Cotas"
     ],
 
     # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
@@ -47,6 +47,39 @@
     columns_body: [
       :name,
 
+      # [Explanation]: This lambda displays the full name of the user who owns the portfolio.
+      #                The owner's name is rendered within a secondary styled badge element.
+      ->(portfolio) do
+        user = portfolio.user
+
+        if user == current_user
+          content_tag(:span, "Você", class: "badge badge-danger")
+        else
+          content_tag(:span, user.full_name, class: "badge badge-outline")
+        end
+      end,
+
+      # [Explanation]: This lambda displays the names of users with whom the portfolio is shared.
+      #                If sharing permissions exist, each user's name is displayed in an outline badge;
+      #                otherwise, it displays "Não há compartilhamento" (No sharing).
+      ->(portfolio) do
+        shared_permissions = portfolio.user_portfolio_permissions.includes(:user)
+
+        if shared_permissions.any?
+          shared_permissions.map do |perm|
+            user = perm.user
+
+            if user == current_user
+              content_tag(:span, "Você", class: "badge badge-danger mr-1")
+            else
+              content_tag(:span, user.full_name, class: "badge badge-outline mr-1")
+            end
+          end.join.html_safe
+        else
+          content_tag(:span, "N/A", class: "text-muted")
+        end
+      end,
+
       # [Explanation]: This lambda calculates and displays the total monetary value currently invested in the portfolio.
       #                If the value is positive, it is formatted as currency (R$);
       #                otherwise, it displays the message "Não há investimentos" (No investments) in muted text.
@@ -59,36 +92,6 @@
       #                otherwise, it displays "Sem cotas" (No quotas) in muted text.
       ->(portfolio) do
         colored_numerical(portfolio.total_quotas_held)
-      end,
-
-      # [Explanation]: This lambda displays the full name of the user who owns the portfolio.
-      #                The owner's name is rendered within a secondary styled badge element.
-      ->(portfolio) do
-        content_tag(
-          :span,
-          portfolio.user.full_name,
-          class: "badge badge-secondary"
-        )
-      end,
-
-      # [Explanation]: This lambda displays the names of users with whom the portfolio is shared.
-      #                If sharing permissions exist, each user's name is displayed in an outline badge;
-      #                otherwise, it displays "Não há compartilhamento" (No sharing).
-      ->(portfolio) do
-        shared_permissions = portfolio.user_portfolio_permissions.includes(:user)
-        if shared_permissions.any?
-          shared_permissions.map do |perm|
-            user_name = perm.user.full_name
-            permission_desc = perm.permission_description
-            content_tag(
-              :span,
-              "#{user_name}",
-              class: "badge badge-outline mr-1"
-            )
-          end.join.html_safe
-        else
-          content_tag(:span, "N/A", class: "text-muted")
-        end
       end
     ],
 

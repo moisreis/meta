@@ -62,9 +62,9 @@
      *  Ensures readability and consistency across UI components.
      * ------------------------------
      */
-    --font-body: 'Geist', sans-serif;
-    --font-heading: 'Geist', sans-serif;
-    --font-mono: 'Geist Mono', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-heading: 'Inter Tight', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
 
     /*
      * ------------------------------
@@ -401,7 +401,7 @@
      * ------------------------------
      */
     .button-icon {
-        @apply [&>svg]:!size-4 !h-fit !w-fit
+        @apply [&>svg]:!size-3.5 !h-fit !w-fit
     }
 
     /*
@@ -493,7 +493,7 @@
      * ------------------------------
      */
     .badge {
-        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base text-xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none border border-primary-100 bg-primary-50 text-primary-700 h-fit shadow-xs w-fit
+        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base text-xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none border border-primary-100 bg-primary-50 text-primary-700 h-fit shadow-xs w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3.5
     }
 
     /*
@@ -506,7 +506,7 @@
      * ------------------------------
      */
     .badge-outline {
-        @apply bg-white border-border text-body;
+        @apply bg-white border-border text-body [&>svg]:stroke-body;
     }
 
     /*
@@ -519,7 +519,7 @@
      * ------------------------------
      */
     .badge-secondary {
-        @apply bg-secondary-50 border-secondary-100 text-secondary-600;
+        @apply bg-secondary-50 border-secondary-100 text-secondary-600 [&>svg]:stroke-secondary-600;
     }
 
     /*
@@ -532,6 +532,40 @@
      * ------------------------------
      */
     .badge-danger {
-        @apply bg-danger-50 border-danger-100 text-danger-600;
+        @apply bg-danger-50 border-danger-100 text-danger-600 [&>svg]:stroke-danger-600;
+    }
+
+    /*
+     * ------------------------------
+     *  badge-alert
+     *
+     *  Sets the badge variant with a warning-themed palette.
+     *  Applies alert-focused colors for warnings tags.
+     * ------------------------------
+     */
+    .badge-alert {
+        @apply bg-alert-50 border-alert-100 text-alert-600 [&>svg]:stroke-alert-600;
+    }
+
+    /*
+     * ------------------------------
+     *  badge-success
+     *
+     *  Sets the badge variant with a success-themed palette.
+     *  Applies success-focused colors for successes tags.
+     * ------------------------------
+     */
+    .badge-success {
+        @apply bg-success-50 border-success-100 text-success-600 [&>svg]:stroke-success-600;
+    }
+}
+
+@layer utilities {
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
 }

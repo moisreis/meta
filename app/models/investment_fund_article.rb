@@ -1,0 +1,2 @@
+class InvestmentFundArticle < ApplicationRecord
+end

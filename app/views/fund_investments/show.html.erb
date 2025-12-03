@@ -1,0 +1,699 @@
+<%#
+  # View: show.html.erb
+  # Date: 12/01/2025
+  # Author: Moisés Reis
+  # Package: FundInvestments
+  #
+  # Description: Displays a comprehensive dashboard view for a single FundInvestment record.
+  #              Shows investment metrics, performance calculations, transaction history, allocation details,
+  #              and historical performance trends with interactive charts.
+  #
+  # Usage: - What: Renders the complete show view for the FundInvestment resource with detailed
+  #                performance metrics, ROI calculations, transaction breakdowns, and trend analysis.
+  #        - How: Accessed via GET /fund_investments/:id. Uses the @fund_investment instance variable
+  #               loaded by FundInvestmentsController#show along with calculated metrics.
+  #        - Why: Provides users with a centralized dashboard to monitor a specific fund investment's
+  #               performance, track transactions, analyze returns, and understand their position.
+  %>
+
+<%# [Partial] Renders the main dashboard layout wrapper.
+  #           This partial establishes the standardized structure and title for the page, using the fund and portfolio names.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @fund_investment.investment_fund.fund_name,
+           page_desc: "Investimento no portfólio #{@fund_investment.portfolio.name}",
+           current_view: "show" do
+%>
+
+  <%# [Section] Displays the primary identifying information for this Fund Investment record.
+    #           It shows the linked Portfolio, the Investment Fund, the allocation percentage, and the creation date.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visão Geral do Investimento",
+             section_desc: "Dados principais e identificação",
+             is_four_col: true,
+             has_action: true,
+             button_route: edit_fund_investment_path(@fund_investment),
+             button_name: "Editar",
+             button_icon: "pencil" do
+  %>
+
+    <%# [Summary] Displays the name of the containing portfolio.
+      #           The card content is a clickable link to the portfolio's detail page.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Portfólio",
+               card_icon: "briefcase",
+               card_data: @fund_investment.portfolio.user.full_name,
+               card_data_icon: "user" do
+    %>
+      <%= link_to @fund_investment.portfolio.name, portfolio_path(@fund_investment.portfolio), class: "hover:underline" %>
+    <% end %>
+
+    <%# [Summary] Displays the name of the investment fund.
+      #           The card content is a clickable link to the fund's detail page.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Fundo de Investimento",
+               card_icon: "building-2",
+               card_data: @fund_investment.investment_fund.cnpj,
+               card_data_icon: "file-text" do
+    %>
+      <%= link_to @fund_investment.investment_fund.fund_name, investment_fund_path(@fund_investment.investment_fund), class: "hover:underline" %>
+    <% end %>
+
+    <%# [Summary] Displays the percentage allocated to this fund within its portfolio.
+      #           The card data indicates the percentage is relative to 100%.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Alocação no Portfólio",
+               card_icon: "chart-pie",
+               card_data: "de 100%",
+               card_data_icon: "badge-percent" do
+    %>
+      <%= number_with_precision(@fund_investment.percentage_allocation, precision: 2) %>%
+    <% end %>
+
+    <%# [Summary] Displays the date the investment record was created.
+      #           The card data shows the elapsed time since creation using relative phrasing.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Criado em",
+               card_icon: "calendar-plus",
+               card_data: "Há #{time_ago_in_words(@fund_investment.created_at)}",
+               card_data_icon: "clock" do
+    %>
+      <%= formatted_timestamp(@fund_investment.created_at) %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the current position and valuation metrics for the investment.
+    #           This section uses live data for market value, quotas, and unrealized gain/loss.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Métricas de Posição",
+             section_desc: "Valores atuais e saldos",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the total cumulative capital invested (applications minus redemptions).
+      #           The card data identifies this as the "Capital inicial".
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valor Total Investido",
+               card_icon: "banknote",
+               card_data: "Capital inicial",
+               card_data_icon: "arrow-down-right" do
+    %>
+      <%= standard_currency(@fund_investment.total_invested_value) %>
+    <% end %>
+
+    <%# [Summary] Displays the total number of quotas currently held for this fund investment.
+      #           The card data identifies this as the "Saldo atual".
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Cotas Detidas",
+               card_icon: "scale",
+               card_data: "Saldo atual",
+               card_data_icon: "coins" do
+    %>
+      <%= number_with_precision(@fund_investment.total_quotas_held, precision: 2) %>
+    <% end %>
+
+    <%# [Summary] Displays the current market value (Quotas Held * Latest Quota Price).
+      #           The card uses conditional coloring (success/danger) based on whether the market value is above or below the invested value.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valor de Mercado Atual",
+               card_icon: "trending-up",
+               card_data: @fund_investment.investment_fund.latest_quota_value ? "Cotação: #{standard_currency(@fund_investment.investment_fund.latest_quota_value)}" : "N/A",
+               card_data_icon: "chart-line",
+               is_success: @fund_investment.current_market_value > @fund_investment.total_invested_value,
+               is_danger: @fund_investment.current_market_value < @fund_investment.total_invested_value do
+    %>
+      <%= standard_currency(@fund_investment.current_market_value) %>
+    <% end %>
+
+    <%# [Calculation] Calculates the unrealized gain or
+      #               loss and determines the sign for conditional rendering.
+      %>
+    <%
+      gain_loss = @fund_investment.unrealized_gain_loss
+      is_positive = gain_loss > 0
+      is_negative = gain_loss < 0
+    %>
+
+    <%# [Summary] Displays the unrealized gain or loss (Market Value - Invested Value).
+      #           The card dynamically changes the icon, data text, and color based on the profit/loss status.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Ganho/Perda Não Realizado",
+               card_icon: is_positive ? "arrow-up" : (is_negative ? "arrow-down" : "minus"),
+               card_data: "#{is_positive ? '+' : ''}#{number_with_precision(@fund_investment.return_percentage, precision: 2)}%",
+               card_data_icon: "badge-percent",
+               is_success: is_positive,
+               is_danger: is_negative do
+    %>
+      <%= is_positive ? '+' : '' %><%= standard_currency(gain_loss.abs) %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays transaction and profitability metrics (ROI, total flows).
+    #           This section summarizes the financial activity within this specific investment.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Performance e Retorno",
+             section_desc: "Análise de rentabilidade do investimento",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the total cumulative financial value applied to the fund.
+      #           The card data shows the total number of application transactions.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Total de Aplicações",
+               card_icon: "arrow-up-right",
+               card_data: "#{@fund_investment.applications.count} transações",
+               card_data_icon: "hash",
+               is_success: true do
+    %>
+      <%= standard_currency(@fund_investment.total_applications) %>
+    <% end %>
+
+    <%# [Summary] Displays the total cumulative financial value redeemed from the fund.
+      #           The card data shows the total number of redemption transactions.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Total de Resgates",
+               card_icon: "arrow-down-left",
+               card_data: "#{@fund_investment.redemptions.count} transações",
+               card_data_icon: "hash",
+               is_danger: true do
+    %>
+      <%= standard_currency(@fund_investment.total_redemptions) %>
+    <% end %>
+
+    <%# [Summary] Displays the net flow (Applications - Redemptions).
+      #           This shows the final capital contribution to date.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Fluxo Líquido",
+               card_icon: "repeat",
+               card_data: "Aplicações/Resgates",
+               card_data_icon: "calculator" do
+    %>
+      <%= standard_currency(@fund_investment.total_applications - @fund_investment.total_redemptions) %>
+    <% end %>
+
+    <%# [Calculation] Calculates the Return on Investment (ROI) percentage and determines the sign for conditional rendering.
+      %>
+    <%
+      roi = @fund_investment.return_percentage
+      roi_positive = roi > 0
+      roi_negative = roi < 0
+    %>
+
+    <%# [Summary] Displays the total Return on Investment percentage.
+      #           The card dynamically changes the icon and color based on whether the ROI is positive or negative.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Retorno sobre Investimento",
+               card_icon: "trending-up",
+               card_data: roi_positive ? "Lucro" : (roi_negative ? "Prejuízo" : "Neutro"),
+               card_data_icon: roi_positive ? "smile" : (roi_negative ? "frown" : "minus"),
+               is_success: roi_positive,
+               is_danger: roi_negative do
+    %>
+      <%= roi_positive ? '+' : '' %><%= number_with_precision(roi, precision: 2) %>%
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays charts related to transaction distribution and monthly flows.
+    #           This section provides a visual analysis of capital movement.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visualizações de Performance",
+             is_two_col: true do
+  %>
+
+    <%# [Preparation] Prepares the data for the transaction distribution pie chart.
+      #               It compares the total value of applications vs. redemptions.
+      %>
+    <%
+      applications_value = @fund_investment.total_applications
+      redemptions_value = @fund_investment.total_redemptions
+      transaction_distribution = {
+        "Aplicações" => applications_value,
+        "Resgates" => redemptions_value
+      }
+    %>
+
+    <%# [Chart] Renders a donut pie chart showing the percentage distribution of total flow between applications and redemptions.
+      #         The chart uses Brazilian currency formatting.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: transaction_distribution,
+               chart_title: "Distribuição de Transações",
+               empty_message: "N/A" do
+    %>
+      <%= pie_chart transaction_distribution,
+                    prefix: "R$ ",
+                    thousands: ".",
+                    decimal: ",",
+                    donut: true,
+                    legend: "right"
+      %>
+    <% end %>
+
+    <%# [Preparation] Prepares the data for the monthly flow line chart.
+      #               It aggregates application and redemption values by month/year key.
+      %>
+    <%
+      monthly_data = {}
+
+      @fund_investment.applications.each do |app|
+        month_key = app.request_date.strftime("%m/%Y")
+        monthly_data[month_key] ||= { "Aplicações" => 0, "Resgates" => 0 }
+        monthly_data[month_key]["Aplicações"] += app.financial_value || 0
+      end
+
+      @fund_investment.redemptions.each do |red|
+        month_key = red.request_date.strftime("%m/%Y")
+        monthly_data[month_key] ||= { "Aplicações" => 0, "Resgates" => 0 }
+        monthly_data[month_key]["Resgates"] += red.redeemed_liquid_value || 0
+      end
+
+      monthly_flows = monthly_data.sort_by { |k, v| Date.strptime(k, "%m/%Y") }
+                                  .map { |k, v| [k, v] }
+                                  .to_h
+    %>
+
+    <%# [Chart] Renders a line chart showing the monthly transaction flow (applications vs. redemptions).
+      #         It uses custom scaling and currency formatting for the y-axis.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: monthly_flows,
+               chart_title: "Fluxo Mensal de Transações",
+               empty_message: "N/A" do
+    %>
+      <%= line_chart monthly_flows,
+                     stacked: false,
+                     prefix: "R$ ",
+                     thousands: ".",
+                     decimal: ",",
+                     curve: true,
+                     library: {
+                       scales: {
+                         y: {
+                           ticks: {
+                             callback: "function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); }"
+                           }
+                         }
+                       }
+                     } %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays a table listing the detailed history of all Applications for this investment.
+    #           It includes a button to initiate a new application.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Histórico de Aplicações",
+             is_one_col: true,
+             has_action: true,
+             button_route: new_application_path(fund_investment_id: @fund_investment.id),
+             button_name: "Nova aplicação",
+             button_icon: "plus" do
+  %>
+
+    <%# [Conditional] Checks if there are any application records for this investment.
+      #               The table rendering block executes only if applications exist.
+      %>
+    <% if @fund_investment.applications.any? %>
+
+      <%# [Variable] Assigns the application records,
+        #            ordered by request date, as the model data for the table.
+        %>
+      <% models = @fund_investment.applications.order(request_date: :desc) %>
+
+      <%# [Array] Defines the column headers for the application history table. %>
+      <% columns_header = [
+        "Data de Solicitação",
+        "Valor Financeiro",
+        "Cotas Adquiridas",
+        "Cotação na Aplicação",
+        "Data de Cotização",
+        "Data de Liquidação"
+      ] %>
+
+      <%# [Array] Defines the column icons for the table. %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         These lambdas handle date formatting, currency display, and numerical formatting.
+        %>
+      <% columns_body = [
+
+        # Explanation:: This lambda function displays the application request date.
+        #               It uses the `formatted_timestamp` helper for consistent date presentation.
+        #               The result is the formatted request date.
+        ->(app) { formatted_timestamp(app.request_date) },
+
+        # Explanation:: This lambda displays the financial value of the application.
+        #               It uses the `colored_currency` helper to format the value as currency.
+        #               The result is the formatted financial value.
+        ->(app) { colored_currency(app.financial_value) },
+
+        # Explanation:: This lambda displays the number of quotas acquired.
+        #               It uses the `colored_numerical` helper for consistent numerical formatting.
+        #               The result is the formatted number of quotas.
+        ->(app) { colored_numerical(app.number_of_quotas) },
+
+        # Explanation:: This lambda displays the quota value used during the application calculation.
+        #               It uses `standard_currency` or "N/A" if the value is missing.
+        #               The result is the formatted quota value.
+        ->(app) { app.quota_value_at_application ? standard_currency(app.quota_value_at_application) : "N/A" },
+
+        # Explanation:: This lambda displays the cotization date (when the value was fixed).
+        #               It uses `formatted_timestamp` or "N/A" if the date is missing.
+        #               The result is the formatted cotization date.
+        ->(app) { app.cotization_date ? formatted_timestamp(app.cotization_date) : "N/A" },
+
+        # Explanation:: This lambda displays the liquidation date (when the funds settled).
+        #               It uses `formatted_timestamp` or "N/A" if the date is missing.
+        #               The result is the formatted liquidation date.
+        ->(app) { app.liquidation_date ? formatted_timestamp(app.liquidation_date) : "N/A" }
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the application history data using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 } %>
+    <% else %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays a table listing the detailed history of all Redemptions for this investment.
+    #           It includes a button to initiate a new redemption.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Histórico de Resgates",
+             is_one_col: true,
+             has_action: true,
+             button_route: new_redemption_path(fund_investment_id: @fund_investment.id),
+             button_name: "Novo resgate",
+             button_icon: "minus" do
+  %>
+
+    <%# [Conditional] Checks if there are any redemption records for this investment.
+      #               The table rendering block executes only if redemptions exist.
+      %>
+    <% if @fund_investment.redemptions.any? %>
+
+      <%# [Variable] Assigns the redemption records,
+        #            ordered by request date, as the model data for the table.
+        %>
+      <% models = @fund_investment.redemptions.order(request_date: :desc) %>
+
+      <%# [Array] Defines the column headers for the redemption history table. %>
+      <% columns_header = [
+        "Data de Solicitação",
+        "Cotas Resgatadas",
+        "Valor Líquido",
+        "Tipo de Resgate",
+        "Rendimento",
+        "Data de Cotização",
+        "Data de Liquidação"
+      ] %>
+
+      <%# [Array] Defines the column icons for the table. %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         These lambdas handle date formatting, currency display, numerical formatting, and redemption type badging.
+        %>
+      <% columns_body = [
+
+        # Explanation:: This lambda function displays the redemption request date.
+        #               It uses the `formatted_timestamp` helper for consistent date presentation.
+        #               The result is the formatted request date.
+        ->(red) { formatted_timestamp(red.request_date) },
+
+        # Explanation:: This lambda displays the number of quotas redeemed.
+        #               It uses the `colored_numerical` helper for consistent numerical formatting.
+        #               The result is the formatted number of quotas.
+        ->(red) { colored_numerical(red.redeemed_quotas) },
+
+        # Explanation:: This lambda displays the net financial value received from the redemption.
+        #               It uses the `colored_currency` helper to format the value as currency.
+        #               The result is the formatted liquid value.
+        ->(red) { colored_currency(red.redeemed_liquid_value) },
+
+        # Explanation:: This lambda displays the type of redemption (e.g., partial, total) in a badge format.
+        #               It defaults to "N/A" if the type is missing.
+        #               The result is the redemption type badge.
+        ->(red) do
+          content_tag(:span, red.redemption_type || "N/A", class: "badge badge-secondary")
+        end,
+
+        # Explanation:: This lambda displays the yield (profit/loss) realized during the redemption.
+        #               It uses `standard_currency` or "N/A" if the yield value is missing.
+        #               The result is the formatted redemption yield.
+        ->(red) { red.redemption_yield ? standard_currency(red.redemption_yield) : "N/A" },
+
+        # Explanation:: This lambda displays the cotization date (when the value was fixed).
+        #               It uses `formatted_timestamp` or "N/A" if the date is missing.
+        #               The result is the formatted cotization date.
+        ->(red) { red.cotization_date ? formatted_timestamp(red.cotization_date) : "N/A" },
+
+        # Explanation:: This lambda displays the liquidation date (when the funds settled).
+        #               It uses `formatted_timestamp` or "N/A" if the date is missing.
+        #               The result is the formatted liquidation date.
+        ->(red) { red.liquidation_date ? formatted_timestamp(red.liquidation_date) : "N/A" }
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the redemption history data using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 } %>
+
+    <% else %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Creates a two-column layout for displaying the last 5 applications and last 5 redemptions in info cards.
+    #           This provides a quick summary of recent transactions.
+    %>
+  <%= render "partials/route/dashboard/section",
+             is_two_col: true,
+             has_action: false do
+  %>
+    <%# [Section] Displays the 5 most recent application transactions.
+      #           It links to the full applications history.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Últimas 5 Aplicações",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [ActiveRecord] Retrieves the 5 latest application records for this investment. %>
+      <% recent_applications = @fund_investment.applications.order(request_date: :desc).limit(5) %>
+
+      <%# [Conditional] Checks if any recent applications were found. %>
+      <% if recent_applications.any? %>
+
+        <%# [Iteration] Renders an info card for each recent application. %>
+        <% recent_applications.each do |app| %>
+
+          <%# [Info] Displays the details of a single investment application.
+            #        The card uses green (success) for the financial value.
+            %>
+          <%= render "partials/blocks/info-card",
+                     title: "Aplicação",
+                     subtitle: formatted_timestamp(app.request_date),
+                     main_value: "+ R$#{app.financial_value}",
+                     sub_value: "#{app.number_of_quotas} cotas",
+                     icon_name: "arrow-up-right",
+                     main_color: "success"
+          %>
+        <% end %>
+        <%= link_to applications_path(q: { fund_investment_id_eq: @fund_investment.id }), class: "button button-outline w-fit" do %>
+          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+          <%= content_tag :span, "Ver todos" %>
+        <% end %>
+      <% else %>
+        <%= content_tag :p, "N/A", class: "text-muted font-mono py-6" %>
+      <% end %>
+    <% end %>
+
+    <%# [Section] Displays the 5 most recent redemption transactions.
+      #           It links to the full redemptions history.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Últimos 5 Resgates",
+               is_one_col: true,
+               has_action: false do
+    %>
+      <%# [ActiveRecord] Retrieves the 5 latest redemption records for this investment. %>
+      <% recent_redemptions = @fund_investment.redemptions.order(request_date: :desc).limit(5) %>
+
+      <%# [Conditional] Checks if any recent redemptions were found. %>
+      <% if recent_redemptions.any? %>
+
+        <%# [Iteration] Renders an info card for each recent redemption. %>
+        <% recent_redemptions.each do |red| %>
+
+          <%# [Info] Displays the details of a single redemption.
+            #        The card uses red (danger) for the financial value.
+            %>
+          <%= render "partials/blocks/info-card",
+                     title: "Resgate #{red.redemption_type || 'Padrão'}",
+                     subtitle: formatted_timestamp(red.request_date),
+                     main_value: "- R$#{red.redeemed_liquid_value}",
+                     sub_value: "#{red.redeemed_quotas} cotas",
+                     icon_name: "arrow-down-left",
+                     main_color: "danger"
+          %>
+        <% end %>
+        <%= link_to redemptions_path(q: { fund_investment_id_eq: @fund_investment.id }), class: "button button-outline w-fit" do %>
+          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+          <%= content_tag :span, "Ver todos" %>
+        <% end %>
+      <% else %>
+        <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays a table summarizing the historical performance records captured for this investment.
+    #           It shows key metrics like market value and ROI at different points in time.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Histórico de Performance",
+             section_desc: "Registros de desempenho ao longo do tempo",
+             is_one_col: true,
+             has_action: false do
+  %>
+    <%# [Conditional] Checks if any performance history records exist.
+      #               The table rendering block executes only if history data is present.
+      %>
+    <% if @fund_investment.performance_histories.any? %>
+
+      <%# [Variable] Assigns the last 10 performance history records as the model data for the table. %>
+      <% models = @fund_investment.performance_histories.order(created_at: :desc).limit(10) %>
+
+      <%# [Array] Defines the column headers for the performance history table. %>
+      <% columns_header = [
+        "Data do Registro",
+        "Valor de Mercado",
+        "Valor Investido",
+        "Ganho/Perda",
+        "Retorno"
+      ] %>
+
+      <%# [Array] Defines the column icons for the table. %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         These lambdas handle date formatting, currency display, and dynamic calculation of gain/loss and return percentage.
+        %>
+      <% columns_body = [
+
+        # Explanation:: This lambda function displays the creation date of the performance record.
+        #               It uses the `formatted_timestamp` helper for consistent date presentation.
+        #               The result is the formatted date of the record.
+        ->(perf) { formatted_timestamp(perf.created_at) },
+
+        # Explanation:: This lambda displays the market value at the time of the performance record.
+        #               It uses the `colored_currency` helper for currency formatting.
+        #               The result is the formatted market value.
+        ->(perf) { colored_currency(perf.market_value, "h-auto") },
+
+        # Explanation:: This lambda displays the total invested value at the time of the performance record.
+        #               It uses the `colored_currency` helper for currency formatting.
+        #               The result is the formatted invested value.
+        ->(perf) { colored_currency(perf.invested_value, "h-auto") },
+
+        # Explanation:: This lambda calculates and displays the absolute gain or loss (Market Value - Invested Value).
+        #               It uses the `colored_currency` helper to automatically apply color coding based on the sign.
+        #               The result is the formatted gain/loss value.
+        ->(perf) do
+          gain_loss = perf.market_value - perf.invested_value
+          colored_currency(gain_loss, "h-auto")
+        end,
+
+        # Explanation:: This lambda calculates and displays the return percentage (ROI) at the time of the record.
+        #               It uses the `colored_percentage` helper to format the percentage and apply color coding.
+        #               The result is the formatted return percentage.
+        ->(perf) do
+          return_pct = perf.invested_value > 0 ? ((perf.market_value - perf.invested_value) / perf.invested_value * 100) : 0
+          colored_percentage(return_pct, "h-auto")
+        end
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the historical performance data using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 }
+      %>
+    <% else %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+<% end %>

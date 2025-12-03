@@ -1,0 +1,80 @@
+<%#
+  # Partial: _info-card.html.erb
+  # Date: 11/30/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a comprehensive information card component with dynamic color coding.
+  #              It displays two main data points (title/subtitle and main_value/sub_value) and an icon.
+  #
+  # Usage: - What: This component is ideal for presenting a metric or validation result, offering both descriptive context and a key value.
+  #                Its color changes instantly based on the `main_color` variable (e.g., 'success' or 'danger').
+  #        - How: Render the partial passing local variables `title`, `subtitle`, `main_value`, `sub_value`, `icon_name`, and `main_color`.
+  #        - Why: Provides a visually rich, self-contained component for presenting important data with immediate color-coded status.
+  %>
+
+<%# [Variable] Sets the main color for the card.
+  #            This variable controls the card's theme (e.g., border, text, and background colors).
+  #            It defaults to "primary" if not explicitly set when rendering the partial.
+  %>
+<% main_color ||= "primary" %>
+
+<%# [Hash] Defines a constant hash containing color class mappings.
+  #        It provides sets of Tailwind CSS classes for background, border, text, and stroke, indexed by color status names.
+  #        The hash uses `.freeze` for immutability, optimizing performance.
+  %>
+<%
+  COLORS ||= {
+    "primary" => {
+      bg: "bg-primary-50",
+      border: "border-primary-200",
+      text: "text-primary-600",
+      stroke: "stroke-primary-600",
+    },
+    "success" => {
+      bg: "bg-success-50",
+      border: "border-success-200",
+      text: "text-success-600",
+      stroke: "stroke-success-600"
+    },
+    "secondary" => {
+      bg: "bg-secondary-50",
+      border: "border-secondary-200",
+      text: "text-secondary-600",
+      stroke: "stroke-secondary-600"
+    },
+    "quaternary" => {
+      bg: "bg-quaternary-50",
+      border: "border-quaternary-200",
+      text: "text-quaternary-600",
+      stroke: "stroke-quaternary-600"
+    },
+    "danger" => {
+      bg: "bg-danger-50",
+      border: "border-danger-200",
+      text: "text-danger-600",
+      stroke: "stroke-danger-600"
+    }
+  }.freeze
+
+  # Explanation:: Selects the correct set of color classes based on the `main_color` variable.
+  #               If `main_color` is not found, it defaults to the "primary" color scheme.
+  #               The resulting hash is assigned to the local variable `c` for easy access.
+  c = COLORS.fetch(main_color, COLORS["primary"])
+%>
+
+<div class="grid grid-cols-2 p-6 rounded-base <%= c[:border] %> border shadow-xs">
+  <div class="flex flex-row justify-start gap-3 items-center">
+    <div class="p-3 rounded-full <%= c[:bg] %> border <%= c[:border] %>">
+      <%= inline_svg_tag("icons/#{icon_name}.svg", class: "#{c[:stroke]} size-4") %>
+    </div>
+    <div class="flex flex-col gap-1.5 justify-center items-start">
+      <%= content_tag :span, title, class: "font-medium text-body" %>
+      <%= content_tag :span, subtitle, class: "text-xs text-muted font-mono" %>
+    </div>
+  </div>
+  <div class="flex flex-col justify-center items-end gap-1.5">
+    <%= content_tag :span, main_value, class: "text-2xl font-extrabold font-mono text-#{main_color}-600" %>
+    <%= content_tag :span, sub_value, class: "text-xs text-muted" %>
+  </div>
+</div>

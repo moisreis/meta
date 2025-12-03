@@ -22,7 +22,7 @@
   <%= render "form",
              user: @user,
              button_name: "Atualizar",
-             icon_name: "refresh" %>
+             icon_name: "refresh-cw" %>
   <%= render 'partials/blocks/card',
              bg_path: "pixeltrue/bomb-9.svg",
              is_danger: true,
@@ -32,7 +32,7 @@
                   method: :delete,
                   class: "button button-danger w-fit",
                   data: { turbo_confirm: "Tem certeza que deseja excluir esta conta?" } do %>
-      <%= inline_svg_tag "icons/delete_forever.svg" %>
+      <%= inline_svg_tag "icons/trash.svg" %>
       <%= content_tag :span, "Deletar usuário" %>
     <% end %>
   <% end %>

@@ -108,10 +108,6 @@ class FundInvestmentsController < ApplicationController
   # Attributes:: - *@fund_investment* - The single fund investment object found by the `load_fund_investment` filter.
   #
   def show
-    render json: {
-      status: 'Success',
-      data: @fund_investment
-    }
   end
 
   # == new

@@ -118,6 +118,108 @@ class Portfolio < ApplicationRecord
     total_percentage <= BigDecimal('100')
   end
 
+  # == value_timeline
+  #
+  # @author Moisés Reis
+  # @category Portfolio Analytics
+  #
+  # Category:: This method builds a month-by-month history of how the portfolio’s
+  #            total invested value changes over time. It processes deposits and
+  #            withdrawals and shows how the accumulated value evolves.
+  #
+  # Attributes:: - *months_back* - defines how many months of historical data
+  #                                are returned at the end of the timeline.
+  #
+  def value_timeline(months_back = 12)
+
+    # Explanation:: Creates an array that will store the cumulative value for each
+    #               month processed. Each entry holds a formatted month label and
+    #               the running portfolio total up to that point.
+    timeline = []
+
+    # Explanation:: Keeps a continuously updated sum of all applications and
+    #               redemptions. As each month is processed, this value increases
+    #               or decreases according to the transaction amounts.
+    running_total = 0
+
+    # Explanation:: Stores all applications and redemptions in a unified list,
+    #               allowing them to be sorted and grouped chronologically before
+    #               building the final timeline.
+    transactions = []
+
+    # Explanation:: Loads all fund investments along with their related
+    #               applications and redemptions, then normalizes each financial
+    #               event into a transaction hash used for later aggregation.
+    fund_investments.includes(:applications, :redemptions).each do |fi|
+      fi.applications.each do |app|
+        transactions << {
+          date: app.cotization_date,
+          value: app.financial_value,
+          type: :application
+        } if app.cotization_date.present?
+      end
+
+      # Explanation:: Registers each redemption as a negative transaction so that
+      #               the cumulative total decreases whenever money leaves the
+      #               portfolio. Entries without a cotization date are ignored.
+      fi.redemptions.each do |red|
+        transactions << {
+          date: red.cotization_date,
+          value: -red.redeemed_liquid_value,
+          type: :redemption
+        } if red.cotization_date.present?
+      end
+    end
+
+    # Explanation:: Orders all transactions by date, groups them by month, and for
+    #               each month adds the net monthly change to the running total.
+    #               Each month label and cumulative amount is pushed into timeline.
+    transactions.sort_by { |t| t[:date] }
+                .group_by { |t| t[:date].beginning_of_month }
+                .each do |month, txns|
+      running_total += txns.sum { |t| t[:value] }
+      timeline << [month.strftime('%b/%y'), running_total]
+    end
+
+    # Explanation:: Returns only the specified number of recent months, ensuring
+    #               the final timeline is limited to the requested historical range.
+    timeline.last(months_back)
+  end
+
+  # == quota_timeline_by_fund
+  #
+  # @author Moisés Reis
+  # @category Calculation
+  #
+  # Category:: This method creates a historical view showing how many quotas each
+  #            fund accumulates over time. It helps visualize how the investment
+  #            position grows with each new application.
+  #
+  def quota_timeline_by_fund
+    data = {}
+
+    # Explanation:: Iterates through all fund investments while loading related
+    #               fund and application data. For each fund, prepares a structure
+    #               that will receive the monthly accumulated quota totals.
+    fund_investments.includes(:investment_fund, :applications).each do |fi|
+      fund_name = fi.investment_fund.fund_name
+      data[fund_name] ||= []
+
+      running_quotas = 0
+      fi.applications.order(:cotization_date).each do |app|
+        next unless app.cotization_date.present? && app.number_of_quotas.present?
+
+        # Explanation:: Adds the number of quotas from each application to a
+        #               running total and records the month and new total. This
+        #               creates a quota-growth timeline for each individual fund.
+        running_quotas += app.number_of_quotas
+        data[fund_name] << [app.cotization_date.strftime('%b/%y'), running_quotas]
+      end
+    end
+
+    data
+  end
+
   # == ransackable_attributes
   #
   # @author Moisés Reis

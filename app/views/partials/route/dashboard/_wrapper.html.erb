@@ -25,7 +25,7 @@
   %>
 <% current_view ||= "form" %>
 
-<main class="grid grid-cols-16">
+<main class="grid grid-cols-16 no-scrollbar">
   <%= render 'partials/route/dashboard/sidebar' %>
   <%= render 'partials/route/dashboard/container', page_title: page_title, page_desc: page_desc, current_view: current_view do %>
     <%= yield %>

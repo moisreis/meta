@@ -1,0 +1,2 @@
+class NormativeArticle < ApplicationRecord
+end

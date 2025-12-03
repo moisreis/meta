@@ -1,0 +1,817 @@
+<%#
+  # Partial: show.html.erb
+  # Date: 12/3/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Displays a detailed view of a single redemption transaction, covering financial values,
+  #              linked investment details, transaction lifecycle dates, and FIFO allocation breakdown.
+  #              Be didatic.
+  #
+  # Usage: - What: Renders the comprehensive detail page for a specific investment redemption record.
+  #                It allows administrators or portfolio managers to audit the withdrawal transaction.
+  #        - How: This partial is rendered from the RedemptionsController#show action, receiving the @redemption
+  #               instance variable, which represents the complete redemption record.
+  #        - Why: Provides a single source of truth for all data points related to a withdrawal, including
+  #               performance metrics, date validations, and allocation analysis.
+%>
+
+<%# [Partial] Renders the main dashboard layout wrapper.
+  #           This partial establishes the standardized structure and title for the page.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Resgate ##{@redemption.id}",
+           page_desc: "Retirada de #{@redemption.fund_investment.investment_fund.fund_name}",
+           current_view: "show" do
+%>
+
+  <%# [Section] Displays the core Redemption Information section.
+    #           This section summarizes the transaction's status and its associated financial instruments.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Informações do Resgate",
+             section_desc: "Dados da transação de retirada",
+             is_four_col: true,
+             has_action: true,
+             button_route: edit_redemption_path(@redemption),
+             button_name: "Editar",
+             button_icon: "pencil" do
+  %>
+
+    <%# [Summary] Displays the name of the Investment Fund involved.
+      #           It links directly to the fund's detail page and shows the fund administrator as secondary data.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Fundo de Investimento",
+               card_icon: "building-2",
+               card_data: @redemption.fund_investment.investment_fund.administrator_name,
+               card_data_icon: "briefcase" do
+    %>
+      <%= link_to @redemption.fund_investment.investment_fund.fund_name,
+                  investment_fund_path(@redemption.fund_investment.investment_fund),
+                  class: "hover:underline" %>
+    <% end %>
+
+    <%# [Summary] Displays the Portfolio where the investment originated.
+      #           It links to the portfolio page and displays the full name of the portfolio owner.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Portfólio",
+               card_icon: "wallet",
+               card_data: @redemption.fund_investment.portfolio.user.full_name,
+               card_data_icon: "user" do
+    %>
+      <%= link_to @redemption.fund_investment.portfolio.name,
+                  portfolio_path(@redemption.fund_investment.portfolio),
+                  class: "hover:underline" %>
+    <% end %>
+
+    <%# [Summary] Displays the link to the original Fund Investment record.
+      #           It shows the percentage allocation of the investment as secondary data.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Investimento Relacionado",
+               card_icon: "link",
+               card_data: "Alocação #{number_with_precision(@redemption.fund_investment.percentage_allocation, precision: 2)}%",
+               card_data_icon: "pie-chart" do
+    %>
+      <%= link_to "FundInvestment ##{@redemption.fund_investment.id}",
+                  fund_investment_path(@redemption.fund_investment),
+                  class: "hover:underline" %>
+    <% end %>
+
+    <%# [Summary] Displays the current status of the Redemption transaction.
+      #           It uses color and icons to clearly indicate whether the transaction is completed or pending.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Status do Resgate",
+               card_icon: @redemption.completed? ? "circle-check" : "clock",
+               card_data: @redemption.completed? ? "Finalizado" : "Em processamento",
+               card_data_icon: @redemption.completed? ? "badge-check" : "hourglass",
+               is_success: @redemption.completed?,
+               is_warning: !@redemption.completed? do
+    %>
+      <%= @redemption.completed? ? "Completo" : "Pendente" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Financial Values section.
+    #           This section details the monetary amounts, quotas, and yield of the redemption.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Valores Financeiros",
+             section_desc: "Montantes e rendimentos do resgate",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the net amount paid out to the client.
+      #           This card uses a danger color to highlight the outflow of funds.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valor Líquido Resgatado",
+               card_icon: "banknote",
+               card_data: "Recebido pelo cliente",
+               card_data_icon: "arrow-down-left",
+               is_danger: true do
+    %>
+      <%= standard_currency(@redemption.redeemed_liquid_value) %>
+    <% end %>
+
+    <%# [Summary] Displays the specific number of quotas withdrawn.
+      #           It shows 'N/A' if the quota count has not yet been determined.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Cotas Resgatadas",
+               card_icon: "coins",
+               card_data: @redemption.redeemed_quotas ? "Quantidade fixa" : "Aguardando",
+               card_data_icon: @redemption.redeemed_quotas ? "check" : "clock" do
+    %>
+      <%= @redemption.redeemed_quotas ? number_with_precision(@redemption.redeemed_quotas, precision: 4) : "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the calculated value of a single quota at the time of redemption.
+      #           This value is crucial for calculating the final redeemed amount.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valor Efetivo da Cota",
+               card_icon: "chart-line",
+               card_data: @redemption.effective_quota_value ? "Calculado" : "Pendente",
+               card_data_icon: @redemption.effective_quota_value ? "calculator" : "clock" do
+    %>
+      <%= @redemption.effective_quota_value ? standard_currency(@redemption.effective_quota_value) : "N/A" %>
+    <% end %>
+
+    <%# [Variable] Calculates the redemption yield and determines if it is a profit or loss.
+      #            The results are stored in local variables for use in the following summary card.
+      %>
+    <%
+      yield_value = @redemption.redemption_yield || 0
+      is_profit = yield_value > 0
+      is_loss = yield_value < 0
+    %>
+
+    <%# [Summary] Displays the total yield (profit or loss) from the redemption.
+      #           It uses success/danger colors to highlight the financial outcome.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Rendimento do Resgate",
+               card_icon: is_profit ? "trending-up" : (is_loss ? "trending-down" : "minus"),
+               card_data: is_profit ? "Lucro" : (is_loss ? "Prejuízo" : "Neutro"),
+               card_data_icon: is_profit ? "smile" : (is_loss ? "frown" : "minus"),
+               is_success: is_profit,
+               is_danger: is_loss do
+    %>
+      <%= is_profit ? '+' : '' %><%= standard_currency(yield_value.abs) %>
+    <% end %>
+  <% end %>
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Type and Classification section.
+    #           This section covers the redemption's category, return percentage, and allocation balance.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Tipo e Classificação",
+             section_desc: "Categoria e características do resgate",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the specific type or category of the redemption.
+      #           It capitalizes the type for display or shows "Não especificado" if null.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Tipo de Resgate",
+               card_icon: "tag",
+               card_data: @redemption.redemption_type ? "Classificado" : "Padrão",
+               card_data_icon: "bookmark" do
+    %>
+      <%= @redemption.redemption_type&.capitalize || "Não especificado" %>
+    <% end %>
+
+    <%# [Variable] Prepares variables to calculate and display the percentage return.
+      #            It checks for null values and determines if the return is positive or negative.
+      %>
+    <%
+      return_pct = @redemption.return_percentage
+      has_return = return_pct && return_pct != 0
+      positive_return = has_return && return_pct > 0
+    %>
+
+    <%# [Summary] Displays the percentage of return on the capital used in the redemption.
+      #           It uses conditional formatting to indicate profit or loss percentage.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Percentual de Retorno",
+               card_icon: "percent",
+               card_data: has_return ? (positive_return ? "Rentável" : "Prejuízo") : "N/A",
+               card_data_icon: has_return ? (positive_return ? "trending-up" : "trending-down") : "minus",
+               is_success: positive_return,
+               is_danger: has_return && !positive_return do
+    %>
+      <%= return_pct ? "#{positive_return ? '+' : ''}#{number_with_precision(return_pct, precision: 2)}%" : "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the count of underlying applications linked to this redemption.
+      #           This number indicates how many original investments were partially or fully redeemed.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Aplicações Vinculadas",
+               card_icon: "git-branch",
+               card_data: "Alocações FIFO",
+               card_data_icon: "shuffle" do
+    %>
+      <%= @redemption.redemption_allocations.count %> aplicações
+    <% end %>
+
+    <%# [Summary] Displays the status of the allocation balance check.
+      #           It verifies if the sum of allocated quotas matches the total redeemed quotas.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Balanço de Alocações",
+               card_icon: @redemption.allocations_balanced? ? "circle-check" : "circle-alert",
+               card_data: @redemption.allocations_balanced? ? "Balanceado" : "Verificar",
+               card_data_icon: @redemption.allocations_balanced? ? "scale" : "alert-triangle",
+               is_success: @redemption.allocations_balanced?,
+               is_danger: !@redemption.allocations_balanced? do
+    %>
+      <%= @redemption.allocations_balanced? ? "Ok!" : "Divergente" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Transaction Lifecycle section.
+    #           This section outlines the key dates in the processing of the redemption.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Ciclo de Vida da Transação",
+             section_desc: "Datas e etapas do processo de resgate",
+             is_four_col: true do
+  %>
+
+    <%# [Summary] Displays the date the redemption request was initiated by the user.
+      #           This is the start date of the transaction process.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Data de Solicitação",
+               card_icon: "calendar-plus",
+               card_data: "Início da transação",
+               card_data_icon: "play",
+               is_danger: true do
+    %>
+      <%= formatted_timestamp(@redemption.request_date) %>
+    <% end %>
+
+    <%# [Summary] Displays the date the redemption quotas were cotized (priced).
+      #           It shows how long ago the cotization occurred, if completed.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Data de Cotização",
+               card_icon: "calendar-check-2",
+               card_data: @redemption.cotization_date ? "Há #{time_ago_in_words(@redemption.cotization_date)}" : "Não cotizado",
+               card_data_icon: @redemption.cotization_date ? "check" : "x" do
+    %>
+      <%= @redemption.cotization_date ? formatted_timestamp(@redemption.cotization_date) : "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the date the funds were settled (liquidated) to the client.
+      #           This date signifies the completion of the financial transaction.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Data de Liquidação",
+               card_icon: "calendar-check-2",
+               card_data: @redemption.liquidation_date ? "Há #{time_ago_in_words(@redemption.liquidation_date)}" : "Não liquidado",
+               card_data_icon: @redemption.liquidation_date ? "circle-check" : "clock",
+               is_success: @redemption.liquidation_date.present? do
+    %>
+      <%= @redemption.liquidation_date ? formatted_timestamp(@redemption.liquidation_date) : "N/A" %>
+    <% end %>
+
+    <%# [Variable] Calculates the total number of days taken for processing (from request to liquidation).
+      #            It ensures that both dates are present before performing the calculation.
+      %>
+    <%
+      if @redemption.request_date && @redemption.liquidation_date
+        processing_days = (@redemption.liquidation_date - @redemption.request_date).to_i
+      else
+        processing_days = nil
+      end
+    %>
+
+    <%# [Summary] Displays the total duration of the redemption process in days.
+      #           Shows "Em andamento" if liquidation has not occurred yet.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Tempo de Processamento",
+               card_icon: "hourglass",
+               card_data: processing_days ? "#{processing_days} dias úteis" : "Em andamento",
+               card_data_icon: "calendar-clock" do
+    %>
+      <%= processing_days ? "#{processing_days} dias" : "Calculando..." %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the FIFO Allocation Analysis section.
+    #           This section provides graphical charts detailing quota allocation status and distribution.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Análise de Alocação FIFO",
+             section_desc: "Distribuição de cotas entre aplicações originais",
+             is_two_col: true do
+  %>
+
+    <%# [Variable] Compares the total quotas allocated from applications against the total quotas redeemed.
+      #            This data is prepared for the column chart visualization.
+      %>
+    <%
+      allocated_total = @redemption.total_allocated_quotas
+      redeemed_total = @redemption.redeemed_quotas || 0
+      allocation_status = {
+        "Alocadas" => allocated_total,
+        "Esperadas" => redeemed_total
+      }
+    %>
+
+    <%# [Chart] Renders a column chart comparing allocated vs. redeemed quotas.
+      #         This chart provides a visual confirmation of the allocation balance.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: allocation_status,
+               chart_title: "Status de Alocação de Cotas",
+               empty_message: "N/A" do
+    %>
+      <%= column_chart allocation_status,
+                       library: {
+                         legend: { display: true }
+                       } %>
+    <% end %>
+
+    <%# [Variable] Prepares data for a pie chart showing quotas used from each original application.
+      #            The keys are application IDs and dates, and the values are the quotas used.
+      %>
+    <%
+      allocation_by_app = @redemption.redemption_allocations.map do |alloc|
+        app_label = "App ##{alloc.application.id} (#{alloc.application.request_date.strftime('%d/%m/%Y')})"
+        [app_label, alloc.quotas_used]
+      end.to_h
+    %>
+
+    <%# [Chart] Renders a pie chart showing the breakdown of redeemed quotas by original application.
+      #         This chart visualizes the First-In, First-Out (FIFO) distribution.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: allocation_by_app,
+               chart_title: "Distribuição por Aplicação Original",
+               empty_message: "N/A" do
+    %>
+      <%= pie_chart allocation_by_app,
+                    donut: true,
+                    legend: "right",
+                    library: {
+                      plugins: {
+                        legend: {
+                          position: 'right'
+                        }
+                      }
+                    } %>
+    <% end %>
+  <% end %>
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Detailed FIFO Allocation table section.
+    #           This section lists every application whose quotas were used in the current redemption.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Alocações FIFO Detalhadas",
+             section_desc: "Origem das cotas resgatadas (First-In, First-Out)",
+             is_one_col: true,
+             has_action: false do
+  %>
+
+    <%# [Conditional] Checks if there are any FIFO allocation records to display.
+      #               The table renders only if the redemption successfully allocated quotas.
+      %>
+    <% if @redemption.redemption_allocations.any? %>
+
+      <%# [Variable] Assigns the redemption allocations collection (including the associated application) to a local variable.
+        #            This variable serves as the dataset for the detailed allocation table.
+        %>
+      <% models = @redemption.redemption_allocations.includes(:application) %>
+
+      <%# [Array] Defines the column headers for the FIFO allocation table.
+        #         This array provides the visible titles for the data columns.
+        %>
+      <% columns_header = [
+        "Aplicação Original",
+        "Data da Aplicação",
+        "Cotas Utilizadas",
+        "Cotação na Aplicação",
+        "Valor Original",
+        "Percentual do Resgate"
+      ] %>
+
+      <%# [Array] Defines the column icons for the FIFO allocation table.
+        #         These are currently all set to `nil` as per the provided template.
+        %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         Each lambda receives an allocation object and returns the formatted cell content.
+        %>
+      <% columns_body = [
+        # Explanation:: This lambda function renders a link to the original Application's detail page.
+        #               It includes the application's cotization date as secondary, smaller text.
+        #               The link uses the application ID as the display text.
+        ->(alloc) do
+          content_tag(:div, class: "flex flex-col") do
+            concat link_to("Aplicação ##{alloc.application.id}",
+                           application_path(alloc.application),
+                           class: "font-medium hover:underline")
+            concat content_tag(:span, "Cotização: #{formatted_timestamp(alloc.application.cotization_date)}",
+                               class: "text-sm text-muted") if alloc.application.cotization_date
+          end
+        end,
+
+        # Explanation:: This lambda returns the formatted request date of the original application.
+        #               It uses the `formatted_timestamp` helper for consistent date display.
+        #               The result is the human-readable date and time of the original investment.
+        ->(alloc) { formatted_timestamp(alloc.application.request_date) },
+
+        # Explanation:: This lambda returns the number of quotas used from this specific application.
+        #               It uses the `colored_numerical` helper to apply formatting.
+        #               The result is the quantity of units withdrawn.
+        ->(alloc) { colored_numerical(alloc.quotas_used, "h-auto") },
+
+        # Explanation:: This lambda returns the quota value at the time of the original application.
+        #               It uses the `standard_currency` helper for financial formatting or 'N/A' if value is nil.
+        #               The result is the original purchase price per unit.
+        ->(alloc) do
+          if alloc.application.quota_value_at_application
+            standard_currency(alloc.application.quota_value_at_application)
+          else
+            "N/A"
+          end
+        end,
+
+        # Explanation:: This lambda calculates and returns the original financial value of the quotas used.
+        #               It multiplies `quotas_used` by the `quota_value_at_application`.
+        #               The result is displayed using the `colored_currency` helper.
+        ->(alloc) do
+          if alloc.quotas_used && alloc.application.quota_value_at_application
+            original_value = alloc.quotas_used * alloc.application.quota_value_at_application
+            colored_currency(original_value, "h-auto")
+          else
+            "N/A"
+          end
+        end,
+
+        # Explanation:: This lambda calculates and displays the percentage of the total redemption that came from this application.
+        #               It calculates (quotas used / total redeemed quotas * 100).
+        #               The result is formatted using the `colored_percentage` helper.
+        ->(alloc) do
+          if @redemption.redeemed_quotas && @redemption.redeemed_quotas > 0
+            percentage = (alloc.quotas_used / @redemption.redeemed_quotas * 100)
+            colored_percentage(percentage, "h-auto")
+          else
+            "N/A"
+          end
+        end
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the detailed FIFO allocations using the defined data arrays.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 } %>
+
+    <% else %>
+
+      <%# [Content] Displays a fallback message when no allocation records are found.
+        #           This handles the case where a redemption might not yet be fully processed.
+        %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Yield Analysis section.
+    #           This section uses charts to visually compare invested value against redeemed value and yield.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Análise de Rendimento",
+             section_desc: "Comparação entre valor investido e resgatado",
+             is_two_col: true do
+  %>
+
+    <%# [Variable] Calculates the total original invested value from the allocated quotas (FIFO).
+      #            This value is used as the basis for the performance comparison chart.
+      %>
+    <%
+      total_invested = @redemption.redemption_allocations.sum do |alloc|
+        alloc.quotas_used * alloc.application.quota_value_at_application
+      end
+
+      redeemed_value = @redemption.redeemed_liquid_value || 0
+
+      comparison_data = {
+        "Valor Investido" => total_invested,
+        "Valor Resgatado" => redeemed_value
+      }
+    %>
+
+    <%# [Chart] Renders a column chart comparing the total original invested value vs. the final redeemed value.
+      #         It uses custom currency formatting and colors for visualization.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: comparison_data,
+               chart_title: "Investimento vs Resgate",
+               empty_message: "N/A" do
+    %>
+      <%= column_chart comparison_data,
+                       prefix: "R$ ",
+                       thousands: ".",
+                       decimal: ",",
+                       colors: ["#6366f1", "#10b981"],
+                       library: {
+                         scales: {
+                           y: {
+                             ticks: {
+                               callback: "function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); }"
+                             }
+                           }
+                         }
+                       } %>
+    <% end %>
+
+    <%# [Variable] Prepares data for a pie chart showing the two main components of the redeemed value.
+      #            The components are the initial capital and the calculated yield.
+      %>
+    <%
+      yield_components = {
+        "Capital Inicial" => total_invested,
+        "Rendimento" => (@redemption.redemption_yield || 0)
+      }
+    %>
+
+    <%# [Chart] Renders a donut pie chart showing the composition of the total redeemed value.
+      #         It highlights the contribution of the original capital and the profit/loss.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: yield_components,
+               chart_title: "Composição do Valor Resgatado",
+               empty_message: "N/A" do
+    %>
+      <%= pie_chart yield_components,
+                    prefix: "R$ ",
+                    thousands: ".",
+                    decimal: ",",
+                    donut: true,
+                    legend: "right"
+      %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Creates a two-column layout for advanced data validations.
+    #           This structure organizes related validation checks side-by-side.
+    %>
+  <%= render "partials/route/dashboard/section",
+             is_two_col: true,
+             has_action: false do
+  %>
+
+    <%# [Section] Displays the Date Validations section.
+      #           This section verifies the chronological sequence of the transaction dates.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Validações de Data",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [Variable] Checks if the cotization date occurred on or after the request date.
+        #            This validates the standard process flow chronologically.
+        %>
+      <%
+        cotization_valid = !@redemption.cotization_date ||
+                           !@redemption.request_date ||
+                           @redemption.cotization_date >= @redemption.request_date
+      %>
+
+      <%# [Variable] Checks if the liquidation date occurred on or after the cotization date.
+        #            This validates the standard process flow chronologically.
+        %>
+      <%
+        liquidation_valid = !@redemption.liquidation_date ||
+                            !@redemption.cotization_date ||
+                            @redemption.liquidation_date >= @redemption.cotization_date
+      %>
+
+      <%# [Info] Displays the result of the Cotization vs. Request Date validation.
+        #        It uses color and icons to show if the chronological sequence is valid or invalid.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: "Cotização após Solicitação",
+                 subtitle: cotization_valid ? "Válido" : "Inválido - data inconsistente",
+                 main_value: cotization_valid ? "Ok!" : "Erro",
+                 sub_value: cotization_valid ? "Cronologia correta" : "Requer correção",
+                 icon_name: cotization_valid ? "circle-check" : "circle-alert",
+                 main_color: cotization_valid ? "success" : "danger"
+      %>
+
+      <%# [Info] Displays the result of the Liquidation vs. Cotization Date validation.
+        #        It uses color and icons to show if the chronological sequence is valid or invalid.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: "Liquidação após Cotização",
+                 subtitle: liquidation_valid ? "Válido" : "Inválido - data inconsistente",
+                 main_value: liquidation_valid ? "Ok!" : "Erro",
+                 sub_value: liquidation_valid ? "Cronologia correta" : "Requer correção",
+                 icon_name: liquidation_valid ? "circle-check" : "circle-alert",
+                 main_color: liquidation_valid ? "success" : "danger"
+      %>
+    <% end %>
+
+    <%# [Section] Displays the Financial Validations section.
+      #           This section verifies the balance of quotas and the sufficiency of the client's holdings.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Validações Financeiras",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [Variable] Checks if the allocated quotas equal the total redeemed quotas.
+        #            This is a critical financial balance check.
+        %>
+      <%
+        allocations_balanced = @redemption.allocations_balanced?
+      %>
+
+      <%# [Variable] Checks if the redeemed quotas are less than or equal to the total quotas held by the user.
+        #            This prevents over-withdrawing funds.
+        %>
+      <%
+        sufficient_quotas = @redemption.redeemed_quotas &&
+                            @redemption.fund_investment.total_quotas_held &&
+                            @redemption.redeemed_quotas <= @redemption.fund_investment.total_quotas_held
+      %>
+
+      <%# [Info] Displays the result of the Allocation Balance check.
+        #        It provides a clear status of the financial consistency of the transaction.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: "Balanço de Alocações",
+                 subtitle: allocations_balanced ? "Total alocado = Total resgatado" : "Verificar discrepância",
+                 main_value: allocations_balanced ? "Ok!" : "Divergente",
+                 sub_value: allocations_balanced ? "Cotas balanceadas" : "Requer revisão",
+                 icon_name: allocations_balanced ? "circle-check" : "circle-alert",
+                 main_color: allocations_balanced ? "success" : "danger"
+      %>
+
+      <%# [Info] Displays the result of the Sufficient Quotas check.
+        #        It warns the user or admin if the redeemed quantity exceeds the available balance.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: "Cotas Suficientes",
+                 subtitle: sufficient_quotas ? "Dentro do saldo disponível" : "Verificar saldo",
+                 main_value: sufficient_quotas ? "Ok!" : "⚠ ATENÇÃO",
+                 sub_value: sufficient_quotas ? "Saldo adequado" : "Saldo insuficiente",
+                 icon_name: sufficient_quotas ? "circle-check" : "circle-alert",
+                 main_color: sufficient_quotas ? "success" : "danger"
+      %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Performance Summary section.
+    #           This section provides key metrics derived from the FIFO allocation data.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Resumo de Performance",
+             is_four_col: true,
+             has_action: false do
+  %>
+
+    <%# [Variable] Calculates key performance metrics for the redemption.
+      #            This includes the total invested capital, the net gain/loss, and the average cost of the quota.
+      %>
+    <%
+      total_invested = @redemption.redemption_allocations.sum do |alloc|
+        alloc.quotas_used * alloc.application.quota_value_at_application
+      end
+      net_gain = (@redemption.redeemed_liquid_value || 0) - total_invested
+      avg_quota_cost = total_invested > 0 && @redemption.redeemed_quotas ?
+                         (total_invested / @redemption.redeemed_quotas) : 0
+    %>
+
+    <%# [Summary] Displays the total original capital invested for the redeemed quotas.
+      #           This serves as the cost basis for calculating profit/loss.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Capital Investido Total",
+               card_icon: "dollar-sign",
+               card_data: "Soma das aplicações FIFO",
+               card_data_icon: "calculator" do
+    %>
+      <%= standard_currency(total_invested) %>
+    <% end %>
+
+    <%# [Summary] Displays the net financial gain or loss realized upon redemption.
+      #           It uses conditional formatting (success/danger) based on the gain/loss value.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Ganho/Perda Líquido",
+               card_icon: net_gain >= 0 ? "trending-up" : "trending-down",
+               card_data: net_gain >= 0 ? "Lucro realizado" : "Prejuízo realizado",
+               card_data_icon: net_gain >= 0 ? "smile" : "frown",
+               is_success: net_gain >= 0,
+               is_danger: net_gain < 0 do
+    %>
+      <%= net_gain >= 0 ? '+' : '' %><%= standard_currency(net_gain.abs) %>
+    <% end %>
+
+    <%# [Summary] Displays the calculated average cost per quota used in the redemption (FIFO weighted average).
+      #           This metric is important for tax and performance reporting.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Custo Médio da Cota",
+               card_icon: "chart-bar-stacked",
+               card_data: "Média ponderada FIFO",
+               card_data_icon: "trending-up" do
+    %>
+      <%= avg_quota_cost > 0 ? standard_currency(avg_quota_cost) : "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the percentage appreciation or depreciation of the quota value since the original investment.
+      #           It compares the effective quota value at redemption against the average quota cost.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valorização da Cota",
+               card_icon: "percent",
+               card_data: @redemption.effective_quota_value && avg_quota_cost > 0 ? "Comparativo" : "N/A",
+               card_data_icon: "arrow-up-right" do
+    %>
+      <% if @redemption.effective_quota_value && avg_quota_cost > 0 %>
+        <% appreciation = ((@redemption.effective_quota_value - avg_quota_cost) / avg_quota_cost * 100) %>
+        <%= appreciation >= 0 ? '+' : '' %><%= number_with_precision(appreciation, precision: 2) %>%
+      <% else %>
+        <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the System Metadata section.
+    #           This section provides audit trail information about the record creation and last update timestamps.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Metadados do Sistema",
+             is_two_col: true,
+             has_action: false do
+  %>
+
+    <%# [Info] Displays the exact time the redemption record was created.
+      #        It also shows the elapsed time since creation in a human-readable format.
+      %>
+    <%= render "partials/blocks/info-card",
+               title: "Registro Criado",
+               subtitle: formatted_timestamp(@redemption.created_at),
+               main_value: "Há #{time_ago_in_words(@redemption.created_at)}",
+               sub_value: "Data de criação",
+               icon_name: "calendar-plus",
+               main_color: "secondary"
+    %>
+
+    <%# [Info] Displays the exact time the redemption record was last modified.
+      #        It also shows the elapsed time since the last update in a human-readable format.
+      %>
+    <%= render "partials/blocks/info-card",
+               title: "Última Atualização",
+               subtitle: formatted_timestamp(@redemption.updated_at),
+               main_value: "Há #{time_ago_in_words(@redemption.updated_at)}",
+               sub_value: "Modificação mais recente",
+               icon_name: "refresh-cw",
+               main_color: "secondary"
+    %>
+  <% end %>
+<% end %>

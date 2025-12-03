@@ -195,7 +195,7 @@ class Application < ApplicationRecord
   # Validation:: This custom validation checks if the total financial value equals the product of
   #              the number of quotas and the quota value, allowing a small tolerance for floating-point inaccuracies.
   #              It ensures the stored data is mathematically consistent.
-  # #
+  #
   def quota_calculation_consistency
 
     # Explanation:: This exits the validation if any of the three key calculation fields

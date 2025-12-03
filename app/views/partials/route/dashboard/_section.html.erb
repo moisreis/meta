@@ -1,0 +1,93 @@
+<%#
+  # Partial: _dashboard-section.html
+  # Date: 11/30/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: First line. Always in present simple tense.
+  #              Be didatic.
+  #
+  # Usage: - What: First line.
+  #                Second line.
+  #        - How:
+  #        - Why:
+%>
+
+<%# [Variable] Checks if the grid should have one column. %>
+<% is_one_col ||= false %>
+
+<%# [Variable] Checks if the grid should have two columns. %>
+<% is_two_col ||= false %>
+
+<%# [Variable] Checks if the grid should have three columns. %>
+<% is_three_col ||= false %>
+
+<%# [Variable] Checks if the grid should have four columns. %>
+<% is_four_col ||= false %>
+
+<%# [Variable] Checks if the grid should have five columns. %>
+<% is_five_col ||= false %>
+
+<%# [Variable] Checks if the container should have an action button. %>
+<% has_action ||= false %>
+
+<%# [Variable] Sets the route value for the section button. %>
+<% button_route ||= nil %>
+
+<%# [Variable] Sets the name for the section button. %>
+<% button_name ||= nil %>
+
+<%# [Variable] Sets the icon for the section button. %>
+<% button_icon ||= nil %>
+
+<%# [Variable] Sets the variable for the section title. %>
+<% section_title ||= nil %>
+
+<%# [Variable] Sets the variable for the section description. %>
+<% section_desc ||= nil %>
+
+<%# [Variable] Defines the CSS classes for the grid. %>
+<% grid_classes = [
+  ("grid-cols-1" if is_one_col),
+  ("grid-cols-2" if is_two_col),
+  ("grid-cols-3" if is_three_col),
+  ("grid-cols-4" if is_four_col),
+  ("grid-cols-5" if is_five_col),
+].compact.join(" ") %>
+
+<div class="flex flex-col gap-6 justify-start">
+  <div class="flex flex-row items-center justify-between">
+
+    <%# [Conditional] Checks if the `section_title` is seen
+      #               and hide it if not available
+      %>
+    <% if section_title.present? %>
+      <div class="flex flex-row justify-start items-center gap-1">
+        <%= content_tag :h2, section_title, class: "text-heading font-heading font-medium text-xl capitalize" %>
+
+        <%# [Conditional] Checks if the `section_desc` is seen
+          #               and hide it if not available
+          %>
+        <% if section_desc.present? %>
+          <%= button_tag class: 'button-ghost button-icon !p-1 section-desc-button',
+                         data: { tippy_target: "##{section_title.parameterize}-desc" } do
+          %>
+            <%= inline_svg_tag "icons/info.svg", class: "!stroke-muted" %>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="section-desc" id="<%= section_title.parameterize %>-desc" style="display: none;">
+        <%= content_tag :h2, section_desc, class: "text-sm text-muted text-left" %>
+      </div>
+    <% end %>
+    <% if has_action == true %>
+      <%= link_to button_route, class: "button button-secondary" do %>
+        <%= inline_svg_tag "icons/#{button_icon}.svg" %>
+        <%= content_tag :span, button_name %>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="grid <%= grid_classes %> gap-6">
+    <%= yield %>
+  </div>
+</div>

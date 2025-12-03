@@ -25,6 +25,9 @@ gem "ransack"
 gem "kaminari"
 gem 'inline_svg'
 gem "breadcrumbs_on_rails"
+gem "chartkick"
+gem "groupdate"
+gem 'rails-i18n'
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

@@ -240,7 +240,7 @@ module ApplicationHelper
     shade = shade_for_value(value)
 
     # Explanation:: Limits the precision of the numerical value
-    value = number_with_precision(value, precision: 3)
+    value = number_with_precision(value, precision: 1)
 
     # Explanation:: Builds the HTML span showing the formatted numerical and
     #               applies a class that encodes the chosen shade level.
@@ -271,7 +271,7 @@ module ApplicationHelper
     shade = shade_for_value(value, max_value: 100)
 
     # Explanation:: Limits the precision of the numerical value
-    value = number_with_precision(value, precision: 3)
+    value = number_with_precision(value, precision: 1)
 
     # Explanation:: Builds the HTML span showing the formatted percentage and
     #               applies a class that encodes the chosen shade level.
@@ -304,5 +304,22 @@ module ApplicationHelper
     # Explanation:: Builds a span containing the formatted date string and
     #               applies a consistent monospaced style for alignment.
     content_tag(:span, formatted, class: "font-mono")
+  end
+
+  # == standard_currency
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: Displays a currency amount with a standard pattern.
+  #
+  def standard_currency(value, additional_class = "")
+
+    # Explanation:: Builds the HTML span showing the formatted currency.
+    content_tag(
+      :span,
+      number_to_currency(value, unit: "R$ ", separator: ",", delimiter: "."),
+      class: "font-mono #{additional_class}"
+    )
   end
 end

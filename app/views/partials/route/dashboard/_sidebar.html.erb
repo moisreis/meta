@@ -18,7 +18,7 @@
   #               for the main application navigation and identity display, ensuring
   #               quick access to core entity management.
   %>
-<header class="flex flex-col col-span-2 h-screen max-h-screen sticky overflow-y-scroll top-0 [&>div]:px-6 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-white border-r border-border">
+<aside class="flex flex-col col-span-2 h-screen max-h-screen sticky overflow-y-scroll no-scrollbar top-0 [&>div]:px-6 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-white border-r border-border">
   <div class="h-12 border-b border-border sticky bg-white z-50 top-0">
     <div class="flex flex-row items-center justify-between gap-1 w-full h-12">
       <%= render 'partials/modules/logo', size: "28x28" %>
@@ -46,17 +46,21 @@
   </div>
   <div class="flex flex-col !gap-6 py-6">
     <div class="flex flex-col gap-1.5 justify-start items-start w-full">
-      <%= content_tag(:h3, "Sistema", class: "text-2xs font-mono font-semibold uppercase text-muted") %>
+      <%= content_tag(:h3, "Sistema", class: "text-2xs font-heading font-semibold uppercase text-muted") %>
       <div class="flex flex-col gap-1 justify-start items-start w-full">
-        <%= link_to edit_user_registration_path,
+        <%= link_to edit_user_path(current_user),
                     class: "button button-small button-ghost w-full justify-start" do
         %>
           <%= inline_svg_tag "icons/user-cog.svg" %>
           <%= content_tag :span, "Configurações" %>
         <% end %>
-        <%= link_to destroy_user_session_path,
-                    data: { "turbo-method": :delete },
-                    class: "button button-ghost button-small w-full justify-start" do %>
+        <%= button_to destroy_user_session_path,
+                      method: :delete,
+                      data: {
+                        turbo_confirm: "Tem certeza que deseja sair?"
+                      },
+                      class: "button button-ghost button-small w-full justify-start",
+                      form: { style: "display: inline;" } do %>
           <%= inline_svg_tag "icons/log-out.svg" %>
           <%= content_tag :span, "Sair" %>
         <% end %>
@@ -110,4 +114,4 @@
                        new: "plus.svg"
                      } %>
   </div>
-</header>
+</aside>

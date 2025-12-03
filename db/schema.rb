@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_25_154148) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_01_192738) do
   create_schema "extensions"
 
   # These are extensions that must be enabled in order to support this database
@@ -46,6 +46,26 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_25_154148) do
     t.index ["portfolio_id"], name: "index_fund_investments_on_portfolio_id"
   end
 
+  create_table "public.fund_valuations", primary_key: ["date", "fund_cnpj"], force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.string "fund_cnpj", null: false
+    t.text "other_public_information"
+    t.decimal "quota_value", precision: 15, scale: 6, null: false
+    t.string "source"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "public.investment_fund_articles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "investment_fund_id", null: false
+    t.bigint "normative_article_id", null: false
+    t.string "note"
+    t.datetime "updated_at", null: false
+    t.index ["investment_fund_id"], name: "index_investment_fund_articles_on_investment_fund_id"
+    t.index ["normative_article_id"], name: "index_investment_fund_articles_on_normative_article_id"
+  end
+
   create_table "public.investment_funds", force: :cascade do |t|
     t.string "administrator_name", null: false
     t.string "cnpj", null: false
@@ -57,12 +77,45 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_25_154148) do
     t.index ["fund_name"], name: "index_investment_funds_on_fund_name"
   end
 
+  create_table "public.normative_articles", force: :cascade do |t|
+    t.string "article_body"
+    t.string "article_name"
+    t.string "article_number"
+    t.decimal "benchmark_target"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "public.performance_histories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "fund_investment_id", null: false
+    t.decimal "last_12_months_return"
+    t.decimal "monthly_return"
+    t.date "period"
+    t.bigint "portfolio_id", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "yearly_return"
+    t.index ["fund_investment_id"], name: "index_performance_histories_on_fund_investment_id"
+    t.index ["portfolio_id"], name: "index_performance_histories_on_portfolio_id"
+  end
+
   create_table "public.portfolios", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_portfolios_on_user_id"
+  end
+
+  create_table "public.redemption_allocations", force: :cascade do |t|
+    t.bigint "application_id", null: false
+    t.datetime "created_at", null: false
+    t.decimal "quotas_used"
+    t.bigint "redemption_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["application_id"], name: "index_redemption_allocations_on_application_id"
+    t.index ["redemption_id"], name: "index_redemption_allocations_on_redemption_id"
   end
 
   create_table "public.redemptions", force: :cascade do |t|
@@ -112,7 +165,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_25_154148) do
   add_foreign_key "public.applications", "public.fund_investments"
   add_foreign_key "public.fund_investments", "public.investment_funds"
   add_foreign_key "public.fund_investments", "public.portfolios"
+  add_foreign_key "public.fund_valuations", "public.investment_funds", column: "fund_cnpj", primary_key: "cnpj"
+  add_foreign_key "public.investment_fund_articles", "public.investment_funds"
+  add_foreign_key "public.investment_fund_articles", "public.normative_articles"
+  add_foreign_key "public.performance_histories", "public.fund_investments"
+  add_foreign_key "public.performance_histories", "public.portfolios"
   add_foreign_key "public.portfolios", "public.users"
+  add_foreign_key "public.redemption_allocations", "public.applications"
+  add_foreign_key "public.redemption_allocations", "public.redemptions"
   add_foreign_key "public.redemptions", "public.fund_investments"
   add_foreign_key "public.user_portfolio_permissions", "public.portfolios"
   add_foreign_key "public.user_portfolio_permissions", "public.users"

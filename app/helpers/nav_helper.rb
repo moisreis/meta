@@ -90,7 +90,7 @@ module NavHelper
       safe_join([
                   content_tag(:div, class: "flex flex-row justify-between items-center w-full") do
                     safe_join([
-                                content_tag(:h3, plural, class: "text-2xs font-mono font-semibold uppercase text-muted leading-0"),
+                                content_tag(:h3, plural, class: "text-2xs font-heading font-semibold uppercase text-muted leading-0"),
                                 inline_svg_tag("icons/chevron-down.svg", class: "size-3.5 stroke-muted"),
                               ])
                   end,

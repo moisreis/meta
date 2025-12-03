@@ -19,12 +19,12 @@
   #               (C in CRUD) for the User resource using a consistent UI structure.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Criar nova carteira",
-           page_desc: "Defina os detalhes da sua nova carteira para começar a acompanhar seus investimentos." do
+           page_title: "Criar usuário",
+           page_desc: "Gerencie a criação de novos usuários." do
 %>
   <%= render "form",
              user: @user,
-             icon_name: "add",
+             icon_name: "plus",
              button_name: "Criar usuário"
   %>
 <% end %>

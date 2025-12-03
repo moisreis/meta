@@ -1,0 +1,2 @@
+class PerformanceHistory < ApplicationRecord
+end

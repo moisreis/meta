@@ -79,7 +79,7 @@ class InvestmentFundsController < ApplicationController
 
     # Explanation:: This prepares the final data for the page, dividing the complete
     #               list into pages of 2 items to improve performance and readability.
-    @models = sorted_funds.page(params[:page]).per(2)
+    @models = sorted_funds.page(params[:page]).per(20)
 
     # Explanation:: This sets the instance variable that the view expects, using the
     #               paginated data prepared in the previous step.

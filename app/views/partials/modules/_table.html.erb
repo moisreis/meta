@@ -15,120 +15,135 @@
   #        - Why:  Enables consistent, reusable table rendering across the
   #                application while keeping logic centralized.
   %>
-<table class="max-w-full [&>thead]:max-w-full [&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 [&>thead>tr]:border-b [&>tbody>tr]:border-b [&>thead>tr]:border-border [&>tbody>tr]:border-border w-full text-sm table-auto border border-border rounded-base shadow-xs">
-  <thead>
-  <tr class="[&>th]:w-auto [&>th]:text-left [&>th]:p-1.5 [&>th]:px-3 [&>th]:text-sm [&>th]:text-body [&>th]:text-left [&>th]:font-medium [&>th]:bg-table-strong">
+<div class="rounded-base overflow-hidden border border-border shadow-xs">
 
-    <%# [Variable] Ensures columns_header exists.
-      #            Provides a fallback empty array when no header is given.
-      %>
-    <% columns_header ||= [] %>
+  <table class="max-w-full [&>thead]:max-w-full border-collapse [&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 [&>thead>tr]:border-b [&>tbody>tr]:border-b [&>thead>tr]:border-border [&>tbody>tr]:border-border w-full text-sm table-auto">
 
-    <%# [Variable] Ensures columns_icons exists.
-      #            Provides a fallback empty array for column-level icons.
-      %>
-    <% columns_icons ||= [] %>
+    <thead>
+    <tr class="[&>th]:w-auto [&>th]:text-left [&>th]:p-1.5 [&>th]:px-3 [&>th]:text-sm [&>th]:text-body [&>th]:text-left [&>th]:font-medium [&>th]:bg-table-strong">
 
-    <%# [Loop] Iterates through each header with its index.
-      #        Renders a table header cell and applies sorting behavior.
-      %>
-    <% columns_header.each_with_index do |col_header, i| %>
-
-      <%# [Renderer] Builds the <th> element and inserts the sortable helper.
-        #            Passes the header label, the column body, and its icon.
+      <%# [Variable] Ensures columns_header exists.
+        #            Provides a fallback empty array when no header is given.
         %>
-      <th>
-        <%# [Renderer] Calls the sortable helper.
-          #            Builds a sortable column header using the label, body key, and icon.
+      <% columns_header ||= [] %>
+
+      <%# [Variable] Ensures columns_icons exists.
+        #            Provides a fallback empty array for column-level icons.
+        %>
+      <% columns_icons ||= [] %>
+
+      <%# [Loop] Iterates through each header with its index.
+        #        Renders a table header cell and applies sorting behavior.
+        %>
+      <% columns_header.each_with_index do |col_header, i| %>
+
+        <%# [Renderer] Builds the <th> element and inserts the sortable helper.
+          #            Passes the header label, the column body, and its icon.
           %>
-        <%= sortable(col_header, columns_body[i], columns_icons[i]) %>
-      </th>
-    <% end %>
-    <th>
-    </th>
-  </tr>
-  </thead>
-  <tbody>
+        <th>
 
-  <%# [Loop] Ensures columns_body is available.
-    #        Prepares the structure for rendering each table row.
-    %>
-  <% columns_body ||= [] %>
-
-  <%# [Loop] Iterates through each model.
-    #        Produces one table row per record.
-    %>
-  <% models.each_with_index do |model, row_index| %>
-
-    <tr class="odd:bg-table-bg [&>td]:w-auto [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm hover:bg-table-hover">
-
-      <%# [Loop] Iterates through each column configuration.
-        #        Selects the correct value for each cell.
-        %>
-      <% columns_body.each_with_index do |col_body, col_index| %>
-        <td class="<%= 'font-medium' if col_index == 0 %>">
-          <div class="line-clamp-1">
-            <%# [ValueResolver] Determines the displayed value for the current cell.
-            #                 Handles symbols, strings, and callable Procs.
+          <%# [Renderer] Calls the sortable helper.
+            #            Builds a sortable column header using the label, body key, and icon.
             %>
-            <% value = case col_body
-                       when Symbol, String
-                         model.public_send(col_body)
-                       when Proc
-                         col_body.call(model)
-                       else
-                         nil
-                       end
-            %>
-            <%# [Output] Renders the resolved value inside the table cell. %>
-            <%= value %>
-          </div>
-        </td>
+          <%= sortable(col_header, columns_body[i], columns_icons[i]) %>
+        </th>
       <% end %>
-      <td class="min-h-9 flex flex-col justify-center items-center">
-        <%= button_tag type: 'button',
-                       class: 'button button-ghost button-small row-options' do %>
-          <%= inline_svg_tag "icons/ellipsis.svg" %>
+      <th>
+      </th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    <%# [Loop] Ensures columns_body is available.
+        #        Prepares the structure for rendering each table row.
+        %>
+    <% columns_body ||= [] %>
+
+    <%# [Loop] Iterates through each model.
+        #        Produces one table row per record.
+        %>
+    <% models.each_with_index do |model, row_index| %>
+      <tr class="odd:bg-table-bg [&>td]:w-auto [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm hover:bg-table-hover">
+
+        <%# [Loop] Iterates through each column configuration.
+            #        Selects the correct value for each cell.
+            %>
+        <% columns_body.each_with_index do |col_body, col_index| %>
+
+          <td class="<%= 'font-medium' if col_index == 0 %>">
+
+            <div class="line-clamp-1">
+              <%# [ValueResolver] Determines the displayed value for the current cell.
+                  #                 Handles symbols, strings, and callable Procs.
+                  %>
+              <% value = case col_body
+                         when Symbol, String
+                           model.public_send(col_body)
+                         when Proc
+                           col_body.call(model)
+                         else
+                           nil
+                         end
+              %>
+
+              <%# [Output] Renders the resolved value inside the table cell. %>
+              <%= value %>
+            </div>
+          </td>
         <% end %>
 
-        <div class="template" style="display: none;">
-          <div class="flex flex-col gap-1.5 w-full justify-start items-start">
-            <%= link_to edit_polymorphic_path(model),
-                        data: { turbo: false },
-                        class: 'button button-ghost button-small w-full justify-start' do
-            %>
-              <%= inline_svg_tag "icons/settings-2.svg" %>
-              <%= content_tag :span, "Editar" %>
-            <% end %>
-            <%= link_to polymorphic_path(model),
-                        data: { turbo: false },
-                        class: 'button button-ghost button-small w-full justify-start' do %>
-              <%= inline_svg_tag "icons/external-link.svg" %>
-              <%= content_tag :span, "Ver" %>
-            <% end %>
-            <%= link_to polymorphic_path(model),
-                        data: {
-                          turbo_method: :delete,
-                          turbo_confirm: "Tem certeza que deseja deletar este registro?"
-                        },
-                        class: 'button button-ghost button-small w-full justify-start' do %>
-              <%= inline_svg_tag "icons/trash.svg" %>
-              <%= content_tag :span, "Deletar" %>
-            <% end %>
+        <td class="min-h-9 flex flex-col justify-center items-center">
+
+          <%# [ActionButton] Refers to the ActionMenu. %>
+          <%= button_tag type: 'button',
+                         class: 'button button-ghost button-small row-options-button',
+                         data: { tippy_target: "#options-menu-#{model.id}" } do
+          %>
+            <%= inline_svg_tag "icons/ellipsis.svg" %>
+          <% end %>
+
+          <!-- [ActionMenu] -->
+          <div class="options-content" id="options-menu-<%= model.id %>" style="display: none;">
+            <div class="flex flex-col gap-1.5 w-full justify-start items-start">
+              <%= link_to edit_polymorphic_path(model),
+                          data: { turbo: false },
+                          class: 'button button-ghost button-small w-full justify-start' do
+              %>
+                <%= inline_svg_tag "icons/settings-2.svg" %>
+                <%= content_tag :span, "Editar" %>
+              <% end %>
+              <%= link_to polymorphic_path(model),
+                          data: { turbo: false },
+                          class: 'button button-ghost button-small w-full justify-start' do %>
+                <%= inline_svg_tag "icons/external-link.svg" %>
+                <%= content_tag :span, "Ver" %>
+              <% end %>
+              <%= link_to polymorphic_path(model),
+                          data: {
+                            turbo_method: :delete,
+                            turbo_confirm: "Tem certeza que deseja deletar este registro?"
+                          },
+                          class: 'button button-ghost button-small w-full justify-start' do %>
+                <%= inline_svg_tag "icons/trash.svg" %>
+                <%= content_tag :span, "Deletar" %>
+              <% end %>
+            </div>
           </div>
-        </div>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+
+    <tfoot>
+    <tr class="h-9 border-t border-border bg-white">
+      <td class="px-3" colspan="<%= columns_body.size + 2 %>">
+        <%= content_tag :span,
+                        "<b>#{models.size}</b> itens".html_safe,
+                        class: "font-normal text-sm text-muted"
+        %>
       </td>
     </tr>
-  <% end %>
-  </tbody>
-  <tfoot>
-  <tr class="h-9 border-y border-border bg-white">
-    <td class="px-3" colspan="<%= columns_body.size + 2 %>">
-      <%= content_tag :span,
-                      "<b>#{models.size}</b> itens".html_safe,
-                      class: "font-normal text-sm text-muted"
-      %>
-    </td>
-  </tr>
-  </tfoot>
-</table>
+    </tfoot>
+  </table>
+</div>

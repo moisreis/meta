@@ -1,0 +1,399 @@
+<%#
+  # Partial: show.html.erb
+  # Date: 12/3/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Displays the detailed dashboard view for a single investment portfolio.
+  #              It consolidates summary statistics, performance charts, a list of
+  #              allocated funds, recent transaction history, and sharing permissions.
+  #
+  # Usage: - What: Renders the comprehensive detail page for a specific user's investment portfolio.
+  #                It allows the owner to monitor and manage their allocated funds and performance.
+  #        - How: This partial is rendered from the PortfoliosController#show action, receiving the @portfolio
+  #               instance variable, which represents the complete portfolio record.
+  #        - Why: Provides a single, centralized view for performance tracking, auditing allocations,
+  #               and initiating new investment or redemption transactions.
+%>
+
+<%# [Partial] Renders the main dashboard layout wrapper.
+  #           This partial establishes the standardized structure and title for the page.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @portfolio.name,
+           page_desc: "Carteira de #{@portfolio.user.full_name}",
+           current_view: "show" do
+%>
+
+  <%# [Section] Displays the Portfolio Summary section.
+    #           This section presents key financial metrics and the portfolio's allocation status.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Resumo",
+             section_desc: "Exibe os dados gerais da carteira",
+             is_four_col: true,
+             has_action: true,
+             button_route: "",
+             button_name: "Editar",
+             button_icon: "pencil" do
+  %>
+
+    <%# [Summary] Displays the current total financial value invested in the portfolio.
+      #           It uses a success color to indicate a general positive financial metric.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Valor Total Investido",
+               card_icon: "banknote",
+               card_data: "+ 56%",
+               card_data_icon: "trending-up",
+               is_success: true do
+    %>
+      <%= standard_currency(@portfolio.total_invested_value) %>
+    <% end %>
+
+    <%# [Summary] Displays the total number of quotas currently held across all investments.
+      #           It uses a danger color to denote a potential negative trend metric.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Cotas Totais",
+               card_icon: "scale",
+               card_data: "- 51%",
+               card_data_icon: "trending-down",
+               is_danger: true do
+    %>
+      <%= @portfolio.total_quotas_held %>
+    <% end %>
+
+    <%# [Summary] Displays the count of unique investment funds within the portfolio.
+      #           This metric indicates the level of diversification achieved.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Número de Fundos",
+               card_icon: "coins",
+               card_data: "+ 56%",
+               card_data_icon: "trending-up",
+               is_success: true do
+    %>
+      <%= @portfolio.fund_investments.count %>
+    <% end %>
+
+    <%# [Summary] Displays whether the total percentage allocation equals 100%.
+      #           It shows the summed percentage as secondary data for context.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Alocação Válida",
+               card_icon: "list-plus",
+               card_data: "Total de #{number_with_precision(@portfolio.fund_investments.sum(:percentage_allocation), precision: 0)}%",
+               card_data_icon: "badge-percent" do
+    %>
+      <% if @portfolio.valid_allocations? %>
+        <%= content_tag :span, "Válida" %>
+      <% else %>
+        <%= content_tag :span, "Inválida" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Visualization section.
+    #           This section contains charts showing allocation breakdown and monthly transaction flows.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visualizações",
+             is_two_col: true do
+  %>
+
+    <%# [Chart] Renders a donut pie chart of fund allocations by percentage.
+      #         The chart uses data passed via the @allocation_data instance variable.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: @allocation_data,
+               chart_title: "Fundos alocados",
+               empty_message: "N/A" do
+    %>
+      <%= pie_chart @allocation_data,
+                    suffix: "%",
+                    donut: true,
+                    legend: "right" %>
+    <% end %>
+
+    <%# [Chart] Renders a stacked line chart showing monthly financial flows (in/out) in the portfolio.
+      #         The chart uses data passed via the @monthly_flows instance variable and customizes the Y-axis ticks.
+      %>
+    <%= render "partials/blocks/chart",
+               data_source: @monthly_flows,
+               chart_title: "Transações",
+               empty_message: "N/A" do
+    %>
+      <%= line_chart @monthly_flows,
+                     stacked: true,
+                     prefix: "R$ ",
+                     thousands: ".",
+                     decimal: ",",
+                     curve: true,
+                     library: {
+                       scales: {
+                         y: {
+                           ticks: {
+                             callback: "function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); }"
+                           }
+                         }
+                       }
+                     } %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the List of Allocated Funds table section.
+    #           This section lists every fund currently invested in by the portfolio.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Lista de fundos alocados",
+             is_one_col: true,
+             has_action: true,
+             button_route: new_fund_investment_path(portfolio_id: @portfolio.id),
+             button_name: "Nova alocação",
+             button_icon: "plus" do
+  %>
+
+    <%# [Conditional] Checks if the portfolio has any existing fund investments.
+      #               The following block executes only if the list is not empty.
+      %>
+    <% if @portfolio.fund_investments.any? %>
+
+      <%# [Variable] Assigns the fund investments collection (including the associated fund) to a local variable.
+        #            This variable serves as the dataset for the allocated funds table.
+        %>
+      <% models = @portfolio.fund_investments.includes(:investment_fund) %>
+
+      <%# [Array] Defines the column headers for the allocated funds table.
+        #         This array provides the visible titles for the data columns.
+        %>
+      <% columns_header = [
+        "Fundo",
+        "Alocação",
+        "Valor Investido",
+        "Cotas"
+      ] %>
+
+      <%# [Array] Defines the column icons for the allocated funds table.
+        #         These are currently all set to `nil`.
+        %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         Each lambda receives a fund investment object (fi) and returns the formatted cell content.
+        %>
+      <% columns_body = [
+
+        # Explanation:: This lambda function displays the name of the investment fund.
+        #               It wraps the fund name in a `div` and uses a font-medium class for emphasis.
+        #               The result is the name of the fund.
+        ->(fi) do
+          content_tag(:div, class: "flex flex-col") do
+            concat content_tag(:span, fi.investment_fund.fund_name, class: "font-medium")
+          end
+        end,
+
+        # Explanation:: This lambda returns the percentage allocated to the fund investment.
+        #               It uses the `colored_percentage` helper for visual formatting.
+        #               The result is the allocation percentage as a formatted string.
+        ->(fi) { colored_percentage(fi.percentage_allocation, "h-auto") },
+
+        # Explanation:: This lambda returns the total monetary value invested in the fund.
+        #               It uses the `colored_currency` helper for proper financial formatting.
+        #               The result is the total capital allocated to the fund.
+        ->(fi) { colored_currency(fi.total_invested_value, "h-auto") },
+
+        # Explanation:: This lambda returns the total number of quotas currently held in the fund.
+        #               It uses the `colored_numerical` helper for numerical formatting.
+        #               The result is the quantity of units held.
+        ->(fi) { colored_numerical(fi.total_quotas_held, "h-auto") }
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the fund investments using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 } %>
+
+    <% else %>
+
+      <%# [Content] Displays a fallback message when no fund investments exist.
+        #           This provides a message for a new or empty portfolio.
+        %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Creates a two-column layout for displaying recent applications and redemptions side-by-side.
+    #           This layout organizes related activity data for quick overview.
+    %>
+  <%= render "partials/route/dashboard/section",
+             is_two_col: true,
+             has_action: false do
+  %>
+
+    <%# [Section] Displays the Recent Applications Activity section.
+      #           This section lists the five most recent investments made into the portfolio.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Aplicações Recentes",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [ActiveRecord] Retrieves the five latest application records associated with this portfolio.
+        #                It uses flat_map and sorting to get the latest transactions across all fund investments.
+        %>
+      <% recent_applications = @portfolio.fund_investments.includes(:applications).flat_map(&:applications).sort_by(&:request_date).reverse.first(5) %>
+
+      <%# [Conditional] Checks if any recent applications were found.
+        #               The following block executes only if there is recent investment activity.
+        %>
+      <% if recent_applications.any? %>
+
+        <%# [Iteration] Iterates over each recent application record.
+          #             The block renders an info card for every application in the collection.
+          %>
+        <% recent_applications.each do |app| %>
+
+          <%# [Info] Displays the details of a single investment application.
+            #        The card highlights the fund name, value, and quota count in green (success).
+            %>
+          <%= render "partials/blocks/info-card",
+                     title: app.fund_investment.investment_fund.fund_name,
+                     subtitle: formatted_timestamp(app.request_date),
+                     main_value: "+ R$#{app.financial_value}",
+                     sub_value: "#{app.number_of_quotas} cotas",
+                     icon_name: "arrow-up-right",
+                     main_color: "success"
+          %>
+        <% end %>
+
+        <%# [Link] Renders a link to view all applications filtered by the current portfolio.
+          #        This allows the user to navigate to the full list of investment records.
+          %>
+        <%= link_to applications_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }), class: "button button-outline w-fit" do %>
+          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+          <%= content_tag :span, "Ver todos" %>
+        <% end %>
+      <% else %>
+
+        <%# [Content] Displays a message when no recent applications exist.
+          #           This provides a fallback message when there is no application activity to show.
+          %>
+        <%= content_tag :p, "N/A", class: "text-muted font-mono py-6" %>
+      <% end %>
+    <% end %>
+
+    <%# [Section] Displays the Recent Redemptions Activity section.
+      #           This section lists the five most recent withdrawals made from the portfolio.
+      %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Resgates Recentes",
+               is_one_col: true,
+               has_action: false do
+    %>
+
+      <%# [ActiveRecord] Retrieves the five latest redemption records associated with this portfolio.
+        #                It uses flat_map and sorting to get the latest transactions across all fund investments.
+        %>
+      <% recent_redemptions = @portfolio.fund_investments.includes(:redemptions).flat_map(&:redemptions).sort_by(&:request_date).reverse.first(5) %>
+
+      <%# [Conditional] Checks if any recent redemptions were found.
+        #               The following block executes only if there is recent withdrawal activity.
+        %>
+      <% if recent_redemptions.any? %>
+
+        <%# [Iteration] Iterates over each recent redemption record.
+          #             The block renders an info card for every redemption in the collection.
+          %>
+        <% recent_redemptions.each do |red| %>
+
+          <%# [Info] Displays the details of a single redemption.
+            #        The card highlights the fund name, value, and quota count in red (danger).
+            %>
+          <%= render "partials/blocks/info-card",
+                     title: red.fund_investment.investment_fund.fund_name,
+                     subtitle: formatted_timestamp(red.request_date),
+                     main_value: "- R$#{red.redeemed_liquid_value}",
+                     sub_value: "#{red.redeemed_quotas} cotas",
+                     icon_name: "arrow-down-left",
+                     main_color: "danger"
+          %>
+        <% end %>
+
+        <%# [Link] Renders a link to view all redemptions filtered by the current portfolio.
+          #        This allows the user to navigate to the full list of withdrawal records.
+          %>
+        <%= link_to redemptions_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }), class: "button button-outline w-fit" do %>
+          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+          <%= content_tag :span, "Ver todos" %>
+        <% end %>
+      <% else %>
+
+        <%# [Content] Displays a message when no recent redemptions exist.
+          #           This provides a fallback message when there is no redemption activity to show.
+          %>
+        <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Sharing Permissions section.
+    #           This section lists all users who have been granted access to this portfolio.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Compartilhamento",
+             is_two_col: true,
+             has_action: false do
+  %>
+
+    <%# [Conditional] Checks if there are any users sharing this portfolio.
+      #               The block iterates and displays permissions only if collaborators exist.
+      %>
+    <% if @portfolio.user_portfolio_permissions.any? %>
+
+      <%# [Iteration] Iterates over each user portfolio permission record.
+        #             The block renders an info card for every collaborator.
+        %>
+      <% @portfolio.user_portfolio_permissions.includes(:user).each do |perm| %>
+
+        <%# [Info] Displays the collaborator's name, email, and their granted permission level.
+          #        This card summarizes the access details for a specific user.
+          %>
+        <%= render "partials/blocks/info-card",
+                   title: perm.user.full_name,
+                   subtitle: perm.user.email,
+                   main_value: perm.permission_level,
+                   sub_value: "@#{perm.permission_level}",
+                   icon_name: "users",
+                   main_color: "secondary"
+        %>
+      <% end %>
+    <% else %>
+
+      <%# [Content] Displays a fallback message when no sharing permissions are active.
+        #           This provides a message when the portfolio is not shared with anyone.
+        %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -89,12 +89,31 @@ class PortfoliosController < ApplicationController
   # @author Moisés Reis
   # @category *Read*
   #
-  # Read:: This action prepares the specific portfolio record that was loaded earlier.
-  #        It makes the data available for the view to display all its details to the user.
+  # Read:: This action retrieves the portfolio belonging to the current user
+  #        and prepares the monthly flow data so the view can display the
+  #        portfolio's detailed evolution over time.
   #
   # Attributes:: - *@portfolio* - The single portfolio object found by the `set_portfolio` filter.
+  #              - *@monthly_flows* - Aggregated flow values grouped by month
   #
   def show
+
+    # Explanation:: Fetches the portfolio that belongs to the current user.
+    #               The `for_user` scope ensures authorization at the query level,
+    #               and `find` loads the specific record identified by `params[:id]`.
+    @portfolio = Portfolio.for_user(current_user).find(params[:id])
+
+    # Explanation:: Builds an array used to feed allocation charts.
+    #               It loads each fund investment with its associated fund
+    #               and extracts the fund name and its allocation percentage.
+    @allocation_data = @portfolio.fund_investments.includes(:investment_fund).map do |fi|
+      [fi.investment_fund.fund_name, fi.percentage_allocation || 0]
+    end
+
+    # Explanation:: Invokes a service-like method that computes the portfolio's
+    #               monthly application and redemption totals for the past year,
+    #               returning structured data ready for chart rendering.
+    @monthly_flows = calculate_monthly_flows(@portfolio)
   end
 
   # == new
@@ -249,6 +268,76 @@ class PortfoliosController < ApplicationController
   end
 
   private
+
+  # == calculate_monthly_flows
+  #
+  # @autho
+
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Category:: Computes how much money went into and out of a portfolio each
+  #            month. It prepares a clear, month-by-month summary so users
+  #            can understand the portfolio’s financial movement over the year.
+  #
+  # Attributes:: - *@portfolio* - The portfolio used to gather monthly cash flows.
+  #
+  def calculate_monthly_flows(portfolio)
+
+    # Explanation:: Initializes an empty array that will store the monthly
+    #               applications and redemptions data for the past 12 months.
+    monthly_data = []
+
+    # Explanation:: Starts a loop that runs 12 times, once for each month
+    #               going backwards from the current month.
+    12.times do |i|
+
+      # Explanation:: Computes the beginning of the month that occurred
+      #               'i' months ago, used as the start of the date range.
+      month_start = i.months.ago.beginning_of_month
+
+      # Explanation:: Calculates the final day of the same month represented
+      #               by month_start, completing the date range.
+      month_end = month_start.end_of_month
+
+      # Explanation:: Formats the month into a user-friendly label
+      #               like "Jan/24", used for chart display.
+      month_label = month_start.strftime('%b/%y')
+
+      # Explanation:: Retrieves and sums all application financial values
+      #               linked to the portfolio that fall within the month range.
+      applications_sum = portfolio.fund_investments
+                                  .joins(:applications)
+                                  .where(applications: { cotization_date: month_start..month_end })
+                                  .sum('applications.financial_value')
+
+      # Explanation:: Retrieves and sums all redemption liquid values
+      #               within the same date range for the portfolio.
+      redemptions_sum = portfolio.fund_investments
+                                 .joins(:redemptions)
+                                 .where(redemptions: { cotization_date: month_start..month_end })
+                                 .sum('redemptions.redeemed_liquid_value')
+
+      # Explanation:: Adds a hash containing the month label and its
+      #               corresponding application and redemption totals.
+      monthly_data << {
+        month: month_label,
+        applications: applications_sum,
+        redemptions: redemptions_sum
+      }
+    end
+
+    # Explanation:: Reverses the array so months appear chronologically
+    #               from oldest to most recent when displayed.
+    monthly_data.reverse!
+
+    # Explanation:: Prepares the final structure expected by the charting
+    #               library, separating series for applications and redemptions.
+    [
+      { name: "Aplicações", data: monthly_data.map { |m| [m[:month], m[:applications]] } },
+      { name: "Resgates", data: monthly_data.map { |m| [m[:month], m[:redemptions]] } }
+    ]
+  end
 
   # == load_portfolio
   #

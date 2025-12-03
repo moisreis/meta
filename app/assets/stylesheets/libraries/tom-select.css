@@ -119,6 +119,10 @@
     box-shadow: var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);
 }
 
+.item {
+    color: var(--color-body) !important;
+}
+
 /*
  * Styles the search input close button
  * in it's base and hover states
