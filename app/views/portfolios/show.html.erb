@@ -84,7 +84,7 @@
                card_title: "Alocação Válida",
                card_icon: "list-plus",
                card_data: "Total de #{number_with_precision(@portfolio.fund_investments.sum(:percentage_allocation), precision: 0)}%",
-               card_data_icon: "badge-percent" do
+               card_data_icon: "trending-up-down" do
     %>
       <% if @portfolio.valid_allocations? %>
         <%= content_tag :span, "Válida" %>

@@ -14,7 +14,7 @@
   #        - Why: Provides the essential mechanism for users to record detailed financial operations within their investment portfolios.
   %>
 <%= form_with(model: application, class: "contents") do |form| %>
-  <div class="grid grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <%= render "partials/modules/select",
                f: form,
                name: :fund_investment_id,
@@ -26,7 +26,7 @@
     %>
   </div>
   <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <%= render "partials/modules/input-field",
                f: form,
                name: :financial_value,
@@ -62,7 +62,7 @@
     %>
   </div>
   <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <%= render "partials/modules/date-field",
                f: form,
                name: :request_date,

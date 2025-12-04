@@ -24,10 +24,10 @@
     #                This array of strings sets the visible text that appears at the top of the table.
     columns_header: [
       "Resgate",
+      "Carteira",
       "Valor líquido",
       "Porcentagem",
       "Cotas resgatadas",
-      "Tipo",
       "Pedido em",
       "Cotizado em",
       "Liquidado em",
@@ -48,40 +48,31 @@
       #                and wraps them in separate `<span>` tags within a parent `<div>` for a stacked display.
       ->(r) do
         fund_name = r.fund_investment&.investment_fund&.fund_name
+        content_tag(:span, fund_name.to_s, class: "font-medium line-clamp-1")
+      end,
+
+      ->(r) do
         portfolio_name = r.fund_investment&.portfolio&.name
-        content_tag(:div, class: "flex flex-col -space-y-0.5 py-1.5 justify-start") do
-          safe_join([
-                      content_tag(:span, fund_name.to_s, class: "font-medium line-clamp-1"),
-                      content_tag(:span, portfolio_name.to_s, class: "font-normal text-muted")
-                    ])
-        end
+        content_tag(:span, portfolio_name.to_s, class: "font-normal text-muted")
       end,
 
       # [Explanation]: This function **formats and displays the net redeemed value** (liquid value) as currency.
       #                It calls a helper method, `colored_currency`, passing the `redeemed_liquid_value` and a CSS class for styling.
       ->(r) {
-        colored_currency(r.redeemed_liquid_value, "h-16")
+        colored_currency(r.redeemed_liquid_value)
       },
 
       # [Explanation]: This function **formats and displays the return percentage**.
       #                It calls a helper method, `colored_numerical`, passing the `return_percentage` and a CSS class for styling.
       ->(r) {
-        colored_percentage(r.return_percentage, "h-16")
+        colored_percentage(r.return_percentage)
       },
 
       # [Explanation]: This function **formats and displays the number of redeemed quotas**.
       #                It calls a helper method, `colored_numerical`, passing the `redeemed_quotas` and a CSS class for styling.
       ->(r) {
-        colored_numerical(r.redeemed_quotas, "h-16")
+        colored_numerical(r.redeemed_quotas)
       },
-
-      # [Explanation]: This function **displays the redemption type** with badge styling.
-      #                It capitalizes the `redemption_type` (if present) or shows a hyphen (`-`)
-      #                and wraps the result in a `<span>` tag with the `badge badge-outline` CSS class.
-      ->(r) do
-        value = r.redemption_type.present? ? r.redemption_type.capitalize : "-"
-        content_tag(:span, value, class: "badge badge-outline")
-      end,
 
       # [Explanation]: This function **formats and displays the request date and time** of the redemption.
       #                It calls the `formatted_timestamp` helper method with the `request_date`.

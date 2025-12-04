@@ -73,7 +73,7 @@
                card_title: "Investimento Relacionado",
                card_icon: "link",
                card_data: "Alocação #{number_with_precision(@redemption.fund_investment.percentage_allocation, precision: 2)}%",
-               card_data_icon: "pie-chart" do
+               card_data_icon: "chart-pie" do
     %>
       <%= link_to "FundInvestment ##{@redemption.fund_investment.id}",
                   fund_investment_path(@redemption.fund_investment),
@@ -87,7 +87,7 @@
                card_title: "Status do Resgate",
                card_icon: @redemption.completed? ? "circle-check" : "clock",
                card_data: @redemption.completed? ? "Finalizado" : "Em processamento",
-               card_data_icon: @redemption.completed? ? "badge-check" : "hourglass",
+               card_data_icon: @redemption.completed? ? "check" : "hourglass",
                is_success: @redemption.completed?,
                is_warning: !@redemption.completed? do
     %>
@@ -433,13 +433,9 @@
         #               It includes the application's cotization date as secondary, smaller text.
         #               The link uses the application ID as the display text.
         ->(alloc) do
-          content_tag(:div, class: "flex flex-col") do
-            concat link_to("Aplicação ##{alloc.application.id}",
-                           application_path(alloc.application),
-                           class: "font-medium hover:underline")
-            concat content_tag(:span, "Cotização: #{formatted_timestamp(alloc.application.cotization_date)}",
-                               class: "text-sm text-muted") if alloc.application.cotization_date
-          end
+          link_to("Aplicação ##{alloc.application.id}",
+                  application_path(alloc.application),
+                  class: "font-medium hover:underline")
         end,
 
         # Explanation:: This lambda returns the formatted request date of the original application.
@@ -457,7 +453,7 @@
         #               The result is the original purchase price per unit.
         ->(alloc) do
           if alloc.application.quota_value_at_application
-            standard_currency(alloc.application.quota_value_at_application)
+            colored_currency(alloc.application.quota_value_at_application)
           else
             "N/A"
           end

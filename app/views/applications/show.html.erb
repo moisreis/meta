@@ -415,6 +415,7 @@
       <% columns_header = [
         "Resgate",
         "Carteira",
+        "Usuário",
         "Cotas Utilizadas",
         "Valor da Cota",
         "Valor Total",
@@ -423,6 +424,7 @@
 
       <%# [Array] Defines the column icons for the table. %>
       <% columns_icons = [
+        nil,
         nil,
         nil,
         nil,
@@ -440,22 +442,22 @@
         #               It links to the specific Redemption show page.
         #               The result is a linked redemption identifier.
         ->(alloc) do
-          content_tag(:div, class: "flex flex-col") do
-            concat link_to("Resgate ##{alloc.redemption.id}",
-                           redemption_path(alloc.redemption),
-                           class: "font-medium hover:underline")
-            concat content_tag(:span, alloc.redemption.redemption_type || "Padrão", class: "text-sm text-muted")
-          end
+          link_to(
+            "Resgate ##{alloc.redemption.id}",
+            redemption_path(alloc.redemption),
+            class: "font-medium hover:underline"
+          )
         end,
 
         # Explanation:: This lambda displays the Portfolio name and the owner's full name.
         #               It fetches the portfolio details via nested associations.
         #               The result is the portfolio and owner name stacked.
         ->(alloc) do
-          content_tag(:div, class: "flex flex-col") do
-            concat content_tag(:span, alloc.redemption.fund_investment.portfolio.name, class: "font-medium")
-            concat content_tag(:span, alloc.redemption.fund_investment.portfolio.user.full_name, class: "text-sm text-muted")
-          end
+            content_tag(:span, alloc.redemption.fund_investment.portfolio.name, class: "font-medium")
+        end,
+
+        ->(alloc) do
+            content_tag(:span, alloc.redemption.fund_investment.portfolio.user.full_name, class: "badge badge-currency")
         end,
 
         # Explanation:: This lambda displays the number of quotas used in this allocation.
@@ -463,18 +465,17 @@
         #               The result is the formatted quantity of quotas used.
         ->(alloc) { colored_numerical(alloc.quotas_used, "h-auto") },
 
-        # Explanation:: This lambda displays the quota value used at the time of redemption.
+        # Explanation:: This lambda displays the quota value from the application at the time it was created.
         #               It uses `standard_currency` or "N/A" if the value is missing.
         #               The result is the formatted quota value.
-        ->(alloc) { alloc.quota_value_at_redemption ? standard_currency(alloc.quota_value_at_redemption) : "N/A" },
+        ->(alloc) { alloc.application.quota_value_at_application ? colored_currency(alloc.application.quota_value_at_application) : "N/A" },
 
         # Explanation:: This lambda calculates the total financial value of the allocated quotas (quotas * quota value).
-        #               It uses the `colored_currency` helper to display the calculated total.
+        #               It uses the `colored_currency` helper to display the calculated total using the cost_basis method.
         #               The result is the total calculated financial value.
         ->(alloc) do
-          if alloc.quotas_used && alloc.quota_value_at_redemption
-            total = alloc.quotas_used * alloc.quota_value_at_redemption
-            colored_currency(total, "h-auto")
+          if alloc.cost_basis
+            colored_currency(alloc.cost_basis, "h-auto")
           else
             "N/A"
           end

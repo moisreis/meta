@@ -42,6 +42,13 @@
           <%= inline_svg_tag "icons/refresh-cw.svg" %>
           <%= content_tag :span, "Limpar filtros" %>
         <% end %>
+        <div class="h-4 w-[1px] bg-border"></div>
+        <%= link_to new_polymorphic_path(models.klass),
+                    class: "button button-ghost button-small",
+                    data: { turbo_frame: turbo_frame_id } do %>
+          <%= inline_svg_tag "icons/plus.svg" %>
+          <%= content_tag :span, "Adicionar item" %>
+        <% end %>
       </div>
       <div class="justify-end">
         <%= button_tag type: :submit,

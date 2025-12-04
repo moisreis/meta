@@ -25,6 +25,7 @@
     #                They provide context for the user viewing the transaction history.
     columns_header: [
       "Aplicação",
+      "Carteira",
       "Valor",
       "Cotas",
       "Valor da cota",
@@ -46,35 +47,34 @@
       #                the name of the Investment Fund and the Portfolio. It includes fallback text
       #                ("Indefinido") if the associated objects are missing.
       ->(app) do
-        fund_name      = app.fund_investment&.investment_fund&.fund_name
+        fund_name = app.fund_investment&.investment_fund&.fund_name
+        content_tag(:span, "#{fund_name}", class: "font-medium")
+      end,
+
+      ->(app) do
         portfolio_name = app.fund_investment&.portfolio&.name
-        content_tag(:div, class: "flex flex-col -space-y-0.5 py-1.5 justify-start") do
-          safe_join([
-                      content_tag(:span, "#{fund_name}", class: "font-medium"),
-                      content_tag(:span, "#{portfolio_name}", class: "font-normal text-muted")
-                    ])
-        end
+        content_tag(:span, "#{portfolio_name}", class: "font-normal text-muted")
       end,
 
       # [Explanation]: This lambda function displays the financial value of the transaction.
       #                It uses the `number_to_currency` helper to format the value as Brazilian Reais (R$),
       #                or displays a dash if the value is not present.
       ->(app) do
-        colored_currency(app.financial_value, "h-16")
+        colored_currency(app.financial_value)
       end,
 
       # [Explanation]: This lambda function displays the number of quotas transacted.
       #                It uses the `number_with_delimiter` helper for standard number formatting,
       #                or displays a dash if the number of quotas is not present.
       ->(app) do
-        colored_numerical(app.number_of_quotas, "h-16")
+        colored_numerical(app.number_of_quotas)
       end,
 
       # [Explanation]: This lambda function displays the quota value at the time of the application.
       #                It formats the value as currency (R$) using the appropriate helper,
       #                or displays a dash if the quota value is not recorded.
       ->(app) do
-        colored_currency(app.quota_value_at_application, "h-16")
+        colored_currency(app.quota_value_at_application)
       end,
 
       # [Explanation]: This lambda function displays the date the transaction was requested.

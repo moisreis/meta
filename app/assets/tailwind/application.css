@@ -493,7 +493,7 @@
      * ------------------------------
      */
     .badge {
-        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base text-xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none border border-primary-100 bg-primary-50 text-primary-700 h-fit shadow-xs w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3.5
+        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base text-xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none border border-primary-100 bg-primary-50 text-primary-700 h-fit shadow-xs w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3
     }
 
     /*
@@ -557,6 +557,18 @@
      */
     .badge-success {
         @apply bg-success-50 border-success-100 text-success-600 [&>svg]:stroke-success-600;
+    }
+
+    /*
+     * ------------------------------
+     *  badge-currency
+     *
+     *  Sets the badge variant with a currency-themed palette.
+     *  Applies currency-focused colors for currency tags.
+     * ------------------------------
+     */
+    .badge-currency {
+        @apply bg-currency-50 border-currency-100 text-currency-600 [&>svg]:stroke-currency-600;
     }
 }
 

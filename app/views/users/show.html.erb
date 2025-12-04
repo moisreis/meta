@@ -43,7 +43,7 @@
                card_title: "Nome Completo",
                card_icon: "user",
                card_data: "@#{@user.role}",
-               card_data_icon: "shield",
+               card_data_icon: "key",
                is_danger: true do
     %>
       <%= @user.full_name %>
@@ -90,7 +90,7 @@
                card_title: "Total de Logins",
                card_icon: "log-in",
                card_data: "Desde #{@user.created_at}",
-               card_data_icon: "calendar" do %>
+               card_data_icon: "clock" do %>
       <%= @user.sign_in_count %>
     <% end %>
 
@@ -123,7 +123,7 @@
                card_title: "Conta Criada",
                card_icon: "user-plus",
                card_data: "Há #{time_ago_in_words(@user.created_at)}",
-               card_data_icon: "calendar-clock" do %>
+               card_data_icon: "clock" do %>
       <%= formatted_timestamp(@user.created_at) %>
     <% end %>
   <% end %>
