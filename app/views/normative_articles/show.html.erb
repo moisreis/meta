@@ -94,46 +94,6 @@
 
   <%= render "partials/modules/separator" %>
 
-  <%# [Section] Displays the Article Content section.
-    #           This section contains the full regulatory text and description.
-    %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Conteúdo",
-             section_desc: "Texto completo do artigo normativo",
-             is_one_col: true,
-             has_action: false do
-  %>
-
-    <%# [Conditional] Checks if article description exists.
-      #               Displays the description in a formatted text block.
-      %>
-    <% if @normative_article.description.present? %>
-      <%= content_tag :div, class: "space-y-4 mt-6 p-6 border border-border rounded-base bg-table-bg" do %>
-        <%= content_tag :h3, "Descrição", class: "text-lg font-semibold" %>
-        <%= content_tag :p, @normative_article.description, class: "text-muted leading-relaxed" %>
-      <% end %>
-    <% end %>
-
-    <%# [Conditional] Checks if article body exists.
-      #               Displays the full article text in a formatted block.
-      %>
-    <% if @normative_article.article_body.present? %>
-      <%= content_tag :div, class: "space-y-4 mt-6 p-6 border border-border rounded-base bg-table-bg" do %>
-        <%= content_tag :h3, "Corpo do Artigo", class: "text-lg font-semibold" %>
-        <%= simple_format(@normative_article.article_body, class: "text-muted leading-relaxed whitespace-pre-wrap") %>
-      <% end %>
-    <% end %>
-
-    <%# [Conditional] Displays fallback when no content exists.
-      #               Provides a message when both description and body are empty.
-      %>
-    <% if @normative_article.description.blank? && @normative_article.article_body.blank? %>
-      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
-    <% end %>
-  <% end %>
-
-  <%= render "partials/modules/separator" %>
-
   <%# [Section] Displays the Associated Investment Funds section.
     #           This section lists all funds that follow this normative article.
     %>
