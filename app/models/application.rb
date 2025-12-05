@@ -16,7 +16,10 @@
 #              - *request_date* @date - The date the investment request is submitted.
 #              - *cotization_date* @date - The date the quota price is determined.
 #              - *liquidation_date* @date - The date the funds are settled.
-#
+
+# Explanation:: explain what this line does in two or three lines.
+#               for singular lines of code that should be explanined.
+#               Like variables or modules.
 class Application < ApplicationRecord
 
   # Explanation:: This establishes a direct link, indicating that every application belongs

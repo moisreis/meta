@@ -247,7 +247,8 @@ class InvestmentFundsController < ApplicationController
       :cnpj,
       :fund_name,
       :originator_fund,
-      :administrator_name
+      :administrator_name,
+      :normative_article_ids
     )
   end
 end

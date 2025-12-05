@@ -90,6 +90,97 @@
 
   <%= render "partials/modules/separator" %>
 
+  <%# [Section] Displays the Normative Articles associated with this fund.
+    #           This section lists all regulatory articles that govern this investment fund.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Artigos Normativos Vinculados",
+             section_desc: "Regulamentação aplicável a este fundo",
+             is_one_col: true,
+             has_action: false do
+  %>
+
+    <%# [Conditional] Checks if any normative articles are associated with this fund.
+      #               The following block executes only if regulatory articles exist.
+      %>
+    <% if @investment_fund.normative_articles.any? %>
+
+      <%# [Variable] Assigns the investment fund articles collection to a local variable.
+        #            This variable serves as the dataset for the articles table.
+        %>
+      <% models = @investment_fund.investment_fund_articles.includes(:normative_article) %>
+
+      <%# [Array] Defines the column headers for the normative articles table.
+        #         This array provides the visible titles for the data columns.
+        %>
+      <% columns_header = [
+        "Artigo",
+        "Número",
+        "Meta de Benchmark",
+        "Observações"
+      ] %>
+
+      <%# [Array] Defines the column icons for the normative articles table.
+        #         These are currently all set to `nil`.
+        %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         Each lambda receives an investment_fund_article object (ifa) and returns the formatted cell content.
+        %>
+      <% columns_body = [
+
+        # Explanation:: This lambda function displays the name of the normative article with a link.
+        #               It wraps the article display name in a link that navigates to the article's show page.
+        #               The result is a clickable link for the article.
+        ->(ifa) do
+          link_to(ifa.normative_article.display_name, normative_article_path(ifa.normative_article), class: "hover:underline font-medium")
+        end,
+
+        # Explanation:: This lambda returns the article number of the normative article.
+        #               It displays the identifier in monospace font.
+        ->(ifa) { content_tag(:span, ifa.normative_article.article_number.presence || "N/A", class: "font-mono text-sm") },
+
+        # Explanation:: This lambda returns the benchmark target value if one exists.
+        #               It formats the value as a percentage or shows "N/A" if not defined.
+        ->(ifa) do
+          if ifa.normative_article.has_benchmark?
+            content_tag(:span, "#{number_with_precision(ifa.normative_article.benchmark_target, precision: 2)}%", class: "badge badge-success")
+          else
+            content_tag(:span, "N/A", class: "text-muted")
+          end
+        end,
+
+        # Explanation:: This lambda returns any notes specific to this fund-article relationship.
+        #               It shows additional context or observations about the association.
+        ->(ifa) { ifa.note.presence || content_tag(:span, "—", class: "text-muted") }
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the associated normative articles using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 } %>
+
+    <% else %>
+
+      <%# [Content] Displays a fallback message when no normative articles are associated.
+        #           This provides a message when the fund has no regulatory articles linked.
+        %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
   <%# [Section] Displays key adoption metrics and financial statistics for the fund.
     #           This section shows how widely the fund is used across user portfolios.
     %>

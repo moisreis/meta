@@ -1,0 +1,94 @@
+<%#
+  # Partial: index.html
+  # Date: 12/4/2025
+  # Author: Moisés Reis
+  # Package: NormativeArticles
+  #
+  # Description: Lists all normative articles and presents their identifiers,
+  #              names, benchmark targets, and creation dates in a sortable,
+  #              filterable table. This view uses the table component pattern
+  #              shared across the dashboard.
+  #
+  # Usage: - What: Renders a structured page for users to browse, search, and
+  #                manage normative articles.
+  #        - How: Rendered through the NormativeArticles#index controller
+  #               action. Uses Ransack (`@q`) for filtering and searching.
+  #        - Why: Allows users to quickly find, compare, and manage regulatory
+  #               articles that may be associated with investment funds.
+%>
+<%= render "partials/route/dashboard/wrapper",
+           page_title: "Artigos Normativos",
+           page_desc: "Consulte, filtre e gerencie os artigos normativos registrados.",
+           current_view: "datatable" do %>
+
+  <%= render partial: "partials/blocks/data-table", locals: {
+
+    columns_header: [
+      "Número",
+      "Nome",
+      "Meta",
+      "Criado em"
+    ],
+
+    columns_icons: [],
+
+    columns_body: [
+      ->(a) { a.article_number.presence || "N/A" },
+
+      ->(a) { a.article_name.presence || "N/A" },
+
+      ->(a) do
+        colored_numerical(a.benchmark_target)
+      end,
+
+      ->(a) do
+        formatted_timestamp(a.created_at)
+      end
+    ],
+
+    models: @normative_articles,
+
+    sort_options: [],
+
+    q_object: @q,
+
+    search_url: normative_articles_path,
+
+    turbo_frame_id: "normative_articles_table",
+
+    export_url: nil
+  } %>
+<% end %>
+
+<%= render partial: "partials/route/dashboard/filters", locals: {
+
+  q_object: @q,
+
+  search_url: normative_articles_path,
+
+  filters: [
+    {
+      key: :article_number_cont,
+      label: "Número do artigo",
+      description: "Filtra artigos cujo número contenha o valor informado.",
+      placeholder: "Ex.: 12-B",
+      icon_name: "hash"
+    },
+    {
+      key: :article_name_cont,
+      label: "Nome",
+      description: "Busca artigos pelo nome.",
+      placeholder: "Nome do artigo",
+      icon_name: "file-text"
+    },
+    {
+      key: :benchmark_target_gteq,
+      label: "Meta mínima",
+      description: "Filtra artigos cuja meta seja igual ou superior ao valor.",
+      placeholder: "Valor mínimo",
+      icon_name: "target"
+    }
+  ],
+
+  turbo_frame_id: "normative_articles_table"
+} %>

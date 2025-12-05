@@ -1,0 +1,260 @@
+<%#
+  # Partial: show.html.erb
+  # Date: 12/4/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Displays the detailed view for a single normative article.
+  #              It consolidates article information, benchmark data, associated
+  #              investment funds, and metadata in a structured dashboard layout.
+  #
+  # Usage: - What: Renders the comprehensive detail page for a specific normative article.
+  #                It allows users to review article content, benchmark targets, and related funds.
+  #        - How: This partial is rendered from the NormativeArticlesController#show action, receiving
+  #               the @normative_article instance variable, which represents the complete article record.
+  #        - Why: Provides a single, centralized view for reviewing regulatory content, monitoring
+  #               benchmark compliance, and understanding which funds follow this article.
+%>
+
+<%# [Partial] Renders the main dashboard layout wrapper.
+  #           This partial establishes the standardized structure and title for the page.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @normative_article.display_name,
+           page_desc: "Artigo Normativo",
+           current_view: "show" do
+%>
+
+  <%# [Section] Displays the Article Overview section.
+    #           This section presents key metadata and identification information for the article.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visão Geral",
+             section_desc: "Informações básicas do artigo normativo",
+             is_four_col: true,
+             has_action: true,
+             button_route: edit_normative_article_path(@normative_article),
+             button_name: "Editar",
+             button_icon: "pencil" do
+  %>
+
+    <%# [Summary] Displays the article number identifier.
+      #           It uses a neutral color scheme for identification data.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Número do Artigo",
+               card_icon: "file-text",
+               card_data: "Identificador",
+               card_data_icon: "hash" do
+    %>
+      <%= @normative_article.article_number.presence || "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the article name or title.
+      #           It provides the formal name of the regulatory article.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Nome do Artigo",
+               card_icon: "file-check",
+               card_data: "Título",
+               card_data_icon: "text-align-start" do
+    %>
+      <%= @normative_article.article_name.presence || "N/A" %>
+    <% end %>
+
+    <%# [Summary] Displays the benchmark target value if one exists.
+      #           It uses success color when a benchmark is defined.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Meta de Benchmark",
+               card_icon: "target",
+               card_data: @normative_article.has_benchmark? ? "Definida" : "Não definida",
+               card_data_icon: @normative_article.has_benchmark? ? "check" : "x",
+               is_success: @normative_article.has_benchmark? do
+    %>
+      <% if @normative_article.has_benchmark? %>
+        <%= number_with_precision(@normative_article.benchmark_target, precision: 2) %>%
+      <% else %>
+        <%= content_tag :span, "N/A" %>
+      <% end %>
+    <% end %>
+
+    <%# [Summary] Displays the count of investment funds following this article.
+      #           This metric indicates how widely adopted the article is.
+      %>
+    <%= render "partials/blocks/summary-card",
+               card_title: "Fundos Vinculados",
+               card_icon: "coins",
+               card_data: "Total de fundos",
+               card_data_icon: "list" do
+    %>
+      <%= @normative_article.investment_funds.count %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Article Content section.
+    #           This section contains the full regulatory text and description.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Conteúdo",
+             section_desc: "Texto completo do artigo normativo",
+             is_one_col: true,
+             has_action: false do
+  %>
+
+    <%# [Conditional] Checks if article description exists.
+      #               Displays the description in a formatted text block.
+      %>
+    <% if @normative_article.description.present? %>
+      <%= content_tag :div, class: "space-y-4 mt-6 p-6 border border-border rounded-base bg-table-bg" do %>
+        <%= content_tag :h3, "Descrição", class: "text-lg font-semibold" %>
+        <%= content_tag :p, @normative_article.description, class: "text-muted leading-relaxed" %>
+      <% end %>
+    <% end %>
+
+    <%# [Conditional] Checks if article body exists.
+      #               Displays the full article text in a formatted block.
+      %>
+    <% if @normative_article.article_body.present? %>
+      <%= content_tag :div, class: "space-y-4 mt-6 p-6 border border-border rounded-base bg-table-bg" do %>
+        <%= content_tag :h3, "Corpo do Artigo", class: "text-lg font-semibold" %>
+        <%= simple_format(@normative_article.article_body, class: "text-muted leading-relaxed whitespace-pre-wrap") %>
+      <% end %>
+    <% end %>
+
+    <%# [Conditional] Displays fallback when no content exists.
+      #               Provides a message when both description and body are empty.
+      %>
+    <% if @normative_article.description.blank? && @normative_article.article_body.blank? %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Associated Investment Funds section.
+    #           This section lists all funds that follow this normative article.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Fundos de Investimento Vinculados",
+             section_desc: "Fundos que seguem este artigo normativo",
+             is_one_col: true,
+             has_action: false do
+  %>
+
+    <%# [Conditional] Checks if any investment funds are associated.
+      #               The following block executes only if funds exist.
+      %>
+    <% if @normative_article.investment_funds.any? %>
+
+      <%# [Variable] Assigns the investment funds collection to a local variable.
+        #            This variable serves as the dataset for the funds table.
+        %>
+      <% investment_fund_articles = @normative_article.investment_fund_articles.includes(investment_fund: :fund_investments) %>
+
+      <%# [Array] Defines the column headers for the investment funds table.
+        #         This array provides the visible titles for the data columns.
+        %>
+      <% columns_header = [
+        "Fundo",
+        "CNPJ",
+        "Administrador",
+        "Observações"
+      ] %>
+
+      <%# [Array] Defines the column icons for the investment funds table.
+        #         These are currently all set to `nil`.
+        %>
+      <% columns_icons = [
+        nil,
+        nil,
+        nil,
+        nil
+      ] %>
+
+      <%# [Array] Defines the lambda functions to format the table body data.
+        #         Each lambda receives an investment_fund_article object (ifa) and returns the formatted cell content.
+        %>
+      <% columns_body = [
+
+        # Explanation:: This lambda function displays the name of the investment fund with a link.
+        #               It wraps the fund name in a div and uses font-medium for emphasis.
+        #               The result is a clickable fund name.
+        ->(ifa) do
+          content_tag(:div, class: "flex flex-col") do
+            concat link_to(ifa.investment_fund.fund_name, investment_fund_path(ifa.investment_fund), class: "font-medium hover:underline")
+          end
+        end,
+
+        # Explanation:: This lambda returns the CNPJ identifier of the fund.
+        #               It displays the formatted CNPJ in monospace font.
+        ->(ifa) { content_tag(:span, ifa.investment_fund.cnpj, class: "font-mono text-sm") },
+
+        # Explanation:: This lambda returns the administrator name of the fund.
+        #               It displays the entity responsible for managing the fund.
+        ->(ifa) { content_tag(:span, ifa.investment_fund.administrator_name) },
+
+        # Explanation:: This lambda returns any notes specific to this fund-article relationship.
+        #               It shows additional context or observations about the association.
+        ->(ifa) { ifa.note.presence || content_tag(:span, "N/A", class: "text-muted font-mono") }
+      ] %>
+
+      <%# [Partial] Renders the generic table module partial.
+        #           This partial displays the associated funds using the defined headers and body content.
+        %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: investment_fund_articles
+                 } %>
+
+    <% else %>
+
+      <%# [Content] Displays a fallback message when no investment funds are associated.
+        #           This provides a message when the article has no linked funds.
+        %>
+      <%= content_tag :p, "Nenhum fundo vinculado a este artigo normativo.", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/modules/separator" %>
+
+  <%# [Section] Displays the Metadata section.
+    #           This section shows system timestamps and record information.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Metadados",
+             section_desc: "Informações do sistema",
+             is_two_col: true,
+             has_action: false do
+  %>
+
+    <%# [Info] Displays the creation timestamp of the article record.
+      #        Shows when this normative article was first added to the system.
+      %>
+    <%= render "partials/blocks/info-card",
+               title: "Data de Criação",
+               subtitle: "Quando o artigo foi registrado",
+               main_value: formatted_timestamp(@normative_article.created_at),
+               sub_value: "#{time_ago_in_words(@normative_article.created_at)} atrás",
+               icon_name: "calendar-plus",
+               main_color: "secondary"
+    %>
+
+    <%# [Info] Displays the last update timestamp of the article record.
+      #        Shows when this normative article was most recently modified.
+      %>
+    <%= render "partials/blocks/info-card",
+               title: "Última Atualização",
+               subtitle: "Quando o artigo foi modificado",
+               main_value: formatted_timestamp(@normative_article.updated_at),
+               sub_value: "#{time_ago_in_words(@normative_article.updated_at)} atrás",
+               icon_name: "calendar-check-2",
+               main_color: "secondary"
+    %>
+  <% end %>
+<% end %>

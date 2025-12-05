@@ -47,6 +47,19 @@
     %>
   </div>
   <%= render "partials/modules/separator" %>
+  <%# [Select] Allows the user to select one or more normative articles to associate with this fund.
+    #          The select is populated with all available normative articles in the system.
+    #          Uses the display_name method to show a readable label for each article.
+    %>
+  <%= render "partials/modules/select",
+             f: form,
+             name: :normative_article_ids,
+             label: "Artigos Normativos",
+             options_collection: NormativeArticle.all.map { |article| [article.display_name, article.id] },
+             is_half_width: true,
+             desc: "Selecione os artigos normativos que regulam este fundo."
+  %>
+  <%= render "partials/modules/separator" %>
   <%= render "partials/modules/input-field",
              f: form,
              name: :cnpj,

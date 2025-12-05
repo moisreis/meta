@@ -29,11 +29,11 @@ class InvestmentFund < ApplicationRecord
 
   # Explanation:: This establishes a linking table for the many-to-many relationship
   #               with regulatory articles, and ensures the links are destroyed on deletion.
-  has_many :investment_funds_articles, dependent: :destroy
+  has_many :investment_fund_articles, dependent: :destroy
 
   # Explanation:: This establishes a many-to-many relationship, linking the fund
   #               to the specific **NormativeArticles** that govern it.
-  has_many :normative_articles, through: :investment_funds_articles
+  has_many :normative_articles, through: :investment_fund_articles
 
   # Explanation:: This establishes a link to the daily quota price records (**FundValuation**)
   #               using the fund's `cnpj` as the primary key for the association.
@@ -71,6 +71,8 @@ class InvestmentFund < ApplicationRecord
   # Explanation:: This defines a query scope that finds all funds that currently have
   #               at least one **FundInvestment** record, meaning they are actively held by users.
   scope :active, -> { joins(:fund_investments).distinct }
+
+  accepts_nested_attributes_for :investment_fund_articles, allow_destroy: true
 
   # == latest_quota_value
   #

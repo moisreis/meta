@@ -1,0 +1,27 @@
+<%#
+  # Partial: new.html
+  # Date: 12/4/2025
+  # Author: Moisés Reis
+  # Package: NormativeArticles
+  #
+  # Description: Displays the view required to initiate and create a new
+  #              NormativeArticle record. The page uses the dashboard wrapper
+  #              and renders the generic NormativeArticle form partial.
+  #
+  # Usage: - What: Renders the interface for creating a new normative article.
+  #                This file acts as the primary layout wrapper for the form.
+  #        - How: Accessed via the route for creating a new normative article
+  #               (e.g., GET /normative_articles/new). Passes the
+  #               `@normative_article` instance variable to the form partial.
+  #        - Why: Provides the entry point for defining new regulatory rules
+  #               and associating them with investment funds.
+%>
+<%= render "partials/route/dashboard/wrapper",
+           page_title: "Criar novo artigo normativo",
+           page_desc: "Cadastre um novo artigo normativo que poderá ser associado a fundos de investimento." do %>
+
+  <%= render "form",
+             normative_article: @normative_article,
+             button_name: "Adicionar",
+             icon_name: "plus" %>
+<% end %>
