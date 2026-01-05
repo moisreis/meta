@@ -14,7 +14,7 @@
   #        - Why: Provides a user interface for users to visualize, search, and filter all redemption transactions across various funds.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Histórico de resgates",
+           page_title: "Resgates",
            page_desc: "Visualize todos os resgates realizados em todos os fundos.",
            current_view: "datatable" do
 %>
@@ -24,9 +24,7 @@
     #                This array of strings sets the visible text that appears at the top of the table.
     columns_header: [
       "Resgate",
-      "Carteira",
       "Valor líquido",
-      "Porcentagem",
       "Cotas resgatadas",
       "Pedido em",
       "Cotizado em",
@@ -36,7 +34,15 @@
 
     # [Explanation]: The 'columns_icons' specifies **icons** that may appear next to the column headers.
     #                This array is currently empty, meaning no icons display in the header row.
-    columns_icons: [],
+    columns_icons: [
+      "arrow-down-to-line",
+      "coins",
+      "layers",
+      "calendar-plus",
+      "calculator",
+      "calendar-check-2",
+      "circle-alert"
+    ],
 
     # [Explanation]: The 'columns_body' defines **how the data for each row is rendered**.
     #                It is an array of lambda functions (`->(r) do...end`), where each
@@ -51,21 +57,10 @@
         content_tag(:span, fund_name.to_s, class: "font-medium line-clamp-1")
       end,
 
-      ->(r) do
-        portfolio_name = r.fund_investment&.portfolio&.name
-        content_tag(:span, portfolio_name.to_s, class: "font-normal text-muted")
-      end,
-
       # [Explanation]: This function **formats and displays the net redeemed value** (liquid value) as currency.
       #                It calls a helper method, `colored_currency`, passing the `redeemed_liquid_value` and a CSS class for styling.
       ->(r) {
         colored_currency(r.redeemed_liquid_value)
-      },
-
-      # [Explanation]: This function **formats and displays the return percentage**.
-      #                It calls a helper method, `colored_numerical`, passing the `return_percentage` and a CSS class for styling.
-      ->(r) {
-        colored_percentage(r.return_percentage)
       },
 
       # [Explanation]: This function **formats and displays the number of redeemed quotas**.
@@ -121,7 +116,7 @@
 
     # [Explanation]: The 'export_url' provides the **URL for exporting** the table data (e.g., to CSV or Excel).
     #                The value is currently `nil`, meaning the export functionality is disabled or not provided here.
-    export_url: nil
+    export_url: export_redemptions_path(params[:q])
   } %>
 <% end %>
 <%= render partial: "partials/route/dashboard/filters", locals: {

@@ -1,59 +1,56 @@
 <%#
-  # Partial: _sidebar.html
+  # Partial: _sidebar.html.erb
   # Date: 11/20/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Defines the main navigation sidebar for the application. It displays
-  #              the user's profile avatar and provides CRUD (Create, Read, Update, Delete)
-  #              navigation links for the Portfolio and User entities.
+  # Description: This partial defines the main navigation sidebar. It stays
+  #              glued to the left side of the screen and provides links
+  #              to manage different parts of the **Application**.
   #
-  # Usage: - What: Renders the primary application sidebar navigation. It displays
-  #                the user's profile avatar and includes essential CRUD links
-  #                for the Portfolio and User entities.
-  #        - How: Uses a sticky, full-height header with flex layout. The navigation
-  #               links are dynamically generated using the `crud_nav_for` helper
-  #               with localized labels and custom icons.
-  #        - Why: Provides a consistent, accessible, and always-visible component
-  #               for the main application navigation and identity display, ensuring
-  #               quick access to core entity management.
+  # Usage: - What: It acts as the primary menu for the user, showing their
+  #                profile and all available management sections.
+  #        - How: It uses a sticky sidebar layout. It renders a profile
+  #               area followed by dynamic lists of links generated
+  #               by the **crud_nav_for** helper.
+  #        - Why: It ensures the user never gets lost by keeping essential
+  #               tools and navigation options visible at all times.
   %>
-<aside class="flex flex-col col-span-2 h-screen max-h-screen sticky overflow-y-scroll no-scrollbar top-0 [&>div]:px-6 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-white border-r border-border">
-  <div class="h-12 border-b border-border sticky bg-white z-50 top-0">
-    <div class="flex flex-row items-center justify-between gap-1 w-full h-12">
-      <%= render 'partials/modules/logo', size: "28x28" %>
-      <%= link_to edit_user_registration_path,
-                  class: "p-0" do
-      %>
-        <%= inline_svg_tag "icons/panel-right-open.svg", class: "size-3.5" %>
-      <% end %>
+<aside class="flex flex-col col-span-2 h-screen max-h-screen sticky overflow-y-scroll no-scrollbar top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 border-r border-border bg-accent">
+
+  <div class="h-12 sticky bg-transparent backdrop-blur-md z-50 top-0 grid grid-cols-1 items-center justify-center">
+
+    <div class="flex flex-row items-center justify-between gap-1 w-full h-12 px-6">
+      <%= render "partials/blocks/composed-avatar" %>
     </div>
   </div>
-  <div class="pt-6 px-3">
-    <%= form_with url: "#",
-                  method: :get,
-                  html: { role: "presentation" } do |f| %>
-      <%= render "partials/modules/input-field",
-                 f: f,
-                 field_type: :search_field,
-                 name: :search,
-                 placeholder: "Pesquisar",
-                 desc: nil,
-                 icon_name: "search",
-                 is_inactive: false
-      %>
-    <% end %>
-  </div>
+
   <div class="flex flex-col !gap-6 py-6">
-    <div class="flex flex-col gap-1.5 justify-start items-start w-full">
-      <%= content_tag(:h3, "Sistema", class: "text-2xs font-heading font-semibold uppercase text-muted") %>
+
+    <%# Explanation:: This group contains general utility links.
+      #               It allows the user to return to the Dashboard,
+      #               change app settings, or safely log out of the system.
+      %>
+    <div class="flex flex-col gap-1.5 justify-start items-start w-full border-b border-border pb-6 px-6">
+
+      <%= content_tag(:h3, "Sistema", class: "text-xs font-mono uppercase font-medium text-muted") %>
+
       <div class="flex flex-col gap-1 justify-start items-start w-full">
+
+        <%= link_to authenticated_root_path,
+                    class: "button button-small button-ghost w-full justify-start" do
+        %>
+          <%= inline_svg_tag "icons/home.svg", class: "size-5 bg-tertiary-100 rounded-base p-1" %>
+          <%= content_tag :span, "Painel" %>
+        <% end %>
+
         <%= link_to edit_user_path(current_user),
                     class: "button button-small button-ghost w-full justify-start" do
         %>
-          <%= inline_svg_tag "icons/user-cog.svg" %>
+          <%= inline_svg_tag "icons/user-cog.svg", class: "size-5 bg-secondary-100 rounded-base p-1" %>
           <%= content_tag :span, "Configurações" %>
         <% end %>
+
         <%= button_to destroy_user_session_path,
                       method: :delete,
                       data: {
@@ -61,15 +58,16 @@
                       },
                       class: "button button-ghost button-small w-full justify-start",
                       form: { style: "display: inline;" } do %>
-          <%= inline_svg_tag "icons/log-out.svg" %>
+          <%= inline_svg_tag "icons/log-out.svg", class: "size-5 bg-quaternary-100 rounded-base p-1" %>
           <%= content_tag :span, "Sair" %>
         <% end %>
+
       </div>
     </div>
 
-    <%# [Navigation] Render CRUD navigation entries for Portfolio and User.
-      #              Provide singular/plural labels and associated icons.
-      #              Build each menu using the helper crud_nav_for.
+    <%# Explanation:: This section generates menus for each data category.
+      #               It creates buttons to list existing items or add
+      #               new ones for every model like Portfolios or Users.
       %>
     <%= crud_nav_for Portfolio,
                      singular: "Carteira",
@@ -114,10 +112,31 @@
                        new: "plus.svg"
                      } %>
     <%= crud_nav_for NormativeArticle,
-                     singular: "Artigo Normativo",
-                     plural: "Artigos Normativos",
+                     singular: "Norma",
+                     plural: "Normas",
                      icons: {
-                       index: "scroll.svg",
+                       index: "scale.svg",
+                       new: "plus.svg"
+                     } %>
+    <%= crud_nav_for FundValuation,
+                     singular: "CVM",
+                     plural: "CVM",
+                     icons: {
+                       index: "calendar-setting.svg",
+                       new: "plus.svg"
+                     } %>
+    <%= crud_nav_for EconomicIndex,
+                     singular: "Índice",
+                     plural: "Índices",
+                     icons: {
+                       index: "trending-up.svg",
+                       new: "plus.svg"
+                     } %>
+    <%= crud_nav_for EconomicIndexHistory,
+                     singular: "Histórico",
+                     plural: "Históricos",
+                     icons: {
+                       index: "calendar-clock.svg",
                        new: "plus.svg"
                      } %>
   </div>

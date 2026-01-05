@@ -1,74 +1,71 @@
-<%#
-  # Partial: _form.html
-  # Date: 11/23/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Renders the structured form fields for creating or editing a
-  #              FundInvestment entry. It captures allocation details, invested
-  #              values, and associations to both a portfolio and an investment fund.
-  #
-  # Usage: - What: Displays the required input fields to record how a fund is allocated
-  #                within a specific portfolio.
-  #        - How: Uses `form_with` and UI modules such as `input-field` to keep UI
-  #               consistent across the application.
-  #        - Why: Centralizes FundInvestment input logic, ensuring uniform layout and
-  #               validation behavior on both new and edit views.
-  %>
+<%# # Partial: _form.html
+    # Date: 11/23/2025
+    # Author: Moisés Reis
+    # Package: Meta
+    #
+    # Description: This file renders the structured form fields for
+    #              recording how capital is allocated to specific funds.
+    #              It links investments to portfolios and fund records.
+    #
+    # Usage: - What: Displays the required inputs to record allocation
+    #               details like percentages and monetary values.
+    #         - How: Uses **form_with** and modular UI partials to
+    #               maintain a consistent look and feel.
+    #         - Why: It centralizes the logic for investment data
+    #               entry, ensuring valid associations in the database.
+%>
 <%= form_with(model: fund_investment, class: "contents") do |form| %>
-  <div class="grid grid-cols-2 gap-6">
-    <%= render "partials/modules/select",
-               f: form,
-               name: :investment_fund_id,
-               label: "Fundo de investimento",
-               options_collection: @investment_funds.map { |fund| [fund.fund_name, fund.id] },
-               is_half_width: false,
-               desc: "Escolha o fundo que está sendo alocado.",
-               is_inactive: false
-    %>
-    <%= render "partials/modules/select",
-               f: form,
-               name: :portfolio_id,
-               label: "Carteira",
-               options_collection: @portfolios.map { |p| [p.name, p.id] },
-               is_half_width: false,
-               desc: "Escolha a carteira que receberá a alocação.",
-               is_inactive: false
-    %>
-  </div>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-2 gap-6">
-    <%= render "partials/modules/input-field",
-               f: form,
-               name: :percentage_allocation,
-               label: "Alocação",
-               placeholder: "12.5",
-               is_half_width: false,
-               desc: "Percentual da carteira alocado neste fundo.",
-               field_type: :number_field,
-               icon_name: "badge-percent"
-    %>
-    <%= render "partials/modules/input-field",
-               f: form,
-               name: :total_invested_value,
-               label: "Valor total",
-               placeholder: "10.000,00",
-               is_half_width: false,
-               desc: "Valor monetário investido.",
-               field_type: :number_field,
-               icon_name: "banknote"
-    %>
-    <%= render "partials/modules/input-field",
-               f: form,
-               name: :total_quotas_held,
-               label: "Cotas possuídas",
-               placeholder: "150.75",
-               is_half_width: false,
-               desc: "Total de cotas do fundo em posse.",
-               field_type: :number_field,
-               icon_name: "layers"
-    %>
-  </div>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Destino do Investimento",
+             fieldset_desc: "Selecione o fundo de destino e a carteira onde o ativo será armazenado." do %>
+      <%= render "partials/modules/select",
+                 f: form,
+                 name: :investment_fund_id,
+                 label: "Fundo de investimento",
+                 options_collection: @investment_funds.map { |fund| [fund.fund_name, fund.id] },
+                 desc: "Escolha o fundo que está sendo alocado.",
+                 is_inactive: false
+      %>
+      <%= render "partials/modules/select",
+                 f: form,
+                 name: :portfolio_id,
+                 label: "Carteira",
+                 options_collection: @portfolios.map { |p| [p.name, p.id] },
+                 desc: "Escolha a carteira que receberá a alocação.",
+                 is_inactive: false
+      %>
+  <% end %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Valores e Cotas",
+             fieldset_desc: "Informe os detalhes financeiros e a quantidade de participação no fundo." do %>
+      <%= render "partials/modules/input-field",
+                 f: form,
+                 name: :percentage_allocation,
+                 label: "Alocação",
+                 placeholder: "12.5",
+                 desc: "Percentual da carteira alocado neste fundo.",
+                 field_type: :number_field,
+                 icon_name: "badge-percent"
+      %>
+      <%= render "partials/modules/input-field",
+                 f: form,
+                 name: :total_invested_value,
+                 label: "Valor total",
+                 placeholder: "10.000,00",
+                 desc: "Valor monetário investido.",
+                 field_type: :number_field,
+                 icon_name: "banknote"
+      %>
+      <%= render "partials/modules/input-field",
+                 f: form,
+                 name: :total_quotas_held,
+                 label: "Cotas possuídas",
+                 placeholder: "150.75",
+                 desc: "Total de cotas do fundo em posse.",
+                 field_type: :number_field,
+                 icon_name: "layers"
+      %>
+  <% end %>
   <%= form.button :submit,
                   name: nil,
                   class: "button button-primary w-fit flex items-center gap-2" do %>
@@ -76,4 +73,3 @@
     <%= content_tag :span, button_name %>
   <% end %>
 <% end %>
-

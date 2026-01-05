@@ -1,77 +1,137 @@
 <%#
-  # Partial: _form.html
+  # Partial: _form.html.erb
   # Date: 11/20/2025
   # Author: Moisés Reis
-  # Package: Portfolio
+  # Package: Meta
   #
-  # Description: Defines the input structure and submission mechanism for the Portfolio resource.
-  #              It includes the required fields, automatically sets the associated user ID,
-  #              and provides a customized submit button.
+  # Description: This file creates a form used to manage financial portfolios,
+  #              allowing users to name their assets and share access with
+  #               other people.
   #
-  # Usage: - What: Renders the standardized form necessary for creating or updating
-  #                a Portfolio object. It requires the 'portfolio' model instance
-  #                to be passed as a local variable.
-  #        - How: Utilizes the Rails `form_with` helper. Renders a reusable
-  #               `_input-field` partial for the name. The user association
-  #               is managed via a hidden field set to `current_user.id`.
-  #        - Why: Provides a consistent and reusable input mechanism for the
-  #               Portfolio resource, abstracting the form layout and guaranteeing
-  #               the correct user association for data integrity.
+  # Usage:: - What: A standardized input layout for creating or modifying
+  #                **Portfolio** records in the database.
+  #         - How: It uses **form_with** to handle data and includes modules
+  #                for text, selection, and radio buttons.
+  #         - Why: It ensures that user data is gathered consistently and
+  #                provides a clear path for saving information.
+  %>
+
+<%# Explanation:: This tag initializes the form to capture and send portfolio
+  #               data to the server; it is used during creation or editing
+  #               and works by binding input fields to the Portfolio model.
   %>
 <%= form_with(model: portfolio, class: "contents") do |form| %>
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :name,
-             label: "Nome da carteira",
-             placeholder: "Carteira de Longo Prazo",
-             is_half_width: true,
-             desc: "Escolha um nome claro e descritivo.",
-             field_type: :text_field,
-             icon_name: "wallet"
-  %>
-  <%= render "partials/modules/separator" %>
 
-<%# [Variable] Initializes `available_users_for_sharing`.
-  #            It selects all User IDs and their full names (concatenated in the database)
-  #            except the current user, ensuring optimal performance via SQL.
-  %>
+  <%# Explanation:: This layout block groups identification fields to keep
+    #               the interface organized; it is used to separate identity
+    #               data and works by rendering a titled frame around the input.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Identificação",
+             fieldset_desc: "Defina o nome principal para organizar sua nova carteira." do %>
+
+    <%# Explanation:: This module creates a text box for the user to type a
+      #               descriptive name; it is used to label the portfolio and
+      #               works by rendering a standard HTML input with a wallet icon.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :name,
+               label: "Nome da carteira",
+               placeholder: "Carteira de Longo Prazo",
+               desc: "Escolha um nome claro e descritivo.",
+               field_type: :text_field,
+               icon_name: "wallet"
+    %>
+  <% end %>
+
+  <%# Explanation:: This logic prepares a list of names for the sharing dropdown
+    #               to prevent errors; it is used to show eligible collaborators
+    #               and works by fetching all users from the database except the owner.
+    %>
   <% available_users_for_sharing ||= User
     .where.not(id: current_user.id)
     .pluck(Arel.sql("CONCAT_WS(' ', first_name, last_name)"), :id)
   %>
-  <%= render "partials/modules/select",
-             f: form,
-             name: :shared_user_id,
-             label: "Compartilhar com usuário",
-             desc: "Selecione um usuário para conceder acesso de leitura ou edição.",
-             options_collection: options_for_select(available_users_for_sharing),
-             include_blank: "Nenhum usuário para compartilhar",
-             is_half_width: true
-  %>
-  <%= render "partials/modules/separator" %>
-  <%= render "partials/blocks/radio-group",
-             title: "Permissão de acesso",
-             desc: "Escolha o nível de acesso para ceder ao usuário acima." do %>
-    <%= render "partials/modules/radio",
-               f: form,
-               name: :grant_crud_permission,
-               value: "read",
-               title: "Leitura",
-               desc: "O usuário pode apenas visualizar o portfólio e os ativos.",
-               icon_name: "eye"
+
+  <%# Explanation:: This group organizes the sharing settings to simplify
+    #               collaboration; it is used to invite other people and works
+    #               by placing the user selection dropdown inside a distinct section.
     %>
-    <%= render "partials/modules/radio",
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Colaboração",
+             fieldset_desc: "Escolha um usuário da plataforma para visualizar este portfólio." do %>
+
+    <%# Explanation:: This module renders a dropdown menu to select a person
+      #               from the platform; it is used to grant access and works
+      #               by displaying the pre-fetched list of available users.
+      %>
+    <%= render "partials/modules/select",
                f: form,
-               name: :grant_crud_permission,
-               value: "crud",
-               title: "Edição e remoção",
-               desc: "O usuário pode adicionar, editar e remover ativos.",
-               icon_name: "pencil"
+               name: :shared_user_id,
+               label: "Compartilhar com usuário",
+               desc: "Selecione um usuário para conceder acesso de leitura ou edição.",
+               options_collection: options_for_select(available_users_for_sharing),
+               include_blank: "Nenhum usuário para compartilhar"
     %>
   <% end %>
+
+  <%# Explanation:: This section defines the specific rights granted to the
+    #               invited collaborator; it is used to control data security
+    #               and works by offering mutually exclusive permission choices.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Nível de Acesso",
+             fieldset_desc: "Determine se o usuário convidado pode apenas ler ou também editar dados." do %>
+
+    <%# Explanation:: This container organizes multiple choice buttons for clear
+      #               selection; it is used to present permission levels and
+      #               works by grouping related radio inputs under a single header.
+      %>
+    <%= render "partials/blocks/radio-group",
+               title: "Permissão de acesso",
+               desc: "Escolha o nível de acesso para ceder ao usuário acima." do %>
+
+      <%# Explanation:: This input allows the user to select restricted view-only
+        #               access for safety; it is used for passive collaborators
+        #               and works by setting the permission attribute to 'read'.
+        %>
+      <%= render "partials/modules/radio",
+                 f: form,
+                 name: :grant_crud_permission,
+                 value: "read",
+                 title: "Leitura",
+                 desc: "O usuário pode apenas visualizar o portfólio e os ativos.",
+                 icon_name: "eye"
+      %>
+
+      <%# Explanation:: This input allows the user to grant full control over
+        #               assets for active management; it is used for co-owners
+        #               and works by setting the permission attribute to 'crud'.
+        %>
+      <%= render "partials/modules/radio",
+                 f: form,
+                 name: :grant_crud_permission,
+                 value: "crud",
+                 title: "Edição e remoção",
+                 desc: "O usuário pode adicionar, editar e remover ativos.",
+                 icon_name: "pencil"
+      %>
+    <% end %>
+  <% end %>
+
+  <%# Explanation:: This hidden field automatically assigns the current user
+    #               as the primary owner; it is used to ensure data integrity
+    #               and works by sending the user's ID without requiring an input box.
+    %>
   <%= form.hidden_field :user_id,
                         value: current_user.id
   %>
+
+  <%# Explanation:: This button triggers the submission to save all entered
+    #               information; it is used to complete the form process and
+    #               works by sending the gathered data to the server via a click.
+    %>
   <%= form.button :submit,
                   name: nil,
                   class: "button button-primary w-fit flex items-center gap-2" do

@@ -28,6 +28,11 @@ gem "breadcrumbs_on_rails"
 gem "chartkick"
 gem "groupdate"
 gem 'rails-i18n'
+gem 'rubyzip'
+gem 'csv'
+gem 'prawn'
+gem 'prawn-table'
+gem 'prawn-svg'
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

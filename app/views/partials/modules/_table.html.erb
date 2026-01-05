@@ -15,12 +15,12 @@
   #        - Why:  Enables consistent, reusable table rendering across the
   #                application while keeping logic centralized.
   %>
-<div class="rounded-base overflow-hidden border border-border shadow-xs">
+<div class="rounded-base overflow-hidden">
 
-  <table class="max-w-full [&>thead]:max-w-full border-collapse [&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 [&>thead>tr]:border-b [&>tbody>tr]:border-b [&>thead>tr]:border-border [&>tbody>tr]:border-border w-full text-sm table-auto">
+  <table class="max-w-full border-separate border-spacing-y-1.5 [&>thead]:max-w-full[&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 w-full text-sm table-auto">
 
     <thead>
-    <tr class="[&>th]:w-auto [&>th]:text-left [&>th]:p-1.5 [&>th]:px-3 [&>th]:text-sm [&>th]:text-body [&>th]:text-left [&>th]:font-medium [&>th]:bg-table-strong">
+    <tr class="[&>th]:w-auto [&>th]:p-1.5 [&>th]:px-3 [&>th]:text-sm [&>th]:text-muted [&>th]:text-left [&>th]:capitalize [&>th]:font-medium [&>th]:font-body">
 
       <%# [Variable] Ensures columns_header exists.
         #            Provides a fallback empty array when no header is given.
@@ -64,8 +64,7 @@
         #        Produces one table row per record.
         %>
     <% models.each_with_index do |model, row_index| %>
-      <tr class="odd:bg-table-bg [&>td]:w-auto [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm hover:bg-table-hover">
-
+      <tr class="odd:bg-table-bg hover:bg-table-hover odd:[&>td]:border-y odd:[&>td]:border-border odd:[&>td:first-child]:border-l odd:[&>td:first-child]:rounded-l-base odd:[&>td:last-child]:border-r odd:[&>td:last-child]:rounded-r-base [&>td]:w-auto [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm">
         <%# [Loop] Iterates through each column configuration.
             #        Selects the correct value for each cell.
             %>
@@ -139,8 +138,8 @@
     <tr class="h-9 border-t border-border bg-white">
       <td class="px-3" colspan="<%= columns_body.size + 2 %>">
         <%= content_tag :span,
-                        "<b>#{models.size}</b> itens".html_safe,
-                        class: "font-normal text-sm text-muted"
+                        "<span>#{models.size}</span> item(s)".html_safe,
+                        class: "font-normal font-mono text-xs uppercase text-muted"
         %>
       </td>
     </tr>

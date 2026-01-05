@@ -2,37 +2,67 @@
   # Partial: _form.html.erb
   # Date: 11/20/2025
   # Author: Moisés Reis
-  # Package: User
+  # Package: Meta
   #
   # Description: Defines the input structure and submission mechanism for the User resource.
   #              It includes required fields for identification and authentication (email,
   #              names, and passwords) and arranges them logically for user input.
   #
-  # Usage: - What: Renders the standardized form necessary for creating or updating
-  #                a User object. It requires the 'user' model instance to be
-  #                passed as a local variable.
-  #        - How: Utilizes the Rails `form_with` helper. It organizes fields (email,
-  #               names, passwords) using grid layouts and `_separator` partials,
-  #               delegating input rendering to the `_input-field` partial.
-  #        - Why: Provides a consistent and reusable form for managing user data,
-  #               ensuring logical grouping and a uniform UI across different user
-  #               management contexts.
+  # Usage:: - What: Renders the standardized form necessary for creating or updating
+  #                a User object. It requires the 'user' model instance.
+  #         - How: Utilizes the Rails **form_with** helper and organizes fields using
+  #                the **fieldset** and **input-field** modules.
+  #         - Why: Provides a consistent and reusable form for managing user data,
+  #                ensuring logical grouping and a uniform UI.
+  %>
+
+<%# Explanation:: This tag initializes the form to collect and send user details
+  #               to the database; it is used during account creation or profile
+  #               updates and works by mapping inputs directly to the User model.
   %>
 <%= form_with(
       model: user,
       class: "contents") do |form| %>
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :email,
-             label: "Informe seu e-mail",
-             field_type: :email_field,
-             placeholder: "seuemail@email.com",
-             is_half_width: true,
-             desc: "Informe um e-mail válido",
-             icon_name: "at-sign"
-  %>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-2 gap-6">
+
+  <%# Explanation:: This fieldset creates a specific area for electronic contact
+    #               information to ensure proper login identity; it is used to capture
+    #               the account's unique key and works by wrapping the email input in a
+    #               titled layout.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "E-mail",
+             fieldset_desc: "Informe seu endereço de contato principal.",
+             fieldset_icon: "arrow-up-right" do %>
+
+    <%# Explanation:: This module renders a specialized email text box to ensure
+      #               data follows valid web formats; it is used to prevent typos in
+      #               contact info and works by triggering an email-specific keyboard.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :email,
+               label: "Informe seu e-mail",
+               field_type: :email_field,
+               placeholder: "seuemail@email.com",
+               desc: "Informe um e-mail válido",
+               icon_name: "at-sign"
+    %>
+  <% end %>
+
+  <%# Explanation:: This section groups personal name fields to personalize
+    #               the user experience; it is used to identify the person behind
+    #               the account and works by organizing first and last name inputs
+    #               side-by-side.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Dados do usuário",
+             fieldset_desc: "Utilizamos esses nomes para personalizar sua experiência.",
+             fieldset_icon: "arrow-up-right" do %>
+
+    <%# Explanation:: This line provides a text input for the user's primary name
+      #               to improve system interactions; it is used during registration
+      #               and works by saving the first part of the user's identity.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :first_name,
@@ -42,6 +72,11 @@
                desc: "Informe seu primeiro nome",
                icon_name: "user-round-pen"
     %>
+
+    <%# Explanation:: This line creates a field for the user's surname to complete
+      #               their profile; it is used to distinguish individuals with
+      #               similar first names and works by capturing the family name.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :last_name,
@@ -51,9 +86,22 @@
                desc: "Informe seu último nome",
                icon_name: "user-round-pen"
     %>
-  </div>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-2 gap-6">
+  <% end %>
+
+  <%# Explanation:: This block manages secret credentials to protect account
+    #               privacy; it is used to set or change security keys and works
+    #               by grouping the password entry with a confirmation field for
+    #               validation.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Senha",
+             fieldset_desc: "Sua senha deve ser mantida em segredo.",
+             fieldset_icon: "arrow-up-right" do %>
+
+    <%# Explanation:: This module creates a hidden text field to secure the user's
+      #               chosen key; it is used to establish account protection and
+      #               works by masking characters as they are typed on the screen.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :password,
@@ -63,6 +111,12 @@
                desc: "Crie uma senha segura com, pelo menos, 6 caracteres",
                icon_name: "key"
     %>
+
+    <%# Explanation:: This second password field verifies that the user did not
+      #               make a mistake during entry; it is used to avoid account
+      #               lockouts and works by checking if the text matches the first
+      #               password exactly.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :password_confirmation,
@@ -72,7 +126,12 @@
                desc: "Repita sua senha",
                icon_name: "key"
     %>
-  </div>
+  <% end %>
+
+  <%# Explanation:: This button executes the data transfer to the application
+    #               server to finalize the task; it is used to commit changes
+    #               and works by triggering the form's submission process.
+    %>
   <%= form.button :submit,
                   class: "button button-primary w-fit flex items-center gap-2" do
   %>

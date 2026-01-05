@@ -8,9 +8,12 @@
 #              It integrates security features using the **Devise** gem.
 # @category *Model*
 #
-# Usage:: - *[What]* This code block represents application users and handles their secure authentication and personal data integrity.
-#         - *[How]* It uses **Devise** to manage passwords, sessions, and recovery, while enforcing data rules through validations and associations.
-#         - *[Why]* The application needs this class to ensure secure user management, consistent data storage, and strict access control for all financial features.
+# Usage:: - *[What]* This code block represents application users and
+#           handles their secure authentication and personal data integrity.
+#         - *[How]* It uses **Devise** to manage passwords, sessions,
+#           and recovery, while enforcing data rules through validations and associations.
+#         - *[Why]* The application needs this class to ensure secure user management,
+#           consistent data storage, and strict access control for all financial features.
 #
 # Attributes:: - *email* @string - The user’s unique email address used for logging in.
 #              - *first_name* @string - The user’s given name.

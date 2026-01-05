@@ -10,7 +10,7 @@
 #
 # Usage:: - *[What]* This code block controls the master list of all performance history records
 #           that track returns over time for investments across all portfolios.
-#         - *[How]* It uses authorization checks via **CanCan** to manage who can create
+#         - *[How]* It uses authorization checks via **CanCanCan** to manage who can create
 #           or modify records, and it handles searching, filtering, and sorting of the history list.
 #         - *[Why]* It provides a centralized and secure mechanism for managing the performance
 #           tracking and analytics data used throughout the application.
@@ -66,6 +66,10 @@ class PerformanceHistoriesController < ApplicationController
     #               applying any search criteria passed by the user in the web address.
     @q = base_scope.ransack(params[:q])
 
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = PerformanceHistory.count
+
     # Explanation:: This executes the search query defined by **Ransack**, returning a
     #               unique list of performance history records that match the search criteria.
     filtered = @q.result(distinct: true)
@@ -84,7 +88,7 @@ class PerformanceHistoriesController < ApplicationController
 
     # Explanation:: This prepares the final data for the page, dividing the complete
     #               list into pages of 20 items to improve performance and readability.
-    @performance_histories = sorted.page(params[:page]).per(20)
+    @performance_histories = sorted.page(params[:page]).per(14)
 
     respond_to do |format|
       format.html

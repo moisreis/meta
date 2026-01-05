@@ -1,28 +1,39 @@
 <%#
-  # Partial: index.html
+  # Partial: index.html.erb
   # Date: 12/4/2025
   # Author: Moisés Reis
-  # Package: NormativeArticles
+  # Package: Meta
   #
-  # Description: Lists all normative articles and presents their identifiers,
-  #              names, benchmark targets, and creation dates in a sortable,
-  #              filterable table. This view uses the table component pattern
-  #              shared across the dashboard.
+  # Description: Lists all normative articles and presents their identifiers, names,
+  #              benchmark targets, and creation dates in a sortable, filterable table.
+  #              This view uses the table component pattern shared across the dashboard.
   #
   # Usage: - What: Renders a structured page for users to browse, search, and
   #                manage normative articles.
-  #        - How: Rendered through the NormativeArticles#index controller
-  #               action. Uses Ransack (`@q`) for filtering and searching.
+  #        - How: Rendered through the NormativeArticles#index controller action.
+  #               Uses Ransack (@q) for filtering and searching.
   #        - Why: Allows users to quickly find, compare, and manage regulatory
   #               articles that may be associated with investment funds.
-%>
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure visual consistency. It acts as the
+  #               main container by setting the page title and descriptive labels.
+  %>
 <%= render "partials/route/dashboard/wrapper",
            page_title: "Artigos Normativos",
            page_desc: "Consulte, filtre e gerencie os artigos normativos registrados.",
            current_view: "datatable" do %>
 
+  <%# Explanation:: This partial generates a dynamic table to list normative records
+    #               clearly. It presents organized data to the user and works by
+    #               receiving headers and data-fetching logic as local arguments.
+    %>
   <%= render partial: "partials/blocks/data-table", locals: {
 
+    # Explanation:: This array defines the text labels displayed at the top of
+    #               the table columns. It provides context for the regulatory data
+    #               and works by mapping each string to a specific header cell.
     columns_header: [
       "Número",
       "Nome",
@@ -30,42 +41,96 @@
       "Criado em"
     ],
 
-    columns_icons: [],
+    # Explanation:: This collection holds visual icons to accompany the column
+    #               titles for better recognition. It beautifies the header and
+    #               works by rendering specific symbols for each data type.
+    columns_icons: [
+      "hash",
+      "tag",
+      "target",
+      "calendar"
+    ],
 
+    # Explanation:: This list contains the logic for filling each row with article
+    #               details. It handles data extraction and works by executing
+    #               formatting functions for every record in the article collection.
     columns_body: [
+      # Explanation:: This function displays the official identifier or code of
+      #               the article. It ensures the reference number is visible and
+      #               works by showing a placeholder if no number is recorded.
       ->(a) { a.article_number.presence || "N/A" },
 
+      # Explanation:: This line presents the descriptive name of the normative
+      #               article. It helps users identify the subject of the rule
+      #               and works by displaying the saved string or a default label.
       ->(a) { a.article_name.presence || "N/A" },
 
+      # Explanation:: This instruction formats the benchmark target into a
+      #               standardized numerical layout. It highlights the target value
+      #               and works by applying color coding for better visibility.
       ->(a) do
         colored_numerical(a.benchmark_target)
       end,
 
+      # Explanation:: This logic converts the database creation timestamp into
+      #               a human-readable format. It tracks the record history and
+      #               works by applying the application's standard date styling.
       ->(a) do
         formatted_timestamp(a.created_at)
       end
     ],
 
+    # Explanation:: This attribute provides the actual list of normative objects
+    #               retrieved from the database. It serves as the data source
+    #               and works by feeding records into the table display loop.
     models: @normative_articles,
 
+    # Explanation:: This configuration sets the rules for how users can reorder
+    #               the list of articles. It allows for custom sorting and
+    #               works by integrating with the active search parameters.
     sort_options: [],
 
+    # Explanation:: This object manages the current search and sort criteria
+    #               for the collection. It tracks user filters and works by
+    #               generating valid database queries via the Ransack gem.
     q_object: @q,
 
+    # Explanation:: This path tells the table where to send search and page
+    #               requests. It keeps the user on the correct page and
+    #               works by linking actions to the normative articles route.
     search_url: normative_articles_path,
 
+    # Explanation:: This unique identifier allows the table to update without
+    #               refreshing the entire page. It improves speed and works
+    #               by isolating table content within a specific Turbo Frame.
     turbo_frame_id: "normative_articles_table",
 
+    # Explanation:: This setting provides a link for users to download the
+    #               list as an external file. It enables reporting features
+    #               and works by activating an export button when a URL is set.
     export_url: nil
   } %>
 <% end %>
 
+<%# Explanation:: This partial renders a sidebar with search inputs to help
+  #               users find specific articles. It refines the list and
+  #               works by sending form data to the table's Turbo Frame.
+  %>
 <%= render partial: "partials/route/dashboard/filters", locals: {
 
+  # Explanation:: This search object connects the filter fields to the active
+  #               query logic. It initializes the input values and works
+  #               by syncing with the current database search parameters.
   q_object: @q,
 
+  # Explanation:: This destination URL determines where the search filters
+  #               are sent upon submission. It updates the displayed data
+  #               and works by targeting the main normative articles route.
   search_url: normative_articles_path,
 
+  # Explanation:: This list defines the specific text and icon for each
+  #               filter box. It builds the search form and works by
+  #               generating inputs for article numbers, names, and targets.
   filters: [
     {
       key: :article_number_cont,
@@ -90,5 +155,8 @@
     }
   ],
 
+  # Explanation:: This ID links the filter results directly to the table
+  #               container for seamless updates. It prevents full page
+  #               reloads and works by targeting the correct Turbo Frame.
   turbo_frame_id: "normative_articles_table"
 } %>

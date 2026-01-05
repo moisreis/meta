@@ -1,0 +1,43 @@
+<%#
+  # Partial: _chart.html.erb
+  # Date: 11/30/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: This partial creates a visual frame to hold data charts.
+  #              It ensures every graph looks consistent by adding a
+  #              header, a title, and a download button automatically.
+  #
+  # Usage: - What: It serves as a decorative and functional container for
+  #                displaying statistics and visual information.
+  #        - How: Call this partial and provide the title and the data.
+  #               Place the specific chart code inside the block to
+  #               show it within the styled frame.
+  #        - Why: It maintains a professional design across the app.
+  #               This saves time by reusing the same layout for every
+  #               different chart in the system.
+  %>
+
+<div class="bg-accent rounded-base flex flex-col gap-6 p-6">
+
+  <div class="w-full flex flex-row justify-between items-center">
+    <%= content_tag :h3, chart_title, class: "text-muted font-mono uppercase font-light" %>
+    <%= link_to "#", class: "button button-outline button-small w-fit" do %>
+      <%= inline_svg_tag("icons/file-attachment.svg") %>
+      <%= content_tag :span, "Exportar" %>
+    <% end %>
+  </div>
+
+  <div class="p-6 flex items-center justify-center bg-white rounded-base">
+
+    <%# Explanation:: This block decides whether to show a chart or a message.
+      #               It checks if there is any information available to
+      #               display before trying to draw the visual graph.
+      %>
+    <% if data_source.any? %>
+      <%= yield %>
+    <% else %>
+      <%= content_tag :span, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  </div>
+</div>

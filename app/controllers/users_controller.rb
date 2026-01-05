@@ -34,6 +34,10 @@ class UsersController < ApplicationController
   #
   def index
 
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = User.count
+
     # Explanation:: This checks if the currently logged-in user possesses the administrative role.
     #               It assumes the User model has a method `admin?` to check the role.
     if current_user.admin?
@@ -43,8 +47,8 @@ class UsersController < ApplicationController
       @q = User.ransack(params[:q])
 
       # Explanation:: This executes the search query, ensures distinct results, and then
-      #               divides the complete list of users into pages of 20 items.
-      @users = @q.result(distinct: true).page(params[:page]).per(20)
+      #               divides the complete list of users into pages of 17 items.
+      @users = @q.result(distinct: true).page(params[:page]).per(14)
 
     else
 
@@ -57,8 +61,8 @@ class UsersController < ApplicationController
       @users = User.none
 
       # Explanation:: This executes the search query, ensures distinct results, and then
-      #               divides the complete list of users into pages of 20 items.
-      @users = @q.result(distinct: true).page(params[:page]).per(20)
+      #               divides the complete list of users into pages of 16 items.
+      @users = @q.result(distinct: true).page(params[:page]).per(16)
     end
   end
 

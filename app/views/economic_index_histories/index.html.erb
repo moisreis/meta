@@ -1,0 +1,240 @@
+<%#
+  # Partial: index.html.erb
+  # Date: 12/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the historical data list for economic indicators. It shows
+  #              a timeline of recorded values, price variations, and allows for
+  #              granular filtering by date or index type.
+  #
+  # Usage: - What: Displays a comprehensive table of all recorded historical values
+  #                for one or all economic indices.
+  #        - How: Renders within a dashboard wrapper and utilizes a data-table
+  #               partial to process and display the **@economic_index_histories** collection.
+  #        - Why: Enables administrators and users to audit historical changes and
+  #               verify the accuracy of the data points that drive fund calculations.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure visual consistency. It dynamically
+  #               adjusts the title to show either a specific index name or a
+  #               general history overview based on the current search context.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @economic_index ? "Histórico - #{@economic_index.name}" : "Histórico de Índices Econômicos",
+           page_desc: @economic_index ? "#{@economic_index.abbreviation}" : "Visualize os valores históricos registrados para os indicadores econômicos.",
+           current_view: "datatable" do
+%>
+
+  <%# Explanation:: This component generates a dynamic table to list historical price
+    #               points clearly. It handles row formatting and works by
+    #               receiving the history collection along with specific column definitions.
+    %>
+  <%= render partial: "partials/blocks/data-table", locals: {
+
+    # Explanation:: This array defines the titles for each column in the table header.
+    #               It provides immediate context for the historical data points
+    #               and works by mapping each string to a specific table header cell.
+    columns_header: [
+      "Índice",
+      "Data",
+      "Valor",
+      "Variação",
+      "Porcentagem",
+      "Registrado há"
+    ],
+
+    # Explanation:: This collection holds visual icons to accompany the column titles
+    #               for better recognition. It beautifies the header and works
+    #               by rendering specific symbols for each type of history metric.
+    columns_icons: [
+      "trending-up",
+      "timeline-event",
+      "attachment",
+      "coins-swap",
+      "percent",
+      "time-schedule"
+    ],
+
+    # Explanation:: This list contains the logic for filling each row with historical
+    #               details. It extracts data from the history model and works
+    #               by executing formatting functions for every entry in the collection.
+    columns_body: [
+
+      # Explanation:: This logic displays the official abbreviation of the economic index.
+      #               It provides a clickable link to the index dashboard and works
+      #               by styling the text with a monospace font for high visibility.
+      ->(history) do
+        link_to(
+          "#{history.economic_index.abbreviation}",
+          economic_index_path(history.economic_index),
+          class: "font-mono font-semibold text-sm hover:underline"
+        )
+      end,
+
+      # Explanation:: This function shows the exact calendar date when the index value
+      #               was recorded. It ensures chronological clarity and works
+      #               by applying the system's standard short date formatting.
+      ->(history) do
+        formatted_timestamp(
+          history.date,
+        )
+      end,
+
+      # Explanation:: This instruction renders the recorded numeric rate or price with
+      #               four decimal points of precision. It is used for financial
+      #               accuracy and works by applying a clear monospace font style.
+      ->(history) do
+        colored_numerical(
+          history.value,
+          "font-medium"
+        )
+      end,
+
+      # Explanation:: This logic calculates the raw numerical difference between the
+      #               current value and the previous entry. It highlights price
+      #               movements and works by applying green or red colors based on the change.
+      ->(history) do
+        change = history.change_from_previous
+        if change.present?
+          color_class = change > 0 ? "text-success" : (change < 0 ? "text-danger" : "text-muted")
+          prefix = change > 0 ? "+" : ""
+          content_tag(
+            :span,
+            "#{prefix}#{number_with_precision(change, precision: 4)}",
+            class: "font-mono #{color_class}"
+          )
+        else
+          content_tag(:span, "N/A", class: "text-muted")
+        end
+      end,
+
+      # Explanation:: This function calculates the relative percentage change from the
+      #               last recorded point. It shows the intensity of the fluctuation
+      #               and works by rendering a colored badge for quick visual analysis.
+      ->(history) do
+        percentage = history.percentage_change_from_previous
+        if percentage.present?
+          if percentage > 0
+            content_tag(:span, "+#{number_with_precision(percentage, precision: 2)}%", class: "badge badge-success")
+          elsif percentage < 0
+            content_tag(:span, "#{number_with_precision(percentage, precision: 2)}%", class: "badge badge-danger")
+          else
+            content_tag(:span, "0%", class: "text-muted font-mono")
+          end
+        else
+          content_tag(:span, "N/A", class: "text-muted")
+        end
+      end,
+
+      # Explanation:: This instruction calculates how much time has passed since the
+      #               record was first saved. It helps users track recent activity
+      #               and works by comparing the current time with the creation timestamp.
+      ->(history) do
+        content_tag(
+          :span,
+          time_ago_in_words(history.created_at),
+          class: "font-mono"
+        )
+      end
+    ],
+
+    # Explanation:: This attribute provides the actual list of historical records
+    #               retrieved from the database. It serves as the data source
+    #               and works by feeding rows into the table display loop.
+    models: @economic_index_histories,
+
+    # Explanation:: This configuration sets the rules for how users can reorder
+    #               the history list. It allows for custom sorting and works
+    #               by integrating with the active search parameters.
+    sort_options: [],
+
+    # Explanation:: This object manages the current search and sort criteria
+    #               for the history collection. It tracks user filters and
+    #               works by generating valid database queries via the Ransack gem.
+    q_object: @q,
+
+    # Explanation:: This path tells the table where to send search and page
+    #               requests. It preserves the parent index context and
+    #               works by linking actions to the correct history route.
+    search_url: @economic_index ? economic_index_economic_index_histories_path(@economic_index) : economic_index_histories_path,
+
+    # Explanation:: This unique identifier allows the table to update without
+    #               refreshing the entire page. It improves speed and works
+    #               by isolating history content within a specific Turbo Frame.
+    turbo_frame_id: "economic_index_histories_table",
+
+    # Explanation:: This setting provides a link for users to download the
+    #               history as an external file. It enables reporting features
+    #               and works by activating an export button when a URL is set.
+    export_url: nil
+  } %>
+<% end %>
+
+<%# Explanation:: This partial renders a sidebar with search inputs to help
+  #               users filter historical data by date or value. It refines
+  #               the list and works by sending form data to the Turbo Frame.
+  %>
+<%= render partial: "partials/route/dashboard/filters", locals: {
+
+  # Explanation:: This search object connects the filter fields to the active
+  #               query logic. It initializes the input values and works
+  #               by syncing with the current database search parameters.
+  q_object: @q,
+
+  # Explanation:: This destination URL determines where the search filters
+  #               are sent upon submission. It updates the displayed data
+  #               and works by targeting the history index route.
+  search_url: @economic_index ? economic_index_economic_index_histories_path(@economic_index) : economic_index_histories_path,
+
+  # Explanation:: This list defines the specific text and icon for each filter
+  #               box. It builds the search form and works by generating
+  #               inputs for abbreviations, date ranges, and numeric values.
+  filters: [
+    (@economic_index ? nil : {
+      key: :economic_index_abbreviation_cont,
+      label: "Índice",
+      description: "Filtra por sigla do índice econômico (ex: IPCA, CDI).",
+      placeholder: "Sigla do índice",
+      icon_name: "hash"
+    }),
+    {
+      key: :date_gteq,
+      label: "Data Inicial",
+      description: "Mostra registros a partir desta data.",
+      placeholder: "Data inicial",
+      icon_name: "calendar",
+      field_type: :date_field
+    },
+    {
+      key: :date_lteq,
+      label: "Data Final",
+      description: "Mostra registros até esta data.",
+      placeholder: "Data final",
+      icon_name: "calendar",
+      field_type: :date_field
+    },
+    {
+      key: :value_gteq,
+      label: "Valor Mínimo",
+      description: "Filtra valores maiores ou iguais a este número.",
+      placeholder: "Valor mínimo",
+      icon_name: "trending-up",
+      field_type: :number_field
+    },
+    {
+      key: :value_lteq,
+      label: "Valor Máximo",
+      description: "Filtra valores menores ou iguais a este número.",
+      placeholder: "Valor máximo",
+      icon_name: "trending-down",
+      field_type: :number_field
+    }
+  ].compact,
+
+  # Explanation:: This ID links the filter results directly to the history
+  #               table container for seamless updates. It prevents full
+  #               page reloads and works by targeting the correct Turbo Frame.
+  turbo_frame_id: "economic_index_histories_table"
+} %>

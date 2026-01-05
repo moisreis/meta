@@ -68,6 +68,10 @@ class NormativeArticlesController < ApplicationController
     #               unique list of normative articles that match the search criteria.
     filtered = @q.result(distinct: true)
 
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = NormativeArticle.count
+
     # Explanation:: This checks the web address for a specific column to sort by, defaulting
     #               to sorting by the `created_at` timestamp if no sort column is specified.
     sort = params[:sort].presence || "created_at"
@@ -82,7 +86,7 @@ class NormativeArticlesController < ApplicationController
 
     # Explanation:: This prepares the final data for the page, dividing the complete
     #               list into pages of 20 items to improve performance and readability.
-    @normative_articles = sorted.page(params[:page]).per(20)
+    @normative_articles = sorted.page(params[:page]).per(14)
 
     respond_to do |format|
       format.html

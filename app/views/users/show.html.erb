@@ -1,6 +1,6 @@
 <%#
   # Partial: show.html.erb
-  # Date: 12/3/2025
+  # Date: 11/20/2025
   # Author: Moisés Reis
   # Package: Meta
   #
@@ -8,14 +8,14 @@
   #              The page uses several partials to structure the content into sections for account information,
   #              activity statistics, owned portfolios, shared permissions, and recent investment activities.
   #
-  # Usage: - What: Renders the user's comprehensive profile view within the dashboard layout.
-  #                It allows the administrator or the user themselves to view and manage their account and data.
-  #        - How: This partial is rendered from the UsersController#show action, receiving the @user instance variable.
-  #        - Why: Provides a single, centralized view for account management, security auditing, and tracking investment activity.
-%>
+  # Usage:: - What: Renders the user's comprehensive profile view within the dashboard layout.
+  #         - How: This partial is rendered from the **UsersController#show** action, receiving the **@user** instance variable.
+  #         - Why: Provides a single, centralized view for account management, security auditing, and tracking investment activity.
+  %>
 
-<%# [Partial] Renders the main dashboard layout wrapper.
-  #           This partial establishes the standardized structure and title for the page.
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title and descriptive email.
   %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: @user.full_name,
@@ -23,438 +23,191 @@
            current_view: "show" do
 %>
 
-  <%# [Section] Displays the Account Information section.
-    #           This section summarizes key account data and provides an action button to edit the user's profile.
+  <%# Explanation:: This section groups high-level account summary cards to provide
+    #               an immediate overview; it is used to organize general user data
+    #               and works by creating a flexible grid with an edit action button.
     %>
   <%= render "partials/route/dashboard/section",
              section_title: "Informações da Conta",
              section_desc: "Dados gerais do usuário",
-             is_four_col: true,
+             columns: 4,
              has_action: true,
              button_route: edit_user_path(@user),
              button_name: "Editar",
              button_icon: "pencil" do
   %>
 
-    <%# [Summary] Displays the user's full name and current role.
-      #           The card highlights the user's role status with a danger color setting.
+    <%# Explanation:: This card displays the user's name and role to verify security
+      #               permissions; it is used to identify the account level and
+      #               works by highlighting the internal role with a distinct color.
       %>
-    <%= render "partials/blocks/summary-card",
+    <%= render "partials/route/dashboard/card",
                card_title: "Nome Completo",
                card_icon: "user",
                card_data: "@#{@user.role}",
-               card_data_icon: "key",
                is_danger: true do
     %>
       <%= @user.full_name %>
     <% end %>
 
-    <%# [Summary] Displays the count of portfolios owned by the user.
-      #           This card tracks and displays the total number of self-managed portfolios.
+    <%# Explanation:: This card counts how many portfolios the user owns to track
+      #               self-managed assets; it is used to show active ownership
+      #               and works by querying the total count from the portfolio list.
       %>
-    <%= render "partials/blocks/summary-card",
+    <%= render "partials/route/dashboard/card",
                card_title: "Carteiras Próprias",
                card_icon: "wallet",
-               card_data: "+ 100%",
-               card_data_icon: "trending-up",
                is_success: true do %>
       <%= @user.portfolios.count %>
     <% end %>
 
-    <%# [Summary] Displays the number of portfolios shared with the user.
-      #           This card tracks access permissions the user holds on external portfolios.
+    <%# Explanation:: This card displays the count of portfolios shared by others
+      #               to monitor collaboration; it is used to show external access
+      #               and works by checking permissions linked to this user.
       %>
-    <%= render "partials/blocks/summary-card",
+    <%= render "partials/route/dashboard/card",
                card_title: "Acessos Compartilhados",
-               card_icon: "users",
-               card_data: "Ativo",
-               card_data_icon: "check" do %>
+               card_icon: "users" do %>
       <%= @user.accessible_portfolios.count %>
     <% end %>
   <% end %>
 
-  <%= render "partials/modules/separator" %>
-
-  <%# [Section] Displays the Activity Statistics section.
-    #           This section focuses on the user's login and account creation history.
+  <%# Explanation:: This section organizes technical logs and login statistics
+    #               to assist with security audits; it is used to track behavior
+    #               and works by grouping data points like IPs and timestamps.
     %>
   <%= render "partials/route/dashboard/section",
              section_title: "Estatísticas de Atividade",
-             is_four_col: true do
+             columns: 4 do
   %>
 
-    <%# [Summary] Displays the total number of sign-in attempts.
-      #           The card shows a creation date timestamp as secondary information.
+    <%# Explanation:: This card shows the total lifetime sign-ins to measure
+      #               long-term engagement; it is used for auditing and works
+      #               by displaying the count alongside the account creation date.
       %>
-    <%= render "partials/blocks/summary-card",
+    <%= render "partials/route/dashboard/card",
                card_title: "Total de Logins",
                card_icon: "log-in",
-               card_data: "Desde #{@user.created_at}",
-               card_data_icon: "clock" do %>
+               card_data: "Desde #{formatted_timestamp(@user.created_at)}".html_safe do %>
       <%= @user.sign_in_count %>
     <% end %>
 
-    <%# [Summary] Displays the timestamp and IP address of the previous successful login.
-      #           The application formats the date and provides a fallback for never-logged-in users.
+    <%# Explanation:: This card identifies the timestamp and IP of the previous session
+      #               to spot unauthorized access; it is used for safety and works
+      #               by fetching the last recorded connection data.
       %>
-    <%= render "partials/blocks/summary-card",
+    <%= render "partials/route/dashboard/card",
                card_title: "Último Acesso",
-               card_icon: "clock",
-               card_data: @user.last_sign_in_ip || "N/A",
-               card_data_icon: "globe" do %>
+               card_icon: "globe",
+               card_data: @user.last_sign_in_ip || "N/A" do %>
       <%= @user.last_sign_in_at ? formatted_timestamp(@user.last_sign_in_at) : "Nunca" %>
     <% end %>
 
-    <%# [Summary] Displays the timestamp and IP address of the current active session.
-      #           This card provides real-time information about the user's present login status.
+    <%# Explanation:: This card displays current session details to confirm real-time
+      #               connection data; it is used for active monitoring and works
+      #               by showing the IP and start time of the ongoing visit.
       %>
-    <%= render "partials/blocks/summary-card",
+    <%= render "partials/route/dashboard/card",
                card_title: "Acesso Atual",
-               card_icon: "activity",
-               card_data: @user.current_sign_in_ip || "N/A",
-               card_data_icon: "globe" do %>
+               card_icon: "globe",
+               card_data: @user.current_sign_in_ip || "N/A" do %>
       <%= @user.current_sign_in_at ? formatted_timestamp(@user.current_sign_in_at) : "N/A" %>
     <% end %>
 
-    <%# [Summary] Displays the exact date and time the user account was created.
-      #           It also calculates and displays how long ago the account was established.
+    <%# Explanation:: This card highlights when the account was first established
+      #               to show seniority; it is used to provide member context and
+      #               works by calculating the time elapsed since registration.
       %>
-    <%= render "partials/blocks/summary-card",
+    <%= render "partials/route/dashboard/card",
                card_title: "Conta Criada",
                card_icon: "user-plus",
-               card_data: "Há #{time_ago_in_words(@user.created_at)}",
-               card_data_icon: "clock" do %>
+               card_data: "Há #{time_ago_in_words(@user.created_at)}" do %>
       <%= formatted_timestamp(@user.created_at) %>
     <% end %>
   <% end %>
 
-  <%= render "partials/modules/separator" %>
-
-  <%# [Section] Displays the Owned Portfolios list section.
-    #           This section presents a table of all investment portfolios created by the user.
+  <%# Explanation:: This table lists all portfolios belonging to the user in a
+    #               searchable format; it is used for detailed management and
+    #               works by formatting fund counts and values into structured rows.
     %>
-  <%= render "partials/route/dashboard/section",
+  <%= render "partials/groups/table-list",
              section_title: "Portfólios Próprios",
-             is_one_col: true,
-             has_action: true,
-             button_route: new_portfolio_path(user_id: @user.id),
-             button_name: "Novo portfólio",
-             button_icon: "plus" do
+             collection: @user.portfolios,
+             action_path: new_portfolio_path(user_id: @user.id),
+             action_name: "Novo portfólio",
+             headers: ["Nome da Carteira", "Fundos", "Valor Total", "Alocação", "Criado em"],
+             column_icons: ["wallet", "layers", "coins", "shuffle", "calendar"],
+             body_procs: [
+               ->(portfolio) { link_to(portfolio.name, portfolio_path(portfolio), class: "hover:underline") },
+               ->(portfolio) { colored_numerical(portfolio.fund_investments.count) },
+               ->(portfolio) { colored_currency(portfolio.total_invested_value) },
+               ->(portfolio) {
+                 status = portfolio.valid_allocations? ? "success" : "danger"
+                 label = portfolio.valid_allocations? ? "Válida" : "Inválida"
+                 content_tag(:span, label, class: "badge badge-#{status}")
+               },
+               ->(portfolio) { formatted_timestamp(portfolio.created_at) }
+             ]
   %>
 
-    <%# [Conditional] Checks if the user owns any portfolios.
-      #               The following block executes only if the user has created at least one portfolio.
-      %>
-    <% if @user.portfolios.any? %>
-
-      <%# [Variable] Assigns the user's portfolios collection to a local variable.
-        #            This variable serves as the dataset for the portfolio table rendering.
-        %>
-      <% models = @user.portfolios %>
-
-      <%# [Array] Defines the column headers for the portfolio table.
-        #         This array provides the visible titles for the data columns.
-        %>
-      <% columns_header = [
-        "Nome da Carteira",
-        "Fundos",
-        "Valor Total",
-        "Alocação",
-        "Criado em"
-      ] %>
-
-      <%# [Array] Defines the column icons for the portfolio table (currently unused).
-        #         This array allows for future visual enhancement of the table headers.
-        %>
-      <% columns_icons = [
-        nil,
-        nil,
-        nil,
-        nil
-      ] %>
-
-      <%# [Array] Defines the lambda functions to format the table body data.
-        #         Each lambda receives a portfolio object and returns the formatted cell content.
-        %>
-      <% columns_body = [
-
-        # Explanation:: This lambda function renders a link to the portfolio's detail page.
-        #               It wraps the portfolio name in a `div` and makes it clickable.
-        #               The link uses the portfolio's `name` as the display text.
-        ->(portfolio) do
-          content_tag(:div, class: "flex flex-col") do
-            concat link_to(portfolio.name, portfolio_path(portfolio), class: "font-medium hover:underline")
-          end
-        end,
-
-        # Explanation:: This lambda returns the count of fund investments within the portfolio.
-        #               It utilizes the `colored_numerical` helper for formatting the number.
-        #               The result is the total number of funds invested in by this portfolio.
-        ->(portfolio) { colored_numerical(portfolio.fund_investments.count, "h-auto") },
-
-        # Explanation:: This lambda calculates and displays the portfolio's total invested value.
-        #               It uses the `colored_currency` helper to ensure proper financial formatting.
-        #               The result is the summed monetary value of all investments.
-        ->(portfolio) { colored_currency(portfolio.total_invested_value, "h-auto") },
-
-        # Explanation:: This lambda checks the validity of the portfolio's asset allocations.
-        #               It displays a "Válida" (Success) badge if allocations pass validation.
-        #               Otherwise, it displays an "Inválida" (Danger) badge.
-        ->(portfolio) do
-          if portfolio.valid_allocations?
-            content_tag(:span, "Válida", class: "badge badge-success")
-          else
-            content_tag(:span, "Inválida", class: "badge badge-danger")
-          end
-        end,
-
-        # Explanation:: This lambda formats the timestamp of the portfolio's creation date.
-        #               It uses the `formatted_timestamp` helper to ensure a consistent date display.
-        #               The result is the human-readable date and time of creation.
-        ->(portfolio) { formatted_timestamp(portfolio.created_at) }
-      ] %>
-
-      <%# [Partial] Renders the generic table module partial.
-        #           This partial displays the portfolios using the defined headers and body content.
-        %>
-      <%= render partial: "partials/modules/table",
-                 locals: {
-                   columns_header: columns_header,
-                   columns_icons: columns_icons,
-                   columns_body: columns_body,
-                   models: models
-                 } %>
-
-    <% else %>
-
-      <%# [Content] Displays a message when no portfolios exist.
-        #           This provides a fallback message for a user with no owned portfolios.
-        %>
-      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
-    <% end %>
-  <% end %>
-
-  <%= render "partials/modules/separator" %>
-
-  <%# [Section] Displays the Shared Access Permissions section.
-    #           This section lists all portfolios where the current user is a collaborator, not the owner.
+  <%# Explanation:: This table lists external portfolios where the user is a
+    #               collaborator to ensure transparency; it is used to track
+    #               shared access and works by detailing owners and permission levels.
     %>
-  <%= render "partials/route/dashboard/section",
+  <%= render "partials/groups/table-list",
              section_title: "Permissões de Acesso",
-             section_desc: "Portfólios compartilhados com este usuário",
-             is_one_col: true,
-             has_action: false do
+             collection: @user.user_portfolio_permissions.includes(portfolio: :user),
+             headers: ["Portfólio", "Proprietário", "Nível de Permissão", "Concedido em"],
+             column_icons: ["layers", "user", "shield-user", "calendar-check-2"],
+             body_procs: [
+               ->(perm) { link_to(perm.portfolio.name, portfolio_path(perm.portfolio), class: "hover:underline") },
+               ->(perm) { perm.portfolio.user.full_name },
+               ->(perm) { content_tag(:span, perm.permission_level.capitalize, class: "badge badge-secondary") },
+               ->(perm) { formatted_timestamp(perm.created_at) }
+             ]
   %>
 
-    <%# [Conditional] Checks if the user has any shared portfolio permissions.
-      #               The block executes only if the user has been granted access to external portfolios.
-      %>
-    <% if @user.user_portfolio_permissions.any? %>
-
-      <%# [Variable] Assigns the user's portfolio permissions, including associated data, to a local variable.
-        #            This variable serves as the dataset for the permissions table rendering.
-        %>
-      <% models = @user.user_portfolio_permissions.includes(portfolio: :user) %>
-
-      <%# [Array] Defines the column headers for the permissions table.
-        #         This array provides the visible titles for the data columns.
-        %>
-      <% columns_header = [
-        "Portfólio",
-        "Proprietário",
-        "Nível de Permissão",
-        "Concedido em"
-      ] %>
-
-      <%# [Array] Defines the column icons for the permissions table (currently unused).
-        #         This array allows for future visual enhancement of the table headers.
-        %>
-      <% columns_icons = [
-        nil,
-        nil,
-        nil,
-        nil
-      ] %>
-
-      <%# [Array] Defines the lambda functions to format the table body data.
-        #         Each lambda receives a permission object and returns the formatted cell content.
-        %>
-      <% columns_body = [
-
-        # Explanation:: This lambda function renders a link to the shared portfolio's detail page.
-        #               It wraps the portfolio name in a `div` and makes it clickable.
-        #               The result is the name of the portfolio the user has access to.
-        ->(perm) do
-          content_tag(:div, class: "flex flex-col") do
-            concat link_to(perm.portfolio.name, portfolio_path(perm.portfolio), class: "font-medium hover:underline")
-          end
-        end,
-
-        # Explanation:: This lambda displays the full name of the portfolio's actual owner.
-        #               It accesses the nested user object via the portfolio association.
-        #               The result is the name of the user who granted the permission.
-        ->(perm) do
-          content_tag(:div, class: "flex flex-col") do
-            concat content_tag(:span, perm.portfolio.user.full_name, class: "font-medium")
-          end
-        end,
-
-        # Explanation:: This lambda displays the user's permission level (e.g., 'read', 'write').
-        #               It capitalizes the permission level and renders it within a secondary badge.
-        #               The result is the specific access level granted to the user.
-        ->(perm) do
-          content_tag(:span, perm.permission_level.capitalize, class: "badge badge-secondary")
-        end,
-
-        # Explanation:: This lambda formats the timestamp of when the permission was granted.
-        #               It uses the `formatted_timestamp` helper to display a consistent date.
-        #               The result is the human-readable date and time of the grant.
-        ->(perm) { formatted_timestamp(perm.created_at) }
-      ] %>
-
-      <%# [Partial] Renders the generic table module partial.
-        #           This partial displays the permissions using the defined headers and body content.
-        %>
-      <%= render partial: "partials/modules/table",
-                 locals: {
-                   columns_header: columns_header,
-                   columns_icons: columns_icons,
-                   columns_body: columns_body,
-                   models: models
-                 } %>
-
-    <% else %>
-
-      <%# [Content] Displays a message when no permissions exist.
-        #           This provides a fallback message for a user with no shared portfolio access.
-        %>
-      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
-    <% end %>
-  <% end %>
-
-  <%= render "partials/modules/separator" %>
-
-  <%# [Section] Creates a two-column layout for recent application and redemption activity.
-    #           This layout organizes related activity data side-by-side for quick overview.
-    %>
+  <%# Explanation:: This container sets up a side-by-side view for movement logs
+  #               to simplify verification; it is used to compare activity and
+  #               works by placing applications and redemptions in two columns.
+  %>
   <%= render "partials/route/dashboard/section",
-             is_two_col: true,
+             columns: 2,
              has_action: false do
   %>
-    <%# [Section] Displays the Recent Application Activity section.
-      #           This section lists the five most recent investments made by the user.
+
+    <%# Explanation:: This list shows the five most recent deposits to highlight
+      #               positive growth; it is used to track inflows and works by
+      #               fetching the latest applications and applying a success color.
       %>
-    <%= render "partials/route/dashboard/section",
-               section_title: "Atividade Recente de Aplicações",
-               is_one_col: true,
-               has_action: false do
-    %>
+    <%= render "partials/groups/recent_activity",
+               section_title: "Atividade de Aplicações",
+               section_columns: 1,
+               collection: Application.joins(fund_investment: :portfolio)
+                                      .where(portfolios: { user_id: @user.id })
+                                      .includes(fund_investment: [:portfolio, :investment_fund])
+                                      .order(request_date: :desc).limit(5),
+               color: "success",
+               see_all_path: applications_path(q: { fund_investment_portfolio_user_id_eq: @user.id }),
+               title_proc: ->(app) { app.fund_investment.investment_fund.fund_name },
+               value_proc: ->(app) { "+ R$#{app.financial_value}" },
+               sub_value_proc: ->(app) { app.fund_investment.portfolio.name } %>
 
-      <%# [ActiveRecord] Retrieves the five latest investment applications by the user.
-        #                The query joins necessary tables to filter by the current user's ID and orders the results by date.
-        %>
-      <% recent_applications = Application.joins(fund_investment: :portfolio)
-                                          .where(portfolios: { user_id: @user.id })
-                                          .includes(fund_investment: [:portfolio, :investment_fund])
-                                          .order(request_date: :desc)
-                                          .limit(5) %>
-
-      <%# [Conditional] Checks if any recent applications are found.
-        #               The following block executes only if the user has made recent investments.
-        %>
-      <% if recent_applications.any? %>
-
-        <%# [Iteration] Iterates over each recent application record.
-          #             The block renders an info card for every application in the collection.
-          %>
-        <% recent_applications.each do |app| %>
-
-          <%# [Info] Displays the details of a single investment application.
-            #        The card shows the fund name, portfolio, value, and quota count, highlighted in green (success).
-            %>
-          <%= render "partials/blocks/info-card",
-                     title: app.fund_investment.investment_fund.fund_name,
-                     subtitle: "#{app.fund_investment.portfolio.name}",
-                     main_value: "+ R$#{app.financial_value}",
-                     sub_value: "#{app.number_of_quotas} cotas",
-                     icon_name: "arrow-up-right",
-                     main_color: "success"
-          %>
-        <% end %>
-
-        <%# [Link] Renders a link to view all applications filtered by the current user.
-          #        This allows the user to navigate to the full list of investment records.
-          %>
-        <%= link_to applications_path(q: { fund_investment_portfolio_user_id_eq: @user.id }), class: "button button-outline w-fit" do %>
-          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
-          <%= content_tag :span, "Ver todos" %>
-        <% end %>
-
-      <% else %>
-
-        <%# [Content] Displays a message when no recent applications exist.
-          #           This provides a fallback message when there is no application activity to show.
-          %>
-        <%= content_tag :p, "N/A", class: "text-muted font-mono py-6" %>
-      <% end %>
-    <% end %>
-
-    <%# [Section] Displays the Recent Redemption Activity section.
-      #           This section lists the five most recent redemptions made by the user.
+    <%# Explanation:: This list displays the five most recent withdrawals to monitor
+      #               cash outflows; it is used to track liquidity and works by
+      #               showing redemptions with a distinct danger theme.
       %>
-    <%= render "partials/route/dashboard/section",
-               section_title: "Atividade Recente de Resgates",
-               is_one_col: true,
-               has_action: false do
-    %>
-
-      <%# [ActiveRecord] Retrieves the five latest redemption records by the user.
-        #                The query joins necessary tables to filter by the current user's ID and orders the results by date.
-        %>
-      <% recent_redemptions = Redemption.joins(fund_investment: :portfolio)
-                                        .where(portfolios: { user_id: @user.id })
-                                        .includes(fund_investment: [:portfolio, :investment_fund])
-                                        .order(request_date: :desc)
-                                        .limit(5) %>
-
-      <%# [Conditional] Checks if any recent redemptions are found.
-        #               The following block executes only if the user has made recent redemptions.
-        %>
-      <% if recent_redemptions.any? %>
-
-        <%# [Iteration] Iterates over each recent redemption record.
-          #             The block renders an info card for every redemption in the collection.
-          %>
-        <% recent_redemptions.each do |red| %>
-
-          <%# [Info] Displays the details of a single redemption.
-            #        The card shows the fund name, portfolio, redeemed value, and quota count, highlighted in red (danger).
-            %>
-          <%= render "partials/blocks/info-card",
-                     title: red.fund_investment.investment_fund.fund_name,
-                     subtitle: "#{red.fund_investment.portfolio.name}",
-                     main_value: "- R$#{red.redeemed_liquid_value}",
-                     sub_value: "#{red.redeemed_quotas} cotas",
-                     icon_name: "arrow-down-left",
-                     main_color: "danger"
-          %>
-        <% end %>
-
-        <%# [Link] Renders a link to view all redemptions filtered by the current user.
-          #        This allows the user to navigate to the full list of withdrawal records.
-          %>
-        <%= link_to redemptions_path(q: { fund_investment_portfolio_user_id_eq: @user.id }), class: "button button-outline w-fit" do %>
-          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
-          <%= content_tag :span, "Ver todos" %>
-        <% end %>
-
-      <% else %>
-
-        <%# [Content] Displays a message when no recent redemptions exist.
-          #           This provides a fallback message when there is no redemption activity to show.
-          %>
-        <%= content_tag :p, "N/A", class: "text-muted font-mono py-6" %>
-      <% end %>
-    <% end %>
+    <%= render "partials/groups/recent_activity",
+               section_title: "Atividade de Resgates",
+               section_columns: 1,
+               collection: Redemption.joins(fund_investment: :portfolio)
+                                     .where(portfolios: { user_id: @user.id })
+                                     .includes(fund_investment: [:portfolio, :investment_fund])
+                                     .order(request_date: :desc).limit(5),
+               color: "danger",
+               see_all_path: redemptions_path(q: { fund_investment_portfolio_user_id_eq: @user.id }),
+               title_proc: ->(red) { red.fund_investment.investment_fund.fund_name },
+               value_proc: ->(red) { "- R$#{red.redeemed_liquid_value}" },
+               sub_value_proc: ->(red) { red.fund_investment.portfolio.name } %>
   <% end %>
 <% end %>

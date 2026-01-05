@@ -1,0 +1,155 @@
+<%#
+  # Partial: _loader.html
+  # Date: 12/6/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: This partial displays a full-screen loading spinner
+  #              that covers the page content while the application processes
+  #              an action or loads data. It provides visual feedback to the user.
+  #
+  # Usage: - What: This component displays a visual loading indicator
+  #                to show the user that a process is running in the background.
+  #        - How: It is initially hidden and becomes visible when a script
+  #               triggers a loading state, typically before an AJAX call finishes.
+  #        - Why: The loader prevents user interaction and reassures the user
+  #               that the application is working during waiting periods.
+  %>
+<div id="page-loader" class="fixed inset-0 bg-accent flex items-center justify-center hidden z-[9999]">
+  <div class="flex flex-col items-center gap-6">
+    <div class="relative">
+      <%= inline_svg_tag("icons/loader.svg", class: "w-6 h-6 animate-spin stroke-body") %>
+    </div>
+  </div>
+</div>
+
+<!-- [Script] Add loader -->
+<script>
+    (function () {
+        'use strict';
+
+        const CONFIG = {
+            loaderId: 'page-loader',
+            minDisplayTime: 300,
+            fadeOutDelay: 200,
+        };
+
+        let loaderState = {
+            isVisible: false,
+            showTimestamp: null,
+            hideTimer: null,
+        };
+
+        const loader = document.getElementById(CONFIG.loaderId);
+
+        if (!loader) {
+            console.warn('Page loader element not found');
+            return;
+        }
+
+        function showLoader() {
+            if (loaderState.hideTimer) {
+                clearTimeout(loaderState.hideTimer);
+                loaderState.hideTimer = null;
+            }
+
+            if (!loaderState.isVisible) {
+                loaderState.isVisible = true;
+                loaderState.showTimestamp = Date.now();
+
+                loader.classList.remove('hidden', 'fade-out');
+                loader.classList.add('fade-in');
+
+                console.log('🔄 Loader shown');
+            }
+        }
+
+        function hideLoader() {
+            if (!loaderState.isVisible) {
+                return;
+            }
+
+            const elapsedTime = Date.now() - loaderState.showTimestamp;
+            const remainingTime = Math.max(0, CONFIG.minDisplayTime - elapsedTime);
+
+            if (loaderState.hideTimer) {
+                clearTimeout(loaderState.hideTimer);
+            }
+
+            loaderState.hideTimer = setTimeout(() => {
+                loader.classList.remove('fade-in');
+                loader.classList.add('fade-out');
+
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    loaderState.isVisible = false;
+                    console.log('✅ Loader hidden');
+                }, CONFIG.fadeOutDelay);
+            }, remainingTime);
+        }
+
+        function forceHideLoader() {
+            if (loaderState.hideTimer) {
+                clearTimeout(loaderState.hideTimer);
+            }
+
+            loader.classList.add('hidden');
+            loader.classList.remove('fade-in', 'fade-out');
+            loaderState.isVisible = false;
+
+            console.log('⚠️ Loader force hidden');
+        }
+
+        document.addEventListener('turbo:before-fetch-request', showLoader);
+        document.addEventListener('turbo:before-visit', showLoader);
+        document.addEventListener('turbo:before-render', showLoader);
+
+        document.addEventListener('turbo:load', hideLoader);
+        document.addEventListener('turbo:render', hideLoader);
+        document.addEventListener('turbo:frame-load', hideLoader);
+
+        document.addEventListener('turbo:fetch-request-error', forceHideLoader);
+
+        document.addEventListener('click', function (event) {
+            const link = event.target.closest('a[href]');
+
+            if (link && !link.hasAttribute('data-turbo-frame')) {
+                const href = link.getAttribute('href');
+
+                if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                    showLoader();
+                }
+            }
+        });
+
+        document.addEventListener('submit', function (event) {
+            showLoader();
+        });
+
+        window.addEventListener('load', hideLoader);
+
+        window.addEventListener('beforeunload', function () {
+            showLoader();
+        });
+
+        window.addEventListener('load', function () {
+            setTimeout(forceHideLoader, 10000);
+        });
+
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden && loaderState.isVisible) {
+                setTimeout(hideLoader, 500);
+            }
+        });
+
+        window.PageLoader = {
+            show: showLoader,
+            hide: hideLoader,
+            forceHide: forceHideLoader,
+            isVisible: () => loaderState.isVisible
+        };
+
+        console.log('✨ Page Loader initialized');
+
+    })();
+</script>

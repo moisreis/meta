@@ -23,7 +23,7 @@
     var settings = {
         create: false,
         allowEmptyOption: true,
-        maxItems: 3,
+        maxItems: 1,
         sortField: {
             field: 'text',
             direction: 'asc'
@@ -136,4 +136,40 @@
             offset: [0, 0]
         });
     });
+</script>
+
+<!-- [Script] sidebarFilters -->
+<script>
+    let sidebar;
+    let openBtn;
+    let closeBtn;
+    let filterOverlay;
+
+    function openSidebar() {
+        sidebar.classList.add('opacity-100');
+        sidebar.classList.remove('opacity-0', 'pointer-events-none');
+        filterOverlay.classList.remove('hidden');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('opacity-100');
+        sidebar.classList.add('opacity-0', 'pointer-events-none');
+        filterOverlay.classList.add('hidden');
+    }
+
+    function setupEventListeners() {
+        sidebar = document.getElementById('sidebarFilters');
+        openBtn = document.getElementById('openFiltersBtn');
+        closeBtn = document.getElementById('closeFiltersBtn');
+        filterOverlay = document.getElementById('filterOverlay')
+
+        if (sidebar && openBtn && closeBtn) {
+            openBtn.addEventListener('click', openSidebar);
+            closeBtn.addEventListener('click', closeSidebar);
+        } else {
+            console.error("Sidebar setup failed: One or more IDs were not found in the HTML.");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', setupEventListeners);
 </script>

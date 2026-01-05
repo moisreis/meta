@@ -1,26 +1,27 @@
 <%#
-  # Partial: _filters.html
+  # Partial: _filters.html.erb
   # Date: 11/20/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Builds the filter sidebar and handles user input for search queries
-  #              in a clear and structured way. Ensures the interface stays consistent
-  #              and easy to navigate.
+  # Description: This partial builds a sliding sidebar that contains search
+  #              options. It allows users to refine the data they see on
+  #              the screen by filling out dynamic form fields.
   #
-  # Usage: - What: Creates a slide-in sidebar containing a search form.
-  #                Renders input fields dynamically based on provided filter configs.
-  #        - How:  Receives `q_object`, `search_url`, `filters`, and `turbo_frame_id`
-  #                from the parent template. Uses `search_form_for` to submit queries.
-  #        - Why:  Keeps filtering logic reusable and centralized, improving
-  #                maintainability and consistency across pages.
+  # Usage: - What: It creates a dedicated area for search filters that
+  #                appears over the main content when needed.
+  #        - How: It takes a list of filter settings and transforms
+  #               them into input boxes. It uses **Ransack** and
+  #               **Turbo Frames** to update results instantly.
+  #        - Why: It keeps the main interface clean by hiding complex
+  #               search options inside a reusable sidebar.
   %>
-<div id="sidebarFilters" class="absolute h-screen top-0 right-0 translate-x-full bg-accent w-80 bg-white shadow-sm border-l border-border z-50 transition-transform ease-in-out">
+<div id="sidebarFilters" class="absolute h-[80%] top-1/2 right-1/2 rounded-base translate-x-1/2 -translate-y-1/2 bg-accent w-[50%] bg-white shadow-sm border border-border z-50 transition-opacity ease-in-out">
 
-<%# [Form] Render search form bound to q_object.
-  #        Send GET parameters to search_url and wrap all fields in the builder 'f'.
-  #        Attach Turbo Frame to enable partial-page updates.
-  %>
+  <%# Explanation:: This block creates the actual search form structure.
+    #               It captures the user's choices and sends them to the
+    #               server to update the list of items being viewed.
+    %>
   <%= search_form_for q_object,
                       url: search_url,
                       method: :get,
@@ -28,7 +29,9 @@
                       data: { turbo_frame: turbo_frame_id } do |f| %>
 
     <div class="h-12 flex flex-row justify-between items-center px-3 border-b border-border">
+
       <h3 class="text-heading font-heading font-medium text-left">Filtros</h3>
+
       <%= button_tag id: "closeFiltersBtn",
                      type: "button",
                      class: "button button-ghost button-small" do
@@ -36,11 +39,12 @@
         <%= inline_svg_tag "icons/x.svg" %>
       <% end %>
     </div>
+
     <div class="flex-grow px-6 space-y-6 overflow-y-auto">
 
-      <%# [Loop] Render input-field partial once for each filter entry.
-        #        Pass metadata (label, placeholder, icon) directly as locals.
-        #        Build dynamic filter UI based on the filters array.
+      <%# Explanation:: This loop goes through each requested filter setting.
+        #               For every item in the list, it draws a labeled
+        #               input box so the user can type their search criteria.
         %>
       <% filters.each do |filter| %>
         <%= render partial: "partials/modules/input-field", locals: {
@@ -54,6 +58,7 @@
           icon_name: filter[:icon_name],
         } %>
       <% end %>
+
       <div class="flex flex-row gap-1.5">
         <%= button_tag type: :submit,
                        class: "button button-secondary",
@@ -62,6 +67,11 @@
           <%= inline_svg_tag "icons/funnel.svg" %>
           <%= content_tag :span, "Aplicar" %>
         <% end %>
+
+        <%# Explanation:: This link resets the search by reloading the page.
+          #               It points back to the base search URL to clear
+          #               away any active filters or keywords.
+          %>
         <%= link_to search_url,
                     class: "button button-outline",
                     data: { turbo_frame: turbo_frame_id } do
@@ -73,4 +83,9 @@
     </div>
   <% end %>
 </div>
+
+<%# Explanation:: This hidden layer sits behind the filter sidebar.
+  #               It darkens the background when the filters are open
+  #               to help the user focus on the search options.
+  %>
 <div class="h-screen w-screen bg-body/10 z-40 hidden absolute top-0 right-0" id="filterOverlay"></div>

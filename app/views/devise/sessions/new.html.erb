@@ -14,9 +14,6 @@
   #        - Why: Provides the essential security gateway for authenticated users to reach their account and investment data.
   %>
 <%= render 'partials/route/auth/wrapper' do %>
-  <%= render 'partials/route/auth/background',
-             bg_path: "pixeltrue/authentication-74.svg"
-  %>
   <%= render 'partials/route/auth/container',
              welcome_message: "Bem-vindo de volta",
              welcome_feedback: "É hora de acompanhar seus resultados, realizar novos aportes e planejar os próximos passos da sua carteira de investimentos" do
@@ -44,7 +41,7 @@
                  icon_name: "key"
       %>
       <%= button_tag type: "submit",
-                     class: "button button-secondary" do %>
+                     class: "button" do %>
         <%= inline_svg_tag "icons/arrow-up-right.svg" %>
         <%= content_tag :span, "Entrar" %>
       <% end %>

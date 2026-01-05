@@ -8,9 +8,12 @@
 #              and provides methods to access its historical and current quota (share) price.
 # @category *Model*
 #
-# Usage:: - *[What]* This code block defines a specific investment product that users can invest in through a **FundInvestment** record.
-#         - *[How]* It uses the CNPJ as a unique key to fetch daily pricing data from the **FundValuation** table and links to regulatory **NormativeArticles**.
-#         - *[Why]* The application needs this central class to standardize fund data, validate official identifiers, and provide accurate, timely pricing for all portfolio calculations.
+# Usage:: - *[What]* This code block defines a specific investment product
+#           that users can invest in through a **FundInvestment** record.
+#         - *[How]* It uses the CNPJ as a unique key to fetch daily pricing data
+#           from the **FundValuation** table and links to regulatory **NormativeArticles**.
+#         - *[Why]* The application needs this central class to standardize fund data,
+#           validate official identifiers, and provide accurate, timely pricing for all portfolio calculations.
 #
 # Attributes:: - *cnpj* @string - The unique official identifier (CNPJ) for the investment fund.
 #              - *fund_name* @string - The official registered name of the investment fund.

@@ -8,9 +8,12 @@
 #              The explanations are in the present simple tense.
 # @category *Helper*
 #
-# Usage:: - *[What]* This code block stores small, reusable functions that simplify the HTML templates, such as formatting numbers or generating UI elements.
-#         - *[How]* It defines methods that take data as input, process it (e.g., format a date, calculate a class name), and return the final output for the view.
-#         - *[Why]* It keeps the **Views** clean by preventing repeated logic and ensuring a consistent user experience across the entire application.
+# Usage:: - *[What]* This code block stores small, reusable functions that simplify the HTML templates,
+#           such as formatting numbers or generating UI elements.
+#         - *[How]* It defines methods that take data as input, process it
+#           (e.g., format a date, calculate a class name), and return the final output for the view.
+#         - *[Why]* It keeps the **Views** clean by preventing repeated logic and
+#           ensuring a consistent user experience across the entire application.
 #
 module ApplicationHelper
 
@@ -146,10 +149,11 @@ module ApplicationHelper
     # Explanation:: This generates the final HTML link, merging the new sort parameter into the
     #               existing web address parameters and wrapping the custom icon, column name, and arrow icon inside it.
     link_to params.permit!.merge(q: (params[:q] || {}).merge(s: new_sort)) do
-      content_tag(:div, class: "flex flex-row gap-1 items-center [&>svg]:size-3.5 [&>svg]:stroke-body") do
+      content_tag(:div, class: "flex flex-row gap-1 items-center") do
         safe_join([
+                    inline_svg_tag("icons/#{custom_icon}.svg", class: "size-6 bg-numerical-100 stroke-numerical-900 rounded-base p-1.5"),
                     name,
-                    inline_svg_tag("icons/#{icon}.svg")
+                    inline_svg_tag("icons/#{icon}.svg", class: "size-3 stroke-body")
                   ])
       end
     end
@@ -216,7 +220,7 @@ module ApplicationHelper
     content_tag(
       :span,
       number_to_currency(value, unit: "R$ ", separator: ",", delimiter: "."),
-      class: "shade font-mono px-3 py-0.5 min-h-9 max-h-12 flex items-center currency-shade-#{shade} #{additional_class}"
+      class: "shade px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium currency-shade-#{shade} #{additional_class}"
     )
   end
 
@@ -247,7 +251,7 @@ module ApplicationHelper
     content_tag(
       :span,
       value,
-      class: "shade font-mono px-3 py-0.5 min-h-9 max-h-12 flex items-center numerical-shade-#{shade} #{additional_class}"
+      class: "shade px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium numerical-shade-#{shade} #{additional_class}"
     )
   end
 
@@ -278,7 +282,7 @@ module ApplicationHelper
     content_tag(
       :span,
       "#{value}%",
-      class: "shade font-mono px-3 py-0.5 min-h-9 max-h-12 flex items-center percentage-shade-#{shade} #{additional_class}"
+      class: "shade px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium percentage-shade-#{shade} #{additional_class}"
     )
   end
 
@@ -321,5 +325,118 @@ module ApplicationHelper
       number_to_currency(value, unit: "R$ ", separator: ",", delimiter: "."),
       class: "font-mono #{additional_class}"
     )
+  end
+
+  # == crud_nav_for
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: This method generates the full navigation group structure for a given model, including a header and a list of links for key actions.
+  #        It is used to create a dedicated section in the sidebar menu for a resource (like portfolios or funds).
+  #
+  # Attributes:: - *model_class* @Class - The resource class (e.g., `InvestmentFund`) used to find names and paths.
+  #             - *singular* @string - The display name for the single item (optional).
+  #             - *plural* @string - The display name for the collection of items (optional).
+  #             - *icons* @Hash - A hash to override default SVG icons for `index`, `new`, and `reports` links.
+  #
+  def crud_nav_for(model_class, singular: nil, plural: nil, icons: {})
+    singular ||= model_class.model_name.human
+    plural ||= model_class.model_name.human(count: 2)
+    resources = model_class.model_name.route_key
+    count = model_class.count
+
+    default_icons = {
+      index: "wallet.svg",
+      new: "plus.svg",
+      reports: "file-text.svg"
+    }
+
+    icon_set = default_icons.merge(icons.symbolize_keys)
+
+    items = [
+      {
+        icon: icon_set[:index],
+        text: "#{plural} <span class='text-3xs text-muted font-mono font-semibold uppercase absolute right-2.5 top-1/2 -translate-y-1/2'>#{count} item(s)</span>".html_safe,
+        path: url_for(controller: "/#{resources}", action: :index)
+      },
+      {
+        icon: icon_set[:new],
+        text: "Adicionar",
+        path: url_for(controller: "/#{resources}", action: :new)
+      },
+      # {
+      #   icon: icon_set[:reports],
+      #   text: "Exportar",
+      #   path: url_for(controller: "/#{resources}", action: :index, reports: true)
+      # }
+    ]
+
+    # Generate unique ID for this navigation group
+    nav_id = "nav-#{resources}"
+
+    content_tag :div, class: "flex flex-col gap-1.5 items-start justify-start w-full border-b border-border pb-6 px-6" do
+      safe_join([
+                  content_tag(:div, class: "flex flex-row justify-between items-center w-full cursor-pointer", onclick: "const items = document.getElementById('#{nav_id}'); const chevron = this.querySelector('svg'); items.classList.toggle('hidden'); chevron.classList.toggle('rotate-180');") do
+                    safe_join([
+                                content_tag(:h3, plural, class: "text-2xs font-mono uppercase font-medium text-muted leading-0"),
+                                inline_svg_tag("icons/chevron-down.svg", class: "size-5 bg-white border border-border stroke-body rounded-base p-1 transition-transform duration-200"),
+                              ])
+                  end,
+
+                  content_tag(:div, id: nav_id, class: "flex flex-col gap-1 items-start justify-start w-full") do
+                    safe_join(items.map { |item| crud_nav_button(item) })
+                  end,
+                ])
+    end
+  end
+
+  def crud_nav_button(item)
+    active = current_page?(item[:path])
+
+    classes = [
+      "relative",
+      "button",
+      "button-small",
+      "w-full",
+      "!justify-start",
+      ("button-outline" if active),
+      ("[&>span>span]:text-muted" if active),
+      ("[&>svg]:bg-quaternary-100" if active),
+      ("[&>svg]:stroke-quaternary-900" if active),
+      ("button-link" unless active)
+    ].compact.join(" ")
+
+    link_to item[:path], class: classes do
+      inline_svg_tag("icons/#{item[:icon]}", class: "size-5 bg-primary-100 rounded-base p-1") +
+        content_tag(:span, item[:text].html_safe)
+    end
+  end
+
+  # == precision_format
+  #
+  # @author Moisés Reis
+  # @category *Read*
+  #
+  # Read:: This method formats a number to a specific amount of decimal places.
+  #        It ensures that numerical data looks uniform and is easy to align.
+  #
+  # Attributes:: - *number* @numeric - The raw value to be formatted.
+  #             - *precision* @integer - The number of decimal places to show.
+  #
+  def precision_format(number, precision: 2)
+
+    # Explanation:: This uses the standard Rails utility to round the number and
+    #               convert it to a string with the exact number of decimal points.
+    formatted_number = number_with_precision(
+      number,
+      precision: precision,
+      separator: ",",
+      delimiter: "."
+    )
+
+    # Explanation:: This wraps the formatted string in a span tag with a monospaced
+    #               font class to ensure numbers align perfectly in tables.
+    content_tag(:span, formatted_number, class: "font-mono")
   end
 end

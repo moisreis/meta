@@ -1,61 +1,69 @@
 <%#
-  # View: index.html.erb
+  # Partial: index.html.erb
   # Date: 11/20/2025
   # Author: Moisés Reis
-  # Package: User
+  # Package: Meta
   #
   # Description: Constructs the main index page for User resources. It renders a dynamic
   #              data table to display a list of all users and includes integrated
   #              search and filtering components for effective data querying.
   #
-  # Usage: - What: Renders the complete, dynamic index view for the User resource,
+  # Usage:: - What: Renders the complete, dynamic index view for the User resource,
   #                including a fully functional, filterable, and Turbo-integrated data table.
-  #                It displays key user details, role status, and related portfolio count.
-  #        - How: Renders the `_wrapper` for the page layout, followed by the
-  #               `_data-table` partial using complex lambda functions to customize
-  #               column content (e.g., displaying roles as localized badges).
-  #               Ransack (`@q`) and the `_filters` partial handle the searching.
-  #        - Why: Provides an efficient, centralized, and secure interface for administrators
-  #               to manage and audit the application's user base.
+  #         - How: Renders the **dashboard/wrapper** for the page layout, followed by the
+  #                **data-table** and **filters** partials.
+  #         - Why: Provides an efficient and secure interface for administrators
+  #                to manage and audit the application's user base.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title and descriptive labels.
   %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Lista de usuários",
-           page_desc: "Lista de carteiras com permissão de visualização.",
+           page_desc: "Lista de usuários cadastrados no sistema.",
            current_view: "datatable" do
 %>
+
+  <%# Explanation:: This partial generates a dynamic table to list user records
+    #               clearly; it is used to present organized data to the user and
+    #               works by receiving headers and data-fetching logic as arguments.
+    %>
   <%= render partial: "partials/blocks/data-table", locals: {
 
-    # [Explanation]: This array defines the titles for each column in the table header.
-    #                The names correspond directly to the data fields displayed, providing context
-    #                for the user regarding the user's identity, role, and activity within the system.
+    # Explanation:: This array defines the text labels displayed at the top of
+    #               the table columns; it is used to give context to the data
+    #               and works by mapping each string to a specific column header.
     columns_header: [
-      "Nome completo",
+      "Nome",
       "E-mail",
       "Nível",
       "Carteiras"
     ],
 
-    # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
-    #                in the table header. The icons visually distinguish and reinforce the meaning
-    #                of the corresponding data column.
+    # Explanation:: This collection holds visual icons to accompany the column
+    #               titles for better recognition; it is used to beautify the
+    #               header and works by rendering specific Material Symbols.
     columns_icons: [
-      "label",
-      "alternate_email",
-      "assignment_ind",
+      "user",
+      "at-sign",
+      "shield-user",
       "wallet"
     ],
 
-    # [Explanation]: This is the core array containing lambda functions and symbols that define how
-    #                each cell's content is processed and formatted. These functions receive the
-    #                user object (`user`) as an argument.
+    # Explanation:: This list contains the logic for filling each row with
+    #               user information; it is used to handle data extraction
+    #               and works by executing symbols or functions for every record.
     columns_body: [
 
       :full_name,
       :email,
 
-      # [Explanation]: This lambda function determines and displays the user's role (Administrator or Regular User).
-      #                It checks the `user.role` string and applies a specific badge class for visibility,
-      #                using a red badge (`badge-danger`) for administrators.
+      # Explanation:: This logic identifies the user's role and applies a color
+      #               badge for quick identification; it is used for security
+      #               auditing and works by checking the role string and returning
+      #               a styled badge.
       ->(user) do
         role_name =
           case user.role.to_s
@@ -74,9 +82,9 @@
         content_tag(:span, role_name, class: role_class)
       end,
 
-      # [Explanation]: This lambda function counts the number of portfolios owned by the user.
-      #                If the count is zero, it displays a muted "Não há carteiras" (No portfolios) message;
-      #                otherwise, it displays the numeric count.
+      # Explanation:: This line displays the quantity of portfolios owned
+      #               by the user to show activity levels; it is used to monitor
+      #               asset ownership and works by counting the associated portfolio records.
       ->(user) do
         count = user.portfolios.size
         if count.zero?
@@ -87,64 +95,78 @@
       end
     ],
 
-    # [Explanation]: This variable contains the collection of User model instances
-    #                to be displayed in the data table. This is the primary dataset
-    #                for the table rows.
+    # Explanation:: This attribute provides the actual list of user objects
+    #               retrieved from the database; it is used as the table's
+    #               data source and works by feeding the rows into the display loop.
     models: @users,
 
-    # [Explanation]: This parameter defines options for sorting the data within the table.
-    #                Since the array is currently empty, default Ransack sorting options are used.
+    # Explanation:: This configuration sets the rules for how users can reorder
+    #               the list; it is used to allow custom sorting and works by
+    #               integrating with the database search parameters.
     sort_options: [],
 
-    # [Explanation]: This is the Ransack search object (`@q`). It contains the current search
-    #                and filter parameters applied to the `@users` collection, used for generating sort links.
+    # Explanation:: This object manages the current search and sort criteria
+    #               for the collection; it is used to keep track of user
+    #               filters and works by generating valid database queries.
     q_object: @q,
 
-    # [Explanation]: This defines the URL used for both searching and pagination of the table.
-    #                It ensures that search parameters are correctly routed
-    #                back to the User index action.
+    # Explanation:: This path tells the table where to send search and page
+    #               requests; it is used to keep the user on the correct page
+    #               and works by linking actions to the User index route.
     search_url: users_path,
 
-    # [Explanation]: This is the ID of the Turbo Frame that wraps the data table.
-    #                It ensures that sorting and searching actions update only the table content
-    #                without reloading the entire page.
+    # Explanation:: This unique identifier allows the table to update without
+    #               refreshing the whole page; it is used for speed and works
+    #               by isolating the table content within a Turbo Frame.
     turbo_frame_id: "users_table",
 
-    # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
-    #                Since the value is nil, the export functionality is currently disabled.
+    # Explanation:: This setting provides a link for users to download the
+    #               table data as a file; it is used for reporting and works
+    #               by enabling an export button when a URL is provided.
     export_url: nil
   } %>
 <% end %>
-<%= render partial: "partials/route/dashboard/filters", locals: {
 
-  # [Explanation]: This is the Ransack search object (`@q`). The filter partial uses this object
-  #                to initialize the filter fields with current search values.
-  q_object: @q,
+<%# Explanation:: This partial renders a sidebar or header with search inputs
+  #               to help users find data; it is used to refine the list and
+  #               works by sending form data to the table's Turbo Frame.
+  %>
+<%= render partial: "partials/route/dashboard/filters",
+           locals: {
 
-  # [Explanation]: This defines the URL where the filter form submits its search parameters.
-  #                The submission triggers an update to the `users_path`.
-  search_url: users_path,
+             # Explanation:: This search object connects the filter fields to the
+             #               database query logic; it is used to pre-fill inputs and
+             #               works by syncing with the Ransack gem settings.
+             q_object: @q,
 
-  # [Explanation]: This array defines the individual filter fields available to the user.
-  #                Each hash specifies the Ransack key, label, description, and icon for the filter input.
-  filters: [
-    {
-      key: :first_name_cont,
-      label: "Nome",
-      description: "Mostra usuários cujo nome contém estes caracteres.",
-      placeholder: "Maria da Silva",
-      icon_name: "circle-user"
-    },
-    {
-      key: :email_cont,
-      label: "E-mail",
-      description: "Mostra usuários cujo e-mail contém estes caracteres.",
-      placeholder: "emaildousuario@email.com",
-      icon_name: "at-sign"
-    }
-  ],
+             # Explanation:: This destination URL determines where the search filters
+             #               are sent upon submission; it is used to refresh the data
+             #               and works by targeting the main user list route.
+             search_url: users_path,
 
-  # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.
-  #                It ensures that applying filters updates the data table content within the corresponding frame.
-  turbo_frame_id: "users_table"
-} %>
+             # Explanation:: This list defines the specific text and icon for each
+             #               filter input box; it is used to build the search form
+             #               and works by generating fields for names and emails.
+             filters: [
+               {
+                 key: :first_name_cont,
+                 label: "Nome",
+                 description: "Mostra usuários cujo nome contém estes caracteres.",
+                 placeholder: "Maria da Silva",
+                 icon_name: "user"
+               },
+               {
+                 key: :email_cont,
+                 label: "E-mail",
+                 description: "Mostra usuários cujo e-mail contém estes caracteres.",
+                 placeholder: "emaildousuario@email.com",
+                 icon_name: "at-sign"
+               }
+             ],
+
+             # Explanation:: This ID links the filter results directly to the table
+             #               container for seamless updates; it is used to avoid full
+             #               page reloads and works by targeting the specific Turbo Frame.
+             turbo_frame_id: "users_table"
+           }
+%>

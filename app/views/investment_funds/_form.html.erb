@@ -1,75 +1,126 @@
 <%#
-  # Partial: _form.html
-  # Date: 11/23/2025
+  # Partial: _form.html.erb
+  # Date: 11/24/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Renders the core form fields necessary for creating a new **InvestmentFund** or
-  #              editing an existing one. It includes fields for essential identification details
-  #              like name, administrator, and CNPJ.
+  # Description: This file renders the core form fields necessary for
+  #              creating or editing an **InvestmentFund** record.
+  #              It handles naming, administration, and regulatory data.
   #
-  # Usage: - What: Displays the structured input fields required to capture all mandatory and optional metadata for an investment fund
-  #        - How: Utilizes the `form_with` helper and nested partials like `input-field` to generate UI components for fund attributes
-  #        - Why: Centralizes the logic for fund data input, ensuring consistency across both the new and edit views
+  # Usage:: - What: Displays structured input fields required to capture
+  #                all mandatory metadata for an investment fund.
+  #         - How: Utilizes the **form_with** helper and nested partials
+  #                like **input-field** to generate the UI components.
+  #         - Why: Centralizes fund data input, ensuring consistency
+  #                across both the new and edit views of the application.
+  %>
+
+<%# Explanation:: This tag initializes the form to capture and send fund
+  #               data to the server; it is used during creation or editing
+  #               and works by binding input fields to the InvestmentFund model.
   %>
 <%= form_with(model: investment_fund, class: "contents") do |form| %>
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :fund_name,
-             label: "Nome do Fundo",
-             placeholder: "Fundo de Investimento XYZ",
-             is_half_width: true,
-             desc: "Nome comercial do fundo.",
-             field_type: :text_field,
-             icon_name: "folder-open"
-  %>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-2 gap-6">
+
+  <%# Explanation:: This layout block groups identity fields to keep the
+    #               interface organized; it is used to separate official registration
+    #               data and works by rendering a titled section around the inputs.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Identificação do Fundo",
+             fieldset_desc: "Defina o nome principal e as informações de registro do fundo." do %>
+
+    <%# Explanation:: This module creates a text box for the user to type the
+      #               fund's commercial name; it is used to label the asset and
+      #               works by rendering a standard HTML input with a folder icon.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :fund_name,
+               label: "Nome do Fundo",
+               placeholder: "Fundo de Investimento XYZ",
+               desc: "Nome comercial do fundo.",
+               field_type: :text_field,
+               icon_name: "folder-open"
+    %>
+
+    <%# Explanation:: This line provides a field for the official tax number to
+      #               ensure regulatory compliance; it is used for unique identification
+      #               and works by capturing the numeric CNPJ sequence for the record.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :cnpj,
+               label: "CNPJ",
+               placeholder: "00.000.000/0000-00",
+               desc: "O CNPJ precisa ser único no sistema.",
+               field_type: :text_field,
+               icon_name: "hash"
+    %>
+  <% end %>
+
+  <%# Explanation:: This group organizes management settings to clarify who is
+    #               responsible for the fund; it is used to track administrators
+    #               and works by placing responsibility fields in a distinct section.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Gestão e Origem",
+             fieldset_desc: "Informe as entidades responsáveis pela administração e a procedência do fundo." do %>
+
+    <%# Explanation:: This input allows the user to specify the managing institution
+      #               to ensure accountability; it is used for administrative tracking
+      #               and works by storing the institution's name in the fund record.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :administrator_name,
                label: "Administrador",
                placeholder: "Nome da instituição administradora",
-               is_half_width: false,
-               desc: "Nome da entidade responsável pela administração do fundo.",
+               desc: "Nome da entidade responsável pela administração.",
                field_type: :text_field,
                icon_name: "id-card"
     %>
+
+    <%# Explanation:: This field identifies if the asset belongs to a parent fund
+      #               to show structural relationships; it is used for lineage
+      #               mapping and works by capturing the name of the source entity.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :originator_fund,
                label: "Fundo originador",
                placeholder: "Nome do fundo originador",
-               is_half_width: false,
                desc: "Informe caso este fundo seja derivado de outro.",
                field_type: :text_field,
                icon_name: "arrow-left-right"
     %>
-  </div>
-  <%= render "partials/modules/separator" %>
-  <%# [Select] Allows the user to select one or more normative articles to associate with this fund.
-    #          The select is populated with all available normative articles in the system.
-    #          Uses the display_name method to show a readable label for each article.
+  <% end %>
+
+<%# Explanation:: This section defines the legal rules that govern the fund
+  #               to ensure transparency; it is used for compliance auditing
+  #               and works by linking the fund to specific normative articles.
+  %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Regulamentação",
+             fieldset_desc: "Selecione as diretrizes e artigos normativos que regem este fundo." do %>
+
+    <%# Explanation:: This module renders a selection menu to link legal articles
+      #               to the current fund; it is used to define regulatory limits
+      #               and works by listing all available articles from the database.
+      %>
+    <%= render "partials/modules/select",
+               f: form,
+               name: :normative_article_ids,
+               label: "Artigos Normativos",
+               options_collection: NormativeArticle.all.map { |article| [article.display_name, article.id] },
+               desc: "Selecione os artigos normativos que regulam este fundo."
     %>
-  <%= render "partials/modules/select",
-             f: form,
-             name: :normative_article_ids,
-             label: "Artigos Normativos",
-             options_collection: NormativeArticle.all.map { |article| [article.display_name, article.id] },
-             is_half_width: true,
-             desc: "Selecione os artigos normativos que regulam este fundo."
-  %>
-  <%= render "partials/modules/separator" %>
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :cnpj,
-             label: "CNPJ",
-             placeholder: "00.000.000/0000-00",
-             is_half_width: true,
-             desc: "O CNPJ precisa ser único no sistema.",
-             field_type: :text_field,
-             icon_name: "hash"
-  %>
+  <% end %>
+
+  <%# Explanation:: This button triggers the submission to save all entered
+    #               information; it is used to complete the form process and
+    #               works by sending the gathered data to the server via a click.
+    %>
   <%= form.button :submit,
                   name: nil,
                   class: "button button-primary w-fit flex items-center gap-2" do

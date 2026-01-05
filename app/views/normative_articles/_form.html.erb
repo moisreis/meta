@@ -1,82 +1,126 @@
 <%#
-  # Partial: _form.html
+  # Partial: _form.html.erb
   # Date: 12/4/2025
   # Author: Moisés Reis
-  # Package: NormativeArticles
+  # Package: Meta
   #
-  # Description: Defines the input structure and submission mechanism for the
-  #              NormativeArticle resource. It includes fields for article name,
-  #              number, body, description, and benchmark target.
+  # Description: This file creates a structured form for managing **NormativeArticle** records.
+  #              It organizes regulatory text, article numbers, and benchmark goals into
+  #              logical groups to ensure data integrity.
   #
-  # Usage: - What: Renders the standardized form necessary for creating or
-  #                updating a NormativeArticle object. It requires the
-  #                'normative_article' model instance to be passed as a local
-  #                variable.
-  #        - How: Utilizes the Rails `form_with` helper and reuses common input
-  #               partials for consistent layout and behavior.
-  #        - Why: Provides a reusable and structured input mechanism for the
-  #               NormativeArticle resource.
+  # Usage:: - What: Renders the standardized form necessary for creating or updating a
+  #                 **NormativeArticle** object.
+  #         - How: Utilizes the Rails **form_with** helper and reuses modular partials
+  #                to establish a consistent layout and user experience.
+  #         - Why: Provides a clear and didactic input mechanism ensuring all
+  #                regulatory data is captured correctly for compliance tracking.
+  %>
+
+<%# Explanation:: This form builder initializes the data entry process for normative articles
+  #               to ensure all information is sent to the server. It wraps the entire
+  #               set of inputs and applies layout styles for a clean interface.
   %>
 <%= form_with(model: normative_article, class: "contents") do |form| %>
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :article_name,
-             label: "Nome do Artigo",
-             placeholder: "Regras de Governança",
-             is_half_width: true,
-             desc: "Forneça um nome claro e objetivo.",
-             field_type: :text_field,
-             icon_name: "file-text"
-  %>
 
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :article_number,
-             label: "Número do Artigo",
-             placeholder: "12-B",
-             is_half_width: true,
-             desc: "Número ou identificador oficial do artigo.",
-             field_type: :text_field,
-             icon_name: "hash"
-  %>
+  <%# Explanation:: This fieldset groups the identification inputs to provide a clear
+    #               visual boundary for basic data. It is used to separate official
+    #               titles from the body text and works by nesting labels and inputs.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Identificação da Norma",
+             fieldset_desc: "Defina o nome oficial e o número de referência para este artigo normativo." do %>
 
-  <%= render "partials/modules/separator" %>
+    <%# Explanation:: This input field captures the official name of the regulatory article
+      #               to make it easily searchable. It provides a text box for the title
+      #               and works by saving the string directly to the database record.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :article_name,
+               label: "Nome do Artigo",
+               placeholder: "Regras de Governança",
+               desc: "Forneça um nome claro e objetivo.",
+               field_type: :text_field,
+               icon_name: "file-text"
+    %>
 
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :article_body,
-             label: "Conteúdo do Artigo",
-             placeholder: "Descreva a norma em detalhes...",
-             is_half_width: false,
-             desc: "Texto completo ou corpo do artigo.",
-             field_type: :text_area,
-             icon_name: "align-left"
-  %>
+    <%# Explanation:: This text input allows users to record the formal number or code
+      #               of the article. It ensures the norma can be referenced legally
+      #               and works by storing alphanumeric identifiers like "12-B".
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :article_number,
+               label: "Número do Artigo",
+               placeholder: "12-B",
+               desc: "Número ou identificador oficial do artigo.",
+               field_type: :text_field,
+               icon_name: "hash"
+    %>
+  <% end %>
 
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :description,
-             label: "Descrição",
-             placeholder: "Informações adicionais sobre a norma.",
-             is_half_width: false,
-             desc: "Descrição complementar ou contexto.",
-             field_type: :text_area,
-             icon_name: "info"
-  %>
+  <%# Explanation:: This section groups the heavy content areas to help users focus on
+    #               writing the legal text. It organizes the main body and notes into
+    #               a wide-block layout to facilitate typing and reading long content.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Conteúdo e Contexto",
+             fieldset_desc: "Insira o texto completo da norma e forneça descrições adicionais para facilitar o entendimento." do %>
 
-  <%= render "partials/modules/separator" %>
+    <%# Explanation:: This large text area is dedicated to holding the official wording
+      #               of the normative article. It provides a multi-line box to
+      #               accommodate complex legal prose and ensures the full text is saved.
+      %>
+    <%= render "partials/modules/textarea",
+               f: form,
+               name: :article_body,
+               label: "Conteúdo do Artigo",
+               placeholder: "Descreva a norma em detalhes...",
+               desc: "Texto completo ou corpo do artigo.",
+               rows: 7
+    %>
 
-  <%= render "partials/modules/input-field",
-             f: form,
-             name: :benchmark_target,
-             label: "Benchmark Target",
-             placeholder: "0 a 1000",
-             is_half_width: true,
-             desc: "Meta de benchmark atribuída ao artigo.",
-             field_type: :number_field,
-             icon_name: "target"
-  %>
+    <%# Explanation:: This additional text field allows for internal comments or
+      #               summaries about the regulation. It is used to add context
+      #               and works by providing extra space for non-legal explanations.
+      %>
+    <%= render "partials/modules/textarea",
+               f: form,
+               name: :description,
+               label: "Descrição",
+               placeholder: "Informações adicionais sobre a norma.",
+               desc: "Descrição complementar ou contexto.",
+               rows: 7
+    %>
+  <% end %>
 
+  <%# Explanation:: This final fieldset organizes numerical goals and targets associated
+    #               with the article. It isolates financial or compliance metrics
+    #               and works by grouping data-driven fields at the end of the form.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Métricas de Desempenho",
+             fieldset_desc: "Estabeleça os parâmetros de benchmark que este artigo deve seguir." do %>
+
+    <%# Explanation:: This numeric input captures the specific performance goal or limit
+      #               for the regulation. It is used for auditing and works by
+      #               accepting integer values that define the benchmark target.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :benchmark_target,
+               label: "Benchmark Target",
+               placeholder: "0 a 1000",
+               desc: "Meta de benchmark atribuída ao artigo.",
+               field_type: :number_field,
+               icon_name: "target"
+    %>
+  <% end %>
+
+  <%# Explanation:: This action button finalizes the creation or update of the normative
+    #               article record. It submits the gathered data to the database
+    #               and provides visual feedback using a primary-colored icon.
+    %>
   <%= form.button :submit,
                   name: nil,
                   class: "button button-primary w-fit flex items-center gap-2" do %>

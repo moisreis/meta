@@ -1,0 +1,149 @@
+<%#
+  # Partial: _card.html.erb
+  # Date: 12/22/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: This partial renders a summary card that displays metrics
+  #              and alerts. It dynamically changes its colors to reflect
+  #              the health of the data being shown to the user.
+  #
+  # Usage: - What: It builds a decorative box for numbers, titles, and
+  #                trend badges like growth percentages or totals.
+  #        - How: Pass a status like 'success' or 'danger' to the **Card**.
+  #               The component automatically selects the matching colors
+  #               for borders, backgrounds, and icons.
+  #        - Why: It creates a visual shorthand for users. They can
+  #               instantly tell if a metric is good or bad just by
+  #               looking at the color of the box.
+  #
+  # Example:
+  #
+  # render "shared/card",
+  #     status: :success,
+  #     card_title: "Inflação acumulada",
+  #     card_icon: "trending_up",
+  #     card_data: "+3.2%",
+  #     card_data_icon: "arrow_up"
+  #   do
+  #   number_with_precision(4.87, precision: 2)
+  # end
+  #
+  %>
+
+<%# Explanation:: This line ensures the card has a neutral appearance
+  #               if no specific status is provided by the developer.
+  #               It prevents the code from breaking due to missing info.
+  %>
+<% status ||= :default %>
+
+<%# Explanation:: These variables store the basic settings for the card,
+  #               such as whether the badge is outlined and what text
+  #               or icons should be displayed inside the container.
+  %>
+<%
+  is_outline ||= true
+  card_title ||= nil
+  card_icon ||= nil
+  card_data ||= nil
+  card_data_icon ||= nil
+%>
+
+<%# Explanation:: This section organizes the colors for each status type.
+  #               It creates a library of styles so the card knows
+  #               exactly which shades to use for success, danger, or alerts.
+  %>
+<%
+  theme = {
+            success: {
+              bg: "bg-success-50",
+              border: "border-success-200",
+              card_bg: "bg-success-600",
+              stroke: "stroke-success-50",
+              text: "text-success-700",
+              badge: "badge-success"
+            },
+            danger: {
+              bg: "bg-danger-50",
+              border: "border-danger-200",
+              card_bg: "bg-danger-600",
+              stroke: "stroke-danger-50",
+              text: "text-danger-700",
+              badge: "badge-danger"
+            },
+            alert: {
+              bg: "bg-alert-50",
+              border: "border-alert-200",
+              card_bg: "bg-alert-600",
+              stroke: "stroke-alert-50",
+              text: "text-alert-700",
+              badge: "badge-alert"
+            },
+            secondary: {
+              bg: "bg-secondary-50",
+              border: "border-secondary-200",
+              card_bg: "bg-secondary-600",
+              stroke: "stroke-secondary-50",
+              text: "text-secondary-700",
+              badge: "badge-secondary"
+            },
+            primary: {
+              bg: "bg-primary-50",
+              border: "border-primary-200",
+              card_bg: "bg-primary-600",
+              stroke: "stroke-primary-50",
+              text: "text-primary-700",
+              badge: "badge-primary"
+            },
+            default: {
+              bg: "bg-accent",
+              border: "border-border",
+              card_bg: "table-bg",
+              stroke: "body",
+              text: "text-body",
+              badge: ""
+            }
+          }[status.to_sym] || theme[:default]
+%>
+
+<%# Explanation:: This line builds a list of CSS classes for the badge.
+  #               It combines the basic badge shape with the color
+  #               theme and the optional outline border style.
+  %>
+<% badge_classes = ["badge", (theme[:badge]), ("badge-outline" if is_outline)].compact.join(" ") %>
+
+<div class="rounded-base p-6 h-44 flex flex-col gap-3 justify-between items-start <%= theme[:bg] %>">
+
+  <div class="flex flex-row justify-between items-center w-full">
+    <%= content_tag :h3, card_title, class: "font-mono uppercase font-medium" %>
+
+    <div class="p-2 rounded-full <%= theme[:card_bg] %>">
+      <%= inline_svg_tag("icons/#{card_icon}.svg", class: "#{theme[:stroke]} size-4") %>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-1.5">
+
+    <div class="text-2xl font-bold font-mono line-clamp-1 <%= theme[:text] %>">
+      <%= yield %>
+    </div>
+
+    <%# Explanation:: This block checks if there is extra info like a
+      #               percentage. If data exists, it draws a small
+      #               colored badge to make that information pop out.
+      %>
+    <% if card_data.present? %>
+      <div class="<%= badge_classes %> !border-none !shadow-none">
+
+        <%# Explanation:: This checks if the badge needs a small arrow or symbol.
+          #               It helps the user understand trends, such as
+          #               whether a value is going up or down.
+          %>
+        <% if card_data_icon.present? %>
+          <%= inline_svg_tag("icons/#{card_data_icon}.svg") %>
+        <% end %>
+        <%= content_tag :p, card_data %>
+      </div>
+    <% end %>
+  </div>
+</div>

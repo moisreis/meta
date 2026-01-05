@@ -1,30 +1,38 @@
 <%#
-  # View: new.html.erb
+  # Partial: new.html.erb
   # Date: 11/20/2025
   # Author: Moisés Reis
-  # Package: User
+  # Package: Meta
   #
   # Description: Renders the page dedicated to creating a new User resource. It initializes
   #              a blank User object and displays the required input fields via the
   #              shared form partial.
   #
-  # Usage: - What: Renders the complete view for creating a new User instance.
+  # Usage:: - What: Renders the complete view for creating a new User instance.
   #                It is responsible for wrapping the input form within the standard
   #                dashboard layout.
-  #        - How: Renders the `_wrapper` for the page layout, setting the title and
-  #               description for user creation. It delegates rendering of the input fields
-  #               to the reusable `_form` partial, passing the new `@user` object and
-  #               the customized "Criar usuário" (Create user) button details.
-  #        - Why: Provides the interface necessary to execute the 'Create' function
-  #               (C in CRUD) for the User resource using a consistent UI structure.
+  #         - How: Renders the **_wrapper** for the page layout, setting the title and
+  #                description, then delegates to the reusable **_form** partial.
+  #         - Why: Provides the interface necessary to execute the 'Create' function
+  #                (C in CRUD) for the User resource using a consistent UI structure.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title and descriptive labels.
   %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Criar usuário",
            page_desc: "Gerencie a criação de novos usuários." do
 %>
+
+  <%# Explanation:: This helper renders the central input structure to capture new
+    #               user details from the user; it is used to initialize a record
+    #               and works by passing the model and a customized addition button.
+    %>
   <%= render "form",
              user: @user,
              icon_name: "plus",
-             button_name: "Criar usuário"
+             button_name: "Adicionar"
   %>
 <% end %>

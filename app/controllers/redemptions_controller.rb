@@ -4,7 +4,8 @@
 # @added 11/28/2025
 # @package *Meta*
 # @description This controller manages all client requests related to withdrawing money (redemptions) from their **FundInvestment** accounts.
-#              It handles listing, creation, viewing, and deletion of redemption records, while enforcing business rules, especially the FIFO quota allocation method.
+#              It handles listing, creation, viewing, and deletion of redemption records,
+#              while enforcing business rules, especially the FIFO quota allocation method.
 # @category *Controller*
 #
 # Usage:: - *[What]* It processes all HTTP requests for redemption transactions, serving the necessary views and APIs.
@@ -15,7 +16,10 @@
 #
 class RedemptionsController < ApplicationController
 
-  # Explanation:: This is a security measure that ensures the user is logged into the application before they can execute any action within this controller.
+  include PdfExportable
+
+  # Explanation:: This is a security measure that ensures the user is logged
+  #               into the application before they can execute any action within this controller.
   #               Access is strictly restricted to authenticated users.
   before_action :authenticate_user!
 
@@ -61,7 +65,7 @@ class RedemptionsController < ApplicationController
                                :portfolio,
                                :investment_fund
                              ],
-                           )
+                             )
 
     # Explanation:: This initializes the Ransack search object using the base scope and
     #               any filtering parameters passed in the `params[:q]` hash.
@@ -82,13 +86,17 @@ class RedemptionsController < ApplicationController
     #               It reads the direction parameter from the request.
     direction = params[:direction].presence || "desc"
 
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = Redemption.count
+
     # Explanation:: This applies the determined sort column and direction to the filtered set of redemptions.
     #               The result is assigned to the `sorted` variable.
     sorted = filtered.order("#{sort} #{direction}")
 
     # Explanation:: This applies pagination to the sorted result, showing a maximum of 20 records per page.
     #               The final result is assigned to the `@redemptions` instance variable for use in the view.
-    @redemptions = sorted.page(params[:page]).per(20)
+    @redemptions = sorted.page(params[:page]).per(14)
 
     respond_to do |format|
       format.html
@@ -442,7 +450,8 @@ class RedemptionsController < ApplicationController
   # @author Moisés Reis
   # @category *Method*
   #
-  # Category:: This private method implements the First-In, First-Out (FIFO) logic to allocate redeemed quotas against the oldest **Application** records.
+  # Category:: This private method implements the First-In, First-Out (FIFO)
+  #            logic to allocate redeemed quotas against the oldest **Application** records.
   #            It creates new **RedemptionAllocation** records and reduces the balances of the original applications.
   #
   # Attributes:: - *fund_investment* @FundInvestment - the investment record containing the applications to redeem from.
@@ -476,7 +485,7 @@ class RedemptionsController < ApplicationController
         redemption: @redemption,
         application: app,
         quotas_used: quotas_to_use,
-      )
+        )
 
       # Explanation:: This calculates the remaining number of quotas left in the original application after the redemption takes place.
       #               This value updates the application record.
@@ -498,5 +507,236 @@ class RedemptionsController < ApplicationController
       #               This moves the process closer to the termination condition.
       remaining_quotas -= quotas_to_use
     end
+  end
+
+  # == pdf_export_title
+  #
+  # @author Moisés Reis
+  # @category *Configuration*
+  #
+  # Configuration:: This method defines the main title displayed at the top of the PDF export.
+  #                 It provides clear identification of the document type.
+  #
+  def pdf_export_title
+    "Resgates"
+  end
+
+  # == pdf_export_subtitle
+  #
+  # @author Moisés Reis
+  # @category *Configuration*
+  #
+  # Configuration:: This method defines the descriptive subtitle shown below the main title.
+  #                 It clarifies the purpose and scope of the exported data.
+  #
+  def pdf_export_subtitle
+    "Histórico de resgates realizados"
+  end
+
+  # == pdf_export_columns
+  #
+  # @author Moisés Reis
+  # @category *Configuration*
+  #
+  # Configuration:: This method defines the structure of the PDF table, including column headers,
+  #                 data extraction logic, and column widths. Each column specification includes
+  #                 a header label, a key (symbol, string, or lambda), and an optional width.
+  #
+  # Attributes:: - *@return* @Array<Hash> - An array of column definitions for the PDF table.
+  #
+  def pdf_export_columns
+
+    # Explanation:: This retrieves the helper proxy to access formatting methods.
+    #               It allows the controller to use logic usually reserved for views.
+    h = ActionController::Base.helpers
+
+    [
+      {
+        header: "Data Solicitação",
+        # Explanation:: This lambda extracts the request date from each redemption record.
+        #               It formats the date using I18n localization or returns 'N/A' if nil.
+        key: ->(redemption) do
+          redemption.request_date ?
+            I18n.l(redemption.request_date, format: :short) :
+            'N/A'
+        end,
+        width: 85
+      },
+      {
+        header: "Data Cotização",
+        # Explanation:: This lambda extracts the cotization date from each redemption record.
+        #               It formats the date using I18n localization or returns 'N/A' if nil.
+        key: ->(redemption) do
+          redemption.cotization_date ?
+            I18n.l(redemption.cotization_date, format: :short) :
+            'N/A'
+        end,
+        width: 85
+      },
+      {
+        header: "Fundo",
+        # Explanation:: This lambda navigates through the association chain to retrieve
+        #               the fund name from the related InvestmentFund record.
+        key: ->(redemption) do
+          redemption.fund_investment.investment_fund.fund_name
+        end,
+        width: 150
+      },
+      {
+        header: "Carteira",
+        # Explanation:: This lambda retrieves the portfolio name from the parent
+        #               FundInvestment record, showing which portfolio this redemption belongs to.
+        key: ->(redemption) do
+          redemption.fund_investment.portfolio.name
+        end,
+        width: 100
+      },
+      {
+        header: "Tipo",
+        # Explanation:: This lambda translates the redemption type from database values
+        #               ('total', 'partial') to Portuguese display labels for clarity.
+        key: ->(redemption) do
+          case redemption.redemption_type
+          when 'total'
+            'Total'
+          when 'partial'
+            'Parcial'
+          else
+            redemption.redemption_type || 'N/A'
+          end
+        end,
+        width: 60
+      },
+      {
+        header: "Cotas Resgatadas",
+        # Explanation:: This lambda formats the redeemed quotas using the helper proxy.
+        #               It ensures consistent decimal precision across the document.
+        key: ->(redemption) do
+          h.number_with_precision(
+            redemption.redeemed_quotas,
+            precision: 2,
+            separator: ",",
+            delimiter: "."
+          )
+        end,
+        width: 90
+      },
+      {
+        header: "Valor Líquido",
+        # Explanation:: This lambda formats the redeemed liquid value as Brazilian currency.
+        #               It uses the helper proxy to ensure consistent currency formatting.
+        key: ->(redemption) do
+          h.number_to_currency(
+            redemption.redeemed_liquid_value,
+            unit: "R$ ",
+            separator: ",",
+            delimiter: "."
+          )
+        end,
+        width: 90
+      },
+      {
+        header: "Rendimento",
+        # Explanation:: This lambda formats the redemption yield as currency if present.
+        #               It returns 'N/A' for nil values to maintain data clarity.
+        key: ->(redemption) do
+          if redemption.redemption_yield
+            h.number_to_currency(
+              redemption.redemption_yield,
+              unit: "R$ ",
+              separator: ",",
+              delimiter: "."
+            )
+          else
+            'N/A'
+          end
+        end,
+        width: 80
+      }
+    ]
+  end
+
+  # == pdf_export_data
+  #
+  # @author Moisés Reis
+  # @category *Configuration*
+  #
+  # Configuration:: This method retrieves the collection of redemption records to be exported.
+  #                 It applies the same scoping, filtering, and sorting logic as the index action
+  #                 to ensure consistency between the displayed data and the exported data.
+  #
+  # Attributes:: - *@return* @ActiveRecord::Relation - The filtered and sorted collection of redemptions.
+  #
+  def pdf_export_data
+    # Explanation:: This retrieves only the fund investment IDs that the current user
+    #               has permission to access, establishing the authorization scope.
+    fund_investment_ids = FundInvestment.accessible_to(current_user).select(:id)
+
+    # Explanation:: This creates the base query scope by filtering redemptions linked
+    #               to accessible fund investments and eagerly loading related associations.
+    base_scope = Redemption.where(fund_investment_id: fund_investment_ids)
+                           .includes(
+                             fund_investment: [
+                               :portfolio,
+                               :investment_fund
+                             ]
+                           )
+
+    # Explanation:: This initializes the Ransack search object with any filter
+    #               parameters passed in the URL, preserving the user's current filters.
+    @q = base_scope.ransack(params[:q])
+
+    # Explanation:: This determines the sorting column and direction, defaulting to
+    #               request_date descending to show most recent redemptions first.
+    sort = params[:sort].presence || "request_date"
+    direction = params[:direction].presence || "desc"
+
+    # Explanation:: This executes the search query and applies the sorting order,
+    #               returning the final collection ready for PDF generation.
+    @q.result(distinct: true).order("#{sort} #{direction}")
+  end
+
+  # == pdf_export_metadata
+  #
+  # @author Moisés Reis
+  # @category *Utility*
+  #
+  # Utility:: This method compiles the summary information for the PDF report.
+  #            It calculates aggregate statistics and formats them for display
+  #            in the metadata section of the exported document.
+  #
+  # Attributes:: - *pdf_export_data* - The collection of records used to calculate the total.
+  #
+  def pdf_export_metadata
+    # Explanation:: This retrieves the helper proxy to access formatting methods.
+    #               It allows the controller to use logic usually reserved for views.
+    h = ActionController::Base.helpers
+
+    # Explanation:: This retrieves the complete data collection to calculate
+    #               aggregate statistics like totals and counts.
+    data = pdf_export_data
+
+    {
+      'Usuário' => current_user.full_name,
+      'E-mail' => current_user.email,
+      # Explanation:: This counts the total number of redemption records in the export.
+      'Total de resgates' => data.size.to_s,
+      # Explanation:: This calculates and formats the sum of all redeemed liquid values
+      #               using the helper proxy for consistent currency formatting.
+      'Valor total resgatado' => h.number_to_currency(
+        data.sum(:redeemed_liquid_value),
+        unit: "R$ ",
+        separator: ",",
+        delimiter: "."
+      ),
+      # Explanation:: This calculates and formats the sum of all redeemed quotas
+      #               using the helper proxy for consistent number formatting.
+      'Cotas totais resgatadas' => h.number_with_precision(
+        data.sum(:redeemed_quotas),
+        precision: 2,
+        separator: ",",
+        delimiter: "."
+      )
+    }
   end
 end

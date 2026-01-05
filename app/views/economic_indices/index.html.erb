@@ -1,0 +1,210 @@
+<%#
+  # Partial: index.html.erb
+  # Date: 12/23/2025
+  # Author: Moisés Reis
+  # Package: EconomicIndices
+  #
+  # Description: Renders the index view for the **EconomicIndex** resource, displaying a
+  #              data table of all available economic indicators and providing filtering options.
+  #
+  # Usage: - What: Displays a comprehensive, sortable list of all registered economic indices, showing essential
+  #                details like name, abbreviation, description, and latest recorded value.
+  #        - How: Wraps the content in a dashboard layout and renders two nested partials for the data table and the filtering sidebar.
+  #               Uses the @economic_indices collection and the Ransack object @q.
+  #        - Why: Provides users with an interface to visualize, search, and filter economic indicator data, supporting performance
+  #               analysis and benchmark comparisons across the investment portfolio system.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure visual consistency. It acts as the
+  #               main container by setting the page title and descriptive labels.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Índices Econômicos",
+           page_desc: "Visualize os indicadores econômicos cadastrados e seus dados essenciais.",
+           current_view: "datatable" do
+%>
+
+  <%# Explanation:: This partial generates a dynamic table to list economic indicators
+    #               clearly. It presents organized data to the user and works by
+    #               receiving headers and data-fetching logic as local arguments.
+    %>
+  <%= render partial: "partials/blocks/data-table", locals: {
+
+    # Explanation:: This array defines the text labels displayed at the top of
+    #               the table columns. It provides context for the economic data
+    #               and works by mapping each string to a specific header cell.
+    columns_header: [
+      "Nome",
+      "Sigla",
+      "Descrição",
+      "Último Valor",
+      "Última Atualização",
+      "Criado em"
+    ],
+
+    # Explanation:: This collection holds visual icons to accompany the column
+    #               titles for better recognition. It beautifies the header and
+    #               works by rendering specific symbols for each data type.
+    columns_icons: [
+      "trending-up",
+      "hash",
+      "info",
+      "bar-code",
+      "work-history",
+      "calendar"
+    ],
+
+    # Explanation:: This list contains the logic for filling each row with index
+    #               details. It handles data extraction and works by executing
+    #               formatting functions for every record in the indices collection.
+    columns_body: [
+      :name,
+
+      # Explanation:: This function displays the index abbreviation using a unique
+      #               badge style to help it stand out. It identifies the index
+      #               code quickly and works by applying a monospace font style.
+      ->(economic_index) do
+        content_tag(
+          :span,
+          economic_index.abbreviation,
+          class: "font-mono font-semibold text-sm bg-slate-100 px-2 py-1 rounded"
+        )
+      end,
+
+      # Explanation:: This logic displays a shortened version of the index description
+      #               to keep the table readable. It shows a default message if
+      #               empty and works by cutting the text at sixty characters.
+      ->(economic_index) do
+        if economic_index.description.present?
+          content_tag(
+            :span,
+            truncate(economic_index.description, length: 60),
+            class: "text-sm",
+            title: economic_index.description
+          )
+        else
+          content_tag(:span, "N/A", class: "text-muted")
+        end
+      end,
+
+      # Explanation:: This function retrieves the most recent numeric value recorded
+      #               for the index from its history. It presents the latest rate
+      #               and works by formatting the number with four decimal places.
+      ->(economic_index) do
+        latest_value = economic_index.latest_value
+        if latest_value.present?
+          content_tag(
+            :span,
+            number_with_precision(latest_value, precision: 4),
+            class: "font-mono font-medium"
+          )
+        else
+          content_tag(:span, "Sem dados", class: "text-muted")
+        end
+      end,
+
+      # Explanation:: This logic finds the date of the very last entry in the index
+      #               history log. It informs the user how fresh the data is
+      #               and works by searching for the most recent chronological date.
+      ->(economic_index) do
+        latest_history = economic_index.economic_index_histories.order(date: :desc).first
+        if latest_history.present?
+          content_tag(
+            :span,
+            l(latest_history.date, format: :short),
+            class: "text-sm"
+          )
+        else
+          content_tag(:span, "N/A", class: "text-muted")
+        end
+      end,
+
+      # Explanation:: This instruction formats the database registration timestamp
+      #               into a human-readable layout. It tracks the record history
+      #               and works by applying the system's standard date styling.
+      ->(economic_index) do
+        formatted_timestamp(economic_index.created_at)
+      end
+    ],
+
+    # Explanation:: This attribute provides the actual list of economic index
+    #               objects retrieved from the database. It serves as the data
+    #               source and works by feeding records into the table display loop.
+    models: @economic_indices,
+
+    # Explanation:: This configuration sets the rules for how users can reorder
+    #               the list of indices. It allows for custom sorting and
+    #               works by integrating with the active search parameters.
+    sort_options: [],
+
+    # Explanation:: This object manages the current search and sort criteria
+    #               for the collection. It tracks user filters and works by
+    #               generating valid database queries via the Ransack gem.
+    q_object: @q,
+
+    # Explanation:: This path tells the table where to send search and page
+    #               requests. It keeps the user on the correct page and
+    #               works by linking actions to the economic indices route.
+    search_url: economic_indices_path,
+
+    # Explanation:: This unique identifier allows the table to update without
+    #               refreshing the entire page. It improves speed and works
+    #               by isolating table content within a specific Turbo Frame.
+    turbo_frame_id: "economic_indices_table",
+
+    # Explanation:: This setting provides a link for users to download the
+    #               list as an external file. It enables reporting features
+    #               and works by activating an export button when a URL is set.
+    export_url: nil
+  } %>
+<% end %>
+
+<%# Explanation:: This partial renders a sidebar with search inputs to help
+  #               users find specific indicators. It refines the list and
+  #               works by sending form data to the table's Turbo Frame.
+  %>
+<%= render partial: "partials/route/dashboard/filters", locals: {
+
+  # Explanation:: This search object connects the filter fields to the active
+  #               query logic. It initializes the input values and works
+  #               by syncing with the current database search parameters.
+  q_object: @q,
+
+  # Explanation:: This destination URL determines where the search filters
+  #               are sent upon submission. It updates the displayed data
+  #               and works by targeting the main economic indices route.
+  search_url: economic_indices_path,
+
+  # Explanation:: This list defines the specific text and icon for each
+  #               filter box. It builds the search form and works by
+  #               generating inputs for names, abbreviations, and descriptions.
+  filters: [
+    {
+      key: :name_cont,
+      label: "Nome do índice",
+      description: "Exibe índices cujo nome contenha estes caracteres.",
+      placeholder: "Nome do índice",
+      icon_name: "file-text"
+    },
+    {
+      key: :abbreviation_cont,
+      label: "Sigla",
+      description: "Filtra índices pela sigla oficial (ex: IPCA, CDI, SELIC).",
+      placeholder: "Sigla",
+      icon_name: "hash"
+    },
+    {
+      key: :description_cont,
+      label: "Descrição",
+      description: "Busca por termos presentes na descrição do índice.",
+      placeholder: "Descrição",
+      icon_name: "info"
+    }
+  ],
+
+  # Explanation:: This ID links the filter results directly to the table
+  #               container for seamless updates. It prevents full page
+  #               reloads and works by targeting the correct Turbo Frame.
+  turbo_frame_id: "economic_indices_table"
+} %>

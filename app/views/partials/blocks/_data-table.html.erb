@@ -22,40 +22,48 @@
   %>
 <div class="flex flex-col gap-3">
 
+  <% content_for :page_total do %>
+    <%= models.respond_to?(:total_count) ? models.total_count : models.size %>
+  <% end %>
+
   <%# [Condition] Checks if q_object exists.
     #             Shows the filter and export controls when the condition is true.
     %>
   <% if q_object %>
     <div class="flex flex-row [&>div]:flex [&>div]:flex-row [&>div]:gap-1.5 [&>div]:items-center justify-between items-center gap-6">
       <div class="justify-start">
-        <%= button_tag id: "openFiltersBtn",
-                       class: "button button-ghost button-small" do
-        %>
-          <%= inline_svg_tag "icons/sliders-horizontal.svg" %>
-          <%= content_tag :span, "Ver filtros" %>
-        <% end %>
-        <div class="h-4 w-[1px] bg-border"></div>
         <%= link_to search_url,
-                    class: "button button-ghost button-small",
+                    class: "button button-outline button-small",
                     data: { turbo_frame: turbo_frame_id } do
         %>
           <%= inline_svg_tag "icons/refresh-cw.svg" %>
           <%= content_tag :span, "Limpar filtros" %>
         <% end %>
         <div class="h-4 w-[1px] bg-border"></div>
+        <%= button_tag id: "openFiltersBtn",
+                       class: "button button-outline button-small" do
+        %>
+          <%= inline_svg_tag "icons/sliders-horizontal.svg" %>
+          <%= content_tag :span, "Ver filtros" %>
+        <% end %>
+        <div class="h-4 w-[1px] bg-border"></div>
         <%= link_to new_polymorphic_path(models.klass),
-                    class: "button button-ghost button-small",
+                    class: "button button-accent button-small",
                     data: { turbo_frame: turbo_frame_id } do %>
           <%= inline_svg_tag "icons/plus.svg" %>
           <%= content_tag :span, "Adicionar item" %>
         <% end %>
       </div>
       <div class="justify-end">
-        <%= button_tag type: :submit,
-                       class: "button button-ghost button-small" do
-        %>
-          <%= inline_svg_tag "icons/file-chart-column.svg" %>
-          <%= content_tag :span, "Exportar" %>
+        <% if export_url.present? %>
+          <%= link_to export_url,
+                      class: "button button-secondary button-small",
+                      target: "_blank",
+                      data: { turbo: false } do
+          %>
+            <%= inline_svg_tag "icons/file-chart-column.svg" %>
+            <%= content_tag :span, "Exportar" %>
+          <% end %>
         <% end %>
       </div>
     </div>
@@ -72,40 +80,3 @@
     <%= paginate models %>
   </div>
 </div>
-
-<!--
-[Script] Render the JavaScript code to
-         close and open the filter's sidebar
--->
-<script>
-    let sidebar;
-    let openBtn;
-    let closeBtn;
-    let filterOverlay;
-
-    function openSidebar() {
-        sidebar.classList.add('!translate-x-0');
-        filterOverlay.classList.remove('hidden')
-    }
-
-    function closeSidebar() {
-        sidebar.classList.remove('!translate-x-0');
-        filterOverlay.classList.add('hidden')
-    }
-
-    function setupEventListeners() {
-        sidebar = document.getElementById('sidebarFilters');
-        openBtn = document.getElementById('openFiltersBtn');
-        closeBtn = document.getElementById('closeFiltersBtn');
-        filterOverlay = document.getElementById('filterOverlay')
-
-        if (sidebar && openBtn && closeBtn) {
-            openBtn.addEventListener('click', openSidebar);
-            closeBtn.addEventListener('click', closeSidebar);
-        } else {
-            console.error("Sidebar setup failed: One or more IDs were not found in the HTML.");
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', setupEventListeners);
-</script>

@@ -1,0 +1,171 @@
+<%#
+  # Partial: _show_layout.html.erb
+  # Location: app/views/shared/_show_layout.html.erb
+  # Date: 12/21/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Universal show view layout that renders any model's detail page
+  #              based on a configuration hash. This is the single source of truth
+  #              for all show view rendering logic.
+  #
+  # Usage: <%= render 'shared/show_layout', config: @show_config %>
+%>
+
+<% config ||= {} %>
+<% page = config[:page] || {} %>
+<% sections = config[:sections] || [] %>
+
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: page[:title],
+           page_desc: page[:description],
+           current_view: page[:view] || "show" do
+%>
+  <% sections.each do |section| %>
+    <%= render "partials/route/dashboard/section",
+               title: section[:title],
+               desc: section[:desc],
+               columns: section[:columns],
+               has_action: section[:has_action],
+               button_route: section[:button_route],
+               button_name: section[:button_name],
+               button_icon: section[:button_icon] do
+    %>
+      <% section[:items].each do |item| %>
+        <% case item[:type] %>
+
+<% when :card %>
+          <%= render "partials/route/dashboard/card",
+                     title: item[:title],
+                     icon_name: item[:icon_name],
+                     data: item[:data],
+                     data_icon_name: item[:data_icon_name],
+                     status: item[:status],
+                     is_outline: item[:is_outline] do
+          %>
+            <%= item[:content]&.html_safe %>
+          <% end %>
+
+        <% when :summary_card %>
+          <%= render "partials/blocks/summary-card",
+                     card_title: item[:title],
+                     card_icon: item[:icon],
+                     card_data: item[:data],
+                     card_data_icon: item[:data_icon],
+                     is_success: item[:is_success],
+                     is_danger: item[:is_danger],
+                     is_warning: item[:is_warning] do
+          %>
+            <%= item[:content]&.html_safe %>
+          <% end %>
+
+        <% when :chart %>
+          <%= render "partials/route/dashboard/chart",
+                     data_source: item[:data_source],
+                     title: item[:title] do
+          %>
+            <%= item[:content]&.html_safe %>
+          <% end %>
+
+        <% when :table %>
+          <% if item[:models]&.any? %>
+            <%= render partial: "partials/modules/table",
+                       locals: {
+                         columns_header: item[:columns_header],
+                         columns_icons: item[:columns_icons],
+                         columns_body: item[:columns_body],
+                         models: item[:models]
+                       }
+            %>
+          <% else %>
+            <%= content_tag :p, item[:empty_message], class: "text-muted font-mono" %>
+          <% end %>
+
+        <% when :info_card %>
+          <%= render "partials/blocks/info-card",
+                     title: item[:title],
+                     subtitle: item[:subtitle],
+                     main_value: item[:main_value],
+                     sub_value: item[:sub_value],
+                     icon_name: item[:icon_name],
+                     main_color: item[:main_color]
+          %>
+
+        <% when :list %>
+          <% if item[:items]&.any? %>
+            <% item[:items].each do |list_item| %>
+              <%= render "partials/blocks/info-card",
+                         title: list_item[:title],
+                         subtitle: list_item[:subtitle],
+                         main_value: list_item[:main_value],
+                         sub_value: list_item[:sub_value],
+                         icon_name: list_item[:icon_name],
+                         main_color: list_item[:main_color]
+              %>
+            <% end %>
+
+            <% if item[:show_all_link] %>
+              <%= link_to item[:show_all_link][:url], class: "button button-outline w-fit" do %>
+                <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+                <%= content_tag :span, item[:show_all_link][:text] %>
+              <% end %>
+            <% end %>
+          <% else %>
+            <%= content_tag :p, item[:empty_message], class: "text-muted font-mono py-6" %>
+          <% end %>
+
+        <% when :separator %>
+          <%= render "partials/modules/separator" %>
+
+        <% when :subsection %>
+          <%= render "partials/route/dashboard/section",
+                     title: item[:config][:title],
+                     desc: item[:config][:desc],
+                     columns: item[:config][:columns],
+                     has_action: item[:config][:has_action],
+                     button_route: item[:config][:button_route],
+                     button_name: item[:config][:button_name],
+                     button_icon: item[:config][:button_icon] do
+          %>
+            <% item[:config][:items].each do |subitem| %>
+              <% case subitem[:type] %>
+<% when :info_card %>
+                <%= render "partials/blocks/info-card",
+                           title: subitem[:title],
+                           subtitle: subitem[:subtitle],
+                           main_value: subitem[:main_value],
+                           sub_value: subitem[:sub_value],
+                           icon_name: subitem[:icon_name],
+                           main_color: subitem[:main_color]
+                %>
+              <% when :list %>
+                <% if subitem[:items]&.any? %>
+                  <% subitem[:items].each do |list_item| %>
+                    <%= render "partials/blocks/info-card",
+                               title: list_item[:title],
+                               subtitle: list_item[:subtitle],
+                               main_value: list_item[:main_value],
+                               sub_value: list_item[:sub_value],
+                               icon_name: list_item[:icon_name],
+                               main_color: list_item[:main_color]
+                    %>
+                  <% end %>
+
+                  <% if subitem[:show_all_link] %>
+                    <%= link_to subitem[:show_all_link][:url], class: "button button-outline w-fit" do %>
+                      <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+                      <%= content_tag :span, subitem[:show_all_link][:text] %>
+                    <% end %>
+                  <% end %>
+                <% else %>
+                  <%= content_tag :p, subitem[:empty_message], class: "text-muted font-mono" %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

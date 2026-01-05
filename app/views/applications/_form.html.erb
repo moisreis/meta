@@ -1,103 +1,163 @@
 <%#
-  # Partial: _form.html
+  # Partial: _form.html.erb
   # Date: 11/25/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Defines the input fields and structure for creating or updating a financial transaction record (e.g., investment application or redemption).
-  #              The form collects all necessary monetary, quota, and date details for the transaction.
+  # Description: This file defines the structure for recording financial
+  #              transactions like applications or redemptions.
+  #              It collects amounts, quotas, and relevant dates.
   #
-  # Usage: - What: Renders the core interface used by the user to input data for an investment transaction.
-  #                It includes fields for the investment target, financial amounts, and relevant transaction dates.
-  #        - How: Is rendered by the 'new' or 'edit' views of the transaction resource (e.g., applications controller).
-  #               Submits data via AJAX or standard form submission using the `form_with` helper.
-  #        - Why: Provides the essential mechanism for users to record detailed financial operations within their investment portfolios.
+  # Usage: - What: Renders the core interface for users to input data
+  #               related to a specific investment operation.
+  #         - How: Uses **form_with** to gather data and nested modules
+  #               to ensure consistent input behavior across the app.
+  #         - Why: Provides a standardized way to track financial
+  #               movements and their impact on portfolio quotas.
+  %>
+
+<%# Explanation:: This helper starts a form that connects the user's
+  #               input to the application model and applies layout
+  #               styles to keep the contents organized.
   %>
 <%= form_with(model: application, class: "contents") do |form| %>
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <%# Explanation:: This block creates a visual group for the
+    #               transaction destination, helping users identify
+    #               exactly where the investment is being placed.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Destino da Transação",
+             fieldset_desc: "Identifique o fundo e a carteira específica que receberão esta movimentação." do %>
+
+    <%# Explanation:: This line displays a dropdown menu that lets
+      #               the user select a specific fund and portfolio
+      #               combination from a predefined list.
+      %>
     <%= render "partials/modules/select",
                f: form,
                name: :fund_investment_id,
                label: "Investimento alvo",
-               options_collection: @fund_investments.map { |fi| ["#{fi.investment_fund.fund_name} (Carteira: #{fi.portfolio.name})", fi.id] },
-               is_half_width: false,
+               options_collection: @fund_investments.map { |fi| ["#{fi.investment_fund.fund_name} | #{fi.portfolio.name}", fi.id] },
                desc: "Escolha o fundo e a carteira onde a transação será registrada.",
                is_inactive: false
     %>
-  </div>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <% end %>
+
+  <%# Explanation:: This section groups the financial numbers of the
+    #               operation to ensure the user provides all the
+    #               necessary data for money calculations.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Valores Financeiros",
+             fieldset_desc: "Informe o capital investido, a quantidade de cotas e o preço unitário da cota." do %>
+
+    <%# Explanation:: This field captures the total amount of money
+      #               involved in the transaction, allowing for decimal
+      #               values to represent cents accurately.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :financial_value,
-               label: "Valor financeiro da transação",
+               label: "Valor financeiro da transaction",
                placeholder: "5000.00",
-               is_half_width: false,
                desc: "O valor total (R$) investido ou resgatado na transação.",
                field_type: :number_field,
                icon_name: "banknote",
                step: 0.01
     %>
+
+    <%# Explanation:: This input records how many pieces or quotas of
+      #               the fund the user is acquiring or selling, using
+      #               high precision for small fractional amounts.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :number_of_quotas,
                label: "Número de Cotas",
                placeholder: "Ex: 100.50",
-               is_half_width: false,
                desc: "A quantidade de cotas compradas ou vendidas.",
                field_type: :number_field,
                icon_name: "layers",
                step: 0.0001
     %>
+
+    <%# Explanation:: This field stores the price of a single quota
+      #               at the time of the transaction, which is vital
+      #               for future performance calculations.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :quota_value_at_application,
                label: "Valor da Cota na Aplicação",
                placeholder: "Ex: 50.00",
-               is_half_width: false,
                desc: "O valor (R$) da cota no momento da transação.",
                field_type: :number_field,
                icon_name: "banknote-arrow-up",
                step: 0.0001
     %>
-  </div>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <% end %>
+
+  <%# Explanation:: This grouping organizes the timeline of the
+    #               investment, showing exactly when each stage of
+    #               the financial process occurs.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Cronograma da Operação",
+             fieldset_desc: "Registre as datas importantes de solicitação, cotização e liquidação financeira." do %>
+
+    <%# Explanation:: This date picker records the day the user
+      #               first requested the transaction, serving as
+      #               the initial point of the record.
+      %>
     <%= render "partials/modules/date-field",
                f: form,
                name: :request_date,
                label: "Data do pedido",
                placeholder: "DD/MM/AAAA",
-               is_half_width: false,
                desc: "Data em que o pedido de aplicação ou resgate foi feito.",
                field_type: :date_field,
                icon_name: "calendar"
     %>
+
+    <%# Explanation:: This field tracks the specific day when the
+      #               fund price was officially applied to the
+      #               transaction for accounting purposes.
+      %>
     <%= render "partials/modules/date-field",
                f: form,
                name: :cotization_date,
                label: "Data de Cotização",
                placeholder: "DD/MM/AAAA",
-               is_half_width: false,
                desc: "Data em que a cota foi calculada e a transação efetivada.",
                field_type: :date_field,
                icon_name: "calculator"
     %>
+
+    <%# Explanation:: This line records the final day when the
+      #               money actually moves between bank accounts
+      #               to complete the financial cycle.
+      %>
     <%= render "partials/modules/date-field",
                f: form,
                name: :liquidation_date,
                label: "Data de Liquidação",
                placeholder: "DD/MM/AAAA",
-               is_half_width: false,
                desc: "Data em que o dinheiro efetivamente entra/sai da conta.",
                field_type: :date_field,
                icon_name: "file-text"
     %>
-  </div>
+  <% end %>
+
+  <%# Explanation:: This creates the final action button that
+    #               saves all the information entered by the user
+    #               into the application database.
+    %>
   <%= form.button :submit,
                   name: nil,
-                  class: "button button-primary w-fit flex items-center gap-2" do %>
-    <%= inline_svg_tag "icons/add.svg" %>
-    <%= content_tag :span, "Adicionar" %>
+                  class: "button button-primary w-fit flex items-center gap-2" do
+  %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+    <%= content_tag :span, button_name %>
   <% end %>
 <% end %>

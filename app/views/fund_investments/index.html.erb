@@ -37,7 +37,14 @@
     # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
     #                in the table header. Each icon visually represents the type of financial data
     #                contained in the corresponding column.
-    columns_icons: [],
+    columns_icons: [
+      "wallet",
+      "layers",
+      "shuffle",
+      "banknote",
+      "percent",
+      "calendar"
+    ],
 
     # [Explanation]: This is the core array containing lambda functions, where each function
     #                is responsible for processing and formatting the content for a single cell
@@ -52,7 +59,13 @@
       # [Explanation]: This lambda function safely displays the name of the associated investment fund.
       #                It uses the safe navigation operator (`&.`) to prevent errors if the investment fund
       #                object is null, displaying a dash (`—`) as a fallback.
-      ->(fi) { fi.investment_fund&.fund_name || "N/A" },
+      ->(fi) do
+        content_tag(
+          :span,
+          fi.investment_fund&.fund_name || "N/A",
+          class: "text-muted uppercase font-mono text-sm"
+        )
+      end,
 
       # [Explanation]: This lambda function displays the percentage of the portfolio allocated to the fund.
       #                It appends a percent sign (`%`) to the value if present,
@@ -109,7 +122,7 @@
 
     # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
     #                Since the value is nil, the export functionality is currently disabled.
-    export_url: nil
+    export_url: export_fund_investments_path(params[:q])
   } %>
 <% end %>
 <%= render partial: "partials/route/dashboard/filters", locals: {

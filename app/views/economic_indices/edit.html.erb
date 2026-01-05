@@ -1,0 +1,39 @@
+<%#
+  # Partial: edit.html.erb
+  # Date: 12/4/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the page for updating an existing Economic Index record.
+  #              It displays the edit form within the dashboard shell and allows
+  #              for modifications to indicator names and abbreviations.
+  #
+  # Usage: - What: Renders the full view dedicated to editing an existing economic indicator.
+  #                It provides the necessary form for updating index attributes.
+  #        - How: Renders the **wrapper** for layout and uses the **_form** partial
+  #               to handle the specific attribute inputs for the record.
+  #        - Why: Provides the interface necessary to maintain and correct economic
+  #               data, ensuring benchmarks and indicators remain accurate over time.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure visual consistency. It identifies
+  #               the specific index being edited by its name and provides a
+  #               standardized header for the management environment.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @economic_index.name,
+           page_desc: "Atualize as informações do indicador econômico conforme necessário." do
+%>
+
+  <%# Explanation:: This shared partial generates the specific input fields for the
+    #               economic index to facilitate data modification. It works by
+    #               receiving the existing record and setting the action button to
+    #               "Update" with a refreshing circular icon.
+    %>
+  <%= render "form",
+             economic_index: @economic_index,
+             button_name: "Atualizar",
+             icon_name: "refresh-cw"
+  %>
+<% end %>

@@ -15,7 +15,7 @@
   #        - Why: Provides the essential backward step in the pagination process,
   #               enhancing sequential browsing capability for the user.
   %>
-<span class="button button-ghost button-small">
+<span class="button button-ghost button-small !font-mono !uppercase !text-xs">
   <%= link_to_unless current_page.first?,
                      "Anterior".html_safe,
                      url,

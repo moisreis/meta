@@ -8,18 +8,18 @@
 #              The explanations are in the present simple tense.
 # @category *Model*
 #
-# Usage:: - *[What]* This code block manages the record of a new investment or subscription made by a user into a fund.
-#         - *[How]* It saves the financial value, calculates the number of quotas, enforces rules about transaction dates, and tracks quota usage for redemptions.
-#         - *[Why]* It ensures that all investment requests are properly recorded, validated against financial rules, and correctly matched against future redemptions.
+# Usage:: - *[What]* This code block manages the record of
+#           a new investment or subscription made by a user into a fund.
+#         - *[How]* It saves the financial value, calculates the number of quotas,
+#           enforces rules about transaction dates, and tracks quota usage for redemptions.
+#         - *[Why]* It ensures that all investment requests are properly recorded,
+#           validated against financial rules, and correctly matched against future redemptions.
 #
 # Attributes:: - *financial_value* @decimal - The monetary amount invested in the application.
 #              - *request_date* @date - The date the investment request is submitted.
 #              - *cotization_date* @date - The date the quota price is determined.
 #              - *liquidation_date* @date - The date the funds are settled.
-
-# Explanation:: explain what this line does in two or three lines.
-#               for singular lines of code that should be explanined.
-#               Like variables or modules.
+#
 class Application < ApplicationRecord
 
   # Explanation:: This establishes a direct link, indicating that every application belongs

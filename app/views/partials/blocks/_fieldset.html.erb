@@ -1,0 +1,27 @@
+<%# Partial: _fieldset.html
+  # Date: 12/17/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: This partial creates a structured grid container
+  #              that organizes input fields or nested content.
+  #              It provides a consistent border and background.
+  #
+  # Usage: - What: A layout wrapper that groups related form elements
+  #               into a clear, two-column visual section.
+  #         - How: It uses a CSS grid to split the available space
+  #               equally and adds spacing between each child item.
+  #         - Why: This keeps the user interface organized and makes
+  #               complex forms much easier for users to navigate.
+  %>
+<div class="flex flex-col gap-6">
+  <div class="flex flex-row items-center justify-start gap-3">
+    <div class="flex flex-col gap-1">
+      <%= content_tag :h2, fieldset_title, class: "text-heading font-heading font-semibold text-xl" %>
+      <%= content_tag :h2, fieldset_desc, class: "text-muted font-body text-sm" %>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-6">
+    <%= yield %>
+  </div>
+</div>

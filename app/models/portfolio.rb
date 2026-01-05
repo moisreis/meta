@@ -8,9 +8,12 @@
 #              total portfolio value and managing access permissions for other **User** records.
 # @category *Model*
 #
-# Usage:: - *[What]* This code block defines a user-owned container for managing and tracking a set of specific **FundInvestment** holdings.
-#         - *[How]* It aggregates financial metrics from its associated investments and uses the **user_portfolio_permissions** table to define sharing rules.
-#         - *[Why]* The application needs this class to give the **User** a way to organize their holdings, monitor total performance, and delegate viewing access.
+# Usage:: - *[What]* This code block defines a user-owned container
+#           for managing and tracking a set of specific **FundInvestment** holdings.
+#         - *[How]* It aggregates financial metrics from its associated investments
+#           and uses the **user_portfolio_permissions** table to define sharing rules.
+#         - *[Why]* The application needs this class to give the **User** a way to organize
+#           their holdings, monitor total performance, and delegate viewing access.
 #
 # Attributes:: - *user_id* @integer - The unique ID of the **User** who owns this portfolio.
 #              - *name* @string - A user-friendly name assigned to this portfolio (e.g., "Retirement Savings").

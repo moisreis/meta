@@ -9,8 +9,10 @@
 # @category *Controller*
 #
 # Usage:: - *[What]* This code block controls the master list of all investment funds that users can invest in.
-#         - *[How]* It uses authorization checks via **CanCan** to manage who can create or modify funds, and it handles searching and sorting of the fund list.
-#         - *[Why]* It provides a centralized and secure mechanism for managing the financial instruments offered by the application.
+#         - *[How]* It uses authorization checks via **CanCan** to manage
+#           who can create or modify funds, and it handles searching and sorting of the fund list.
+#         - *[Why]* It provides a centralized and secure mechanism
+#           for managing the financial instruments offered by the application.
 #
 # Attributes:: - *@investment_fund* @object - The specific fund being handled (show, update, destroy).
 #              - *@investment_funds* @collection - The filtered and paginated list of funds for the index view.
@@ -61,6 +63,10 @@ class InvestmentFundsController < ApplicationController
     #               applying any search criteria passed by the user in the web address.
     @q = base_scope.ransack(params[:q])
 
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = InvestmentFund.count
+
     # Explanation:: This executes the search query defined by **Ransack**, returning a
     #               unique list of investment funds that match the search criteria.
     filtered_and_scoped_funds = @q.result(distinct: true)
@@ -79,7 +85,7 @@ class InvestmentFundsController < ApplicationController
 
     # Explanation:: This prepares the final data for the page, dividing the complete
     #               list into pages of 2 items to improve performance and readability.
-    @models = sorted_funds.page(params[:page]).per(20)
+    @models = sorted_funds.page(params[:page]).per(14)
 
     # Explanation:: This sets the instance variable that the view expects, using the
     #               paginated data prepared in the previous step.
@@ -137,7 +143,7 @@ class InvestmentFundsController < ApplicationController
   #
   # Create:: This action attempts to save a new investment fund record to the
   #          database. It first checks for creation permissions and returns
-  #          a success or error message as a JSON response.
+  #          a success or error message.
   #
   # Attributes:: - *investment_fund_params* - The sanitized input data from the user form.
   #
@@ -151,11 +157,7 @@ class InvestmentFundsController < ApplicationController
     # Explanation:: This checks if the new fund object successfully passes
     #               all database validations and saves the record.
     if @investment_fund.save
-      render json: {
-        status: 'Success',
-      }, status: :created
     else
-      render json: { status: 'Error', errors: @investment_fund.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
@@ -165,15 +167,13 @@ class InvestmentFundsController < ApplicationController
   # @category *Update*
   #
   # Update:: This action attempts to modify an existing investment fund record
-  #          with new data. It returns a success or error message as a JSON response.
+  #          with new data.
   #
   # Attributes:: - *investment_fund_params* - The sanitized input data for updating the record.
   #
   def update
     if @investment_fund.update(investment_fund_params)
-      render json: { status: 'Success' }
     else
-      render json: { status: 'Error', errors: @investment_fund.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
@@ -183,13 +183,11 @@ class InvestmentFundsController < ApplicationController
   # @category *Delete*
   #
   # Delete:: This action deletes the investment fund record from the database.
-  #          It returns a simple success confirmation as a JSON response.
   #
   # Attributes:: - *@investment_fund* - The fund object to be destroyed.
   #
   def destroy
     @investment_fund.destroy
-    render json: { status: 'Success', message: 'Investment fund deleted' }, status: :ok
   end
 
   private

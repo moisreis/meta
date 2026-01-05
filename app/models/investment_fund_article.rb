@@ -1,4 +1,4 @@
-# === investment_fund_article.rb
+# === investment_fund_article
 #
 # @author Moisés Reis
 # @added 12/4/2025
@@ -23,6 +23,7 @@
 #                the specific regulatory article.
 #
 class InvestmentFundArticle < ApplicationRecord
+
   # Explanation:: This line establishes a many-to-one relationship, stating that
   #               every instance of an investment fund article belongs to
   #               a single investment fund record.

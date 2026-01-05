@@ -18,12 +18,24 @@
 <%# [Variable] Checks if the wrapper should have a `danger` border. %>
 <% is_danger ||= false %>
 
+<%# [Variable] Checks if the wrapper should have full width. %>
+<% is_full_width ||= false %>
+
+<%# [Variable] Checks if the wrapper should have a `primary` style. %>
+<% is_primary ||= false %>
+
+<%# [Variable] Checks if the wrapper should have a `outline` style. %>
+<% is_outline ||= false %>
+
 <%# [Variable] Defines the CSS classes for the wrapper.
   #            Controls spacing, font style, and disabled appearance.
   %>
 <% wrapper_classes = [
-  "relative rounded-base overflow-hidden p-6 bg-accent flex flex-col justify-start gap-3 w-fit",
-  ("!bg-danger-50" if is_danger),
+  "relative rounded-base overflow-hidden p-6 bg-accent flex flex-col justify-start gap-3 w-fit shadow-xs",
+  ("!bg-danger-100" if is_danger),
+  ("!bg-primary-50 border border-primary-100" if is_primary),
+  ("!bg-white border border-border" if is_outline),
+  ("!w-[100%]" if is_full_width),
 ].compact.join(" ") %>
 
 <div class="<%= wrapper_classes %>">
@@ -31,6 +43,6 @@
     <%= content_tag :h2, card_title, class: "text-heading font-heading text-lg font-semibold w-1/2" %>
     <%= content_tag :p, card_desc, class: "text-body font-body text-sm font-normal text-left w-1/2" %>
   </div>
-  <%= image_tag(bg_path, class: "absolute -bottom-12 -right-12 z-10 size-64", alt: "Background") %>
+  <%= image_tag(bg_path, class: "absolute -bottom-12 -right-12 z-10 size-56", alt: "Background") %>
   <%= yield %>
 </div>

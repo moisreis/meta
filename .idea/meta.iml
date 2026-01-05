@@ -59,6 +59,8 @@
     <orderEntry type="library" scope="PROVIDED" name="concurrent-ruby (v1.3.5, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="connection_pool (v2.5.4, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="crass (v1.0.6, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="css_parser (v1.21.1, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="csv (v3.3.2, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="date (v3.5.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="debug (v1.11.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="devise (v4.9.4, ruby-3.4.7-p58) [gem]" level="application" />
@@ -110,8 +112,12 @@
     <orderEntry type="library" scope="PROVIDED" name="ostruct (v0.6.3, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="parallel (v1.27.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="parser (v3.3.10.0, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="pdf-core (v0.10.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="pg (v1.6.2, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="pp (v0.6.3, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="prawn (v2.5.0, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="prawn-svg (v0.38.1, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="prawn-table (v0.2.2, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="prettyprint (v0.2.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="prism (v1.6.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="propshaft (v1.3.1, ruby-3.4.7-p58) [gem]" level="application" />
@@ -159,6 +165,7 @@
     <orderEntry type="library" scope="PROVIDED" name="thruster (v0.1.16, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="timeout (v0.4.4, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="tsort (v0.2.0, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="ttfunk (v1.8.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="turbo-rails (v2.0.20, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="tzinfo (v2.0.6, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="tzinfo-data (v1.2025.2, ruby-3.4.7-p58) [gem]" level="application" />

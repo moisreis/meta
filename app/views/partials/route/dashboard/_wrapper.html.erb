@@ -4,34 +4,49 @@
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Provides the core grid structure for the dashboard views. It combines
-  #              the persistent sidebar partial with the main content container and
-  #              injects the view-specific content into the defined layout.
+  # Description: This file creates the main structural frame for the dashboard.
+  #              It organizes how the sidebar and the main content area fit
+  #              together on the screen using a grid system.
   #
-  # Usage: - What: Renders the full dashboard layout, encompassing the sidebar
-  #                and the main content container, and injects the calling view's
-  #                content (via `yield`) into the appropriate structural position.
-  #                It defaults the `current_view` variable to "form".
-  #        - How: Uses a <main> element with a 16-column grid to position the
-  #               sidebar and the container partials. It passes title and description
-  #               variables to the container.
-  #        - Why: Establishes a uniform and centralized structural wrapper for all
-  #               dashboard-level views, promoting consistency and maintainability.
+  # Usage: - What: This partial acts as a master container that wraps around
+  #                different views like forms or tables to keep them organized.
+  #        - How: It sets up a large grid layout, places the navigation sidebar
+  #               on one side, and leaves a dedicated space for the main content.
+  #        - Why: It ensures that every page in the dashboard looks consistent
+  #               and follows the same layout rules without repeating code.
   %>
 
-<%# [Configuration] Defines the default view type (e.g., 'form', 'table') if none is passed.
-  #                 This variable is passed to the container partial to determine
-  #                 specific layout or styling adjustments.
+<%# Explanation:: This line checks if a specific view type is already set.
+  #               If no type is provided, it safely defaults to a form
+  #               layout to ensure the page displays correctly.
   %>
 <% current_view ||= "form" %>
 
+<%# Explanation:: This block sets the text that appears on the browser tab.
+  #               It combines the app name with a specific page title
+  #               to help the user identify which section they are visiting.
+  %>
 <% content_for :title do %>
   Meta - <%= page_title %>
 <% end %>
 
 <main class="grid grid-cols-16 no-scrollbar">
+
+  <%# Explanation:: This line calls the sidebar menu into the layout.
+    #               It places the navigation links on the left side so
+    #               the user can move between different app features.
+    %>
   <%= render 'partials/route/dashboard/sidebar' %>
-  <%= render 'partials/route/dashboard/container', page_title: page_title, page_desc: page_desc, current_view: current_view do %>
+
+  <%# Explanation:: This block renders the main content area of the screen.
+    #               It accepts titles and descriptions and acts as a
+    #               placeholder where the actual page information is shown.
+    %>
+  <%= render 'partials/route/dashboard/container',
+             page_title: page_title,
+             page_desc: page_desc,
+             current_view: current_view do
+  %>
     <%= yield %>
   <% end %>
 </main>

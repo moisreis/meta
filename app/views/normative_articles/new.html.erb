@@ -1,25 +1,36 @@
 <%#
-  # Partial: new.html
+  # Partial: new.html.erb
   # Date: 12/4/2025
   # Author: Moisés Reis
-  # Package: NormativeArticles
+  # Package: Meta
   #
-  # Description: Displays the view required to initiate and create a new
-  #              NormativeArticle record. The page uses the dashboard wrapper
-  #              and renders the generic NormativeArticle form partial.
+  # Description:: Displays the view required to initiate and create a new
+  #               NormativeArticle record. The page uses the dashboard wrapper
+  #               and renders the generic NormativeArticle form partial.
   #
-  # Usage: - What: Renders the interface for creating a new normative article.
-  #                This file acts as the primary layout wrapper for the form.
-  #        - How: Accessed via the route for creating a new normative article
-  #               (e.g., GET /normative_articles/new). Passes the
-  #               `@normative_article` instance variable to the form partial.
-  #        - Why: Provides the entry point for defining new regulatory rules
-  #               and associating them with investment funds.
-%>
+  # Usage:: - What: Renders the interface for creating a new normative article.
+  #                 This file acts as the primary layout wrapper for the form.
+  #         - How: Accessed via the route for creating a new normative article
+  #                (e.g., GET /normative_articles/new). Passes the
+  #                @normative_article instance variable to the form partial.
+  #         - Why: Provides the entry point for defining new regulatory rules
+  #                and associating them with investment funds.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the creation page into a standardized
+  #               dashboard view with a specific title and subtitle. It is used as the
+  #               outer shell for the page and works by nesting the form within a
+  #               consistent visual header and content area.
+  %>
 <%= render "partials/route/dashboard/wrapper",
            page_title: "Criar novo artigo normativo",
            page_desc: "Cadastre um novo artigo normativo que poderá ser associado a fundos de investimento." do %>
 
+  <%# Explanation:: This shared partial generates the actual input fields needed to
+    #               collect normative data from the user. It appears inside the
+    #               wrapper and works by receiving the article model along with
+    #               custom labels and icons for the final action button.
+    %>
   <%= render "form",
              normative_article: @normative_article,
              button_name: "Adicionar",

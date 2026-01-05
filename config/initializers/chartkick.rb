@@ -65,7 +65,7 @@ Chartkick.options = {
     # Explanation:: This sets the default font applied across all chart text. It controls
     #               the family, size and weight so every chart uses the same typography.
     font: {
-      family: "'JetBrains Mono'",
+      family: "'Noto Sans Mono'",
       size: 12,
       weight: '400'
     },
@@ -129,7 +129,7 @@ Chartkick.options = {
           borderSkipped: true,
           borderWidth: 0,
           font: {
-            family: "'JetBrains Mono'",
+            family: "'Noto Sans Mono'",
             size: 12,
             weight: '400'
           },
@@ -155,7 +155,7 @@ Chartkick.options = {
         # Explanation:: This sets the font used in tooltip titles. It keeps titles readable
         #               and aligned with the app's typographic style.
         titleFont: {
-          family: "'JetBrains Mono'",
+          family: "'Noto Sans Mono'",
           size: 12,
           weight: '400',
           color: '#333333',
@@ -164,7 +164,7 @@ Chartkick.options = {
         # Explanation:: This sets the font for tooltip body text. It follows the same style
         #               rules to maintain visual balance inside the tooltip box.
         bodyFont: {
-          family: "'JetBrains Mono'",
+          family: "'Noto Sans Mono'",
           size: 12,
           weight: '400',
           color: '#8a8a8a',
@@ -178,7 +178,7 @@ Chartkick.options = {
       x: {
         ticks: {
           font: {
-            family: "'JetBrains Mono'",
+            family: "'Noto Sans Mono'",
             size: 12
           },
           color: '#8a8a8a',
@@ -191,7 +191,7 @@ Chartkick.options = {
       y: {
         ticks: {
           font: {
-            family: "'JetBrains Mono'",
+            family: "'Noto Sans Mono'",
             size: 12
           },
           color: '#8a8a8a'

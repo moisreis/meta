@@ -89,6 +89,10 @@ class ApplicationsController < ApplicationController
     #               unique list of applications that match the criteria.
     filtered_applications = @q.result(distinct: true)
 
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = Application.count
+
     # Explanation:: This checks the web address for a specific sort column, defaulting
     #               to sorting by the application's request date if none is specified.
     sort = params[:sort].presence || "request_date"
@@ -103,7 +107,7 @@ class ApplicationsController < ApplicationController
 
     # Explanation:: This prepares the final data for the page, dividing the complete
     #               list into pages of 20 items to improve performance and readability.
-    @applications = sorted_applications.page(params[:page]).per(20)
+    @applications = sorted_applications.page(params[:page]).per(14)
 
     respond_to do |format|
       format.html

@@ -1,40 +1,35 @@
 <%#
-  # View: edit.html.erb
+  # Partial: edit.html.erb
   # Date: 11/20/2025
   # Author: Moisés Reis
-  # Package: User
+  # Package: Meta
   #
   # Description: Renders the page for updating an existing User record. It displays the
   #              edit form and incorporates a dedicated, irreversible action section
   #              for deleting the user account and associated data.
   #
-  # Usage: - What: Renders the full view dedicated to editing an existing User record.
+  # Usage:: - What: Renders the full view dedicated to editing an existing User record.
   #                It includes the update form and a separate "Danger Zone" for account deletion.
-  #        - How: Renders the `_wrapper` for layout, passing the current user's full name as the title.
-  #               It uses the `_form` partial for input and a custom `_card` partial
-  #               to wrap the `button_to` helper, which performs the DELETE action.
-  #        - Why: Provides the interface necessary to execute the 'Update' and 'Delete'
-  #               functions (U and D in CRUD) for the User resource in a secure and consistent manner.
+  #         - How: Renders the **_wrapper** for layout, passing the current user's full name as the title.
+  #                It uses the **_form** partial for input and a custom **_card** partial.
+  #         - Why: Provides the interface necessary to execute the 'Update' and 'Delete'
+  #                functions (U and D in CRUD) for the User resource.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title to the user's full name.
   %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: @user.full_name,
            page_desc: "Atualize suas informações pessoais." do %>
+
+  <%# Explanation:: This helper renders the central input structure to modify
+    #               existing user details; it is used to save changes and
+    #               works by passing the current record and a refresh icon button.
+    %>
   <%= render "form",
              user: @user,
              button_name: "Atualizar",
              icon_name: "refresh-cw" %>
-  <%= render 'partials/blocks/card',
-             bg_path: "pixeltrue/bomb-9.svg",
-             is_danger: true,
-             card_title: "Excluir usuário".html_safe,
-             card_desc: "Tem certeza que deseja deletar esta conta? Esta ação é irreversível." do %>
-    <%= button_to @user,
-                  method: :delete,
-                  class: "button button-danger w-fit",
-                  data: { turbo_confirm: "Tem certeza que deseja excluir esta conta?" } do %>
-      <%= inline_svg_tag "icons/trash.svg" %>
-      <%= content_tag :span, "Deletar usuário" %>
-    <% end %>
-  <% end %>
 <% end %>
-

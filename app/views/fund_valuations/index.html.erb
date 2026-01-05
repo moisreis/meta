@@ -1,0 +1,274 @@
+<%#
+  # Partial: index.html
+  # Date: 12/19/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the index view for the **FundValuation** resource, displaying a
+  #              data table of daily fund quota values imported from CVM and other sources.
+  #
+  # Usage: - What: Displays a comprehensive, sortable list of all fund valuations, showing essential
+  #                details like date, fund name, CNPJ, quota value, daily changes, and data source.
+  #        - How: Wraps the content in a dashboard layout and renders two nested partials for the data table and the filtering sidebar.
+  #               Uses the `@fund_valuations` collection and the Ransack object `@q`.
+  #        - Why: Provides administrators with an interface to monitor imported market data quality,
+  #               verify data coverage, and identify gaps in the automated import process.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Cotações de Fundos",
+           page_desc: "Monitore as cotações diárias importadas da CVM e outras fontes de dados.",
+           current_view: "datatable" do
+%>
+  <!-- Data Health Summary Banner -->
+  <div class="flex flex-row items-center justify-between">
+    <div class="flex flex-col justify-start gap-1.5">
+      <div class="flex flex-row justify-between gap-12 border-b border-border pb-1.5">
+        <%= content_tag :span, "Total de registros", class: "font-mono uppercase text-muted" %>
+        <%= content_tag :span, @statistics[:total_records], class: "font-mono uppercase" %>
+      </div>
+      <div class="flex flex-row justify-between gap-12 border-b border-border py-1.5">
+        <%= content_tag :span, "Fundos únicos", class: "font-mono uppercase text-muted" %>
+        <%= content_tag :span, @statistics[:unique_funds], class: "font-mono uppercase" %>
+      </div>
+      <div class="flex flex-row justify-between gap-12 pt-1.5">
+        <%= content_tag :span, "Média", class: "font-mono uppercase text-muted" %>
+        <%= content_tag :span, number_to_currency(@statistics[:average_quota_value] || 0, unit: "R$"), class: "font-mono uppercase" %>
+      </div>
+    </div>
+    <div class="flex flex-col justify-start gap-1.5">
+      <%= link_to data_health_fund_valuations_path, class: "button button-outline" do %>
+        <%= content_tag :span, "Saúde dos Dados" %>
+      <% end %>
+      <%= button_to trigger_import_fund_valuations_path, method: :post, class: "button button-primary" do %>
+        <%= content_tag :span, "Importar Agora" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%= render partial: "partials/blocks/data-table", locals: {
+
+    # [Explanation]: This array defines the titles for each column in the table header.
+    #                The names correspond directly to the data fields displayed, providing clear
+    #                context about the fund valuation's date, fund identity, and financial values.
+    columns_header: [
+      "Data",
+      "Fundo",
+      "CNPJ",
+      "Valor da Cota",
+      "Variação Diária",
+      "Variação %",
+      "Fonte",
+      "Importado em"
+    ],
+
+    # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
+    #                in the table header. The icons visually distinguish and reinforce the meaning
+    #                of the corresponding data column.
+    columns_icons: [
+      "calendar",
+      "layers",
+      "id-card",
+      "calculator",
+      "trending-up-down",
+      "percent",
+      "external-link",
+      "clock"
+    ],
+
+    # [Explanation]: This is the core array containing lambda functions and symbols that define how
+    #                each cell's content is processed and formatted. These functions receive the
+    #                fund valuation object (`fund_valuation`) as an argument.
+    columns_body: [
+      # [Explanation]: This lambda function displays the valuation date in a readable format
+      #                with a calendar icon badge for visual emphasis.
+      ->(fund_valuation) do
+        formatted_timestamp(
+          fund_valuation.date
+        )
+      end,
+
+      # [Explanation]: This lambda function displays the fund name with a link to view
+      #                the specific valuation details. It includes truncation for long names.
+      ->(fund_valuation) do
+        content_tag(
+          :span,
+          fund_valuation.investment_fund&.fund_name || "N/A",
+          class: "truncate max-w-xs font-mono text-muted uppercase"
+        )
+      end,
+
+
+      # [Explanation]: This lambda function displays the CNPJ with monospace font
+      #                and badge styling to make it stand out as a unique identifier.
+      ->(fund_valuation) do
+        fund_valuation.fund_cnpj
+      end,
+
+      # [Explanation]: This lambda function displays the quota value as Brazilian currency
+      #                with proper formatting and monospace font for financial clarity.
+      ->(fund_valuation) do
+        colored_currency(
+          fund_valuation.quota_value
+        )
+      end,
+
+      ->(fund_valuation) do
+        daily_change = fund_valuation.daily_change
+
+        return content_tag(:span, "N/A", class: "text-muted text-sm") unless daily_change.present?
+
+        color_class =
+          daily_change >= 0 ? "!bg-success-50 !text-success-600" : "!bg-danger-50 !text-danger-600"
+
+        content_tag(
+          :div,
+          class: "flex items-center"
+        ) do
+          colored_currency(
+            daily_change.abs,
+            color_class
+          )
+        end
+      end,
+
+      ->(fund_valuation) do
+        daily_change_pct = fund_valuation.daily_change_percentage
+
+        return content_tag(:span, "N/A", class: "text-muted text-sm") unless daily_change_pct.present?
+
+        color_class =
+          daily_change_pct >= 0 ? "!bg-success-50 !text-success-600" : "!bg-danger-50 !text-danger-600"
+
+        colored_percentage(
+          daily_change_pct.abs,
+          color_class
+        )
+      end,
+
+      # [Explanation]: This lambda function displays the data source with an icon badge.
+      #                If no source is specified, it shows "Não especificada".
+      ->(fund_valuation) do
+        if fund_valuation.source.present?
+          content_tag(:span, fund_valuation.source, class: "text-muted font-mono uppercase")
+        else
+          content_tag(:span, "N/A", class: "text-muted font-mono")
+        end
+      end,
+
+      # [Explanation]: This lambda function displays the import timestamp showing when
+      #                this valuation record was created in the system.
+      ->(fund_valuation) do
+        formatted_timestamp(
+          fund_valuation.created_at
+        )
+      end
+    ],
+
+    # [Explanation]: This variable contains the collection of FundValuation model instances
+    #                to be displayed in the data table. This is the primary dataset
+    #                for the table rows, paginated and filtered by the controller.
+    models: @fund_valuations,
+
+    # [Explanation]: This parameter defines options for sorting the data within the table.
+    #                Users can sort by date, quota value, or other relevant fields.
+    sort_options: [
+      { label: "Data (mais recente)", value: "date desc" },
+      { label: "Data (mais antiga)", value: "date asc" },
+      { label: "Valor da Cota (maior)", value: "quota_value desc" },
+      { label: "Valor da Cota (menor)", value: "quota_value asc" },
+      { label: "CNPJ", value: "fund_cnpj asc" }
+    ],
+
+    # [Explanation]: This is the Ransack search object (`@q`). It contains the current search
+    #                and filter parameters applied to the `@fund_valuations` collection.
+    #                The data table uses this object to generate proper sort links.
+    q_object: @q,
+
+    # [Explanation]: This defines the URL used for both searching and pagination of the table.
+    #                It ensures that search parameters and page numbers are correctly routed
+    #                back to the fund valuations index action.
+    search_url: fund_valuations_path,
+
+    # [Explanation]: This is the ID of the Turbo Frame that wraps the data table.
+    #                It ensures that sorting and searching actions update only the table content
+    #                without reloading the entire page.
+    turbo_frame_id: "fund_valuations_table",
+
+    # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
+    #                Since the value is nil, the export functionality is currently disabled.
+    export_url: nil
+  } %>
+<% end %>
+
+<%= render partial: "partials/route/dashboard/filters", locals: {
+
+  # [Explanation]: This is the Ransack search object (`@q`). The filter partial uses this object
+  #                to initialize the filter fields with current search values.
+  q_object: @q,
+
+  # [Explanation]: This defines the URL where the filter form submits its search parameters.
+  #                The submission triggers an update to the `fund_valuations_path`.
+  search_url: fund_valuations_path,
+
+  # [Explanation]: This array defines the individual filter fields available to the user.
+  #                Each hash specifies the Ransack key, label, description, and icon for the filter input.
+  filters: [
+    {
+      key: :date_gteq,
+      label: "Data inicial",
+      description: "Exibe cotações a partir desta data.",
+      placeholder: "DD/MM/AAAA",
+      icon_name: "calendar-today",
+      type: "date"
+    },
+    {
+      key: :date_lteq,
+      label: "Data final",
+      description: "Exibe cotações até esta data.",
+      placeholder: "DD/MM/AAAA",
+      icon_name: "calendar-month",
+      type: "date"
+    },
+    {
+      key: :fund_cnpj_cont,
+      label: "CNPJ do Fundo",
+      description: "Filtra por parte ou todo o número do CNPJ.",
+      placeholder: "XX.XXX.XXX/XXXX-XX",
+      icon_name: "badge"
+    },
+    {
+      key: :investment_fund_fund_name_cont,
+      label: "Nome do Fundo",
+      description: "Busca fundos pelo nome cadastrado.",
+      placeholder: "Nome do fundo",
+      icon_name: "business-center"
+    },
+    {
+      key: :source_cont,
+      label: "Fonte dos Dados",
+      description: "Filtra pela origem da informação (ex: CVM, API externa).",
+      placeholder: "Fonte",
+      icon_name: "source"
+    },
+    {
+      key: :quota_value_gteq,
+      label: "Valor mínimo da cota",
+      description: "Exibe apenas cotações acima deste valor.",
+      placeholder: "0.00",
+      icon_name: "attach-money",
+      type: "number"
+    },
+    {
+      key: :quota_value_lteq,
+      label: "Valor máximo da cota",
+      description: "Exibe apenas cotações abaixo deste valor.",
+      placeholder: "9999.99",
+      icon_name: "money-off",
+      type: "number"
+    }
+  ],
+
+  # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.
+  #                It ensures that applying filters updates the data table content within the corresponding frame.
+  turbo_frame_id: "fund_valuations_table"
+} %>

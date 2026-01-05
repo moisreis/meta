@@ -14,9 +14,6 @@
   #        - Why: Provides the primary entry point for new customers to begin using the application's investment features.
   %>
 <%= render 'partials/route/auth/wrapper' do %>
-  <%= render 'partials/route/auth/background',
-             bg_path: "pixeltrue/finance-app-1-67.svg"
-  %>
   <%= render 'partials/route/auth/container',
              welcome_message: "Seja bem-vindo à Meta".html_safe,
              welcome_feedback: "Crie sua conta em poucos minutos e desbloqueie o potencial máximo da sua carteira de investimentos" do
@@ -75,4 +72,5 @@
       <%= f.submit "Criar conta", class: "button w-full" %>
     <% end %>
   <% end %>
+
 <% end %>

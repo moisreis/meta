@@ -16,6 +16,8 @@
 #              - *path_names* @hash - A mapping that customizes the URL names for specific Devise actions.
 #
 Rails.application.routes.draw do
+  resources :economic_index_histories
+  resources :economic_indices
 
   # Explanation:: This line sets up all necessary routes for user authentication
   #               using the **Devise** gem. It customizes the base path to `/auth`
@@ -47,11 +49,20 @@ Rails.application.routes.draw do
 
   # Explanation:: This line sets up the standard RESTful routes for the **FundValuation** resource.
   #               It defines the URL endpoints for managing and displaying the valuation data of funds.
-  resources :fund_valuations
+  resources :fund_valuations do
+    collection do
+      get :data_health
+      post :trigger_import
+    end
+  end
 
   # Explanation:: This line establishes the RESTful routes for the **Redemption** resource.
   #               It allows the application to handle and process routes related to user redemption requests.
-  resources :redemptions
+  resources :redemptions do
+    collection do
+      get :export
+    end
+  end
 
   # Explanation:: This line generates the RESTful routes for the **Application** resource.
   #               It provides the necessary paths for managing and tracking user investment application processes.
@@ -63,7 +74,11 @@ Rails.application.routes.draw do
 
   # Explanation:: This line defines the seven standard RESTful routes for the main **Portfolio** resource.
   #               These routes map to the **PortfoliosController** for managing user investment portfolios.
-  resources :portfolios
+  resources :portfolios do
+    collection do
+      get :export
+    end
+  end
 
   # Explanation:: This line establishes the standard RESTful routes for the administrative **User** resource.
   resources :users
@@ -74,7 +89,11 @@ Rails.application.routes.draw do
 
   # Explanation:: This line sets up the RESTful routes for the **FundInvestment** resource.
   #               It provides the mechanism for managing individual investment allocations within funds.
-  resources :fund_investments
+  resources :fund_investments do
+    collection do
+      get :export
+    end
+  end
 
   # Explanation:: This block provides scope to define custom routes that depend on the user's
   #               authentication status, utilizing the **Devise** helpers.

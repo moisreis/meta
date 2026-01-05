@@ -1,0 +1,82 @@
+<%#
+  # Partial: _table_list.html
+  # Date: 12/22/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a highly flexible data table wrapped in a dashboard section.
+  #              It relies on configuration arrays and lambdas to display any model,
+  #              ensuring the UI remains consistent regardless of the data source.
+  #
+  # Usage:: - What: Provides a standardized table view for listing complex data records.
+  #         - How: Accepts a **collection**, **headers**, and **body_procs** to map
+  #                object attributes to specific table columns.
+  #         - Why: Removes the need to rewrite table structures for every different
+  #                resource like funds, stocks, or transactions.
+  #
+  # Attributes:: - *collection* - the array or relation of objects to be listed.
+  #              - *section_title* - the descriptive heading for the table section.
+  #              - *headers* - an array of strings representing the column names.
+  #              - *body_procs* - an array of lambdas that define how to render each cell.
+  #              - *action_path* - the URL for the section's primary action button.
+  #              - *action_name* - the text label for the primary action button.
+  %>
+
+<%# Explanation:: This line initializes the action path variable to `nil` if it was not
+  #               provided by the parent view. It prevents the code from crashing
+  #               when trying to check for a button route that does not exist.
+  %>
+<% action_path ||= nil %>
+
+<%# Explanation:: This layout container creates a secure, titled section for the table.
+  #               It renders the **section** partial to manage header actions and
+  #               layout constraints, ensuring the table fits the dashboard aesthetic.
+  %>
+<%= render "partials/route/dashboard/section",
+           section_title: section_title,
+           columns: 1,
+           has_action: action_path.present?,
+           button_route: action_path,
+           button_name: action_name,
+           button_icon: "plus" do
+%>
+
+  <%# Explanation:: This logic gate checks if the **collection** contains any data
+    #               before rendering. It uses the `.any?` method to decide whether
+    #               to show the full table or a fallback message for empty sets.
+    %>
+  <% if collection.any? %>
+
+    <%# Explanation:: This line ensures that if no icons are provided by the parent,
+      #               it defaults to an empty list. This prevents the table from
+      #               trying to render icons that do not exist.
+      %>
+    <% column_icons ||= [] %>
+
+    <%# Explanation:: This logic prepares the icon list for the table headers.
+      #               It ensures that even if fewer icons are provided than headers,
+      #               the table structure remains aligned and error-free.
+      %>
+    <% columns_icons = column_icons.presence || Array.new(headers.length, nil) %>
+
+    <%# Explanation:: This core engine renders the actual rows and columns of data
+      #               by calling the **table** module. It loops through the items
+      #               using provided lambdas to map data into a reusable UI component.
+      %>
+    <%= render partial: "partials/modules/table",
+               locals: {
+                 columns_header: headers,
+                 columns_icons: columns_icons,
+                 columns_body: body_procs,
+                 models: collection
+               } %>
+
+  <% else %>
+
+    <%# Explanation:: This fallback block displays a simple "N/A" message when no records
+      #               are found. It uses a `content_tag` to maintain a clean interface
+      #               and avoid awkward empty spaces when the user has no data yet.
+      %>
+    <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+  <% end %>
+<% end %>

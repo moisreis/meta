@@ -1,0 +1,41 @@
+<%#
+  # Partial: _chart-list.html.erb
+  # Date: 12/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Displays a graphical chart within a standardized dashboard container.
+  #              It supports various chart types by dynamically calling rendering methods.
+  #
+  # Usage:: - What: Provides a reusable wrapper for different types of data visualizations.
+  #         - How: Renders a **dashboard/chart** container and uses the **send** method
+  #                to execute the specified **chart_type** with given data.
+  #         - Why: Ensures all charts share a consistent look and feel while allowing
+  #                for flexible implementation of bars, lines, or pie charts.
+  #
+  # Attributes:: - *data_source* - the collection or URL providing the chart data.
+  #              - *chart_title* - the heading text displayed above the graphic.
+  #              - *chart_type* - the name of the helper method used to draw the chart.
+  #              - *chart_options* - a hash of settings for visual customization.
+  %>
+
+<%# Explanation:: This variable provides a set of optional settings to customize
+  #               the chart's appearance; it is used to prevent errors when no
+  #               options are sent and works by defaulting to an empty collection.
+  %>
+<% chart_options ||= {} %>
+
+<%# Explanation:: This block renders the outer container and the specific chart
+  #               requested by the user; it is used to generate the visual report
+  #               and works by calling a dynamic helper based on the chart type.
+  %>
+<%= render "partials/route/dashboard/chart",
+           data_source: data_source,
+           chart_title: chart_title do %>
+
+  <%# Explanation:: This specific line executes the method that draws the graphic
+    #               on the screen; it is used to remain flexible for any chart
+    #               style and works by turning a text name into a functional command.
+    %>
+  <%= send(chart_type, data_source, **chart_options) %>
+<% end %>

@@ -15,7 +15,7 @@
   #        - Why: Provides a quick, consistent, and intuitive mechanism for users
   #               to navigate directly to the end of a large paginated collection.
   %>
-<span class="button button-outline button-small">
+<span class="button button-outline button-small !font-mono !uppercase !text-xs">
   <%= link_to_unless current_page.last?,
                      "Última".html_safe,
                      url,

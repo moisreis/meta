@@ -1,50 +1,68 @@
 <%#
-  # Partial: index.html
-  # Date: 11/23/2025
+  # Partial: index.html.erb
+  # Date: 11/24/2025
   # Author: Moisés Reis
   # Package: Meta
   #
   # Description: Renders the index view for the **InvestmentFund** resource, displaying a
   #              data table of all available funds and providing a set of filtering options.
   #
-  # Usage: - What: Displays a comprehensive, sortable list of all registered investment funds, showing essential
+  # Usage:: - What: Displays a comprehensive, sortable list of all registered investment funds, showing essential
   #                details like name, administrator, CNPJ, and total capital invested.
-  #        - How: Wraps the content in a dashboard layout and renders two nested partials for the data table and the filtering sidebar.
-  #               Uses the `@investment_funds` collection and the Ransack object `@q`.
-  #        - Why: Provides users with an interface to visualize, search, and filter fund data, supporting necessary data analysis and fund management.
+  #         - How: Wraps the content in a dashboard layout and renders
+  #                two nested partials for the data table and the filtering sidebar.
+  #         - Why: Provides users with an interface to visualize, search, and filter fund data,
+  #                supporting necessary data analysis and fund management.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title and descriptive labels.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Lista de Fundos",
+           page_title: "Lista de fundos",
            page_desc: "Visualize os fundos cadastrados e seus dados essenciais.",
            current_view: "datatable" do
 %>
+
+  <%# Explanation:: This partial generates a dynamic table to list `InvestmentFund` records
+    #               clearly; it is used to present organized data to the user and
+    #               works by receiving headers and data-fetching logic as arguments.
+    %>
   <%= render partial: "partials/blocks/data-table", locals: {
 
-    # [Explanation]: This array defines the titles for each column in the table header.
-    #                The names correspond directly to the data fields displayed, providing clear
-    #                context about the investment fund's registration details and status.
+    # Explanation:: This array defines the text labels displayed at the top of
+    #               the table columns; it is used to give context to the data
+    #               and works by mapping each string to a specific column header.
     columns_header: [
       "Nome",
       "Administrador",
       "CNPJ",
       "Valor investido",
-      "Fundo",
-      "Criado em"
+      "Fundo"
     ],
 
-    # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
-    #                in the table header. The icons visually distinguish and reinforce the meaning
-    #                of the corresponding data column.
-    columns_icons: [],
+    # Explanation:: This collection holds visual icons to accompany the column
+    #               titles for better recognition; it is used to beautify the
+    #               header and works by rendering specific Material Symbols.
+    columns_icons: [
+      "tag",
+      "user-cog",
+      "id-card",
+      "wallet",
+      "layers"
+    ],
 
-    # [Explanation]: This is the core array containing lambda functions and symbols that define how
-    #                each cell's content is processed and formatted. These functions receive the
-    #                investment fund object (`investment_fund`) as an argument.
+    # Explanation:: This list contains the logic for filling each row with
+    #               fund information; it is used to handle data extraction
+    #               and works by executing symbols or functions for every record.
     columns_body: [
       :fund_name,
       :administrator_name,
 
-      # [Explanation]: This lambda function displays the styled CNPJ.
+      # Explanation:: This function displays the official tax ID (CNPJ) in a
+      #               monospaced font for easy reading; it is used for precise
+      #               identification and works by wrapping the text in a styled span.
       ->(investment_fund) do
         content_tag(
           :span,
@@ -53,16 +71,16 @@
         )
       end,
 
-      # [Explanation]: This lambda function calculates and displays the total capital invested in the fund.
-      #                If the value is greater than zero, it is formatted as currency (R$);
-      #                otherwise, a muted "Sem capital" message appears.
+      # Explanation:: This instruction calculates and formats the total capital
+      #               held in the fund; it is used to show financial status
+      #               and works by converting raw numbers into colored currency text.
       ->(investment_fund) do
         colored_currency(investment_fund.total_invested)
       end,
 
-      # [Explanation]: This lambda function checks if the fund has an originator fund (a parent fund).
-      #                If present, it displays the originator's name with a secondary badge style;
-      #                otherwise, it displays a muted dash.
+      # Explanation:: This logic identifies if the fund belongs to a parent
+      #               group to show hierarchy; it is used for organizational
+      #               clarity and works by fetching the originator name if it exists.
       ->(investment_fund) do
         if investment_fund.originator_fund.present?
           content_tag(:span,
@@ -72,54 +90,59 @@
           content_tag(:span, "N/A", class: "text-muted")
         end
       end,
-
-      # [Explanation]: This lambda function loads the value in Brazilian time and format.
-      ->(investment_fund) do
-        formatted_timestamp(investment_fund.created_at)
-      end
     ],
 
-    # [Explanation]: This variable contains the collection of InvestmentFund model instances
-    #                to be displayed in the data table. This is the primary dataset
-    #                for the table rows.
+    # Explanation:: This attribute provides the actual list of fund objects
+    #               retrieved from the database; it is used as the table's
+    #               data source and works by feeding the rows into the display loop.
     models: @investment_funds,
 
-    # [Explanation]: This parameter defines options for sorting the data within the table.
-    #                Since the array is currently empty, no custom sorting options are available.
+    # Explanation:: This configuration sets the rules for how users can reorder
+    #               the list; it is used to allow custom sorting and works by
+    #               integrating with the database search parameters.
     sort_options: [],
 
-    # [Explanation]: This is the Ransack search object (`@q`). It contains the current search
-    #                and filter parameters applied to the `@investment_funds` collection.
-    #                The data table uses this object to generate proper sort links.
+    # Explanation:: This object manages the current search and sort criteria
+    #               for the collection; it is used to keep track of user
+    #               filters and works by generating valid database queries.
     q_object: @q,
 
-    # [Explanation]: This defines the URL used for both searching and pagination of the table.
-    #                It ensures that search parameters and page numbers are correctly routed
-    #                back to the investment funds index action.
+    # Explanation:: This path tells the table where to send search and page
+    #               requests; it is used to keep the user on the correct page
+    #               and works by linking actions to the investment funds index route.
     search_url: investment_funds_path,
 
-    # [Explanation]: This is the ID of the Turbo Frame that wraps the data table.
-    #                It ensures that sorting and searching actions update only the table content
-    #                without reloading the entire page.
+    # Explanation:: This unique identifier allows the table to update without
+    #               refreshing the whole page; it is used for speed and works
+    #               by isolating the table content within a Turbo Frame.
     turbo_frame_id: "investment_funds_table",
 
-    # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
-    #                Since the value is nil, the export functionality is currently disabled.
+    # Explanation:: This setting provides a link for users to download the
+    #               table data as a file; it is used for reporting and works
+    #               by enabling an export button when a URL is provided.
     export_url: nil
   } %>
 <% end %>
+
+<%# Explanation:: This partial renders a sidebar or header with search inputs
+  #               to help users find data; it is used to refine the list and
+  #               works by sending form data to the table's Turbo Frame.
+  %>
 <%= render partial: "partials/route/dashboard/filters", locals: {
 
-  # [Explanation]: This is the Ransack search object (`@q`). The filter partial uses this object
-  #                to initialize the filter fields with current search values.
+  # Explanation:: This search object connects the filter fields to the
+  #               database query logic; it is used to pre-fill inputs and
+  #               works by syncing with the Ransack gem settings.
   q_object: @q,
 
-  # [Explanation]: This defines the URL where the filter form submits its search parameters.
-  #                The submission triggers an update to the `investment_funds_path`.
+  # Explanation:: This destination URL determines where the search filters
+  #               are sent upon submission; it is used to refresh the data
+  #               and works by targeting the main investment fund list route.
   search_url: investment_funds_path,
 
-  # [Explanation]: This array defines the individual filter fields available to the user.
-  #                Each hash specifies the Ransack key, label, description, and icon for the filter input.
+  # Explanation:: This list defines the specific text and icon for each
+  #               filter input box; it is used to build the search form
+  #               and works by generating fields for names, CNPJ, and administrators.
   filters: [
     {
       key: :fund_name_cont,
@@ -151,7 +174,8 @@
     }
   ],
 
-  # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.
-  #                It ensures that applying filters updates the data table content within the corresponding frame.
+  # Explanation:: This ID links the filter results directly to the table
+  #               container for seamless updates; it is used to avoid full
+  #               page reloads and works by targeting the specific Turbo Frame.
   turbo_frame_id: "investment_funds_table"
 } %>

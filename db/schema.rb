@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_01_192738) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_18_025516) do
   create_schema "extensions"
 
   # These are extensions that must be enabled in order to support this database
@@ -32,6 +32,25 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_192738) do
     t.date "request_date"
     t.datetime "updated_at", null: false
     t.index ["fund_investment_id"], name: "index_applications_on_fund_investment_id"
+  end
+
+  create_table "public.economic_index_histories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "date"
+    t.bigint "economic_index_id", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "value"
+    t.index ["economic_index_id"], name: "index_economic_index_histories_on_economic_index_id"
+  end
+
+  create_table "public.economic_indices", force: :cascade do |t|
+    t.string "abbreviation", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["abbreviation"], name: "index_economic_indices_on_abbreviation", unique: true
+    t.index ["name"], name: "index_economic_indices_on_name", unique: true
   end
 
   create_table "public.fund_investments", force: :cascade do |t|
@@ -163,6 +182,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_01_192738) do
   end
 
   add_foreign_key "public.applications", "public.fund_investments"
+  add_foreign_key "public.economic_index_histories", "public.economic_indices"
   add_foreign_key "public.fund_investments", "public.investment_funds"
   add_foreign_key "public.fund_investments", "public.portfolios"
   add_foreign_key "public.fund_valuations", "public.investment_funds", column: "fund_cnpj", primary_key: "cnpj"

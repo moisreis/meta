@@ -1,42 +1,121 @@
 <%#
-  # Partial: _container.html
+  # Partial: _container.html.erb
   # Date: 11/14/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Renders a layout container that organizes the page header and body.
-  #              Structures the title, breadcrumbs, and main content with consistent styling.
+  # Description: This partial acts as the main layout wrapper for every page.
+  #              It organizes the navigation path at the top and ensures
+  #              the page title and content follow a clean, aligned structure.
   #
-  # Usage: - What: Presents a unified wrapper that keeps page titles, actions, and content aligned.
-  #                Ensures visual consistency across dashboard pages.
-  #        - How: Wraps the header and content in flexible containers and renders the yielded block
-  #               according to the current view mode.
-  #        - Why: Provides a stable, reusable structure that standardizes page layout and reduces duplication.
+  # Usage:: - What: It is a structural frame that holds the top navigation
+  #                 bar and the main content area of the application.
+  #         - How: It uses a vertical layout to stack a sticky header over
+  #                a scrollable body, providing specific spacing for different
+  #                view types like tables or detail pages.
+  #         - Why: It keeps the design consistent across the entire app so
+  #                users always find titles and search bars in the same place.
+  %>
+
+<%# Explanation:: This section creates the main vertical column for the page.
+  #               It ensures the content takes up the correct amount of
+  #               space and hides any messy scrollbars from the view.
   %>
 <section class="flex flex-col col-span-14 no-scrollbar">
-  <div class="h-12 px-6 flex flex-row items-center justify-between border-b border-border sticky top-0 bg-white z-30">
-    <div class="flex flex-row gap-1.5 items-center justify-start">
-      <%= content_tag :h1,
-                      page_title,
-                      class: "text-heading font-heading font-medium text-left"
-      %>
-    </div>
-    <%= render "partials/blocks/composed-avatar" %>
-  </div>
-  <div class="bg-white flex flex-col gap-3 [&>form]:flex [&>form]:!gap-6 [&>form]:p-6 no-scrollbar">
 
-    <%# [Condition] Renders content differently depending on the current view. %>
+  <%# Explanation:: This is the sticky top bar of the container.
+    #               It stays at the top while you scroll and uses a
+    #               blur effect to look modern against the background.
+    %>
+  <div class="h-12 px-12 grid grid-cols-2">
+
+    <%# Explanation:: This form provides a global search input in the header.
+      #               It allows the user to quickly look for information
+      #               without leaving the current navigation bar area.
+      %>
+    <%= form_with url: "#",
+                  method: :get,
+                  class: "flex flex-row items-center justify-start",
+                  html: { role: "presentation" } do |f| %>
+      <%= render "partials/modules/input-field",
+                 f: f,
+                 field_type: :search_field,
+                 name: :search,
+                 placeholder: "Pesquisar",
+                 desc: nil,
+                 is_small: true,
+                 icon_name: "search",
+                 is_inactive: false
+      %>
+    <% end %>
+
+    <%# Explanation:: This group holds the system action buttons.
+      #               It provides easy access to user settings and
+      #               notifications at the top right corner of the screen.
+      %>
+    <div class="flex flex-row gap-1.5 items-center justify-end">
+      <%= button_tag type: 'button',
+                     class: 'button button-ghost button-icon' do
+      %>
+        <%= inline_svg_tag "icons/notification.svg" %>
+      <% end %>
+      <%= button_tag type: 'button',
+                     class: 'button button-accent button-icon',
+                     data: { action: 'toggle-dark-mode' },
+                     onclick: "document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';" do %>
+        <%= inline_svg_tag "icons/sun.svg" %>
+      <% end %>
+
+    </div>
+  </div>
+
+  <%# Explanation:: This white background area is the main body of the page.
+    #               It contains the large page heading and the primary
+    #               content provided by the specific view being rendered.
+    %>
+  <div class="bg-white flex flex-col [&>form]:flex [&>form]:!gap-6 [&>form]:p-6 no-scrollbar">
+
     <% if current_view == "datatable" %>
-      <div class="p-6 py-3 flex flex-col gap-6">
+      <div class="h-12 px-12 flex flex-row justify-start gap-3 items-center border-b border-border">
+        <%= content_tag :h1,
+                        page_title,
+                        class: "font-mono text-sm font-medium uppercase"
+        %>
+        <%= content_tag :h1,
+                        "#{@total_items} itens",
+                        class: "font-mono text-sm text-muted uppercase"
+        %>
+      </div>
+    <% else %>
+      <div class="px-12 py-6 flex flex-col gap-1.5">
+        <%= content_tag :h1,
+                        page_title,
+                        class: "font-heading text-3xl font-bold"
+        %>
+        <%= content_tag :p,
+                        page_desc,
+                        class: "font-mono uppercase text-sm text-muted"
+        %>
+      </div>
+    <% end %>
+
+    <%# Explanation:: This logic chooses the best spacing based on what is shown.
+      #               It adjusts the gaps and padding differently for data
+      #               tables, detailed forms, or general information.
+      %>
+    <% if current_view == "datatable" %>
+      <div class="px-12 py-6 flex flex-col gap-6">
         <%= yield %>
       </div>
     <% elsif current_view == "show" %>
-      <div class="py-12 px-32 flex flex-col gap-12 no-scrollbar">
+      <div class="px-12 pt-0 pb-12 flex flex-col gap-16 no-scrollbar">
         <%= yield %>
       </div>
     <% else %>
-      <div class="py-12 px-32 flex flex-col gap-6">
-        <%= yield %>
+      <div class="px-12 pt-0 pb-12">
+        <div class="flex flex-col gap-12">
+          <%= yield %>
+        </div>
       </div>
     <% end %>
   </div>

@@ -20,6 +20,8 @@
 #
 class FundInvestmentsController < ApplicationController
 
+  include PdfExportable
+
   # Explanation:: This command confirms that a user is successfully logged into
   #               the system before allowing access to any actions within this controller.
   before_action :authenticate_user!
@@ -72,6 +74,10 @@ class FundInvestmentsController < ApplicationController
     #               applying any search criteria passed by the user.
     @q = base_scope.ransack(params[:q])
 
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = FundInvestment.count
+
     # Explanation:: This executes the search query defined by Ransack, returning a
     #               unique list of fund investments that match the search criteria.
     filtered_and_scoped_funds = @q.result(distinct: true)
@@ -90,7 +96,7 @@ class FundInvestmentsController < ApplicationController
 
     # Explanation:: This prepares the final data for the page, dividing the complete
     #               list into pages of 20 items to improve performance and readability.
-    @fund_investments = sorted_funds.page(params[:page]).per(20)
+    @fund_investments = sorted_funds.page(params[:page]).per(14)
 
     respond_to do |format|
       format.html # Renders index.html.erb
@@ -103,7 +109,7 @@ class FundInvestmentsController < ApplicationController
   # @category *Read*
   #
   # Read:: This action prepares the specific fund investment record that was
-  #        loaded earlier. It delivers the data as a JSON response instead of a traditional web page.
+  #        loaded earlier.
   #
   # Attributes:: - *@fund_investment* - The single fund investment object found by the `load_fund_investment` filter.
   #
@@ -131,7 +137,7 @@ class FundInvestmentsController < ApplicationController
   #
   # Create:: This action attempts to save a new fund investment record to the
   #          database. It first checks for creation permissions and returns
-  #          a success or error message as a JSON response.
+  #          a success or error message.
   #
   # Attributes:: - *fund_investment_params* - The sanitized input data from the user form.
   #
@@ -141,17 +147,6 @@ class FundInvestmentsController < ApplicationController
     # Explanation:: This uses **CanCan** to verify that the current user has permission
     #               to create a new fund investment record.
     authorize! :create, @fund_investment
-
-    # Explanation:: This checks if the new fund investment object successfully passes
-    #               all database validatiaons and saves the record.
-    if @fund_investment.save
-      render json: {
-        status: 'Success',
-        data: @fund_investment
-      }, status: :created
-    else
-      render json: { status: 'Error', errors: @fund_investment.errors.full_messages }, status: :unprocessable_entity
-    end
   end
 
   # == update
@@ -160,16 +155,11 @@ class FundInvestmentsController < ApplicationController
   # @category *Update*
   #
   # Update:: This action attempts to modify an existing fund investment record
-  #          with new data. It returns a success or error message as a JSON response.
+  #          with new data. It returns a success or error message.
   #
   # Attributes:: - *fund_investment_params* - The sanitized input data for updating the record.
   #
   def update
-    if @fund_investment.update(fund_investment_params)
-      render json: { status: 'Success', data: @fund_investment }
-    else
-      render json: { status: 'Error', errors: @fund_investment.errors.full_messages }, status: :unprocessable_entity
-    end
   end
 
   # == destroy
@@ -178,13 +168,12 @@ class FundInvestmentsController < ApplicationController
   # @category *Delete*
   #
   # Delete:: This action deletes the fund investment record from the database.
-  #          It returns a simple success confirmation as a JSON response.
+  #          It returns a simple success confirmation.
   #
   # Attributes:: - *@fund_investment* - The fund investment object to be destroyed.
   #
   def destroy
     @fund_investment.destroy
-    render json: { status: 'Success', message: 'Fund investment deleted' }, status: :ok
   end
 
   private
@@ -299,5 +288,72 @@ class FundInvestmentsController < ApplicationController
   #
   def accessible_portfolios
     current_user.portfolios
+  end
+
+  def pdf_export_title
+    "Investimentos em Fundos"
+  end
+
+  def pdf_export_subtitle
+    "Relatório de investimentos ativos"
+  end
+
+  def pdf_export_columns
+
+    # Explanation:: This retrieves the helper proxy to access formatting methods.
+    #               It allows the controller to use logic usually reserved for views.
+    h = ActionController::Base.helpers
+
+    [
+      { header: "Fundo", key: ->(fi) { fi.investment_fund.fund_name } },
+      { header: "CNPJ", key: ->(fi) { fi.investment_fund.cnpj } },
+      { header: "Carteira", key: ->(fi) { fi.portfolio.name } },
+      {
+        header: "Cotas",
+        # Explanation:: Instead of calling the method directly, we use the
+        #               proxy 'h' to access the precision formatting logic.
+        key: ->(fi) { h.number_with_precision(fi.total_quotas_held, precision: 2) },
+        width: 80
+      },
+      {
+        header: "Valor Investido",
+        # Explanation:: We use 'view_context' to access your custom 'standard_currency'
+        #               helper method and corrected the previous spelling error.
+        key: ->(fi) { view_context.standard_currency(fi.total_invested_value) },
+        width: 100
+      },
+      {
+        header: "Alocação",
+        key: ->(fi) { "#{fi.percentage_allocation}%" },
+        width: 70
+      }
+    ]
+  end
+
+  def pdf_export_data
+    FundInvestment.joins(:portfolio)
+                  .where(portfolios: { user_id: current_user.id })
+                  .includes(:investment_fund, :portfolio)
+  end
+
+  # == pdf_export_metadata
+  #
+  # @author Moisés Reis
+  # @category *Utility*
+  #
+  # Utility:: This method compiles the summary information for the PDF report.
+  #            It calculates the total sum of investments and formats it as currency.
+  #
+  # Attributes:: - *pdf_export_data* - The collection of records used to calculate the total.
+  #
+  def pdf_export_metadata
+    # Explanation:: This retrieves the helper proxy to access formatting methods.
+    #               It allows the controller to use logic usually reserved for views.
+    h = ActionController::Base.helpers
+
+    {
+      'Usuário' => current_user.full_name,
+      'Total investido' => h.number_to_currency(pdf_export_data.sum(:total_invested_value))
+    }
   end
 end

@@ -1,0 +1,39 @@
+<%#
+  # Partial: edit.html.erb
+  # Date: 12/4/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the page for updating an existing Normative Article record.
+  #              It displays the primary edit form within the dashboard layout
+  #              to allow modifications to regulatory data.
+  #
+  # Usage: - What: Renders the full view dedicated to editing an existing article.
+  #                It provides the necessary form for updating regulatory attributes.
+  #        - How: Renders the **wrapper** for layout and uses the **_form** partial
+  #               to handle the specific attribute inputs for the record.
+  #        - Why: Provides the interface necessary to execute the update function
+  #               to keep regulatory information accurate and current.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure visual consistency. It identifies
+  #               the specific article being edited by its name and provides a
+  #               standardized header for the editing environment.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @normative_article.article_name,
+           page_desc: "Atualize as informações do artigo normativo conforme necessário." do
+%>
+
+  <%# Explanation:: This shared partial generates the specific input fields for the
+    #               normative article to facilitate data modification. It works by
+    #               receiving the existing record and setting the action button to
+    #               "Update" with a refreshing circular icon.
+    %>
+  <%= render "form",
+             normative_article: @normative_article,
+             button_name: "Atualizar",
+             icon_name: "refresh-cw"
+  %>
+<% end %>

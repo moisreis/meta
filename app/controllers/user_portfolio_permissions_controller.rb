@@ -82,6 +82,10 @@ class UserPortfolioPermissionsController < ApplicationController
         }
       end
     }
+
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = UserPortfolioPermission.count
   end
 
   # == show

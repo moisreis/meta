@@ -9,85 +9,187 @@
   #              Applies Tailwind-based utility classes for styling and accessibility.
   #
   # Usage: - What: Renders an input field with an optional label, description, and error message.
-  #                Supports dynamic field types (e.g., text_field, email_field, password_field).
+  #                Supports dynamic field types (e.g., **text_field**, **email_field**, **password_field**).
   #        - How:  Uses a form builder (`f`) to render the input with proper ARIA attributes.
   #                Adds a red error message below when validation fails.
   #        - Why:  Ensures consistent markup, accessibility, and styling across all form inputs.
   %>
 
-<%# [State] Defines whether the field is inactive.
-  #         Prevents interaction or modifies visual state when true.
+<%# Explanation:: Defines whether the field is inactive.
+  #               Prevents interaction or modifies visual state when true.
   %>
 <% is_inactive ||= nil %>
 
-<%# [Variable] Defines the CSS classes for the input label.
-  #            Controls spacing, font style, and disabled appearance.
+<%# Explanation:: Defines the CSS classes for the input label as an array for clarity.
+  #               The elements are joined into a single string for use in the HTML attribute.
   %>
-<% label_classes = "flex items-center gap-1.5 text-2xs font-heading uppercase leading-none font-semibold select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
+<%
+  label_classes = [
+    "flex",
+    "items-center",
+    "gap-1.5",
+    "text-xs",
+    "font-body",
+    "leading-none",
+    "font-semibold",
+    "select-none",
+    "group-data-[disabled=true]:pointer-events-none",
+    "group-data-[disabled=true]:opacity-50",
+    "peer-disabled:cursor-not-allowed",
+    "peer-disabled:opacity-50"
+  ].join(" ")
+%>
 
-<%# [Variable] Defines the CSS classes for the input element.
-  #            Handles spacing, borders, focus rings, colors, and disabled states.
+<%# Explanation:: Defines the CSS classes for the input element.
+  #               Each array element strictly holds one utility class or state modifier.
+  #               The classes are joined with a space to form the final HTML class attribute string.
   %>
-<% input_classes = "placeholder:text-muted bg-table-bg border border-border pr-6 h-9 w-full min-w-0 rounded-base px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
+<%
+  input_classes = [
+    "placeholder:text-muted",
+    "bg-input",
+    "border",
+    "border-border",
+    "pr-6",
+    "h-9",
+    "w-full",
+    "min-w-0",
+    "rounded-base",
+    "px-3",
+    "py-1",
+    "text-sm",
+    "shadow-xs",
+    "transition-[color,box-shadow]",
+    "outline-none",
+    "disabled:pointer-events-none",
+    "disabled:cursor-not-allowed",
+    "disabled:opacity-50",
+    "aria-invalid:ring-danger-600/20",
+    "aria-invalid:border-danger"
+  ].join(" ")
+%>
 
-<%# [Variable] Defines the CSS classes for the input element.
-  #            It handles the state of the element when it is being hovered.
+<%# Explanation:: Defines the CSS classes for the input element.
+  #               It handles the state of the element when it is being hovered.
   %>
-<% input_classes_on_hover = "hover:bg-table-hover" %>
+<%
+  input_classes_on_hover = [
+    "hover:bg-table-hover"
+  ].join(" ")
+%>
 
-<%# [Variable] Defines the CSS classes for the input element.
-  #            It handles the state of the element when it is being focused.
+<%# Explanation:: Defines the CSS classes for the input element.
+  #               It handles the state of the element when it is being focused.
   %>
-<% input_classes_on_focus = "focus-visible:border-secondary-600 focus-visible:ring-secondary-100/50 focus-visible:ring-[3px]" %>
+<%
+  input_classes_on_focus = [
+    "focus-visible:border-secondary-600",
+    "focus-visible:ring-secondary-100/50",
+    "focus-visible:ring-[3px]"
+  ].join(" ")
+%>
 
-<%# [Variable] Defines the CSS classes for the field description text.
-  #            Controls typography, spacing, and appearance for helper text.
+<%# Explanation:: Defines the CSS classes for the field description text.
+  #               Controls typography, spacing, and appearance for helper text.
   %>
-<% desc_classes = "flex items-center gap-1.5 text-xs text-muted leading-none font-normal select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
+<%
+  desc_classes = [
+    "flex",
+    "items-center",
+    "gap-1.5",
+    "text-xs",
+    "text-muted",
+    "leading-none",
+    "font-normal",
+    "select-none",
+    "group-data-[disabled=true]:pointer-events-none",
+    "group-data-[disabled=true]:opacity-50",
+    "peer-disabled:cursor-not-allowed",
+    "peer-disabled:opacity-50"
+  ].join(" ")
+%>
 
-<%# [Variable] Defines the CSS classes for the description text when errors are present.
-  #            Adds a red color modifier to highlight validation messages.
+<%# Explanation:: Defines the CSS classes for the description text when errors are present.
+  #               Adds a red color modifier to highlight validation messages.
   %>
-<% desc_classes_with_error = desc_classes + " !text-danger-600 !bg-danger-50 p-1.5 px-3 border border-danger-100 rounded-base w-fit" %>
+<%
+  error_classes = [
+    "!text-danger-600",
+    "!bg-danger-50",
+    "p-1.5",
+    "px-3",
+    "border",
+    "border-danger-100",
+    "rounded-base",
+    "w-fit"
+  ].join(" ")
+%>
 
-<%# [Variable] Defines the CSS classes for the number input %>
-<% mono_class = field_type == :number_field ? "!font-mono placeholder:!font-mono" : "" %>
+<%# Explanation:: Combines the base description classes with the specific error styles.
+  #               The !important modifier ensures the error styles take precedence.
+  %>
+<% desc_classes_with_error = desc_classes + " " + error_classes %>
 
-<%# [Variable] Checks if the input should have half the width. %>
+<%# Explanation:: Defines the CSS classes for the number input.
+  #               Applies a monospaced font if the field type is a number input.
+  %>
+<%
+  mono_class = field_type == :number_field ? [
+    "!font-mono",
+    "placeholder:!font-mono"
+  ].join(" ") : ""
+%>
+
+<%# Explanation:: Checks if the input should have half the width.
+  #               A boolean flag that controls the width class.
+  %>
 <% is_half_width ||= false %>
 
-<%# [Variable] Assigns the icon name passed from the caller, defaulting to nil if not provided. %>
+<%# Explanation:: Defines whether the field is smaller.
+  #               A boolean flag that controls sizing classes for a compact input.
+  %>
+<% is_small ||= false %>
+
+<%# Explanation:: Assigns the icon name passed from the caller.
+  #               The name is used to load the appropriate SVG icon.
+  %>
 <% icon_name ||= nil %>
 
 <div class="relative flex flex-col justify-start gap-1.5">
+
   <% label ||= nil %>
+
   <% if label.present? %>
+
     <%= f.label name,
                 label,
                 class: label_classes
     %>
   <% end %>
+
   <div class="relative <%= is_half_width ? '!w-1/2' : '' %>">
+
     <% placeholder ||= nil %>
-    <% field_type ||= nil %>
-    <% if placeholder.present? %>
-      <%= f.send(field_type || :text_field,
-                 name,
-                 placeholder: placeholder,
-                 class: "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus} #{mono_class}",
-                 aria: { describedby: "#{name}-desc" })
-      %>
-    <% else %>
-      <%= f.send(field_type || :text_field,
-                 name,
-                 class: "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus} #{mono_class}",
-                 aria: { describedby: "#{name}-desc" })
+
+    <% field_type ||= :text_field %>
+
+    <% full_input_classes = "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus} #{mono_class} #{is_small ? '!h-fit !w-fit !px-2.5 !py-0.75' : ''}" %>
+
+    <%= f.send(field_type,
+               name,
+               placeholder: placeholder,
+               class: full_input_classes,
+               aria: { describedby: "#{name}-desc" })
+    %>
+
+    <% if icon_name.present? %>
+
+      <%= inline_svg_tag "icons/#{icon_name}.svg",
+                         class: "absolute size-4 right-3 top-1/2 -translate-y-1/2 stroke-muted"
       %>
     <% end %>
-    <%= inline_svg_tag "icons/#{icon_name}.svg",
-                       class: "absolute size-4 right-3 top-1/2 -translate-y-1/2 stroke-muted"
-    %>
   </div>
+
   <%= content_tag :p,
                   desc,
                   class: desc_classes,

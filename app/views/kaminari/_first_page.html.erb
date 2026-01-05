@@ -15,7 +15,7 @@
   #        - Why: Provides a quick, consistent, and intuitive mechanism for users
   #               to return to the start of a large paginated collection.
   %>
-<span class="button button-outline button-small">
+<span class="button button-outline button-small !font-mono !uppercase !text-xs">
   <%= link_to_unless current_page.first?,
                      "Primeira".html_safe,
                      url, remote: remote

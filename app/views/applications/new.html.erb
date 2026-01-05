@@ -1,25 +1,36 @@
 <%#
-  # Partial: new.html
-  # Date: 11/23/2025
+  # Partial: new.html.erb
+  # Date: 11/24/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Displays the view required to initiate and create a new investment transaction or allocation record.
-  #              The page uses the dashboard wrapper and renders the generic transaction form partial.
+  # Description: This view provides the user interface for adding a new
+  #              application record into the system database.
   #
-  # Usage: - What: Renders the interface for a user to start creating a new financial application or transaction.
-  #                This file acts as the primary layout wrapper for the transaction form.
-  #        - How: Accessed via the route for creating a new application resource (e.g., GET /applications/new).
-  #               Passes the `@application` instance variable to the form partial.
-  #        - Why: Provides the entry point for users to input new financial data and record new investments or redemptions.
+  # Usage: - What: It serves as the primary page for the application
+  #                creation process within the dashboard.
+  #        - How: It wraps a standardized form inside a dashboard layout
+  #               to maintain a consistent look and feel.
+  #        - Why: It separates the creation logic into its own space
+  #               to ensure users can focus on entering new data safely.
+  %>
+
+<%# Explanation:: This block renders the main dashboard wrapper to
+  #               ensure the page has the correct title, description,
+  #               and a consistent layout for the user.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Criar nova alocação",
-           page_desc: "Preencha os dados para registrar uma nova alocação financeira." do
+           page_title: "Criar Nova Aplicação",
+           page_desc: "Preencha os campos abaixo para registrar uma nova aplicação no sistema." do
 %>
+
+  <%# Explanation:: This line includes the internal transaction form
+    #               into the page, passing the necessary data and
+    #               button settings to allow record creation.
+    %>
   <%= render "form",
              application: @application,
              button_name: "Adicionar",
-             icon_name: "add"
+             icon_name: "plus"
   %>
 <% end %>

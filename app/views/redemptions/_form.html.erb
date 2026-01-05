@@ -1,103 +1,168 @@
 <%#
-  # Partial: _form.html
+  # Partial: _form.html.erb
   # Date: 11/28/2025
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Renders a form for creating or editing a redemption record.
-  #              The form collects essential financial data, dates, and the type of the redemption.
+  # Description: This file renders a form for recording investment redemptions within the
+  #              application. It captures financial values, quota details, and transaction
+  #              dates to ensure accurate tracking of capital withdrawals.
   #
-  # Usage: - What: Provides a comprehensive form interface for managing redemption data.
-  #                Collects the target investment, financial values (liquid value, quotas, yield), key dates, and redemption type.
-  #        - How: Uses `form_with` bound to a `redemption` object and renders several modular partials (select, input-field, date-field, separator) to structure the form fields.
-  #        - Why: Enables users to input all necessary details for a new redemption or update an existing one within the application.
+  # Usage:: - What: Provides an interactive interface for users to remove capital from
+  #                 an existing investment fund allocation.
+  #         - How: Uses **form_with** to process the redemption object and organizes
+  #                inputs into logical fieldset groups for better usability.
+  #         - Why: Ensures all tax, yield, and historical data is recorded accurately
+  #                when a user liquidates their financial position.
+  %>
+
+<%# Explanation:: This form builder initializes the data entry process for the redemption
+  #               object. It handles the submission to the server and applies styling
+  #               classes to ensure the inputs align correctly within the page layout.
   %>
 <%= form_with(model: redemption, class: "contents") do |form| %>
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <%# Explanation:: This fieldset groups the selection of the investment source to provide
+    #               clear visual boundaries. It is used to separate the "where" from
+    #               the "how much," helping the user focus on identifying the correct fund.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Origem do Resgate",
+             fieldset_desc: "Selecione o fundo e a carteira de onde o capital será retirado." do %>
+
+    <%# Explanation:: This dropdown menu displays all available investment holdings for selection.
+      #               It allows the user to pick the specific asset they want to withdraw
+      #               from by showing both the fund name and the portfolio for easy context.
+      %>
     <%= render "partials/modules/select",
                f: form,
                name: :fund_investment_id,
                label: "Investimento alvo",
                options_collection: @fund_investments.map { |fi|
-                 ["#{fi.investment_fund.fund_name} (Carteira: #{fi.portfolio.name})", fi.id]
+                 ["#{fi.investment_fund.fund_name} | #{fi.portfolio.name}", fi.id]
                },
-               is_half_width: false,
                desc: "Escolha o fundo de onde o resgate será realizado.",
                is_inactive: false
     %>
-  </div>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <% end %>
+
+  <%# Explanation:: This section groups all numerical inputs related to the money being
+    #               removed. It organizes financial data into a single block to ensure
+    #               the user can verify values, quotas, and profits in one central area.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Dados Financeiros",
+             fieldset_desc: "Informe o valor líquido recebido, as cotas vendidas e o rendimento obtido." do %>
+
+    <%# Explanation:: This input field captures the final cash amount received after all
+      #               costs and taxes. It records the liquid value of the transaction
+      #               and works by accepting decimal numbers formatted as standard currency.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :redeemed_liquid_value,
                label: "Valor líquido resgatado",
                placeholder: "Ex: 5000.00",
-               is_half_width: false,
                desc: "O valor total (R$) recebido no resgate após cotização.",
                field_type: :number_field,
                icon_name: "banknote-arrow-down",
                step: 0.01
     %>
+
+    <%# Explanation:: This numeric field tracks the specific quantity of quotas sold during
+      #               this operation. It is used to decrease the user's balance and works
+      #               by allowing high precision to account for fractional ownership units.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :redeemed_quotas,
                label: "Cotas resgatadas",
                placeholder: "Ex: 100.50",
-               is_half_width: false,
                desc: "Número de cotas efetivamente resgatadas.",
                field_type: :number_field,
                icon_name: "layers",
                step: 0.0001
     %>
+
+    <%# Explanation:: This input records the calculated profit or loss generated by the
+      #               redemption event. It helps the system track portfolio performance
+      #               by comparing the original investment cost against the final withdrawal.
+      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :redemption_yield,
                label: "Rendimento do resgate",
                placeholder: "Ex: 120.50",
-               is_half_width: false,
                desc: "Resultado financeiro proveniente do resgate (R$).",
                field_type: :number_field,
                icon_name: "chart-no-axes-column",
                step: 0.01
     %>
-  </div>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <% end %>
+
+  <%# Explanation:: This fieldset organizes the timeline of the transaction to maintain
+    #               an accurate audit trail. It groups request, pricing, and payment
+    #               dates to clarify the chronological flow of the financial operation.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Prazos e Natureza",
+             fieldset_desc: "Configure o cronograma da operação e a classificação deste resgate." do %>
+
+    <%# Explanation:: This date selector records when the user first initiated the withdrawal
+      #               process. It marks the start of the transaction lifecycle and is used
+      #               to calculate the time elapsed until the money is finally settled.
+      %>
     <%= render "partials/modules/date-field",
                f: form,
                name: :request_date,
                label: "Data do pedido",
                placeholder: "DD/MM/AAAA",
-               is_half_width: false,
                desc: "Data em que o pedido de resgate foi realizado.",
                field_type: :date_field,
                icon_name: "calendar"
     %>
+
+    <%# Explanation:: This field captures the official date when the fund's price was locked
+      #               for this transaction. It ensures the financial math is based on
+      #               the correct market value from the day the quotas were actually priced.
+      %>
     <%= render "partials/modules/date-field",
                f: form,
                name: :cotization_date,
                label: "Data de Cotização",
                placeholder: "DD/MM/AAAA",
-               is_half_width: false,
                desc: "Data em que o valor da cota do resgate foi consolidado.",
                field_type: :date_field,
                icon_name: "calculator"
     %>
+
+    <%# Explanation:: This input identifies the final day when the money was transferred
+      #               to the destination account. it marks the completion of the
+      #               redemption and confirms that the capital is now liquid and available.
+      %>
     <%= render "partials/modules/date-field",
                f: form,
                name: :liquidation_date,
                label: "Data de Liquidação",
                placeholder: "DD/MM/AAAA",
-               is_half_width: false,
                desc: "Data em que o dinheiro entrou na conta.",
                field_type: :date_field,
-               is_half_width: true,
                icon_name: "file-text"
     %>
-  </div>
-  <%= render "partials/modules/separator" %>
-  <div class="grid grid-cols-1 gap-6">
+  <% end %>
+
+  <%# Explanation:: This section allows the user to categorize the redemption according
+    #               to its purpose. It provides predefined options that help the system
+    #               generate more accurate reports on why capital is leaving the portfolio.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Configuração do Resgate",
+             fieldset_desc: "Informe os detalhes sobre como deseja realizar a retirada do seu saldo." do %>
+
+    <%# Explanation:: This selection module defines if the withdrawal is a total exit or
+      #               just a partial portion. It helps the system determine if the
+      #               investment record should be closed or kept active for future use.
+      %>
     <%= render "partials/modules/select",
                f: form,
                name: :redemption_type,
@@ -108,15 +173,20 @@
                  ["Emergencial", "emergency"],
                  ["Programado", "scheduled"]
                ],
-               is_half_width: true,
                desc: "Escolha o tipo de resgate conforme a operação.",
                is_inactive: false
     %>
-  </div>
+  <% end %>
+
+  <%# Explanation:: This submit button finalizes the form and sends all the entered
+    #               data to the database. It triggers the creation or update of
+    #               the redemption record while providing visual feedback via an icon.
+    %>
   <%= form.button :submit,
                   name: nil,
-                  class: "button button-primary w-fit flex items-center gap-2" do %>
-    <%= inline_svg_tag "icons/plus.svg" %>
-    <%= content_tag :span, redemption.persisted? ? "Atualizar" : "Adicionar" %>
+                  class: "button button-primary w-fit flex items-center gap-2" do
+  %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+    <%= content_tag :span, button_name %>
   <% end %>
 <% end %>

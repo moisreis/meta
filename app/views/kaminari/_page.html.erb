@@ -17,7 +17,7 @@
   #        - Why: Provides the central navigational element of the pagination controls,
   #               enabling users to easily access any page in the collection.
   %>
-<span class="button button-small rounded-[6px] <%= 'button-ghost' if !page.current? %> <%= 'button-secondary' if page.current? %>">
+<span class="button !font-mono !text-xs button-small rounded-base <%= 'button-ghost' if !page.current? %> <%= 'button-accent' if page.current? %>">
   <%= link_to_unless page.current?,
                      page,
                      url,

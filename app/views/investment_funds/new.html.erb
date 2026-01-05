@@ -1,23 +1,34 @@
 <%#
-  # Partial: new.html
-  # Date: 11/23/2025
+  # Partial: new.html.erb
+  # Date: 11/24/2025
   # Author: Moisés Reis
   # Package: Meta
   #
   # Description: Renders the view for creating a new **InvestmentFund** record, leveraging the
   #              shared form partial to collect all necessary fund data from the user.
   #
-  # Usage: - What: displays the primary interface for initiating the creation of a new investment fund entry in the database
-  #        - How: wraps the content in a dashboard layout and renders the shared `_form.html.erb` partial, passing the new fund object and specific button labels
-  #        - Why: provides a single, consistent entry point for data input, ensuring that all newly created fund records adhere to the required schema
+  # Usage:: - What: Displays the primary interface for initiating the creation of a new investment fund entry in the database.
+  #         - How: Wraps the content in a dashboard layout and renders the shared **_form.html.erb** partial.
+  #         - Why: Provides a single, consistent entry point for data input,
+  #                ensuring that all newly created fund records adhere to the required schema.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title and descriptive labels.
   %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Criar novo fundo",
            page_desc: "Cadastro de novo fundo de investimento." do
 %>
+
+<%# Explanation:: This helper renders the central input structure to capture fund
+  #               details from the user; it is used to initialize a new record
+  #               and works by passing the model and a customized submission button.
+  %>
   <%= render "form",
              investment_fund: @investment_fund,
              button_name: "Adicionar",
-             icon_name: "add"
+             icon_name: "plus"
   %>
 <% end %>

@@ -1,5 +1,5 @@
 <%#
-  # Partial: edit.html
+  # Partial: edit.html.erb
   # Date: 11/23/2025
   # Author: Moisés Reis
   # Package: Meta
@@ -7,32 +7,27 @@
   # Description: Renders the edit view for a specific **InvestmentFund** record, allowing the user
   #              to update the fund's details and providing an option to delete the fund.
   #
-  # Usage: - What: Provides the interface for modifying or removing an existing investment fund record
-  #        - How: Wraps the content in a dashboard layout, renders the common `form` partial for input fields, and displays a dangerous action card for deletion
-  #        - Why: Enables administrators or authorized users to maintain the accuracy of fund data and manage the lifecycle of records in the system
+  # Usage:: - What: Provides the interface for modifying or removing an existing investment fund record.
+  #         - How: Wraps the content in a dashboard layout, renders the common **form** partial, and displays action buttons.
+  #         - Why: Enables administrators or authorized users to maintain the accuracy of fund data and manage the lifecycle of records.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title to the fund's name.
   %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: @investment_fund.fund_name,
            page_desc: "Atualize as informações do fundo conforme necessário." do
 %>
+
+  <%# Explanation:: This helper renders the central input structure to modify
+    #               existing fund details; it is used to save changes and
+    #               works by passing the current record and a refresh icon button.
+    %>
   <%= render "form",
              investment_fund: @investment_fund,
              button_name: "Atualizar",
-             icon_name: "refresh"
+             icon_name: "refresh-cw"
   %>
-  <%= render 'partials/blocks/card',
-             bg_path: "pixeltrue/bomb-9.svg",
-             is_danger: true,
-             card_title: "Excluir fundo".html_safe,
-             card_desc: "Você deseja deletar este fundo e todos os seus dados? Esta ação é irreversível" do
-  %>
-    <%= button_to @investment_fund,
-                  method: :delete,
-                  class: "button button-danger w-fit",
-                  data: { turbo_confirm: "Are you sure?" } do
-    %>
-      <%= inline_svg_tag "icons/delete_forever.svg" %>
-      <%= content_tag :span, "Deletar fundo" %>
-    <% end %>
-  <% end %>
 <% end %>

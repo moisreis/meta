@@ -1,18 +1,339 @@
 <%#
-  # Partial: index.html
-  # Date: 11/13/2025
+  # View: index.html.erb
+  # Date: 12/06/2025
   # Author: Moisés Reis
-  # Package: Meta
+  # Package: Dashboard
   #
-  # Description: Wraps the dashboard home view inside the shared wrapper component.
-  #              Passes title and description so the layout renders contextual information.
+  # Description: Displays the main dashboard overview for the authenticated user.
+  #              Shows consolidated portfolio metrics, recent activity, fund performance,
+  #              and quick access to key investment functions.
   #
-  # Usage: - What: Defines how the dashboard home page appears inside the global UI shell.
-  #                Supplies localized metadata such as title and description to the wrapper.
-  #        - How:  Calls the **partials/route/dashboard/wrapper** partial and yields content into it.
-  #        - Why:  Ensures dashboard pages follow a consistent structure and inherit shared layout behavior.
+  # Usage: - What: Renders the primary landing page after user login with personalized
+  #                investment summaries, performance indicators, and activity feeds.
+  #        - How: Accessed via GET /dashboard. Uses the current_user instance variable
+  #               and aggregates data from portfolios, fund_investments, applications, and redemptions.
+  #        - Why: Provides users with immediate visibility into their investment status,
+  #               recent transactions, and portfolio health at a glance.
+  %>
+
+<%# [Partial] Renders the main dashboard layout wrapper.
+  #           This partial establishes the standardized structure and title for the page.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Início",
-           page_desc: "Gerencie seus fundos de investimento" do %>
+           page_title: "Visão Geral",
+           page_desc: "Dashboard de <span class='badge badge-outline ml-0.5'>#{current_user.full_name}</span>".html_safe,
+           current_view: "index" do
+%>
+  <%# [Section] Displays the Portfolio Overview section.
+    #           This section presents aggregated financial metrics across all user portfolios.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Resumo de Investimentos",
+             section_desc: "Métricas consolidadas de todas as suas carteiras",
+             columns: 4,
+             has_action: false do
+  %>
+
+    <%# [Summary] Displays the total amount invested across all portfolios.
+      #           Uses success styling to indicate positive investment activity.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Total Investido",
+               card_icon: "wallet" do
+    %>
+      <%= standard_currency(@total_invested) %>
+    <% end %>
+
+    <%# [Summary] Displays the total number of quotas held across all investments. %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Cotas Totais",
+               card_icon: "coins" do
+    %>
+      <%= number_with_precision(@total_quotas, precision: 2) %>
+    <% end %>
+
+    <%# [Summary] Displays the count of active portfolios owned by the user. %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Carteiras Ativas",
+               card_icon: "briefcase" do
+    %>
+      <%= current_user.portfolios.count %>
+    <% end %>
+
+    <%# [Summary] Displays the count of unique funds invested in. %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Fundos Distintos",
+               card_icon: "building-2" do
+    %>
+      <%= @unique_funds %>
+    <% end %>
+  <% end %>
+
+  <%# [Section] Displays performance metrics and market value calculations.
+    #           Shows current market value and unrealized gains/losses.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Performance Consolidada",
+             section_desc: "Análise de rentabilidade e posição atual",
+             columns: 4 do
+  %>
+
+    <%# [Summary] Displays the current market value of all holdings. %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Valor de Mercado Atual",
+               card_icon: "trending-up",
+               status: @market_is_positive ? :success : :danger do
+    %>
+      <%= standard_currency(@total_market_value) %>
+    <% end %>
+
+    <%# [Summary] Displays the unrealized gain/loss with dynamic styling. %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Ganho e Perda Total",
+               card_icon: @gain_is_positive ? "arrow-up" : (@gain_is_negative ? "arrow-down" : "minus"),
+               card_data: @gain_is_positive ? "Lucro" : (@gain_is_negative ? "Prejuízo" : "Neutro"),
+               status:  @gain_is_positive ? :success : :danger do
+    %>
+      <%= @gain_is_positive ? '+' : '' %><%= standard_currency(@total_gain_loss.abs) %>
+    <% end %>
+
+    <%# [Summary] Displays the return on investment percentage. %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Retorno Total",
+               card_icon: "percent",
+               card_data: @roi_positive ? "Positivo" : (@roi_negative ? "Negativo" : "Neutro"),
+               card_data_icon: @roi_positive ? "trending-up" : (@roi_negative ? "trending-down" : "minus"),
+               status:  @roi_positive ? :success : :danger do
+    %>
+      <%= @roi_positive ? '+' : '' %><%= number_with_precision(@roi, precision: 2) %>%
+    <% end %>
+
+    <%# [Summary] Displays the total number of transactions executed. %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Total de Transações",
+               card_icon: "repeat" do
+    %>
+      <%= @total_transactions %>
+    <% end %>
+  <% end %>
+
+  <%# [Section] Displays visualization charts for portfolio allocation and activity trends. %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visualizações",
+             columns: 2 do
+  %>
+
+    <%# [Chart] Renders a donut chart showing value distribution across portfolios. %>
+    <%= render "partials/route/dashboard/chart",
+               data_source: @portfolio_allocation,
+               chart_title: "Distribuição por Carteira",
+               empty_message: "Nenhuma carteira com investimentos" do
+    %>
+      <%= pie_chart @portfolio_allocation,
+                    prefix: "R$ ",
+                    thousands: ".",
+                    decimal: ",",
+                    donut: true,
+                    legend: "right" %>
+    <% end %>
+
+    <%# [Chart] Renders a line chart showing monthly transaction flows. %>
+    <%= render "partials/route/dashboard/chart",
+               data_source: @monthly_flows,
+               chart_title: "Fluxo Mensal Consolidado",
+               empty_message: "Nenhuma transação registrada" do
+    %>
+      <%= line_chart @monthly_flows,
+                     stacked: false,
+                     prefix: "R$ ",
+                     thousands: ".",
+                     decimal: ",",
+                     curve: true,
+                     library: {
+                       scales: {
+                         y: {
+                           ticks: {
+                             callback: "function(value) { return 'R$ ' + value.toLocaleString('pt-BR'); }"
+                           }
+                         }
+                       }
+                     } %>
+    <% end %>
+  <% end %>
+
+  <%# [Section] Displays a table listing all active portfolios. %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Suas Carteiras",
+             section_desc: "Visão consolidada de todos os portfólios",
+             columns: 1,
+             has_action: true,
+             button_route: new_portfolio_path,
+             button_name: "Nova carteira",
+             button_icon: "plus" do
+  %>
+
+    <%# [Conditional] Checks if user has any portfolios. %>
+    <% if current_user.portfolios.any? %>
+
+      <%# [Variable] Assigns portfolios for table rendering. %>
+      <% models = current_user.portfolios %>
+
+      <%# [Array] Defines table column headers. %>
+      <% columns_header = [
+        "Nome da Carteira",
+        "Fundos Alocados",
+        "Valor Investido",
+        "Valor de Mercado",
+        "Retorno",
+        "Status"
+      ] %>
+
+<%# [Array] Defines column icons. %>
+      <% columns_icons = [
+        "wallet",            # Nome da Carteira
+        "coins",             # Fundos Alocados
+        "banknote-arrow-up", # Valor Investido
+        "chart-line",        # Valor de Mercado
+        "trending-up",       # Retorno
+        "circle-check"       # Status
+      ] %>
+
+      <%# [Array] Defines lambda functions for table body formatting. %>
+      <% columns_body = [
+
+        # Explanation:: Displays portfolio name as a clickable link.
+        ->(portfolio) do
+          link_to(portfolio.name, portfolio_path(portfolio), class: "font-medium hover:underline")
+        end,
+
+        # Explanation:: Displays count of fund investments.
+        ->(portfolio) { colored_numerical(portfolio.fund_investments.count, "h-auto") },
+
+        # Explanation:: Displays total invested value.
+        ->(portfolio) { colored_currency(portfolio.total_invested_value, "h-auto") },
+
+        # Explanation:: Calculates and displays current market value.
+        ->(portfolio) do
+          market_value = portfolio.fund_investments.sum(&:current_market_value)
+          colored_currency(market_value, "h-auto")
+        end,
+
+        # Explanation:: Calculates and displays return percentage.
+        ->(portfolio) do
+          invested = portfolio.total_invested_value || 0
+          market = portfolio.fund_investments.sum(&:current_market_value)
+          return_pct = invested > 0 ? ((market - invested) / invested * 100) : 0
+          colored_percentage(return_pct, "h-auto")
+        end,
+
+        # Explanation:: Displays allocation validity status.
+        ->(portfolio) do
+          if portfolio.valid_allocations?
+            content_tag(:span, "Válida", class: "badge badge-success")
+          else
+            content_tag(:span, "Inválida", class: "badge badge-danger")
+          end
+        end
+      ] %>
+
+      <%# [Partial] Renders the table with portfolio data. %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: columns_header,
+                   columns_icons: columns_icons,
+                   columns_body: columns_body,
+                   models: models
+                 } %>
+
+    <% else %>
+      <%= content_tag :p, "N/A", class: "text-muted font-mono" %>
+    <% end %>
+  <% end %>
+
+  <%# [Section] Creates two-column layout for recent activities. %>
+  <%= render "partials/route/dashboard/section",
+             columns: 2,
+             has_action: false do
+  %>
+
+    <%# [Section] Displays recent applications. %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Últimas Aplicações",
+               columns: 1,
+               has_action: false do
+    %>
+
+      <%# [ActiveRecord] Retrieves 5 most recent applications. %>
+      <% recent_applications = Application.joins(fund_investment: :portfolio)
+                                          .where(portfolios: { user_id: current_user.id })
+                                          .includes(fund_investment: [:portfolio, :investment_fund])
+                                          .order(request_date: :desc)
+                                          .limit(5) %>
+
+      <%# [Conditional] Checks for recent applications. %>
+      <% if recent_applications.any? %>
+
+        <%# [Iteration] Renders info cards for each application. %>
+        <% recent_applications.each do |app| %>
+          <%= render "partials/blocks/info-card",
+                     title: app.fund_investment.investment_fund.fund_name,
+                     subtitle: "#{app.fund_investment.portfolio.name} • #{formatted_timestamp(app.request_date)}".html_safe,
+                     main_value: "+ #{standard_currency(app.financial_value)}".html_safe,
+                     sub_value: "#{number_with_precision(app.number_of_quotas, precision: 2)} cotas".html_safe,
+                     icon_name: "arrow-up-right",
+                     main_color: "success"
+          %>
+        <% end %>
+
+        <%# [Link] Link to view all applications. %>
+        <%= link_to applications_path(q: { fund_investment_portfolio_user_id_eq: current_user.id }), class: "button button-outline w-fit" do %>
+          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+          <%= content_tag :span, "Ver todas" %>
+        <% end %>
+
+      <% else %>
+        <%= content_tag :p, "Nenhuma aplicação recente", class: "text-muted font-mono py-6" %>
+      <% end %>
+    <% end %>
+
+    <%# [Section] Displays recent redemptions. %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Últimos Resgates",
+               columns: 1,
+               has_action: false do
+    %>
+
+      <%# [ActiveRecord] Retrieves 5 most recent redemptions. %>
+      <% recent_redemptions = Redemption.joins(fund_investment: :portfolio)
+                                        .where(portfolios: { user_id: current_user.id })
+                                        .includes(fund_investment: [:portfolio, :investment_fund])
+                                        .order(request_date: :desc)
+                                        .limit(5) %>
+
+      <%# [Conditional] Checks for recent redemptions. %>
+      <% if recent_redemptions.any? %>
+
+        <%# [Iteration] Renders info cards for each redemption. %>
+        <% recent_redemptions.each do |red| %>
+          <%= render "partials/blocks/info-card",
+                     title: red.fund_investment.investment_fund.fund_name,
+                     subtitle: "#{red.fund_investment.portfolio.name} • #{formatted_timestamp(red.request_date)}".html_safe,
+                     main_value: "- #{standard_currency(red.redeemed_liquid_value)}".html_safe,
+                     sub_value: "#{number_with_precision(red.redeemed_quotas, precision: 2)} cotas".html_safe,
+                     icon_name: "arrow-down-left",
+                     main_color: "danger"
+          %>
+        <% end %>
+
+        <%# [Link] Link to view all redemptions. %>
+        <%= link_to redemptions_path(q: { fund_investment_portfolio_user_id_eq: current_user.id }), class: "button button-outline w-fit" do %>
+          <%= inline_svg_tag("icons/arrow-up-right.svg") %>
+          <%= content_tag :span, "Ver todos" %>
+        <% end %>
+
+      <% else %>
+        <%= content_tag :p, "Nenhum resgate recente", class: "text-muted font-mono py-6" %>
+      <% end %>
+    <% end %>
+  <% end %>
 <% end %>

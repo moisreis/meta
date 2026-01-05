@@ -1,0 +1,324 @@
+<%#
+  # View: show.html.erb
+  # Date: 12/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Displays a comprehensive dashboard view for a single EconomicIndex record.
+  #              Shows index details, latest value, historical trends, statistical metrics,
+  #              and related normative articles that reference this economic indicator.
+  #
+  # Usage: - What: Renders the complete show view for the EconomicIndex resource with interactive
+  #                charts, historical value trends, statistical analysis, and regulatory connections.
+  #        - How: Accessed via GET /economic_indices/:id. Uses the @economic_index instance variable
+  #               loaded by EconomicIndicesController#show along with pre-calculated chart data.
+  #        - Why: Provides users and administrators with a centralized dashboard to monitor economic
+  #               indicator performance, historical trends, and understand which funds use this benchmark.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure. It displays the index abbreviation and full name
+  #               for clear identification of the economic indicator.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @economic_index.abbreviation,
+           page_desc: "#{@economic_index.name}",
+           current_view: "show" do
+%>
+
+  <%# Explanation:: These variables are calculated once at the top and reused throughout
+    #               the view to avoid scope issues and redundant database queries.
+    %>
+  <%
+    latest_value = @economic_index.latest_value
+    first_record = @economic_index.economic_index_histories.order(date: :asc).first
+    last_record = @economic_index.economic_index_histories.order(date: :desc).first
+    twelve_month_history = @economic_index.economic_index_histories
+                                          .where("date >= ?", 12.months.ago)
+                                          .order(date: :asc)
+                                          .pluck(:date, :value)
+                                          .map { |date, value| [date.strftime("%b/%y"), value] }
+                                          .to_h
+    thirty_day_history = @economic_index.economic_index_histories
+                                        .where("date >= ?", 30.days.ago)
+                                        .order(date: :asc)
+                                        .pluck(:date, :value)
+                                        .map { |date, value| [date.strftime("%d/%m"), value] }
+                                        .to_h
+    all_values = @economic_index.economic_index_histories.pluck(:value)
+    avg_value = all_values.present? ? (all_values.sum / all_values.size) : nil
+    min_value = all_values.min
+    max_value = all_values.max
+    last_12_months = @economic_index.economic_index_histories
+                                    .where("date >= ?", 12.months.ago)
+                                    .pluck(:value)
+    avg_12_months = last_12_months.present? ? (last_12_months.sum / last_12_months.size) : nil
+    related_articles = NormativeArticle.where("description ILIKE ? OR article_body ILIKE ?",
+                                              "%#{@economic_index.abbreviation}%",
+                                              "%#{@economic_index.abbreviation}%")
+
+    recent_values = @economic_index.economic_index_histories.order(date: :desc).limit(15)
+  %>
+
+  <%# Explanation:: This layout component groups the most relevant data points into a
+    #               responsive grid at the top of the page. It is used to give
+    #               the user a snapshot of current metrics through independent cards.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Métricas Atuais",
+             section_desc: "Valor mais recente e estatísticas de dados",
+             columns: 4 do
+  %>
+
+    <%# Explanation:: This display card presents the most recent numerical value found in
+      #               the index's history log. It is used to highlight the current market
+      #               rate and works by applying high-visibility success styling.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Valor Atual",
+               card_icon: "trending-up",
+               is_success: true do
+    %>
+      <% if latest_value.present? %>
+        <span class="font-mono"><%= number_with_precision(latest_value, precision: 4) %></span>
+      <% else %>
+        <span class="text-muted font-mono">N/A</span>
+      <% end %>
+    <% end %>
+
+    <%# Explanation:: This information card shows the total quantity of data entries
+      #               stored for this specific indicator. It is used to verify the
+      #               depth of the dataset and works by counting database relations.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Registros Históricos",
+               card_icon: "database" do
+    %>
+      <%= @economic_index.economic_index_histories.count %>
+    <% end %>
+
+    <%# Explanation:: This chronological card displays the earliest date found in the
+      #               history records for this index. It identifies the beginning of
+      #               available data and works by retrieving the oldest saved timestamp.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Primeiro Registro",
+               card_icon: "calendar" do
+    %>
+      <%= first_record ? formatted_timestamp(first_record.date) : "N/A" %>
+    <% end %>
+
+    <%# Explanation:: This timeline card shows when the most recent index value was
+      #               added or updated in the system. It helps users judge data
+      #               freshness and works by displaying the most recent record date.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Última Atualização",
+               card_icon: "calendar" do
+    %>
+      <%= last_record ? formatted_timestamp(last_record.date) : "N/A" %>
+    <% end %>
+
+    <%# Explanation:: This card identifies the specific day the economic index was
+      #               first created in the application database. It tracks system
+      #               history and works by formatting the base record creation date.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Cadastrado em",
+               card_icon: "calendar-plus" do
+    %>
+      <%= formatted_timestamp(@economic_index.created_at) %>
+    <% end %>
+  <% end %>
+
+  <%# Explanation:: This visual section houses the graphical representations of
+    #               index movements over time. It is used to identify visual
+    #               patterns and works by rendering specialized line chart modules.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visualizações",
+             columns: 2 do
+  %>
+
+    <%# Explanation:: This chart module renders a line graph showing index
+      #               fluctuations over the past twelve months. It is used for
+      #               annual analysis and works by plotting monthly data points.
+      %>
+    <%= render "partials/groups/chart-list",
+               chart_type: :line_chart,
+               data_source: twelve_month_history,
+               chart_title: "Histórico (12 Meses)",
+               chart_options: {
+                 thousands: ".",
+                 decimal: ",",
+                 curve: true,
+                 library: {
+                   scales: {
+                     y: {
+                       ticks: {
+                         callback: "function(value) { return value.toLocaleString('pt-BR'); }"
+                       }
+                     }
+                   }
+                 }
+               } %>
+
+    <%# Explanation:: This graph displays granular daily changes for the economic
+      #               indicator over the last thirty days. It is used for short-term
+      #               monitoring and works by pulling data from the recent history.
+      %>
+    <%= render "partials/groups/chart-list",
+               chart_type: :line_chart,
+               data_source: thirty_day_history,
+               chart_title: "Histórico (30 Dias)",
+               chart_options: {
+                 thousands: ".",
+                 decimal: ",",
+                 curve: true,
+                 library: {
+                   scales: {
+                     y: {
+                       ticks: {
+                         callback: "function(value) { return value.toLocaleString('pt-BR'); }"
+                       }
+                     }
+                   }
+                 }
+               } %>
+  <% end %>
+
+  <%# Explanation:: This grouping provides deeper insights by performing math
+    #               on the historical values. It is used to compare current
+    #               data against averages and works by aggregating numeric fields.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Análise Estatística",
+             section_desc: "Métricas calculadas sobre o histórico de valores",
+             columns: 4 do
+  %>
+
+    <%# Explanation:: This card presents the mathematical mean of every single value
+      #               recorded in the index's history. It is used to establish
+      #               a long-term baseline and works by averaging the entire collection.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Média Histórica",
+               card_icon: "chart-column" do
+    %>
+      <% if avg_value.present? %>
+        <span class="font-mono"><%= number_with_precision(avg_value, precision: 4) %></span>
+      <% else %>
+        <span class="text-muted">N/A</span>
+      <% end %>
+    <% end %>
+
+    <%# Explanation:: This card identifies the lowest numeric point ever recorded for
+      #               this economic indicator. It is used to see historical bottoms
+      #               and works by finding the minimum value in the database.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Valor Mínimo",
+               card_icon: "arrow-down" do
+    %>
+      <% if min_value.present? %>
+        <span class="font-mono"><%= number_with_precision(min_value, precision: 4) %></span>
+      <% else %>
+        <span class="text-muted">N/A</span>
+      <% end %>
+    <% end %>
+
+    <%# Explanation:: This display card highlights the highest price or rate ever
+      #               achieved by the index. It is used to mark historical peaks
+      #               and works by selecting the maximum value from the history log.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Valor Máximo",
+               card_icon: "arrow-up" do
+    %>
+      <% if max_value.present? %>
+        <span class="font-mono"><%= number_with_precision(max_value, precision: 4) %></span>
+      <% else %>
+        <span class="text-muted font-mono">N/A</span>
+      <% end %>
+    <% end %>
+
+    <%# Explanation:: This card calculates the average performance of the index
+      #               specifically over the last year. It is used to track
+      #               recent trends and works by averaging only the latest 12 entries.
+      %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Média (12 meses)",
+               card_icon: "activity" do
+    %>
+      <% if avg_12_months.present? %>
+        <span class="font-mono"><%= number_with_precision(avg_12_months, precision: 4) %></span>
+      <% else %>
+        <span class="text-muted font-mono">N/A</span>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Explanation:: This table component lists any regulatory articles that mention
+    #               this index in their rules. It is used to map legal dependencies
+    #               and works by filtering articles based on text references.
+    %>
+  <%= render "partials/groups/table-list",
+             section_title: "Artigos Normativos Relacionados",
+             collection: related_articles,
+             action_path: nil,
+             action_name: nil,
+             headers: ["Artigo", "Número", "Meta de Benchmark", "Descrição"],
+             column_icons: ["file-text", "hash", "target", "info"],
+             body_procs: [
+               ->(article) { link_to(article.display_name, normative_article_path(article), class: "hover:underline font-medium") },
+               ->(article) { content_tag(:span, article.article_number.presence || "N/A", class: "font-mono text-sm") },
+               ->(article) do
+                 if article.has_benchmark?
+                   content_tag(:span, "#{number_with_precision(article.benchmark_target, precision: 2)}%", class: "badge badge-success")
+                 else
+                   content_tag(:span, "N/A", class: "text-muted")
+                 end
+               end,
+               ->(article) do
+                 if article.description.present?
+                   content_tag(:span, truncate(article.description, length: 80), class: "text-sm")
+                 else
+                   content_tag(:span, "N/A", class: "text-muted")
+                 end
+               end
+             ]
+  %>
+
+  <%# Explanation:: This list view presents the most recent updates to the index values
+    #               in a traditional table format. It is used for manual audit and
+    #               works by showing the last fifteen entries with percentage changes.
+    %>
+  <%= render "partials/groups/table-list",
+             section_title: "Histórico de Valores",
+             collection: recent_values,
+             action_path: nil,
+             action_name: nil,
+             headers: ["Data", "Valor", "Variação", "Registrado há"],
+             column_icons: ["calendar", "dollar-sign", "trending-up-down", "clock"],
+             body_procs: [
+               ->(val) { formatted_timestamp(val.date) },
+               ->(val) { content_tag(:span, number_with_precision(val.value, precision: 4), class: "font-mono font-medium") },
+               ->(val) do
+                 previous_val = @economic_index.economic_index_histories.where("date < ?", val.date).order(date: :desc).first
+                 if previous_val && previous_val.value
+                   change = ((val.value - previous_val.value) / previous_val.value * 100).round(2)
+                   if change > 0
+                     content_tag(:span, "+#{change}%", class: "badge badge-success")
+                   elsif change < 0
+                     content_tag(:span, "#{change}%", class: "badge badge-danger")
+                   else
+                     content_tag(:span, "0%", class: "text-muted font-mono")
+                   end
+                 else
+                   content_tag(:span, "N/A", class: "text-muted")
+                 end
+               end,
+               ->(val) { "#{time_ago_in_words(val.date)}" }
+             ]
+  %>
+<% end %>

@@ -1,0 +1,114 @@
+<%#
+  # Partial: _textarea.html
+  # Date: 12/17/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: First line. Always in present simple tense.
+  #              Be didatic.
+  #
+  # Usage: - What: First line.
+  #                Second line.
+  #        - How:
+  #        - Why:
+  %>
+
+<% is_inactive ||= nil %>
+<% is_half_width ||= false %>
+<% is_small ||= false %>
+<% rows ||= 4 %>
+<% label ||= nil %>
+<% placeholder ||= nil %>
+
+<%
+  label_classes = [
+    "flex",
+    "items-center",
+    "gap-1.5",
+    "text-xs",
+    "font-body",
+    "leading-none",
+    "font-semibold",
+    "select-none",
+    "peer-disabled:cursor-not-allowed",
+    "peer-disabled:opacity-50"
+  ].join(" ")
+%>
+
+<%
+  textarea_classes = [
+    "placeholder:text-muted",
+    "bg-input",
+    "border",
+    "border-border",
+    "w-full",
+    "min-w-0",
+    "rounded-base",
+    "px-3",
+    "py-2",
+    "text-sm",
+    "shadow-xs",
+    "resize-none",
+    "transition-[color,box-shadow]",
+    "outline-none",
+    "disabled:pointer-events-none",
+    "disabled:cursor-not-allowed",
+    "disabled:opacity-50",
+    "aria-invalid:ring-danger-600/20",
+    "aria-invalid:border-danger",
+    "hover:bg-table-hover",
+    "focus-visible:border-secondary-600",
+    "focus-visible:ring-secondary-100/50",
+    "focus-visible:ring-[3px]"
+  ].join(" ")
+%>
+
+<%
+  desc_classes = [
+    "flex",
+    "items-center",
+    "gap-1.5",
+    "text-xs",
+    "text-muted",
+    "leading-none",
+    "font-normal",
+    "select-none",
+    "peer-disabled:cursor-not-allowed",
+    "peer-disabled:opacity-50"
+  ].join(" ")
+%>
+
+<%
+  error_classes = [
+    "!text-danger-600",
+    "!bg-danger-50",
+    "p-1.5",
+    "px-3",
+    "border",
+    "border-danger-100",
+    "rounded-base",
+    "w-fit"
+  ].join(" ")
+%>
+
+<% desc_classes_with_error = "#{desc_classes} #{error_classes}" %>
+
+<div class="relative flex flex-col justify-start gap-1.5">
+
+  <% if label.present? %>
+    <%= f.label name, label, class: label_classes %>
+  <% end %>
+
+  <div class="relative <%= is_half_width ? '!w-1/2' : '' %>">
+    <%= f.text_area name,
+                    rows: rows,
+                    placeholder: placeholder,
+                    class: textarea_classes,
+                    aria: { describedby: "#{name}-desc" } %>
+  </div>
+
+  <%= content_tag :p,
+                  desc,
+                  class: desc_classes,
+                  id: "#{name}-desc" if desc.present? %>
+</div>

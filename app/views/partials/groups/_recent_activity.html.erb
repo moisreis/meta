@@ -1,0 +1,99 @@
+<%#
+  # Partial: _recent_activity.html
+  # Date: 12/22/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a generic list of activity cards for any data collection.
+  #              It uses lambdas to extract titles, values, and dates, making it
+  #              completely independent of specific model structures.
+  #
+  # Usage:: - What: Provides a reusable UI block for listing recent transactions or events.
+  #         - How: Accepts a **collection** and configuration lambdas for **title_proc**,
+  #                **value_proc**, and **sub_value_proc**.
+  #         - Why: Enables the same visual structure to be used for applications,
+  #                redemptions, logs, or any other enumerable data set.
+  #
+  # Attributes:: - *collection* - the array or relation of objects to display.
+  #              - *section_title* - the string header for the block.
+  #              - *color* - the theme color (success, danger, info, etc.).
+  #              - *title_proc* - lambda that returns the main text for the card.
+  #              - *value_proc* - lambda that returns the primary financial/numeric value.
+  #              - *sub_value_proc* - lambda that returns the secondary descriptive text.
+  #              - *see_all_path* - the destination URL for the action button.
+  %>
+
+<%# Explanation:: This variable defines grid columns to control layout spacing;
+  #               it should be used when customizing screen width distribution
+  #               by passing a value to organize how the content is visually aligned.
+  %>
+<% section_columns ||= nil %>
+
+<%# Explanation:: This helper wraps content in a dashboard section to maintain
+  #               visual consistency; it is used when building dashboard views
+  #               and works by applying a standard frame and title to the inner list.
+  %>
+<%= render "partials/route/dashboard/section",
+           section_title: section_title,
+           columns: section_columns,
+           has_action: false do
+%>
+
+  <%# Explanation:: This conditional check verifies if data exists before rendering
+    #               to avoid empty boxes; it is used whenever a collection is passed
+    #               and works by checking if the list has at least one item inside.
+    %>
+  <% if collection.any? %>
+
+    <%# Explanation:: This loop iterates through the list to generate unique cards
+      #               for each item; it is used to display multiple records and works
+      #               by repeating the card creation process for every entry found.
+      %>
+    <% collection.each do |item| %>
+
+      <%# Explanation:: This line runs a custom instruction to find the card's name
+        #               so the list can handle different types of data; it works by
+        #               calling a pre-defined logic to pull the correct text label.
+        %>
+      <% card_title = title_proc.call(item) %>
+
+      <%# Explanation:: This variable stores the main number or price to show
+        #               important values clearly; it is used to highlight financial
+        #               data and works by executing a specific rule for each item.
+        %>
+      <% card_value = value_proc.call(item) %>
+
+      <%# Explanation:: This line retrieves secondary details to give users more
+        #               context; it is used to add descriptive text under the value
+        #               and works by fetching extra information from the data object.
+        %>
+      <% card_sub = sub_value_proc.call(item) %>
+
+      <%# Explanation:: This logic identifies the correct timestamp to show when
+        #               an event happened; it is used to ensure a date is always
+        #               found by checking different possible names for the date field.
+        %>
+      <% card_date = item.try(:request_date) || item.try(:created_at) %>
+
+      <%# Explanation:: This helper displays the final visual card with icons
+        #               and colors; it is used to build the actual user interface
+        #               and works by passing all gathered data into a card template.
+        %>
+      <%= render "partials/blocks/info-card",
+                 title: card_title,
+                 subtitle: formatted_timestamp(card_date),
+                 main_value: card_value,
+                 sub_value: card_sub,
+                 icon_name: color == "success" ? "arrow-up-right" : "arrow-down-left",
+                 main_color: color
+      %>
+    <% end %>
+  <% else %>
+
+    <%# Explanation:: This tag shows a placeholder when no information is available
+      #               to inform the user; it is used as a fallback and works by
+      #               printing a simple "N/A" message on the screen.
+      %>
+    <%= content_tag :p, "N/A", class: "text-muted font-mono py-6" %>
+  <% end %>
+<% end %>

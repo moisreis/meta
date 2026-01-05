@@ -1,0 +1,94 @@
+<%#
+  # Partial: _form.html.erb
+  # Date: 12/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: This file provides a structured form for managing **EconomicIndex** records.
+  #              It organizes identification fields and descriptive text into logical
+  #              groups to ensure accurate tracking of economic indicators.
+  #
+  # Usage: - What: Renders the standardized form necessary for creating or updating an
+  #                **EconomicIndex** object.
+  #        - How: Utilizes the Rails **form_with** helper and reuses modular partials
+  #               to maintain a consistent visual and functional dashboard layout.
+  #        - Why: Provides a clear and didactic input mechanism ensuring that all
+  #               economic indicators are registered with correct names and abbreviations.
+  %>
+
+<%# Explanation:: This form builder initializes the data entry process for economic
+  #               indicators to ensure all information is sent to the server. It wraps
+  #               the entire set of inputs and applies layout styles for a clean interface.
+  %>
+<%= form_with(model: economic_index, class: "contents") do |form| %>
+
+  <%# Explanation:: This fieldset groups the identification inputs to provide a clear
+    #               visual boundary for core data. It is used to separate official
+    #               titles from descriptions and works by nesting labels and inputs.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Identificação do Índice",
+             fieldset_desc: "Defina o nome e a sigla oficial do indicador econômico." do %>
+
+    <%# Explanation:: This input field captures the full official name of the economic
+      #               indicator to make it easily searchable. It provides a text box for
+      #               the title and works by saving the string directly to the database.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :name,
+               label: "Nome do Índice",
+               placeholder: "Índice Nacional de Preços ao Consumidor Amplo",
+               desc: "Nome oficial completo do indicador econômico.",
+               field_type: :text_field,
+               icon_name: "file-text"
+    %>
+
+    <%# Explanation:: This text input allows users to record the official abbreviation
+      #               of the index for use in charts and lists. It ensures quick
+      #               identification and works by storing short codes like "IPCA" or "CDI".
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :abbreviation,
+               label: "Sigla",
+               placeholder: "IPCA",
+               desc: "Abreviação oficial do índice (apenas letras maiúsculas e números).",
+               field_type: :text_field,
+               icon_name: "hash"
+    %>
+  <% end %>
+
+  <%# Explanation:: This section groups the descriptive text area to help users provide
+    #               context for the indicator. It organizes the purpose and measurement
+    #               details into a wide block to facilitate reading and editing.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Descrição e Finalidade",
+             fieldset_desc: "Forneça informações sobre o que este índice mede e sua aplicação." do %>
+
+    <%# Explanation:: This large text area is dedicated to explaining what the index
+      #               measures and its role in the portfolio. It provides a multi-line
+      #               box for detailed notes and works by saving the text as an optional attribute.
+      %>
+    <%= render "partials/modules/textarea",
+               f: form,
+               name: :description,
+               label: "Descrição",
+               placeholder: "Mede a variação de preços de produtos e serviços consumidos pelas famílias brasileiras...",
+               desc: "Explicação sobre o que o índice representa e como é utilizado (opcional, máximo 500 caracteres).",
+               rows: 4 %>
+  <% end %>
+
+  <%# Explanation:: This action button finalizes the creation or update of the economic
+    #               index record. It submits the gathered data to the database
+    #               and provides visual feedback using a primary-colored icon.
+    %>
+  <%= form.button :submit,
+                  name: nil,
+                  class: "button button-primary w-fit flex items-center gap-2" do
+  %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+    <%= content_tag :span, button_name %>
+  <% end %>
+<% end %>

@@ -3,12 +3,14 @@
 # @author Moisés Reis
 # @added 11/25/2025
 # @package *Meta*
-# @description This class defines the authorization rules for every user, determining what actions (like reading, creating, or managing)
+# @description This class defines the authorization rules for every user,
+#              determining what actions (like reading, creating, or managing)
 #              they are permitted to perform on specific data models (resources) in the application.
 #              The explanations are in the present simple tense.
 # @category *Model*
 #
-# Usage:: - *[What]* This code block acts as the application's security guard, defining the exact access level for every user who logs in.
+# Usage:: - *[What]* This code block acts as the application's security guard,
+#           defining the exact access level for every user who logs in.
 #         - *[How]* It uses the **CanCan** library to check the user's roles and relationships,
 #           then sets permissions (e.g., `can :read, Portfolio`) based on those checks.
 #         - *[Why]* It ensures that users can only see and modify the data they are supposed to,

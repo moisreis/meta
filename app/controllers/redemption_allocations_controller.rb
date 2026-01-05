@@ -60,6 +60,10 @@ class RedemptionAllocationsController < ApplicationController
     #               ensuring the user can only see allocations related to their own investments.
     fund_investment_ids = FundInvestment.accessible_to(current_user).select(:id)
 
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = RedemptionAllocation.count
+
     # Explanation:: This retrieves the IDs of redemptions linked to accessible fund investments,
     #               establishing the scope for allocation filtering.
     redemption_ids = Redemption.where(fund_investment_id: fund_investment_ids).select(:id)
@@ -101,7 +105,7 @@ class RedemptionAllocationsController < ApplicationController
     sorted = filtered.order("#{sort} #{direction}")
 
     # Explanation:: This applies pagination to the sorted result, showing 20 records per page.
-    @redemption_allocations = sorted.page(params[:page]).per(20)
+    @redemption_allocations = sorted.page(params[:page]).per(14)
 
     respond_to do |format|
       format.html

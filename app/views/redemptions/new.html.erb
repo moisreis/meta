@@ -1,22 +1,36 @@
 <%#
-  # Partial: new.html
+  # Partial: new.html.erb
   # Date: 11/28/2025
   # Author: Moisés Reis
   # Package: Meta
   #
   # Description: Defines the page structure for the new redemption creation form.
-  #              It sets the page title and description and embeds the reusable redemption form partial.
+  #              It sets the page title and description and embeds the reusable
+  #              redemption form partial for consistent data entry.
   #
-  # Usage: - What: Displays the page where users can input data for a new redemption.
-  #                It provides the context and layout for the creation process.
-  #        - How: Uses the 'wrapper' partial to establish the dashboard layout
-  #               and then renders the '_form' partial, passing the `@redemption` object and button labels.
-  #        - Why: Provides the interface necessary for the user to initiate and register a new redemption transaction in the system.
+  # Usage::  - What: Displays the page where users can input data for a new redemption.
+  #                 It provides the context and layout for the creation process.
+  #         - How: Uses the 'wrapper' partial to establish the dashboard layout
+  #                and then renders the '_form' partial, passing the @redemption object.
+  #         - Why: Provides the interface necessary for the user to initiate and
+  #                register a new redemption transaction in the system.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the creation page into a standardized
+  #               dashboard view with a specific title and subtitle. It is used as the
+  #               outer shell for the page and works by nesting the form within a
+  #               consistent visual header and content area.
   %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Criar novo resgate",
            page_desc: "Preencha os dados para registrar um resgate." do
 %>
+
+  <%# Explanation:: This shared partial generates the actual input fields needed to
+    #               collect redemption data from the user. It appears inside the
+    #               wrapper and works by receiving the redemption model along with
+    #               custom labels and icons for the final action button.
+    %>
   <%= render "form",
              redemption: @redemption,
              button_name: "Adicionar",

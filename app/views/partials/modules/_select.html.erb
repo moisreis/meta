@@ -21,7 +21,22 @@
 <% is_inactive ||= nil %>
 
 <%# [Variable] Defines the CSS classes for the input label. %>
-<% label_classes = "flex items-center gap-1.5 text-2xs font-heading uppercase leading-none font-semibold select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
+<%
+  label_classes = [
+    "flex",
+    "items-center",
+    "gap-1.5",
+    "text-xs",
+    "font-body",
+    "leading-none",
+    "font-semibold",
+    "select-none",
+    "group-data-[disabled=true]:pointer-events-none",
+    "group-data-[disabled=true]:opacity-50",
+    "peer-disabled:cursor-not-allowed",
+    "peer-disabled:opacity-50"
+  ].join(" ")
+%>
 
 <%# [Variable] Defines the CSS classes for the field description text. %>
 <% desc_classes = "flex items-center gap-1.5 text-xs text-muted leading-none font-normal select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>

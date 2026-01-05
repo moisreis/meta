@@ -8,8 +8,10 @@
 #              It is the mechanism for sharing portfolio views and management rights.
 # @category *Model*
 #
-# Usage:: - *[What]* This code block manages the rules for granting another user access to a **Portfolio** record.
-#         - *[How]* It establishes a unique link between a **User** and a **Portfolio** with an associated permission level (read or crud), preventing self-assignment.
+# Usage:: - *[What]* This code block manages the rules for
+#           granting another user access to a **Portfolio** record.
+#         - *[How]* It establishes a unique link between a **User**
+#           and a **Portfolio** with an associated permission level (read or crud), preventing self-assignment.
 #         - *[Why]* The application needs this class to enforce authorization policies,
 #           allowing portfolio owners to securely share their data with collaborators or delegated viewers.
 #

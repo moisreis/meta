@@ -1,8 +1,8 @@
 <%#
-  # View: index.html.erb
+  # Partial: index.html.erb
   # Date: 11/20/2025
   # Author: Moisés Reis
-  # Package: Portfolio
+  # Package: Meta
   #
   # Description: Constructs the main index page for Portfolio resources. It renders a
   #              dynamic data table to display the list of portfolios and includes
@@ -18,16 +18,26 @@
   #               and manage the Portfolio list while promoting UI consistency through
   #               the use of shared dashboard partials.
   %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title and descriptive labels.
+  %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Carteiras",
            page_desc: "Lista de carteiras com permissão de visualização.",
            current_view: "datatable" do
 %>
+
+  <%# Explanation:: This partial generates a dynamic table to list portfolio records
+    #               clearly; it is used to present organized data to the user and
+    #               works by receiving headers and data-fetching logic as arguments.
+    %>
   <%= render partial: "partials/blocks/data-table", locals: {
 
-    # [Explanation]: This array defines the titles for each column in the table header.
-    #                The titles provide clear context about the essential information
-    #                of each portfolio, such as name, invested value, and permissions.
+    # Explanation:: This array defines the text labels displayed at the top of
+    #               the table columns; it is used to give context to the data
+    #               and works by mapping each string to a specific column header.
     columns_header: [
       "Nome",
       "Proprietário",
@@ -36,19 +46,26 @@
       "Cotas"
     ],
 
-    # [Explanation]: This array holds the names of Material Symbols icons used for visual representation
-    #                in the table header. The icons help visually categorize the type of data
-    #                presented in the corresponding column.
-    columns_icons: [],
+    # Explanation:: This collection holds visual icons to accompany the column
+    #               titles for better recognition; it is used to beautify the
+    #               header and works by rendering specific Material Symbols.
+    columns_icons: [
+      "tag",
+      "user",
+      "users",
+      "wallet",
+      "percent"
+    ],
 
-    # [Explanation]: This is the core array containing lambda functions and symbols that define how
-    #                each cell's content is processed and formatted. These functions receive the
-    #                portfolio object (`portfolio`) as an argument.
+    # Explanation:: This list contains the logic for filling each row with
+    #               portfolio information; it is used to handle data extraction
+    #               and works by executing symbols or functions for every record.
     columns_body: [
       :name,
 
-      # [Explanation]: This lambda displays the full name of the user who owns the portfolio.
-      #                The owner's name is rendered within a secondary styled badge element.
+      # Explanation:: This function identifies and labels the creator of the
+      #               portfolio to clarify ownership; it is used in the second
+      #               column and works by comparing the owner to the current user.
       ->(portfolio) do
         user = portfolio.user
 
@@ -59,9 +76,9 @@
         end
       end,
 
-      # [Explanation]: This lambda displays the names of users with whom the portfolio is shared.
-      #                If sharing permissions exist, each user's name is displayed in an outline badge;
-      #                otherwise, it displays "Não há compartilhamento" (No sharing).
+      # Explanation:: This logic lists all people who have access to the
+      #               portfolio to track sharing; it is used for transparency
+      #               and works by looping through permissions and creating badges.
       ->(portfolio) do
         shared_permissions = portfolio.user_portfolio_permissions.includes(:user)
 
@@ -80,79 +97,93 @@
         end
       end,
 
-      # [Explanation]: This lambda calculates and displays the total monetary value currently invested in the portfolio.
-      #                If the value is positive, it is formatted as currency (R$);
-      #                otherwise, it displays the message "Não há investimentos" (No investments) in muted text.
+      # Explanation:: This instruction calculates and formats the total money
+      #               held in the portfolio; it is used to show financial
+      #               status and works by converting raw numbers into currency text.
       ->(portfolio) do
         colored_currency(portfolio.total_invested_value)
       end,
 
-      # [Explanation]: This lambda displays the total number of investment quotas held in the portfolio.
-      #                If there are quotas, the value is formatted with number delimiters;
-      #                otherwise, it displays "Sem cotas" (No quotas) in muted text.
+      # Explanation:: This line displays the quantity of ownership units held
+      #               by the user; it is used to show investment scale and
+      #               works by applying numerical formatting to the quota count.
       ->(portfolio) do
         colored_numerical(portfolio.total_quotas_held)
       end
     ],
 
-    # [Explanation]: This variable contains the collection of Portfolio model instances
-    #                to be displayed in the data table. This is the primary dataset
-    #                for the table rows.
+    # Explanation:: This attribute provides the actual list of portfolio objects
+    #               retrieved from the database; it is used as the table's
+    #               data source and works by feeding the rows into the display loop.
     models: @portfolios,
 
-    # [Explanation]: This parameter defines options for sorting the data within the table.
-    #                Since the array is currently empty, default Ransack sorting options are used.
+    # Explanation:: This configuration sets the rules for how users can reorder
+    #               the list; it is used to allow custom sorting and works by
+    #               integrating with the database search parameters.
     sort_options: [],
 
-    # [Explanation]: This is the Ransack search object (`@q`). It contains the current search
-    #                and filter parameters applied to the `@portfolios` collection, used for generating sort links.
+    # Explanation:: This object manages the current search and sort criteria
+    #               for the collection; it is used to keep track of user
+    #               filters and works by generating valid database queries.
     q_object: @q,
 
-    # [Explanation]: This defines the URL used for both searching and pagination of the table.
-    #                It ensures that search parameters are correctly routed
-    #                back to the Portfolio index action.
+    # Explanation:: This path tells the table where to send search and page
+    #               requests; it is used to keep the user on the correct page
+    #               and works by linking actions to the Portfolio index route.
     search_url: portfolios_path,
 
-    # [Explanation]: This is the ID of the Turbo Frame that wraps the data table.
-    #                It ensures that sorting and searching actions update only the table content
-    #                without reloading the entire page.
+    # Explanation:: This unique identifier allows the table to update without
+    #               refreshing the whole page; it is used for speed and works
+    #               by isolating the table content within a Turbo Frame.
     turbo_frame_id: "portfolios_table",
 
-    # [Explanation]: This defines the URL used for exporting the table data (e.g., to CSV).
-    #                Since the value is nil, the export functionality is currently disabled.
-    export_url: nil
+    # Explanation:: This setting provides a link for users to download the
+    #               table data as a file; it is used for reporting and works
+    #               by enabling an export button when a URL is provided.
+    export_url: export_portfolios_path(params[:q])
   } %>
 <% end %>
-<%= render partial: "partials/route/dashboard/filters", locals: {
 
-  # [Explanation]: This is the Ransack search object (`@q`). The filter partial uses this object
-  #                to initialize the filter fields with current search values.
-  q_object: @q,
+<%# Explanation:: This partial renders a sidebar or header with search inputs
+  #               to help users find data; it is used to refine the list and
+  #               works by sending form data to the table's Turbo Frame.
+  %>
+<%= render partial: "partials/route/dashboard/filters",
+           locals: {
 
-  # [Explanation]: This defines the URL where the filter form submits its search parameters.
-  #                The submission triggers an update to the `portfolios_path`.
-  search_url: portfolios_path,
+             # Explanation:: This search object connects the filter fields to the
+             #               database query logic; it is used to pre-fill inputs and
+             #               works by syncing with the Ransack gem settings.
+             q_object: @q,
 
-  # [Explanation]: This array defines the individual filter fields available to the user.
-  #                Each hash specifies the Ransack key, label, description, and icon for the filter input.
-  filters: [
-    {
-      key: :name_cont,
-      label: "Nome",
-      description: "Mostra carteiras cujo nome contém estes caracteres.",
-      placeholder: "Nome da carteira",
-      icon_name: "wallet"
-    },
-    {
-      key: :user_first_name_cont,
-      label: "Usuário",
-      description: "Mostra carteiras pertencentes a um usuário cujo nome corresponde a este filtro.",
-      placeholder: "Nome do responsável",
-      icon_name: "circle-user"
-    }
-  ],
+             # Explanation:: This destination URL determines where the search filters
+             #               are sent upon submission; it is used to refresh the data
+             #               and works by targeting the main portfolio list route.
+             search_url: portfolios_path,
 
-  # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.
-  #                It ensures that applying filters updates the data table content within the corresponding frame.
-  turbo_frame_id: "portfolios_table"
-} %>
+             # Explanation:: This list defines the specific text and icon for each
+             #               filter input box; it is used to build the search form
+             #               and works by generating fields for names and users.
+             filters: [
+               {
+                 key: :name_cont,
+                 label: "Nome",
+                 description: "Mostra carteiras cujo nome contém estes caracteres.",
+                 placeholder: "Nome da carteira",
+                 icon_name: "wallet"
+               },
+               {
+                 key: :user_first_name_cont,
+                 label: "Usuário",
+                 description: "Mostra carteiras pertencentes a um usuário cujo nome corresponde a este filtro.",
+                 placeholder: "Nome do responsável",
+                 icon_name: "user"
+               }
+             ],
+
+             # Explanation:: This ID links the filter results directly to the table
+             #               container for seamless updates; it is used to avoid full
+             #               page reloads and works by targeting the specific Turbo Frame.
+             turbo_frame_id: "portfolios_table"
+           }
+%>

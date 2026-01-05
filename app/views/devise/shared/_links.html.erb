@@ -13,33 +13,39 @@
   #               Uses conditional logic based on the controller name to determine which link to display.
   #        - Why: Improves user experience by providing quick access to related authentication pages, reducing friction in the sign-in/sign-up process.
   %>
+<div class="relative flex items-center justify-center w-full my-3">
+  <%= content_tag :p, "Ou", class: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white font-semibold font-body text-muted uppercase text-xs w-12 text-center" %>
+  <div class="h-[1px] bg-border w-full"></div>
+</div>
+<div class="flex flex-row items-center justify-between gap-3 w-full">
 
 <%# [Condition]: It checks if the current page is not the 'sessions' controller (login page),
   #              which ensures the login link does not appear when the user is already on the login page.
   %>
-<%- if controller_name != 'sessions' %>
-  <%= link_to "Já tenho uma conta",
-              new_session_path(resource_name),
-              class: "button button-outline w-full"
-  %>
-<% end %>
+  <%- if controller_name != 'sessions' %>
+    <%= link_to "Já tenho uma conta",
+                new_session_path(resource_name),
+                class: "button button-outline w-full"
+    %>
+  <% end %>
 
 <%# [Condition]: It checks if Devise registration is enabled AND the current page is not the 'registrations' controller (sign-up page),
   #              which ensures the sign-up link does not appear if registration is disabled or if the user is currently on the sign-up page.
   %>
-<%- if devise_mapping.registerable? && controller_name != 'registrations' %>
-  <%= link_to "Não tenho uma conta",
-              new_registration_path(resource_name),
-              class: "button button-outline w-full"
-  %>
-<% end %>
+  <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+    <%= link_to "Não tenho uma conta",
+                new_registration_path(resource_name),
+                class: "button button-accent w-full"
+    %>
+  <% end %>
 
 <%# [Condition]: It checks if Devise recovery is enabled AND the current page is not the 'passwords' or 'registrations' controller,
   #              which ensures the recovery link is only visible when relevant to the user's current context.
   %>
-<%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
-  <%= link_to "Esqueceu sua senha?",
-              new_password_path(resource_name),
-              class: "button button-ghost w-full"
-  %>
-<% end %>
+  <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+    <%= link_to "Esqueceu sua senha?",
+                new_password_path(resource_name),
+                class: "button button-link w-full"
+    %>
+  <% end %>
+</div>

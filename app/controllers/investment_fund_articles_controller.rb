@@ -4,6 +4,10 @@ class InvestmentFundArticlesController < ApplicationController
   # GET /investment_fund_articles or /investment_fund_articles.json
   def index
     @investment_fund_articles = InvestmentFundArticle.all
+
+    # Explanation:: This variable stores the total number of records found in the database.
+    #               It allows the user to see exactly how many items exist in the list.
+    @total_items = InvestmentFundArticle.count
   end
 
   # GET /investment_fund_articles/1 or /investment_fund_articles/1.json
