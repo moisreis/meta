@@ -16,13 +16,6 @@
  * Usage: - What: Provides base CSS variables that drive spacing, typography, and colors
  *        - How: Uses `@theme` block to declare reusable CSS custom properties
  *        - Why: Ensures consistent design tokens across components and Tailwind utilities
- *
- * Example:
- *   body {
- *     font-family: var(--font-body);
- *     color: var(--color-driftwood);
- *     margin: var(--spacing);
- *   }
  */
 
 /*
@@ -115,6 +108,18 @@
     --color-body: #333333;
     --color-muted: #8a8a8a;
 
+    --color-neutral-50: oklch(98.5% 0 0);
+    --color-neutral-100: oklch(97% 0 0);
+    --color-neutral-200: oklch(92.2% 0 0);
+    --color-neutral-300: oklch(87% 0 0);
+    --color-neutral-400: oklch(70.8% 0 0);
+    --color-neutral-500: oklch(55.6% 0 0);
+    --color-neutral-600: oklch(43.9% 0 0);
+    --color-neutral-700: oklch(37.1% 0 0);
+    --color-neutral-800: oklch(26.9% 0 0);
+    --color-neutral-900: oklch(20.5% 0 0);
+    --color-neutral-950: oklch(14.5% 0 0);
+
     /*
      *  Sets the neutral colors used for structural and background elements.
      *  These variables define surfaces, borders, and accent layers that
@@ -122,7 +127,7 @@
      */
     --color-white: #ffffff;
     --color-transparent: transparent;
-    --color-border: #e9e9e9;
+    --color-border: #f2f2f5;
     --color-input: #fcfcfe;
     --color-header: #fcfcfc;
     --color-table-bg: #fcfcfe;
@@ -241,7 +246,7 @@
     --color-quaternary-950: #2a214a;
 
     /*
-     *  Sets the currency shade background color
+     *  Sets an alternative shade background color
      *  to be shown in the datatables
      */
     --color-currency-50: #f1f7fd;
@@ -298,7 +303,7 @@
      *  like badges, chips, or circular icons.
      * ------------------------------
      */
-    --radius-base: 6px;
+    --radius-base: 7px;
     --radius-full: 999px;
 }
 
@@ -533,7 +538,7 @@
      * ------------------------------
      */
     .badge-outline {
-        @apply bg-white border-border text-body [&>svg]:stroke-body;
+        @apply bg-white border border-border text-body [&>svg]:stroke-body;
     }
 
     /*
@@ -626,6 +631,7 @@
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
+
     .no-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;

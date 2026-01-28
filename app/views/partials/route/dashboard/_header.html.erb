@@ -1,0 +1,30 @@
+<%# Explanation:: This is the sticky top bar of the container.
+    #               It stays at the top while you scroll and uses a
+    #               blur effect to look modern against the background.
+    %>
+<div class="h-12 px-12 grid grid-cols-2 backdrop-blur-sm bg-white/90 flex flex-row items-center justify-between sticky top-0">
+
+  <%= content_tag :h1,
+                  page_title,
+                  class: "text-heading font-mono text-base font-medium uppercase"
+  %>
+
+  <%# Explanation:: This group holds the system action buttons.
+      #               It provides easy access to user settings and
+      #               notifications at the top right corner of the screen.
+      %>
+  <div class="flex flex-row gap-1.5 items-center justify-end">
+    <%= button_tag type: 'button',
+                   class: 'button button-ghost button-icon' do
+    %>
+      <%= inline_svg_tag "icons/notification.svg" %>
+    <% end %>
+    <%= button_tag type: 'button',
+                   class: 'button button-accent button-icon',
+                   data: { action: 'toggle-dark-mode' },
+                   onclick: "document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';" do %>
+      <%= inline_svg_tag "icons/sun.svg" %>
+    <% end %>
+
+  </div>
+</div>

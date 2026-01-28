@@ -16,54 +16,16 @@
   #        - Why: It ensures the user never gets lost by keeping essential
   #               tools and navigation options visible at all times.
   %>
-<aside class="flex flex-col col-span-2 h-screen max-h-screen sticky overflow-y-scroll no-scrollbar top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 border-r border-border bg-accent">
+<aside class="flex flex-col col-span-2 h-screen max-h-screen sticky overflow-y-scroll no-scrollbar top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-neutral-50">
 
-  <div class="h-12 sticky bg-transparent backdrop-blur-md z-50 top-0 grid grid-cols-1 items-center justify-center">
+  <div class="h-12 bg-transparent grid grid-cols-1 items-center justify-center">
 
     <div class="flex flex-row items-center justify-between gap-1 w-full h-12 px-6">
-      <%= render "partials/blocks/composed-avatar" %>
+      <%= render "partials/modules/logo", size: 24 %>
     </div>
   </div>
 
   <div class="flex flex-col !gap-6 py-6">
-
-    <%# Explanation:: This group contains general utility links.
-      #               It allows the user to return to the Dashboard,
-      #               change app settings, or safely log out of the system.
-      %>
-    <div class="flex flex-col gap-1.5 justify-start items-start w-full border-b border-border pb-6 px-6">
-
-      <%= content_tag(:h3, "Sistema", class: "text-xs font-mono uppercase font-medium text-muted") %>
-
-      <div class="flex flex-col gap-1 justify-start items-start w-full">
-
-        <%= link_to authenticated_root_path,
-                    class: "button button-small button-ghost w-full justify-start" do
-        %>
-          <%= inline_svg_tag "icons/home.svg", class: "size-5 bg-tertiary-100 rounded-base p-1" %>
-          <%= content_tag :span, "Painel" %>
-        <% end %>
-
-        <%= link_to edit_user_path(current_user),
-                    class: "button button-small button-ghost w-full justify-start" do
-        %>
-          <%= inline_svg_tag "icons/user-cog.svg", class: "size-5 bg-secondary-100 rounded-base p-1" %>
-          <%= content_tag :span, "Configurações" %>
-        <% end %>
-
-        <%= button_to destroy_user_session_path,
-                      method: :delete,
-                      data: {
-                        turbo_confirm: "Tem certeza que deseja sair?"
-                      },
-                      class: "button button-ghost button-small w-full justify-start",
-                      form: { style: "display: inline;" } do %>
-          <%= inline_svg_tag "icons/log-out.svg", class: "size-5 bg-quaternary-100 rounded-base p-1" %>
-          <%= content_tag :span, "Sair" %>
-        <% end %>
-
-      </div>
-    </div>
 
     <%# Explanation:: This section generates menus for each data category.
       #               It creates buttons to list existing items or add

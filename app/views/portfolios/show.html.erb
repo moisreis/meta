@@ -26,88 +26,39 @@
            current_view: "show" do
 %>
 
-  <%# Explanation:: This section groups high-level summary cards into a single row.
-    #               It provides an immediate financial overview, helping the user
-    #               understand the portfolio's health at a quick glance.
-    %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Resumo",
-             section_desc: "Exibe os dados gerais da carteira",
-             columns: 4,
-             has_action: true,
-             button_route: "",
-             button_name: "Editar",
-             button_icon: "pencil" do
-  %>
+  <%= render "partials/groups/card-group",
+             theme: :dark,
+             items: [
+               {
+                 title: "Minha carteira",
+                 value: standard_currency(@portfolio.total_invested_value),
+                 theme: :primary
+               },
+               {
+                 title: "Retorno de investimento",
+                 value: standard_currency(@total_earnings),
+                 theme: :default
+               },
+               {
+                 title: "Cotas",
+                 value: @portfolio.total_quotas_held,
+                 theme: :default
+               },
+               {
+                 title: "Rentabilidade",
+                 value: "#{@portfolio_return.round(2)}%",
+                 theme: :default
+               }
+             ] %>
 
-    <%# Explanation:: This card displays the total capital currently held in the portfolio.
-      #               It uses currency formatting and a trend icon to show how the
-      #               invested amount has changed over the recent period.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Valor Total Investido",
-               card_icon: "banknote",
-               card_data: "+ 56%",
-               card_data_icon: "trending-up",
-               status: :primary do
-    %>
-      <%= standard_currency(@portfolio.total_invested_value) %>
-    <% end %>
 
-    <%# Explanation:: This card tracks the total number of fund units owned by the user.
-      #               It monitors the volume of shares held across all investments
-      #               to help the owner see the physical scale of their assets.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Cotas Totais",
-               card_icon: "scale",
-               card_data: "- 51%",
-               card_data_icon: "trending-down",
-               status: :secondary do
-    %>
-      <%= @portfolio.total_quotas_held %>
-    <% end %>
-
-    <%# Explanation:: This card counts how many different investment funds are active.
-      #               It helps the user visualize their diversification strategy by
-      #               showing the variety of financial products currently in use.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Número de Fundos",
-               card_icon: "coins",
-               card_data: "+ 56%",
-               card_data_icon: "trending-up",
-               is_success: true do
-    %>
-      <%= @portfolio.fund_investments.count %>
-    <% end %>
-
-    <%# Explanation:: This card verifies if the fund percentages are mathematically correct.
-      #               It checks that the allocation reaches the required total, ensuring
-      #               the portfolio is balanced and ready for financial reporting.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Alocação Válida",
-               card_icon: "list-plus",
-               card_data: "Total de #{number_with_precision(@portfolio.fund_investments.sum(:percentage_allocation), precision: 0)}%",
-               card_data_icon: "trending-up-down",
-               status: (@portfolio.valid_allocations? ? :success : :danger) do
-    %>
-      <% if @portfolio.valid_allocations? %>
-        <%= content_tag :span, "Válida" %>
-      <% else %>
-        <%= content_tag :span, "Inválida" %>
-      <% end %>
-    <% end %>
-  <% end %>
-
-  <%# Explanation:: This section organizes complex data into visual charts and graphs.
+    <%# Explanation:: This section organizes complex data into visual charts and graphs.
     #               It splits the view to allow the user to compare asset distribution
     #               against historical transaction trends in a single view.
     %>
   <%= render "partials/route/dashboard/section",
              section_title: "Visualizações",
-             is_two_col: true do
+             columns: 2 do
   %>
 
     <%# Explanation:: This block displays a circular chart showing how funds are divided;
@@ -159,6 +110,98 @@
                ->(fi) { colored_numerical(fi.total_quotas_held) }
              ]
   %>
+
+  <%# ================================================================ %>
+<%# SEÇÃO DE PERFORMANCE                                            %>
+<%# ================================================================ %>
+
+<%# Card de Rentabilidade Total da Carteira %>
+  <% if @recent_performance.any? %>
+    <%= render(
+          "partials/route/dashboard/section",
+          section_title: "Rentabilidade da Carteira",
+          section_desc: "Performance do período de #{@reference_period.strftime('%B/%Y')}",
+          columns: 3,
+          has_action: false
+        ) do %>
+
+      <%# Rendimento Total (R$) %>
+      <%= render(
+            "partials/route/dashboard/card",
+            card_title: "Rendimento Total",
+            card_icon: "wallet",
+            card_data: "#{@portfolio_return.round(2)}%",
+            card_data_icon: "trending-up",
+            status: (@total_earnings > 0 ? :success : :danger)
+          ) do %>
+        <%= standard_currency(@total_earnings) %>
+      <% end %>
+
+      <%# Rentabilidade da Carteira (%) %>
+      <%= render(
+            "partials/route/dashboard/card",
+            card_title: "Rentabilidade Carteira",
+            card_icon: "percent",
+            card_data: "Período: #{@reference_period.strftime('%m/%Y')}",
+            status: :primary
+          ) do %>
+        <%= "#{@portfolio_return.round(2)}%" %>
+      <% end %>
+
+      <%# Valor da Carteira %>
+      <%= render(
+            "partials/route/dashboard/card",
+            card_title: "Valor da Carteira",
+            card_icon: "banknote",
+            card_data: "Base para cálculo",
+            status: :secondary
+          ) do %>
+        <%= standard_currency(@portfolio.total_invested_value) %>
+      <% end %>
+
+    <% end %>
+
+    <%# Tabela de Performance por Fundo %>
+    <%= render(
+          "partials/groups/table-list",
+          section_title: "Performance dos Fundos",
+          collection: @recent_performance,
+          action_path: "#",
+          action_name: "Ver histórico",
+          headers: ["Fundo", "Rentabilidade", "Rendimento"],
+          column_icons: ["trending-up", "percent", "banknote"],
+          body_procs: [
+            ->(ph) {
+              content_tag(
+                :span,
+                ph.fund_investment.investment_fund.fund_name,
+                class: "font-medium"
+              )
+            },
+            ->(ph) { colored_percentage(ph.monthly_return) },
+            ->(ph) { colored_currency(ph.earnings) }
+          ]
+        ) %>
+
+  <% else %>
+    <%# Mensagem quando não há dados de performance %>
+    <%= render(
+          "partials/route/dashboard/section",
+          section_title: "Rentabilidade da Carteira",
+          section_desc: "Aguardando dados de performance",
+          has_action: false
+        ) do %>
+
+      <p>Nenhum dado de performance disponível para esta carteira.</p>
+
+      <p>
+        Execute o job de cálculo de performance para gerar os dados:
+        <code>rails performance:calculate</code>
+      </p>
+
+    <% end %>
+  <% end %>
+
 
   <%# Explanation:: This container sets up a side-by-side view for recent movement logs.
     #               It ensures that new applications and redemptions are displayed

@@ -42,7 +42,7 @@ Chartkick.options = {
 
   # Explanation:: This sets the default height for charts. It ensures a balanced visual
   #               space so charts remain readable on most screen sizes.
-  height: "350px",
+  height: "500px",
 
   # == library
   #

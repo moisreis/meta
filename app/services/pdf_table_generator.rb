@@ -94,7 +94,8 @@ class PdfTableGenerator
       },
       "Plus Jakarta Sans" => {
         normal: Rails.root.join("app/assets/fonts/PlusJakartaSans-Regular.ttf"),
-        bold: Rails.root.join("app/assets/fonts/PlusJakartaSans-Bold.ttf")
+        bold: Rails.root.join("app/assets/fonts/PlusJakartaSans-Bold.ttf"),
+        italic: Rails.root.join("app/assets/fonts/PlusJakartaSans-Italic.ttf")
       }
     )
   end
@@ -108,79 +109,19 @@ class PdfTableGenerator
   #            It draws a background bar and places the logo and system info.
   #
   def render_header
-    # Explanation:: Identifies who is generating the report for auditing purposes.
-    #               It defaults to 'Sistema' if no specific user is provided.
     generated_by = metadata['Gerado por'] || metadata[:user] || 'Sistema'
 
-    # Explanation:: We use a repeat(:all) block to draw the header on every page.
-    #               We use absolute coordinates to place it inside the top margin.
     pdf.repeat(:all) do
-      # Explanation:: This line sets the background color to white.
-      #               It prepares the canvas for drawing a clean shape
-      #               underneath the header information.
       pdf.fill_color "ffffff"
-
-      # Explanation:: This draws a white rectangle at the very top.
-      #               It acts as a clean container that separates the
-      #               header content from the rest of the page data.
       pdf.fill_rectangle [0, pdf.bounds.top + 70], pdf.bounds.width, 50
 
-      # == Logo Placement Block
-      #
-      # @author Moisés Reis
-      # @category Layout
-      #
-      # Category:: This block checks for a logo file and places it on the page.
-      #            It positions the image slightly lower to add breathing
-      #            room between the icon and the top of the container.
-      #
-      # Attributes:: - *File.exist?* - confirms the image file is available.
-      #
-      if File.exist?(logo_path)
-        # Explanation:: This line places the logo at the top left.
-        #               The vertical coordinate is lowered to 60 to
-        #               add more space above the image.
-        # pdf.image logo_path, width: 20, at: [0, pdf.bounds.top + 60]
-      end
-
-      # == Header Metadata Block
-      #
-      # @author Moisés Reis
-      # @category Layout
-      #
-      # Category:: This block handles the positioning of the report header text.
-      #            It ensures the title stays on the left and the metadata
-      #            aligns perfectly with the right edge of the page.
-      #
-      # Attributes:: - *pdf.width_of* - calculates the physical size of a string.
-      #
       pdf.font("JetBrains Mono") do
         pdf.font_size 7 do
-          # Explanation:: This line sets the text color to a dark gray shade.
-          #               It ensures the header is readable without being too
-          #               harsh on the eyes compared to pure black.
           pdf.fill_color "333333"
-
-          # Left: Report Title
-          # Explanation:: This line draws the main report title at the top left.
-          #               The horizontal position is set to 0 so the text
-          #               touches the very edge of the left margin.
           pdf.draw_text "RELATÓRIO: #{title.upcase}", at: [0, pdf.bounds.top + 42], inline_format: true
 
-          # Right: Metadata Info
-          # Explanation:: This variable stores the name of the creator and the
-          #               current time. It formats the date nicely so it is
-          #               easy for any non-technical person to read.
           info_text = "GERADO POR #{generated_by.upcase} EM #{I18n.l(Time.current, format: :long).upcase}"
-
-          # Explanation:: This line calculates the width of the info text.
-          #               It measures the string based on the font size to
-          #               find out exactly how much space the letters occupy.
           text_width = pdf.width_of(info_text)
-
-          # Explanation:: This line places the metadata at the far right edge.
-          #               By subtracting the text width from the total page
-          #               width, the text ends exactly where the page finishes.
           pdf.draw_text info_text, at: [pdf.bounds.width - text_width, pdf.bounds.top + 42]
         end
       end
@@ -196,18 +137,11 @@ class PdfTableGenerator
   #            It draws a bottom bar with record count and page numbers.
   #
   def render_footer
-    # Explanation:: The repeat(:all) block ensures the footer appears on every page.
-    #               It is placed below the bottom margin to avoid data overlap.
     pdf.repeat(:all) do
       pdf.font("JetBrains Mono") do
         pdf.font_size 8 do
           pdf.fill_color '333333'
-          # Left: Record Count
           pdf.draw_text "#{data.size} REGISTRO(S)", at: [0, -40]
-
-          # Right: Page Numbers
-          # Explanation:: We use the built-in number_pages to handle counting logic.
-          #               It is aligned to the right edge of the table width.
           pdf.number_pages "<page> DE <total>", { at: [pdf.bounds.width - 60, -40] }
         end
       end
@@ -233,6 +167,7 @@ class PdfTableGenerator
       header: true,
       width: pdf.bounds.width,
       cell_style: {
+        inline_format: true,
         borders: [:bottom],
         border_color: 'e9e9e9',
         border_width: 0,
@@ -250,13 +185,22 @@ class PdfTableGenerator
     end
   end
 
+  # == extract_value
+  #
+  # @author Moisés Reis
+  # @category Logic
+  #
+  # Logic:: This block pulls information from a record using a name or code.
+  #         It ensures the correct data is found before it is formatted.
+  #
+  # Attributes:: - *record* - the specific item being looked at in the list.
+  #              - *key* - the identifier used to find the right information.
+  #
   def extract_value(record, key)
     case key
     when Symbol, String
-
       value = record.public_send(key)
     when Proc
-
       value = key.call(record)
     else
       value = nil
@@ -271,28 +215,34 @@ class PdfTableGenerator
   # @category Utility
   #
   # Utility:: Changes raw data into a friendly text format for the reader.
+  #          It adds colors to negatives and styles missing information.
   #
   def format_value(value)
-    # Explanation:: Returns 'N/A' if there is no information available.
-    #               This ensures the table never looks empty or broken.
-    return 'N/A' if value.nil?
+    # Explanation:: This block identifies missing data or specific 'N/A' strings
+    #               and wraps them in italic tags for a distinct visual style.
+    return "<i>N/A</i>" if value.nil? || value.to_s.strip.upcase == 'N/A'
 
     case value
-    when BigDecimal, Float
-      # Explanation:: Rounds decimal numbers to two places for currency or totals.
-      #               It helps make financial data consistent and easy to read.
-      format('%.2f', value)
+    when Numeric
+      formatted_num = format('%.2f', value)
+      # Explanation:: This check looks for numbers below zero and colors them red.
+      #               It helps users immediately spot negative balances or losses.
+      value < 0 ? "<color rgb='ff0000'>#{formatted_num}</color>" : formatted_num
+    when String
+      # Explanation:: This condition checks if a string represents a negative value.
+      #               It colors the text red if a minus sign is detected at the start.
+      if value.strip.start_with?('-')
+        "<color rgb='ff0000'>#{value}</color>"
+      else
+        strip_html(value)
+      end
     when Date, Time, DateTime
-      # Explanation:: Converts complex timestamps into simple, local date strings.
-      #               This allows users to quickly see when events occurred.
       I18n.l(value, format: :short)
     when TrueClass
       'Sim'
     when FalseClass
       'Não'
     else
-      # Explanation:: Removes hidden website tags and keeps only the plain text.
-      #               It prepares descriptions and names for clean document printing.
       strip_html(value.to_s)
     end
   end
@@ -305,8 +255,6 @@ class PdfTableGenerator
   # Utility:: Cleans up strings by removing any technical HTML tags.
   #
   def strip_html(text)
-    # Explanation:: Searches the text for bracketed tags and deletes them.
-    #               This prevents code from appearing in the final PDF report.
     text.gsub(/<\/?[^>]*>/, '').strip
   end
 end

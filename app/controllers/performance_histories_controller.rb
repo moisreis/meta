@@ -391,7 +391,8 @@ class PerformanceHistoriesController < ApplicationController
       :period,
       :monthly_return,
       :yearly_return,
-      :last_12_months_return
+      :last_12_months_return,
+      :earnings
     )
   end
 end

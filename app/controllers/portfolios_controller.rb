@@ -39,12 +39,59 @@ class PortfoliosController < ApplicationController
   end
 
   # == show
+  # == show
   def show
     @portfolio = Portfolio.for_user(current_user).find(params[:id])
+
+    # Dados de alocação (gráfico de pizza)
     @allocation_data = @portfolio.fund_investments.includes(:investment_fund).map do |fi|
       [fi.investment_fund.fund_name, fi.percentage_allocation || 0]
     end
+
+    # Dados de transações (gráfico de linha)
     @monthly_flows = calculate_monthly_flows(@portfolio)
+
+    # ================================================================
+    # DADOS DE PERFORMANCE
+    # ================================================================
+
+    # Busca o período mais recente com dados de performance
+    # Tenta o mês atual primeiro, senão pega o mais recente disponível
+    @reference_period = Date.current.end_of_month
+
+    # Performance de cada fundo no período
+    @recent_performance = @portfolio.performance_histories
+                                    .where(period: @reference_period)
+                                    .includes(fund_investment: :investment_fund)
+                                    .order('monthly_return DESC')
+
+    # Se não tem dados para o mês atual, pega o período mais recente
+    if @recent_performance.empty?
+      latest_period = @portfolio.performance_histories.maximum(:period)
+      if latest_period
+        @reference_period = latest_period
+        @recent_performance = @portfolio.performance_histories
+                                        .where(period: @reference_period)
+                                        .includes(fund_investment: :investment_fund)
+                                        .order('monthly_return DESC')
+      end
+    end
+
+    # Cálculos dos totais da carteira
+    if @recent_performance.any?
+      # Rendimento Total = soma dos rendimentos de todos os fundos
+      @total_earnings = @recent_performance.sum(:earnings)
+
+      # Rentabilidade da Carteira = (Rendimento Total / Valor Investido) * 100
+      @portfolio_return = if @portfolio.total_invested_value > 0
+                            (@total_earnings / @portfolio.total_invested_value) * 100
+                          else
+                            0
+                          end
+    else
+      @total_earnings = 0
+      @portfolio_return = 0
+    end
   end
 
   # == new

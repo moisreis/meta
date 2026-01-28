@@ -1,0 +1,55 @@
+<%#
+  # Partial: _card-group.html.erb
+  # Description: Renders a dynamic grid of cards.
+  #              Each item may define its own theme or inherit the group theme.
+%>
+
+<% items ||= [] %>
+<% theme ||= :default %>
+<% columns = items.size.positive? ? items.size : 1 %>
+
+<%
+  themes = {
+    primary: {
+      bg: "bg-numerical-700",
+      title: "text-numerical-50",
+      info: "text-numerical-50"
+    },
+    success: {
+      bg: "bg-success-50",
+      title: "text-success-700",
+      info: "text-success-900"
+    },
+    danger: {
+      bg: "bg-danger-50",
+      title: "text-danger-700",
+      info: "text-danger-900"
+    },
+    default: {
+      bg: "bg-white",
+      title: "text-body",
+      info: "text-body"
+    }
+  }
+%>
+
+<div class="grid grid-cols-4">
+  <% items.each do |item| %>
+
+    <%
+      item_theme = (item[:theme] || theme).to_sym
+      styles = themes[item_theme] || themes[:default]
+    %>
+
+    <div class="flex flex-col justify-between h-44 w-full p-12 border-b border-border <%= styles[:bg] %>">
+      <%= content_tag :h3,
+                      item[:title],
+                      class: "font-body text-base capitalize #{styles[:title]}" %>
+
+      <%= content_tag :h4,
+                      item[:value],
+                      class: "text-3xl font-bold font-mono line-clamp-1 #{styles[:info]}" %>
+    </div>
+
+  <% end %>
+</div>

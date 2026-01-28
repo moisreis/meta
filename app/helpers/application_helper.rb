@@ -357,7 +357,7 @@ module ApplicationHelper
     items = [
       {
         icon: icon_set[:index],
-        text: "#{plural} <span class='text-3xs text-muted font-mono font-semibold uppercase absolute right-2.5 top-1/2 -translate-y-1/2'>#{count} item(s)</span>".html_safe,
+        text: "Visualizar".html_safe,
         path: url_for(controller: "/#{resources}", action: :index)
       },
       {
@@ -365,17 +365,17 @@ module ApplicationHelper
         text: "Adicionar",
         path: url_for(controller: "/#{resources}", action: :new)
       },
-      # {
-      #   icon: icon_set[:reports],
-      #   text: "Exportar",
-      #   path: url_for(controller: "/#{resources}", action: :index, reports: true)
-      # }
+    # {
+    #   icon: icon_set[:reports],
+    #   text: "Exportar",
+    #   path: url_for(controller: "/#{resources}", action: :index, reports: true)
+    # }
     ]
 
     # Generate unique ID for this navigation group
     nav_id = "nav-#{resources}"
 
-    content_tag :div, class: "flex flex-col gap-1.5 items-start justify-start w-full border-b border-border pb-6 px-6" do
+    content_tag :div, class: "flex flex-col gap-1.5 items-start justify-start w-full pb-6 px-6" do
       safe_join([
                   content_tag(:div, class: "flex flex-row justify-between items-center w-full cursor-pointer", onclick: "const items = document.getElementById('#{nav_id}'); const chevron = this.querySelector('svg'); items.classList.toggle('hidden'); chevron.classList.toggle('rotate-180');") do
                     safe_join([
@@ -408,7 +408,7 @@ module ApplicationHelper
     ].compact.join(" ")
 
     link_to item[:path], class: classes do
-      inline_svg_tag("icons/#{item[:icon]}", class: "size-5 bg-primary-100 rounded-base p-1") +
+      inline_svg_tag("icons/#{item[:icon]}", class: "size-5 bg-white border border-border rounded-base p-1") +
         content_tag(:span, item[:text].html_safe)
     end
   end
