@@ -35,10 +35,7 @@
              section_title: "Visão Geral do Investimento",
              section_desc: "Dados principais e identificação",
              columns: 4,
-             has_action: true,
-             button_route: edit_fund_investment_path(@fund_investment),
-             button_name: "Editar",
-             button_icon: "pencil" do
+             has_action: false do
   %>
 
 <%# Explanation:: This card identifies the specific portfolio containing the investment
@@ -46,11 +43,12 @@
   #               by rendering a link to the portfolio's main page.
   %>
     <%= render "partials/route/dashboard/card",
-               card_title: "Portfólio",
+               card_title: "Carteira",
                card_icon: "briefcase",
-               card_data: @fund_investment.portfolio.user.full_name do
+               card_data: normalize_card_text(@fund_investment.portfolio.user.full_name),
+               status: :teal do
     %>
-      <%= link_to @fund_investment.portfolio.name, portfolio_path(@fund_investment.portfolio), class: "hover:underline" %>
+      <%= normalize_text(@fund_investment.portfolio.name) %>
     <% end %>
 
 <%# Explanation:: This card displays the associated investment fund to show the
@@ -61,7 +59,7 @@
                card_title: "Fundo de Investimento",
                card_icon: "building-2" do
     %>
-      <%= link_to @fund_investment.investment_fund.fund_name, investment_fund_path(@fund_investment.investment_fund), class: "hover:underline" %>
+      <%= normalize_text(@fund_investment.investment_fund.fund_name) %>
     <% end %>
 
 <%# Explanation:: This card shows the percentage weight of this investment within
@@ -69,11 +67,11 @@
   #               and works by rendering the calculated decimal value as a percentage.
   %>
     <%= render "partials/route/dashboard/card",
-               card_title: "Alocação no Portfólio",
+               card_title: "Alocação na Carteira",
                card_icon: "chart-pie",
-               status: :secondary do
+               status: :indigo do
     %>
-      <%= number_with_precision(@fund_investment.percentage_allocation, precision: 2) %>%
+      <%= normalize_percentage(@fund_investment.percentage_allocation) %>
     <% end %>
 
 <%# Explanation:: This card displays the record's creation date to track the history
@@ -82,9 +80,10 @@
   %>
     <%= render "partials/route/dashboard/card",
                card_title: "Criado em",
-               card_icon: "calendar-plus" do
+               card_icon: "calendar-plus",
+               card_data: normalize_card_time_ago(@fund_investment.created_at) do
     %>
-      <%= formatted_timestamp(@fund_investment.created_at) %>
+      <%= normalize_date(@fund_investment.created_at) %>
     <% end %>
   <% end %>
 
@@ -105,9 +104,9 @@
     <%= render "partials/route/dashboard/card",
                card_title: "Valor Total Investido",
                card_icon: "banknote",
-               status: :primary do
+               status: :secondary do
     %>
-      <%= standard_currency(@fund_investment.total_invested_value) %>
+      <%= normalize_currency(@fund_investment.total_invested_value) %>
     <% end %>
 
 <%# Explanation:: This card displays the quantity of ownership units held to
@@ -118,7 +117,7 @@
                card_title: "Cotas Detidas",
                card_icon: "scale" do
     %>
-      <%= number_with_precision(@fund_investment.total_quotas_held, precision: 2) %>
+      <%= normalize_number(@fund_investment.total_quotas_held) %>
     <% end %>
 
 <%# Explanation:: This card shows what the investment is worth at today's prices
@@ -127,39 +126,26 @@
   %>
     <%= render "partials/route/dashboard/card",
                card_title: "Valor de Mercado Atual",
-               card_icon: "trending-up",
-               card_data: @fund_investment.investment_fund.latest_quota_value ?
-                            standard_currency(@fund_investment.investment_fund.latest_quota_value) :
-                            "N/A",
-               status: (
-                 if @fund_investment.current_market_value > @fund_investment.total_invested_value
-                   :success
-                 elsif @fund_investment.current_market_value < @fund_investment.total_invested_value
-                   :danger
-                 else
-                   :default
-                 end
-               ) do
+               card_icon: card_data_icon_for(@fund_investment.current_market_value - @fund_investment.total_invested_value),
+               card_data: normalize_currency(@fund_investment.current_market_value - @fund_investment.total_invested_value),
+               card_data_icon: card_data_icon_for(@fund_investment.current_market_value - @fund_investment.total_invested_value),
+               status: card_status_trend_for(@fund_investment.current_market_value - @fund_investment.total_invested_value) do
     %>
-      <%= standard_currency(@fund_investment.current_market_value) %>
+      <%= normalize_currency(@fund_investment.current_market_value) %>
     <% end %>
 
 <%# Explanation:: This card highlights the difference between invested and current
   #               value to show financial performance; it is used for ROI tracking
   #               and works by displaying gain or loss with dynamic arrow icons.
   %>
-    <%
-      gain_loss = @fund_investment.unrealized_gain_loss
-      is_positive = gain_loss > 0
-      is_negative = gain_loss < 0
-    %>
     <%= render "partials/route/dashboard/card",
                card_title: "Ganhos e Perdas",
-               card_icon: is_positive ? "arrow-up" : (is_negative ? "arrow-down" : "minus"),
-               card_data: "#{is_positive ? '+' : ''}#{number_with_precision(@fund_investment.return_percentage, precision: 2)}%",
-               status: (is_positive ? :success : (is_negative ? :danger : :default)) do
+               card_icon: card_data_icon_for(@fund_investment.unrealized_gain_loss),
+               card_data_icon: card_data_icon_for(@fund_investment.unrealized_gain_loss),
+               card_data: normalize_card_percentage(@fund_investment.return_percentage),
+               status: card_status_trend_for(@fund_investment.unrealized_gain_loss) do
     %>
-      <%= is_positive ? '+' : '' %><%= standard_currency(gain_loss.abs) %>
+      <%= normalize_currency(@fund_investment.unrealized_gain_loss) %>
     <% end %>
   <% end %>
 
@@ -179,9 +165,10 @@
   %>
     <%= render "partials/route/dashboard/card",
                card_title: "Total de Aplicações",
-               card_icon: "banknote" do
+               card_icon: "arrow-up-right",
+               status: :success do
     %>
-      <%= standard_currency(@fund_investment.total_applications) %>
+      <%= normalize_currency(@fund_investment.total_applications) %>
     <% end %>
 
 <%# Explanation:: This card displays the total money withdrawn from the fund
@@ -190,9 +177,10 @@
   %>
     <%= render "partials/route/dashboard/card",
                card_title: "Total de Resgates",
-               card_icon: "arrow-down-left" do
+               card_icon: "arrow-down-left",
+               status: :honeysuckle do
     %>
-      <%= standard_currency(@fund_investment.total_redemptions) %>
+      <%= normalize_currency(@fund_investment.total_redemptions) %>
     <% end %>
 
 <%# Explanation:: This card identifies the net capital remaining after all
@@ -201,28 +189,32 @@
   %>
     <%= render "partials/route/dashboard/card",
                card_title: "Fluxo Líquido",
-               card_icon: "repeat" do
+               card_icon: "repeat",
+               status: :teal do
     %>
-      <%= standard_currency(@fund_investment.total_applications - @fund_investment.total_redemptions) %>
+      <%= normalize_currency(@fund_investment.total_applications - @fund_investment.total_redemptions) %>
     <% end %>
 
 <%# Explanation:: This card calculates the percentage return on the capital
   #               employed to show efficiency; it is used for ranking assets
   #               and works by comparing net gains against the invested principal.
   %>
-    <%
-      roi = @fund_investment.return_percentage
-      roi_positive = roi > 0
-      roi_negative = roi < 0
-    %>
     <%= render "partials/route/dashboard/card",
                card_title: "Retorno sobre Investimento",
-               card_icon: roi_positive ? "smile" : (roi_negative ? "frown" : "minus"),
-               card_data: roi_positive ? "Lucro" : (roi_negative ? "Prejuízo" : "Neutro"),
-               card_data_icon: roi_positive ? "trending-up" : (roi_negative ? "trending-down" : "minus"),
-               status: roi_positive ? :success : (roi_negative ? :danger : :default) do
+               card_icon: card_data_icon_for(
+                 @fund_investment.return_percentage,
+                 positive: "smile",
+                 negative: "frown",
+                 zero: "minus"
+               ),
+               card_data: normalize_card_boolean(
+                 @fund_investment.return_percentage.positive?,
+                 labels: { true: "Lucro", false: "Prejuízo" }
+               ),
+               card_data_icon: card_data_icon_for(@fund_investment.return_percentage),
+               status: card_status_trend_for(@fund_investment.return_percentage) do
     %>
-      <%= roi_positive ? '+' : '' %><%= number_with_precision(roi, precision: 2) %>%
+      <%= normalize_card_percentage(@fund_investment.return_percentage) %>
     <% end %>
   <% end %>
 
@@ -307,12 +299,24 @@
                "calendar-check-2"
              ],
              body_procs: [
-               ->(app) { formatted_timestamp(app.request_date) },
-               ->(app) { colored_currency(app.financial_value) },
-               ->(app) { colored_numerical(app.number_of_quotas) },
-               ->(app) { app.quota_value_at_application ? standard_currency(app.quota_value_at_application) : "N/A" },
-               ->(app) { app.cotization_date ? formatted_timestamp(app.cotization_date) : "N/A" },
-               ->(app) { app.liquidation_date ? formatted_timestamp(app.liquidation_date) : "N/A" }
+               ->(app) do
+                 normalize_date(app.request_date)
+               end,
+               ->(app) do
+                 normalize_currency(app.financial_value)
+               end,
+               ->(app) do
+                 normalize_number(app.number_of_quotas)
+               end,
+               ->(app) do
+                 normalize_currency(app.quota_value_at_application)
+               end,
+               ->(app) do
+                 normalize_date(app.cotization_date)
+               end,
+               ->(app) do
+                 normalize_date(app.liquidation_date)
+               end,
              ]
   %>
 
@@ -336,13 +340,36 @@
                "calendar-check-2"
              ],
              body_procs: [
-               ->(red) { formatted_timestamp(red.request_date) },
-               ->(red) { colored_numerical(red.redeemed_quotas) },
-               ->(red) { colored_currency(red.redeemed_liquid_value) },
-               ->(red) { content_tag(:span, red.redemption_type || "N/A", class: "badge badge-secondary") },
-               ->(red) { red.redemption_yield ? standard_currency(red.redemption_yield) : "N/A" },
-               ->(red) { red.cotization_date ? formatted_timestamp(red.cotization_date) : "N/A" },
-               ->(red) { red.liquidation_date ? formatted_timestamp(red.liquidation_date) : "N/A" }
+               ->(red) do
+                 normalize_date(red.request_date)
+               end,
+               ->(red) do
+                 normalize_number(red.redeemed_quotas)
+               end,
+               ->(red) do
+                 normalize_currency(red.redeemed_liquid_value)
+               end,
+               ->(red) do
+                 translations = {
+                   "partial" => "Parcial",
+                   "total" => "Total",
+                   "emergency" => "Emergencial",
+                   "scheduled" => "Agendado"
+                 }
+
+                 label = translations[red.redemption_type.to_s]
+
+                 normalize_badge(label)
+               end,
+               ->(red) do
+                 normalize_trend(red.redemption_yield)
+               end,
+               ->(red) do
+                 normalize_date(red.cotization_date)
+               end,
+               ->(red) do
+                 normalize_date(red.liquidation_date)
+               end,
              ]
   %>
 
@@ -360,7 +387,7 @@
   #               showing the added amounts with a success-themed color.
   %>
     <%= render "partials/groups/recent_activity",
-               section_title: "Últimas 5 Aplicações",
+               section_title: "Aplicações",
                section_columns: 1,
                collection: @fund_investment.applications.order(request_date: :desc).limit(5),
                color: "success",
@@ -374,7 +401,7 @@
   #               by showing the taken amounts with a danger-themed color.
   %>
     <%= render "partials/groups/recent_activity",
-               section_title: "Últimos 5 Resgates",
+               section_title: "Resgates",
                section_columns: 1,
                collection: @fund_investment.redemptions.order(request_date: :desc).limit(5),
                color: "danger",
@@ -402,14 +429,23 @@
                "percent"
              ],
              body_procs: [
-               ->(perf) { formatted_timestamp(perf.created_at) },
-               ->(perf) { colored_currency(perf.market_value, "h-auto") },
-               ->(perf) { colored_currency(perf.invested_value, "h-auto") },
-               ->(perf) { colored_currency(perf.market_value - perf.invested_value, "h-auto") },
+               ->(perf) do
+                 normalize_date(perf.created_at)
+               end,
+               ->(perf) do
+                 normalize_currency(perf.market_value)
+               end,
+               ->(perf) do
+                 normalize_currency(perf.invested_value)
+               end,
+               ->(perf) do
+                 normalize_currency(perf.market_value - perf.invested_value)
+               end,
                ->(perf) do
                  return_pct = perf.invested_value > 0 ? ((perf.market_value - perf.invested_value) / perf.invested_value * 100) : 0
-                 colored_percentage(return_pct, "h-auto")
-               end
+
+                 normalize_percentage(return_pct)
+               end,
              ]
   %>
 <% end %>

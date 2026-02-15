@@ -16,7 +16,7 @@
   #        - Why: It keeps the main interface clean by hiding complex
   #               search options inside a reusable sidebar.
   %>
-<div id="sidebarFilters" class="absolute h-[80%] top-1/2 right-1/2 rounded-base translate-x-1/2 -translate-y-1/2 bg-accent w-[50%] bg-white shadow-sm border border-border z-50 transition-opacity ease-in-out">
+<div id="sidebarFilters" class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-white border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
 
   <%# Explanation:: This block creates the actual search form structure.
     #               It captures the user's choices and sends them to the
@@ -28,19 +28,19 @@
                       html: { id: "filter_form", class: "flex flex-col h-full" },
                       data: { turbo_frame: turbo_frame_id } do |f| %>
 
-    <div class="h-12 flex flex-row justify-between items-center px-3 border-b border-border">
+    <div class="h-16 flex flex-row justify-between items-center px-18">
 
-      <h3 class="text-heading font-heading font-medium text-left">Filtros</h3>
+      <h3 class="font-body font-medium text-2xl">Filtros</h3>
 
       <%= button_tag id: "closeFiltersBtn",
                      type: "button",
-                     class: "button button-ghost button-small" do
+                     class: "button button-ghost button-icon button-small" do
       %>
         <%= inline_svg_tag "icons/x.svg" %>
       <% end %>
     </div>
 
-    <div class="flex-grow px-6 space-y-6 overflow-y-auto">
+    <div class="flex-grow px-16 space-y-8 overflow-y-auto">
 
       <%# Explanation:: This loop goes through each requested filter setting.
         #               For every item in the list, it draws a labeled
@@ -61,7 +61,7 @@
 
       <div class="flex flex-row gap-1.5">
         <%= button_tag type: :submit,
-                       class: "button button-secondary",
+                       class: "button button-small button-accent",
                        id: "applyFiltersBtn" do
         %>
           <%= inline_svg_tag "icons/funnel.svg" %>
@@ -73,7 +73,7 @@
           #               away any active filters or keywords.
           %>
         <%= link_to search_url,
-                    class: "button button-outline",
+                    class: "button button-small button-outline",
                     data: { turbo_frame: turbo_frame_id } do
         %>
           <%= inline_svg_tag "icons/refresh-cw.svg" %>
@@ -88,4 +88,4 @@
   #               It darkens the background when the filters are open
   #               to help the user focus on the search options.
   %>
-<div class="h-screen w-screen bg-body/10 z-40 hidden absolute top-0 right-0" id="filterOverlay"></div>
+<div class="h-screen w-screen bg-body/10 z-40 hidden fixed top-0 right-0" id="filterOverlay"></div>

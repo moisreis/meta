@@ -24,7 +24,7 @@
   #               container and works by setting the page title and descriptive labels.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Carteiras",
+           page_title: "Lista de carteiras",
            page_desc: "Lista de carteiras com permissão de visualização.",
            current_view: "datatable" do
 %>
@@ -41,7 +41,6 @@
     columns_header: [
       "Nome",
       "Proprietário",
-      "Compartilhado com",
       "Valor investido",
       "Cotas"
     ],
@@ -52,7 +51,6 @@
     columns_icons: [
       "tag",
       "user",
-      "users",
       "wallet",
       "percent"
     ],
@@ -61,54 +59,32 @@
     #               portfolio information; it is used to handle data extraction
     #               and works by executing symbols or functions for every record.
     columns_body: [
-      :name,
+      ->(portfolio) do
+        normalize_title(portfolio.name)
+      end,
 
       # Explanation:: This function identifies and labels the creator of the
       #               portfolio to clarify ownership; it is used in the second
       #               column and works by comparing the owner to the current user.
+      # Explanation:: This function identifies and labels the creator of the
+      #               portfolio to clarify ownership; it is used in the second
+      #               column and works by comparing the owner to the current user.
       ->(portfolio) do
-        user = portfolio.user
-
-        if user == current_user
-          content_tag(:span, "Você", class: "badge badge-danger")
-        else
-          content_tag(:span, user.full_name, class: "badge badge-outline")
-        end
-      end,
-
-      # Explanation:: This logic lists all people who have access to the
-      #               portfolio to track sharing; it is used for transparency
-      #               and works by looping through permissions and creating badges.
-      ->(portfolio) do
-        shared_permissions = portfolio.user_portfolio_permissions.includes(:user)
-
-        if shared_permissions.any?
-          shared_permissions.map do |perm|
-            user = perm.user
-
-            if user == current_user
-              content_tag(:span, "Você", class: "badge badge-danger mr-1")
-            else
-              content_tag(:span, user.full_name, class: "badge badge-outline mr-1")
-            end
-          end.join.html_safe
-        else
-          content_tag(:span, "N/A", class: "text-muted")
-        end
+        normalize_badge(portfolio.user&.full_name)
       end,
 
       # Explanation:: This instruction calculates and formats the total money
       #               held in the portfolio; it is used to show financial
       #               status and works by converting raw numbers into currency text.
       ->(portfolio) do
-        colored_currency(portfolio.total_invested_value)
+        normalize_currency(portfolio.total_invested_value)
       end,
 
       # Explanation:: This line displays the quantity of ownership units held
       #               by the user; it is used to show investment scale and
       #               works by applying numerical formatting to the quota count.
       ->(portfolio) do
-        colored_numerical(portfolio.total_quotas_held)
+        normalize_number(portfolio.total_quotas_held)
       end
     ],
 
@@ -140,8 +116,9 @@
     # Explanation:: This setting provides a link for users to download the
     #               table data as a file; it is used for reporting and works
     #               by enabling an export button when a URL is provided.
-    export_url: export_portfolios_path(params[:q])
-  } %>
+    # FIX: Convertendo params[:q] para hash para evitar erro de unpermitted parameters
+    export_url: export_portfolios_path(request.query_parameters.slice('q'))  }
+  %>
 <% end %>
 
 <%# Explanation:: This partial renders a sidebar or header with search inputs

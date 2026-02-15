@@ -125,6 +125,8 @@ class ApplicationsController < ApplicationController
   # Attributes:: - *@application* - The single application object found by the `load_application` filter.
   #
   def show
+    prepare_application_metrics
+
     respond_to do |format|
       format.html
     end
@@ -186,6 +188,8 @@ class ApplicationsController < ApplicationController
       update_fund_investment_after_create(fund_investment)
     end
 
+    flash[:notice] = "Investimento criado com sucesso."
+
     # Explanation:: If the transaction is successful, this redirects the user to the
     #               newly created application's detail page.
     redirect_to application_path(@application)
@@ -237,6 +241,8 @@ class ApplicationsController < ApplicationController
       update_fund_investment_before_destroy(fund_investment)
       @application.destroy!
     end
+
+    flash[:notice] = "Investimento deletado com sucesso."
 
     # Explanation:: After successful deletion and update of fund totals, this redirects
     #               the user to the detail page of the fund investment itself.
@@ -402,4 +408,59 @@ class ApplicationsController < ApplicationController
       total_quotas_held: new_total_quotas
     )
   end
+
+  # == prepare_application_metrics
+  #
+  # @category *Presentation Logic*
+  #
+  # Explanation:: Computes derived, read-only metrics used by the show view.
+  #               This keeps the template declarative and free of business math.
+  #
+  def prepare_application_metrics
+    allocated_quotas = @application.redemption_allocations.sum(:quotas_used) || 0
+
+    @allocation_percentage =
+      if @application.number_of_quotas.to_f.positive?
+        (allocated_quotas.to_f / @application.number_of_quotas.to_f) * 100
+      else
+        0
+      end
+
+    @processing_days =
+      if @application.request_date && @application.liquidation_date
+        (@application.liquidation_date - @application.request_date).to_i
+      end
+
+    @calculated_quota_value = @application.calculated_quota_value
+    @stored_quota_value     = @application.quota_value_at_application
+
+    @is_quota_consistent =
+      @calculated_quota_value &&
+      @stored_quota_value &&
+      (@calculated_quota_value - @stored_quota_value).abs <= 0.01
+
+    @cotization_valid =
+      !@application.cotization_date ||
+      !@application.request_date ||
+      @application.cotization_date >= @application.request_date
+
+    @liquidation_valid =
+      !@application.liquidation_date ||
+      !@application.cotization_date ||
+      @application.liquidation_date >= @application.cotization_date
+
+    @positive_values =
+      @application.financial_value.to_f.positive? &&
+      (@application.number_of_quotas.nil? || @application.number_of_quotas.to_f.positive?)
+
+    @quota_consistency_status =
+      if @is_quota_consistent
+        :success
+      elsif @calculated_quota_value.present?
+        :alert
+      else
+        :default
+      end
+  end
+
 end

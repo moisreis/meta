@@ -57,41 +57,52 @@
     #               and works by executing symbols or functions for every record.
     columns_body: [
 
-      :full_name,
-      :email,
+      ->(user) do
+        normalize_title(user.full_name)
+      end,
+
+      ->(user) do
+        normalize_text(user.email)
+      end,
 
       # Explanation:: This logic identifies the user's role and applies a color
       #               badge for quick identification; it is used for security
       #               auditing and works by checking the role string and returning
       #               a styled badge.
+      # Explanation:: This logic identifies the user's role and applies a color
+      #               badge for quick identification; it is used for security
+      #               auditing and works by checking the role string and returning
+      #               a styled badge.
       ->(user) do
-        role_name =
-          case user.role.to_s
-          when "admin", "administrator"
-            "Administrador"
-          else
-            "Usuário"
-          end
-        role_class =
-          case user.role.to_s
-          when "admin", "administrator"
-            "badge badge-danger"
-          else
-            "badge"
-          end
-        content_tag(:span, role_name, class: role_class)
+        # Explanation:: This logic maps the internal role to a user-friendly name.
+        #               It identifies administrators to ensure they are labeled
+        #               clearly, defaulting to a standard user label otherwise.
+        role_name = ["admin", "administrator"].include?(user.role.to_s) ? "Administrador" : "Usuário"
+
+        # Explanation:: This call utilizes the agnostic helper to render the badge.
+        #               It automatically assigns a consistent color based on the
+        #               text provided, or shows "SEM DADOS" if no role is found.
+        normalize_badge(role_name)
       end,
 
       # Explanation:: This line displays the quantity of portfolios owned
       #               by the user to show activity levels; it is used to monitor
       #               asset ownership and works by counting the associated portfolio records.
       ->(user) do
+        # Explanation:: This line calculates the total number of portfolios for the user.
+        #               It counts the records in the database to determine how much
+        #               content is associated with this specific account.
         count = user.portfolios.size
-        if count.zero?
-          content_tag(:span, "N/A", class: "text-muted")
-        else
-          content_tag(:span, count)
-        end
+
+        # Explanation:: This condition checks if the count is zero or missing.
+        #               If no portfolios are found, it triggers the automatic
+        #               standard placeholder to keep the table cell consistent.
+        return normalize_no_data if count.zero?
+
+        # Explanation:: This call utilizes the specialized number helper.
+        #               It ensures the count is formatted with thousands separators
+        #               and monospaced font for a clean, professional look.
+        normalize_number(count)
       end
     ],
 

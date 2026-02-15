@@ -1,47 +1,11 @@
-# === pdf_table_generator.rb
-#
-# @author Moisés Reis
-# @added 01/03/2026
-# @package Services
-# @description A reusable service for generating PDF exports of data tables
-#              with custom branding, metadata, and model-agnostic data rendering.
-# @category Service
-#
-# Usage:: - [What] Generates formatted PDF documents from ActiveRecord collections
-#         - [How] Accepts column definitions, data, and metadata to build PDFs
-#         - [Why] Provides consistent, professional PDF exports across all models
-#
-# Attributes:: - **title** @String - Main document title
-#              - **subtitle** @String - Optional document subtitle or description
-#              - **columns** @Array - Column definitions including header and key
-#              - **data** @Collection - The records to be rendered in the table
-#              - **metadata** @Hash - Extra information like user and date
-#              - **logo_path** @String - Path to the image file for the header logo
-#
-
 class PdfTableGenerator
   require 'prawn'
   require 'prawn/table'
 
-  # Explanation:: This accessor provides read-only access to the document and its
-  #               configuration, ensuring external objects can inspect settings.
-  #               It maintains the internal state of the PDF generation process.
   attr_reader :pdf, :title, :subtitle, :columns, :data, :metadata, :logo_path
 
-  # == initialize
-  #
-  # @author Moisés Reis
-  # @category Setup
-  #
-  # Setup:: Prepares the generator by setting up the document layout and fonts.
-  #
-  # Attributes:: - *title* - Main document title.
-  #              - *columns* - Definitions for table headers and data keys.
-  #              - *data* - The collection of records to be exported.
-  #
   def initialize(title:, columns:, data:, subtitle: nil, metadata: {}, logo_path: nil)
-    # Explanation:: Assigns the title that appears at the top of the document.
-    #               This helps the user identify the purpose of the report.
+
     @title = title
     @subtitle = subtitle
     @columns = columns
@@ -49,8 +13,6 @@ class PdfTableGenerator
     @metadata = metadata
     @logo_path = logo_path || Rails.root.join('app', 'assets', 'images', 'logo.png')
 
-    # Explanation:: Creates a new landscape A4 document with specific margins.
-    #               The margins are set to 80 to leave room for the header and footer.
     @pdf = Prawn::Document.new(
       page_size: 'A4',
       page_layout: :landscape,
@@ -60,14 +22,6 @@ class PdfTableGenerator
     configure_fonts
   end
 
-  # == generate
-  #
-  # @author Moisés Reis
-  # @category Generation
-  #
-  # Generation:: This method runs the step-by-step process of building the document.
-  #            It puts together the header, data, and footer before finishing.
-  #
   def generate
     render_header
     render_table
@@ -77,16 +31,8 @@ class PdfTableGenerator
 
   private
 
-  # == configure_fonts
-  #
-  # @author Moisés Reis
-  # @category Setup
-  #
-  # Setup:: Registers custom font families for the document to use.
-  #
   def configure_fonts
-    # Explanation:: Updates the PDF font registry with specific local TTF files.
-    #               This ensures the document uses professional branding typography.
+
     pdf.font_families.update(
       "JetBrains Mono" => {
         normal: Rails.root.join("app/assets/fonts/JetBrainsMono-Regular.ttf"),
@@ -100,14 +46,6 @@ class PdfTableGenerator
     )
   end
 
-  # == render_header
-  #
-  # @author Moisés Reis
-  # @category Rendering
-  #
-  # Rendering:: This method ensures the header is repeated on every page.
-  #            It draws a background bar and places the logo and system info.
-  #
   def render_header
     generated_by = metadata['Gerado por'] || metadata[:user] || 'Sistema'
 
@@ -128,14 +66,6 @@ class PdfTableGenerator
     end
   end
 
-  # == render_footer
-  #
-  # @author Moisés Reis
-  # @category Rendering
-  #
-  # Rendering:: This method ensures the footer is repeated on every page.
-  #            It draws a bottom bar with record count and page numbers.
-  #
   def render_footer
     pdf.repeat(:all) do
       pdf.font("JetBrains Mono") do
@@ -148,13 +78,6 @@ class PdfTableGenerator
     end
   end
 
-  # == render_table
-  #
-  # @author Moisés Reis
-  # @category Rendering
-  #
-  # Rendering:: Draws the main data table, stretching it across the page width.
-  #
   def render_table
     table_data = [columns.map { |col| col[:header] }]
 
@@ -185,17 +108,6 @@ class PdfTableGenerator
     end
   end
 
-  # == extract_value
-  #
-  # @author Moisés Reis
-  # @category Logic
-  #
-  # Logic:: This block pulls information from a record using a name or code.
-  #         It ensures the correct data is found before it is formatted.
-  #
-  # Attributes:: - *record* - the specific item being looked at in the list.
-  #              - *key* - the identifier used to find the right information.
-  #
   def extract_value(record, key)
     case key
     when Symbol, String
@@ -209,28 +121,17 @@ class PdfTableGenerator
     format_value(value)
   end
 
-  # == format_value
-  #
-  # @author Moisés Reis
-  # @category Utility
-  #
-  # Utility:: Changes raw data into a friendly text format for the reader.
-  #          It adds colors to negatives and styles missing information.
-  #
   def format_value(value)
-    # Explanation:: This block identifies missing data or specific 'N/A' strings
-    #               and wraps them in italic tags for a distinct visual style.
+
     return "<i>N/A</i>" if value.nil? || value.to_s.strip.upcase == 'N/A'
 
     case value
     when Numeric
       formatted_num = format('%.2f', value)
-      # Explanation:: This check looks for numbers below zero and colors them red.
-      #               It helps users immediately spot negative balances or losses.
+
       value < 0 ? "<color rgb='ff0000'>#{formatted_num}</color>" : formatted_num
     when String
-      # Explanation:: This condition checks if a string represents a negative value.
-      #               It colors the text red if a minus sign is detected at the start.
+
       if value.strip.start_with?('-')
         "<color rgb='ff0000'>#{value}</color>"
       else
@@ -247,13 +148,6 @@ class PdfTableGenerator
     end
   end
 
-  # == strip_html
-  #
-  # @author Moisés Reis
-  # @category Utility
-  #
-  # Utility:: Cleans up strings by removing any technical HTML tags.
-  #
   def strip_html(text)
     text.gsub(/<\/?[^>]*>/, '').strip
   end

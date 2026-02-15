@@ -1,0 +1,37 @@
+<%#
+  # Partial: edit.html.erb
+  # Date: 11/20/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the page for updating an existing Portfolio record. It displays the
+  #              edit form and incorporates a separate, irreversible action section for
+  #              deleting the entire application and its associated data.
+  #
+  # Usage:: - What: Renders the full view dedicated to editing an existing Portfolio.
+  #                It provides the necessary form for updating attributes and a distinct
+  #                "Danger Zone" section for permanently deleting the resource.
+  #         - How: Renders the **_wrapper** for layout and uses the **_form** partial for input.
+  #         - Why: Provides the interface necessary to execute the 'Update' and 'Delete'
+  #                functions (U and D in CRUD) for the Portfolio resource.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure consistency; it is used as the main
+  #               container and works by setting the page title to the application name.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Editar aplicação ##{@application.id}",
+           page_desc: "Atualize as informações da aplicação conforme necessário." do
+%>
+
+  <%# Explanation:: This helper renders the central input structure to modify
+    #               existing application details; it is used to save changes and
+    #               works by passing the current record and a refresh icon button.
+    %>
+  <%= render "form",
+             application: @application,
+             button_name: "Atualizar",
+             icon_name: "refresh-cw"
+  %>
+<% end %>

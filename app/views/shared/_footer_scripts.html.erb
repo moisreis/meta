@@ -90,7 +90,7 @@
     });
 </script>
 
-<!-- [Libary] Tippy -->
+<!-- [Libary] Tippy.js -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -112,7 +112,7 @@
             theme: 'meta',
             arrow: false,
             interactive: true,
-            offset: [0, 0]
+            offset: [4, 0]
         });
 
         tippy('.section-desc-button', {
@@ -128,12 +128,14 @@
                 return 'Error loading description content.';
             },
 
+            appendTo: () => document.body,
+
             allowHTML: true,
             placement: 'right',
             theme: 'meta',
             arrow: false,
-            interactive: true,
-            offset: [0, 0]
+            interactive: false,
+            offset: [0, 4]
         });
     });
 </script>
@@ -172,4 +174,92 @@
     }
 
     document.addEventListener('DOMContentLoaded', setupEventListeners);
+</script>
+
+<script>
+    document.addEventListener("click", function (event) {
+        const button = event.target.closest(".js-export-chart");
+        if (!button) return;
+
+        event.preventDefault();
+
+        const chartId = button.dataset.chartId;
+        const rawTitle = button.dataset.chartTitle || "";
+
+        const chart = Chartkick.charts[chartId];
+        if (!chart || !chart.getChartObject) return;
+
+        const sourceCanvas = chart.getChartObject().canvas;
+
+        const padding = 32;
+        const headerHeight = 48;
+
+        const exportCanvas = document.createElement("canvas");
+        exportCanvas.width = sourceCanvas.width + padding * 2;
+        exportCanvas.height = sourceCanvas.height + padding * 2 + headerHeight;
+
+        const ctx = exportCanvas.getContext("2d");
+
+        // Background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+        // Header text style
+        ctx.fillStyle = "#8a8a8a"; // gray-900
+        ctx.font = "400 14px JetBrains Mono, system-ui, sans-serif";
+        ctx.textBaseline = "middle";
+
+        // Title (TOP-LEFT, UPPERCASE)
+        ctx.textAlign = "left";
+        ctx.fillText(
+            rawTitle.toUpperCase(),
+            padding,
+            headerHeight / 2
+        );
+
+        // Date/time (TOP-RIGHT, pt-BR)
+        const formattedDate = new Date().toLocaleString("pt-BR", {
+            dateStyle: "short",
+            timeStyle: "short"
+        });
+
+        ctx.textAlign = "right";
+        ctx.fillText(
+            formattedDate,
+            exportCanvas.width - padding,
+            headerHeight / 2
+        );
+
+        // Draw chart
+        ctx.drawImage(
+            sourceCanvas,
+            padding,
+            headerHeight + padding
+        );
+
+        // Download
+        const link = document.createElement("a");
+        link.href = exportCanvas.toDataURL("image/png");
+        link.download = `${chartId}.png`;
+        link.click();
+    });
+
+
+</script>
+
+<script>
+    // Explanation:: This script watches the portfolio dropdown for changes.
+    //               When a new option is picked, it updates the button's link.
+    //               This prevents the user from going to the wrong portfolio.
+    document.addEventListener('change', (event) => {
+        if (event.target.name === 'portfolio_id') {
+            const link = document.getElementById('view-portfolio-link');
+            const selectedId = event.target.value;
+            const baseUrl = link.dataset.baseUrl;
+
+            if (selectedId) {
+                link.href = baseUrl + selectedId;
+            }
+        }
+    });
 </script>

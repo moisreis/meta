@@ -26,11 +26,7 @@ class RedemptionsController < ApplicationController
   # Explanation:: This method ensures that the redemption record specified by `params[:id]` is
   #               loaded into the `@redemption` instance variable before certain actions are executed.
   #               This prevents having to repeat the `Redemption.find(params[:id])` call inside `show`, `update`, and `destroy`.
-  before_action :load_redemption, only: [
-    :show,
-    :update,
-    :destroy
-  ]
+  before_action :load_redemption, only: %i[show edit update destroy]
 
   # Explanation:: This method checks if the current logged-in user has the necessary permissions to manage the redemption being accessed.
   #               It uses the **CanCan** authorization system to protect the records from unauthorized viewing or manipulation.
@@ -209,11 +205,19 @@ class RedemptionsController < ApplicationController
   #            Redemption records are treated as immutable financial events to maintain a complete audit trail.
   #
   def update
-    render json: {
-      status: 'Error',
-      message: 'Redemption records cannot be updated'
-    }, status: :method_not_allowed
+    authorize! :manage, @redemption.fund_investment.portfolio
+
+    if @redemption.update(redemption_params)
+      redirect_to redemption_path(@redemption), notice: 'Redemption atualizada com sucesso.'
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
+
+  def edit
+    @fund_investments = FundInvestment.accessible_to(current_user)
+  end
+
 
   # == destroy
   #

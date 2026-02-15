@@ -14,7 +14,7 @@
   #        - Why: Provides a user interface for users to visualize, search, and filter all redemption transactions across various funds.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Resgates",
+           page_title: "Lista de resgates",
            page_desc: "Visualize todos os resgates realizados em todos os fundos.",
            current_view: "datatable" do
 %>
@@ -29,7 +29,9 @@
       "Pedido em",
       "Cotizado em",
       "Liquidado em",
-      "Status"
+      "Status",
+      "Ganhos e Perdas",
+      "Rendimento"
     ],
 
     # [Explanation]: The 'columns_icons' specifies **icons** that may appear next to the column headers.
@@ -41,7 +43,9 @@
       "calendar-plus",
       "calculator",
       "calendar-check-2",
-      "circle-alert"
+      "circle-alert",
+      "trending-up",
+      "trending-up"
     ],
 
     # [Explanation]: The 'columns_body' defines **how the data for each row is rendered**.
@@ -53,46 +57,60 @@
       #                It retrieves the `fund_name` and `portfolio_name` from the redemption record (`r`)
       #                and wraps them in separate `<span>` tags within a parent `<div>` for a stacked display.
       ->(r) do
-        fund_name = r.fund_investment&.investment_fund&.fund_name
-        content_tag(:span, fund_name.to_s, class: "font-medium line-clamp-1")
+        normalize_title(r.fund_investment&.investment_fund&.fund_name)
       end,
 
       # [Explanation]: This function **formats and displays the net redeemed value** (liquid value) as currency.
-      #                It calls a helper method, `colored_currency`, passing the `redeemed_liquid_value` and a CSS class for styling.
+      #                It calls a helper method, `normalize_currency`, passing the `redeemed_liquid_value` and a CSS class for styling.
       ->(r) {
-        colored_currency(r.redeemed_liquid_value)
+        normalize_currency(r.redeemed_liquid_value)
       },
 
       # [Explanation]: This function **formats and displays the number of redeemed quotas**.
-      #                It calls a helper method, `colored_numerical`, passing the `redeemed_quotas` and a CSS class for styling.
+      #                It calls a helper method, `normalize_number`, passing the `redeemed_quotas` and a CSS class for styling.
       ->(r) {
-        colored_numerical(r.redeemed_quotas)
+        normalize_number(r.redeemed_quotas)
       },
 
       # [Explanation]: This function **formats and displays the request date and time** of the redemption.
-      #                It calls the `formatted_timestamp` helper method with the `request_date`.
+      #                It calls the `normalize_date` helper method with the `request_date`.
       ->(r) {
-        formatted_timestamp(r.request_date)
+        normalize_date(r.request_date)
       },
 
       # [Explanation]: This function **formats and displays the cotization date and time** of the redemption.
-      #                It calls the `formatted_timestamp` helper method with the `cotization_date`.
+      #                It calls the `normalize_date` helper method with the `cotization_date`.
       ->(r) {
-        formatted_timestamp(r.cotization_date)
+        normalize_date(r.cotization_date)
       },
 
       # [Explanation]: This function **formats and displays the liquidation date and time** of the redemption.
-      #                It calls the `formatted_timestamp` helper method with the `liquidation_date`.
+      #                It calls the `normalize_date` helper method with the `liquidation_date`.
       ->(r) {
-        formatted_timestamp(r.liquidation_date)
+        normalize_date(r.liquidation_date)
       },
 
-      # [Explanation]: This function **displays the status** (Completed or Pending) using a colored badge.
-      #                It checks the `completed?` status of the redemption and renders a
-      #                green success badge for "Concluída" or a red danger badge for "Pendente".
-      ->(r) {
-        r.completed? ? tag.span("Concluída", class: "badge badge-success") : tag.span("Pendente", class: "badge badge-danger")
-      },
+      ->(r) do
+        # Explanation:: This condition checks the completion state of the record.
+        #               It evaluates the finished status to decide whether to
+        #               apply the successful label or the pending indicator.
+        is_completed = r.completed?
+
+        # Explanation:: This call utilizes the boolean badge helper for clarity.
+        #               It maps the state to "Concluída" (green) or "Pendente" (red)
+        #               to ensure the user can distinguish progress at a glance.
+        normalize_boolean(is_completed, "Concluída", "Pendente")
+      end,
+
+      ->(r) do
+
+        normalize_trend(redemption_metrics(r)[:net_gain], format: :currency)
+      end,
+
+      ->(r) do
+
+        normalize_trend(redemption_metrics(r)[:yield_value], format: :currency)
+      end,
     ],
 
     # [Explanation]: The 'models' variable **provides the data collection** (`@redemptions`) to be displayed in the table.
@@ -116,8 +134,9 @@
 
     # [Explanation]: The 'export_url' provides the **URL for exporting** the table data (e.g., to CSV or Excel).
     #                The value is currently `nil`, meaning the export functionality is disabled or not provided here.
-    export_url: export_redemptions_path(params[:q])
-  } %>
+    export_url: export_redemptions_path(request.query_parameters.slice('q'))
+
+      } %>
 <% end %>
 <%= render partial: "partials/route/dashboard/filters", locals: {
 

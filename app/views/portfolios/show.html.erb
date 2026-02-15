@@ -26,45 +26,115 @@
            current_view: "show" do
 %>
 
-  <%= render "partials/groups/card-group",
-             theme: :dark,
-             items: [
-               {
-                 title: "Minha carteira",
-                 value: standard_currency(@portfolio.total_invested_value),
-                 theme: :primary
-               },
-               {
-                 title: "Retorno de investimento",
-                 value: standard_currency(@total_earnings),
-                 theme: :default
-               },
-               {
-                 title: "Cotas",
-                 value: @portfolio.total_quotas_held,
-                 theme: :default
-               },
-               {
-                 title: "Rentabilidade",
-                 value: "#{@portfolio_return.round(2)}%",
-                 theme: :default
-               }
-             ] %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "KPIs",
+             columns: 4 do
+  %>
 
-
-    <%# Explanation:: This section organizes complex data into visual charts and graphs.
-    #               It splits the view to allow the user to compare asset distribution
-    #               against historical transaction trends in a single view.
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Retorno de investimento",
+          card_icon: "wallet",
+          card_data: normalize_card_percentage(@portfolio_return),
+          card_data_icon: card_data_icon_for(@total_earnings),
+          status: card_status_trend_for(@total_earnings)
+        ) do
     %>
+      <%= normalize_currency(@total_earnings) %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Minha Carteira",
+          card_icon: "banknote",
+          card_data: normalize_card_text("Valor de referência"),
+          status: :teal
+        ) do
+    %>
+      <%= normalize_currency(@portfolio.total_invested_value) %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Rentabilidade do Ano",
+          card_icon: "calendar",
+          card_data: normalize_card_text("Ano Atual"),
+          status: card_status_trend_for(@portfolio_yearly_return)
+        ) do
+    %>
+      <%= normalize_percentage(@portfolio_yearly_return) %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Últimos 12 meses",
+          card_icon: "trending-up",
+          card_data: normalize_card_time_ago(@reference_period),
+          status: card_status_trend_for(@portfolio_12m_return)
+        ) do
+    %>
+      <%= normalize_percentage(@portfolio_12m_return) %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/route/dashboard/section",
+             section_title: "Análise Detalhada",
+             columns: 2 do
+  %>
+
+    <%= render "partials/groups/chart-list",
+               chart_type: :line_chart,
+               data_source: @monthly_earnings_history,
+               chart_title: "Rendimento Mensal (R$)",
+               chart_options: {
+                 prefix: "R$ ",
+                 thousands: ".",
+                 decimal: ",",
+                 curve: true
+               }
+    %>
+
+    <%= render "partials/groups/chart-list",
+               chart_type: :area_chart,
+               data_source: @equity_evolution,
+               chart_title: "Evolução do Patrimônio",
+               chart_options: {
+                 prefix: "R$ ",
+                 thousands: ".",
+                 decimal: ",",
+                 points: false
+               }
+    %>
+
+    <%= render "partials/groups/chart-list",
+               chart_type: :column_chart,
+               data_source: @monthly_flows,
+               chart_title: "Movimentações (Aplicações vs Resgates)",
+               chart_options: {
+                 stacked: false,
+                 prefix: "R$ ",
+                 thousands: ".",
+                 decimal: ","
+               }
+    %>
+
+    <%= render "partials/groups/chart-list",
+               chart_type: :pie_chart,
+               data_source: @institution_distribution,
+               chart_title: "Distribuição por Instituição",
+               chart_options: {
+                 donut: true,
+                 legend: "bottom",
+                 suffix: "%"
+               }
+    %>
+  <% end %>
+
   <%= render "partials/route/dashboard/section",
              section_title: "Visualizações",
              columns: 2 do
   %>
 
-    <%# Explanation:: This block displays a circular chart showing how funds are divided;
-      #               it is used to visualize percentages and works by passing specific
-      #               settings like a donut shape and a side legend to the chart helper.
-      %>
     <%= render "partials/groups/chart-list",
                chart_type: :pie_chart,
                data_source: @allocation_data,
@@ -73,12 +143,9 @@
                  suffix: "%",
                  donut: true,
                  legend: "right"
-               } %>
+               }
+    %>
 
-    <%# Explanation:: This block renders a line graph to track transaction trends over time;
-      #               it is used to show growth or movement and works by formatting values
-      #               with local currency symbols and smoothing the visual curves.
-      %>
     <%= render "partials/groups/chart-list",
                chart_type: :line_chart,
                data_source: @monthly_flows,
@@ -89,13 +156,10 @@
                  thousands: ".",
                  decimal: ",",
                  curve: true,
-               } %>
+               }
+    %>
   <% end %>
 
-  <%# Explanation:: This table lists every fund investment with precise numerical data.
-    #               It uses specialized formatting to show percentages, currency, and
-    #               quota counts in a clear, row-by-row structure for deep auditing.
-    %>
   <%= render "partials/groups/table-list",
              section_title: "Lista de fundos alocados",
              collection: @portfolio.fund_investments.includes(:investment_fund),
@@ -104,64 +168,23 @@
              headers: ["Fundo", "Alocação", "Valor Investido", "Cotas"],
              column_icons: ["layers", "shuffle", "banknote", "percent"],
              body_procs: [
-               ->(fi) { content_tag(:span, fi.investment_fund.fund_name) },
-               ->(fi) { colored_percentage(fi.percentage_allocation) },
-               ->(fi) { colored_currency(fi.total_invested_value) },
-               ->(fi) { colored_numerical(fi.total_quotas_held) }
+               ->(fi) do
+                 normalize_title(fi.investment_fund.fund_name)
+               end,
+               ->(fi) do
+                 normalize_percentage(fi.percentage_allocation)
+               end,
+               ->(fi) do
+                 normalize_currency(fi.total_invested_value)
+               end,
+               ->(fi) do
+                 normalize_number(fi.total_quotas_held)
+               end,
              ]
   %>
 
-  <%# ================================================================ %>
-<%# SEÇÃO DE PERFORMANCE                                            %>
-<%# ================================================================ %>
-
-<%# Card de Rentabilidade Total da Carteira %>
   <% if @recent_performance.any? %>
-    <%= render(
-          "partials/route/dashboard/section",
-          section_title: "Rentabilidade da Carteira",
-          section_desc: "Performance do período de #{@reference_period.strftime('%B/%Y')}",
-          columns: 3,
-          has_action: false
-        ) do %>
 
-      <%# Rendimento Total (R$) %>
-      <%= render(
-            "partials/route/dashboard/card",
-            card_title: "Rendimento Total",
-            card_icon: "wallet",
-            card_data: "#{@portfolio_return.round(2)}%",
-            card_data_icon: "trending-up",
-            status: (@total_earnings > 0 ? :success : :danger)
-          ) do %>
-        <%= standard_currency(@total_earnings) %>
-      <% end %>
-
-      <%# Rentabilidade da Carteira (%) %>
-      <%= render(
-            "partials/route/dashboard/card",
-            card_title: "Rentabilidade Carteira",
-            card_icon: "percent",
-            card_data: "Período: #{@reference_period.strftime('%m/%Y')}",
-            status: :primary
-          ) do %>
-        <%= "#{@portfolio_return.round(2)}%" %>
-      <% end %>
-
-      <%# Valor da Carteira %>
-      <%= render(
-            "partials/route/dashboard/card",
-            card_title: "Valor da Carteira",
-            card_icon: "banknote",
-            card_data: "Base para cálculo",
-            status: :secondary
-          ) do %>
-        <%= standard_currency(@portfolio.total_invested_value) %>
-      <% end %>
-
-    <% end %>
-
-    <%# Tabela de Performance por Fundo %>
     <%= render(
           "partials/groups/table-list",
           section_title: "Performance dos Fundos",
@@ -171,53 +194,28 @@
           headers: ["Fundo", "Rentabilidade", "Rendimento"],
           column_icons: ["trending-up", "percent", "banknote"],
           body_procs: [
-            ->(ph) {
-              content_tag(
-                :span,
-                ph.fund_investment.investment_fund.fund_name,
-                class: "font-medium"
-              )
-            },
-            ->(ph) { colored_percentage(ph.monthly_return) },
-            ->(ph) { colored_currency(ph.earnings) }
+            ->(ph) do
+              normalize_title(ph.fund_investment.investment_fund.fund_name)
+            end,
+            ->(ph) do
+              normalize_trend(ph.monthly_return, format: :percentage)
+            end,
+            ->(ph) do
+              normalize_currency(ph.earnings)
+            end,
           ]
         ) %>
-
-  <% else %>
-    <%# Mensagem quando não há dados de performance %>
-    <%= render(
-          "partials/route/dashboard/section",
-          section_title: "Rentabilidade da Carteira",
-          section_desc: "Aguardando dados de performance",
-          has_action: false
-        ) do %>
-
-      <p>Nenhum dado de performance disponível para esta carteira.</p>
-
-      <p>
-        Execute o job de cálculo de performance para gerar os dados:
-        <code>rails performance:calculate</code>
-      </p>
-
-    <% end %>
   <% end %>
 
-
-  <%# Explanation:: This container sets up a side-by-side view for recent movement logs.
-    #               It ensures that new applications and redemptions are displayed
-    #               together so the user can verify their most recent actions easily.
-    %>
   <%= render "partials/route/dashboard/section",
              columns: 2,
+             section_title: "APR",
+             section_desc: "Autorização de Aplicação e Resgate",
              has_action: false do
   %>
 
-    <%# Explanation:: This list shows the five most recent deposits made into funds.
-      #               It uses a success theme to highlight positive growth and
-      #               provides quick links to see the full application history.
-      %>
     <%= render "partials/groups/recent_activity",
-               section_title: "Aplicações Recentes",
+               section_title: "Aplicações",
                section_columns: 1,
                collection: @portfolio.fund_investments.includes(:applications).flat_map(&:applications).sort_by(&:request_date).reverse.first(5),
                color: "success",
@@ -231,7 +229,7 @@
       #               helping the user track their liquidity and cash outflows.
       %>
     <%= render "partials/groups/recent_activity",
-               section_title: "Resgates Recentes",
+               section_title: "Resgates",
                section_columns: 1,
                collection: @portfolio.fund_investments.includes(:redemptions).flat_map(&:redemptions).sort_by(&:request_date).reverse.first(5),
                color: "danger",
@@ -241,17 +239,4 @@
                sub_value_proc: ->(red) { "#{red.redeemed_quotas} cotas" } %>
 
   <% end %>
-
-  <%# Explanation:: This block lists users who have shared access to this portfolio.
-    #               It shows their names and specific permission levels so the owner
-    #               always knows who can view or modify their financial data.
-    %>
-  <%= render "partials/groups/recent_activity",
-             section_title: "Compartilhamento",
-             collection: @portfolio.user_portfolio_permissions.includes(:user),
-             color: "secondary",
-             see_all_path: "#",
-             title_proc: ->(perm) { perm.user.full_name },
-             value_proc: ->(perm) { perm.permission_level },
-             sub_value_proc: ->(perm) { perm.user.email } %>
 <% end %>

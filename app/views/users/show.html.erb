@@ -42,12 +42,19 @@
       #               works by highlighting the internal role with a distinct color.
       %>
     <%= render "partials/route/dashboard/card",
-               card_title: "Nome Completo",
+               card_title: "Nome",
                card_icon: "user",
-               card_data: "@#{@user.role}",
-               is_danger: true do
+               card_data: normalize_card_boolean(
+                 @user.admin?,
+                 labels: { true: "Administrador", false: "Usuário" }
+               ),
+               status: card_status_boolean_for(
+                 @user.admin?,
+                 positive: :teal,
+                 negative: :honeysuckle
+               ) do
     %>
-      <%= @user.full_name %>
+      <%= normalize_text(@user.full_name) %>
     <% end %>
 
     <%# Explanation:: This card counts how many portfolios the user owns to track
@@ -57,18 +64,9 @@
     <%= render "partials/route/dashboard/card",
                card_title: "Carteiras Próprias",
                card_icon: "wallet",
-               is_success: true do %>
-      <%= @user.portfolios.count %>
-    <% end %>
-
-    <%# Explanation:: This card displays the count of portfolios shared by others
-      #               to monitor collaboration; it is used to show external access
-      #               and works by checking permissions linked to this user.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Acessos Compartilhados",
-               card_icon: "users" do %>
-      <%= @user.accessible_portfolios.count %>
+               status: :default do
+    %>
+      <%= normalize_number(@user.portfolios.count) %>
     <% end %>
   <% end %>
 
@@ -88,8 +86,8 @@
     <%= render "partials/route/dashboard/card",
                card_title: "Total de Logins",
                card_icon: "log-in",
-               card_data: "Desde #{formatted_timestamp(@user.created_at)}".html_safe do %>
-      <%= @user.sign_in_count %>
+               card_data: normalize_card_time_since(@user.created_at) do %>
+      <%= normalize_number(@user.sign_in_count) %>
     <% end %>
 
     <%# Explanation:: This card identifies the timestamp and IP of the previous session
@@ -99,8 +97,8 @@
     <%= render "partials/route/dashboard/card",
                card_title: "Último Acesso",
                card_icon: "globe",
-               card_data: @user.last_sign_in_ip || "N/A" do %>
-      <%= @user.last_sign_in_at ? formatted_timestamp(@user.last_sign_in_at) : "Nunca" %>
+               card_data: normalize_card_text(@user.last_sign_in_ip) do %>
+      <%= normalize_date(@user.last_sign_in_at) %>
     <% end %>
 
     <%# Explanation:: This card displays current session details to confirm real-time
@@ -110,8 +108,8 @@
     <%= render "partials/route/dashboard/card",
                card_title: "Acesso Atual",
                card_icon: "globe",
-               card_data: @user.current_sign_in_ip || "N/A" do %>
-      <%= @user.current_sign_in_at ? formatted_timestamp(@user.current_sign_in_at) : "N/A" %>
+               card_data: normalize_card_text(@user.current_sign_in_ip) do %>
+      <%= normalize_date(@user.current_sign_in_at) %>
     <% end %>
 
     <%# Explanation:: This card highlights when the account was first established
@@ -121,8 +119,8 @@
     <%= render "partials/route/dashboard/card",
                card_title: "Conta Criada",
                card_icon: "user-plus",
-               card_data: "Há #{time_ago_in_words(@user.created_at)}" do %>
-      <%= formatted_timestamp(@user.created_at) %>
+               card_data: normalize_card_time_ago(@user.created_at) do %>
+      <%= normalize_date(@user.created_at) %>
     <% end %>
   <% end %>
 
@@ -131,39 +129,28 @@
     #               works by formatting fund counts and values into structured rows.
     %>
   <%= render "partials/groups/table-list",
-             section_title: "Portfólios Próprios",
+             section_title: "Carteira",
              collection: @user.portfolios,
              action_path: new_portfolio_path(user_id: @user.id),
-             action_name: "Novo portfólio",
+             action_name: "Nova carteira",
              headers: ["Nome da Carteira", "Fundos", "Valor Total", "Alocação", "Criado em"],
              column_icons: ["wallet", "layers", "coins", "shuffle", "calendar"],
              body_procs: [
-               ->(portfolio) { link_to(portfolio.name, portfolio_path(portfolio), class: "hover:underline") },
-               ->(portfolio) { colored_numerical(portfolio.fund_investments.count) },
-               ->(portfolio) { colored_currency(portfolio.total_invested_value) },
-               ->(portfolio) {
-                 status = portfolio.valid_allocations? ? "success" : "danger"
-                 label = portfolio.valid_allocations? ? "Válida" : "Inválida"
-                 content_tag(:span, label, class: "badge badge-#{status}")
-               },
-               ->(portfolio) { formatted_timestamp(portfolio.created_at) }
-             ]
-  %>
-
-  <%# Explanation:: This table lists external portfolios where the user is a
-    #               collaborator to ensure transparency; it is used to track
-    #               shared access and works by detailing owners and permission levels.
-    %>
-  <%= render "partials/groups/table-list",
-             section_title: "Permissões de Acesso",
-             collection: @user.user_portfolio_permissions.includes(portfolio: :user),
-             headers: ["Portfólio", "Proprietário", "Nível de Permissão", "Concedido em"],
-             column_icons: ["layers", "user", "shield-user", "calendar-check-2"],
-             body_procs: [
-               ->(perm) { link_to(perm.portfolio.name, portfolio_path(perm.portfolio), class: "hover:underline") },
-               ->(perm) { perm.portfolio.user.full_name },
-               ->(perm) { content_tag(:span, perm.permission_level.capitalize, class: "badge badge-secondary") },
-               ->(perm) { formatted_timestamp(perm.created_at) }
+               ->(portfolio) do
+                 normalize_title(portfolio.name)
+               end,
+               ->(portfolio) do
+                 normalize_number(portfolio.fund_investments.count)
+               end,
+               ->(portfolio) do
+                 normalize_currency(portfolio.total_invested_value)
+               end,
+               ->(portfolio) do
+                 normalize_boolean(portfolio.valid_allocations?, "Válida", "Inválida")
+               end,
+               ->(portfolio) do
+                 normalize_date(portfolio.created_at)
+               end,
              ]
   %>
 
@@ -181,7 +168,7 @@
       #               fetching the latest applications and applying a success color.
       %>
     <%= render "partials/groups/recent_activity",
-               section_title: "Atividade de Aplicações",
+               section_title: "Aplicações",
                section_columns: 1,
                collection: Application.joins(fund_investment: :portfolio)
                                       .where(portfolios: { user_id: @user.id })
@@ -198,7 +185,7 @@
       #               showing redemptions with a distinct danger theme.
       %>
     <%= render "partials/groups/recent_activity",
-               section_title: "Atividade de Resgates",
+               section_title: "Resgates",
                section_columns: 1,
                collection: Redemption.joins(fund_investment: :portfolio)
                                      .where(portfolios: { user_id: @user.id })

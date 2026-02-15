@@ -80,6 +80,27 @@ class DashboardController < ApplicationController
     #               if the gain/loss value is negative.
     @gain_is_negative = @total_gain_loss < 0
 
+    # app/controllers/dashboard_controller.rb
+
+    @recent_applications_chart = Application
+                                   .joins(fund_investment: :investment_fund)
+                                   .where(fund_investments: { portfolio_id: current_user.portfolios.select(:id) })
+                                   .group("investment_funds.fund_name")
+                                   .order("SUM(applications.financial_value) DESC")
+                                   .limit(5)
+                                   .sum(:financial_value)
+
+    # app/controllers/dashboard_controller.rb
+
+    @recent_redemptions_chart = Redemption
+                                  .joins(fund_investment: :investment_fund)
+                                  .where(fund_investments: { portfolio_id: current_user.portfolios.select(:id) })
+                                  .group("investment_funds.fund_name")
+                                  .order("SUM(redemptions.redeemed_liquid_value) DESC")
+                                  .limit(5)
+                                  .sum(:redeemed_liquid_value)
+
+
     # Explanation:: This determines styling for market value display by comparing
     #               current market value against the original investment.
     @market_is_positive = @total_market_value > @total_invested

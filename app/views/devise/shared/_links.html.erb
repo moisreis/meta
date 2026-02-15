@@ -45,7 +45,7 @@
   <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
     <%= link_to "Esqueceu sua senha?",
                 new_password_path(resource_name),
-                class: "button button-link w-full"
+                class: "button button-outline w-full"
     %>
   <% end %>
 </div>

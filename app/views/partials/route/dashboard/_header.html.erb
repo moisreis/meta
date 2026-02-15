@@ -2,29 +2,86 @@
     #               It stays at the top while you scroll and uses a
     #               blur effect to look modern against the background.
     %>
-<div class="h-12 px-12 grid grid-cols-2 backdrop-blur-sm bg-white/90 flex flex-row items-center justify-between sticky top-0">
-
-  <%= content_tag :h1,
-                  page_title,
-                  class: "text-heading font-mono text-base font-medium uppercase"
-  %>
-
-  <%# Explanation:: This group holds the system action buttons.
-      #               It provides easy access to user settings and
-      #               notifications at the top right corner of the screen.
+<div class="h-16 px-8 flex flex-row justify-between gap-6">
+  <%# Explanation:: Portfolio selector dropdown on the left side.
+      #               Allows users to switch between their portfolios
+      #               and view the selected portfolio details.
       %>
-  <div class="flex flex-row gap-1.5 items-center justify-end">
-    <%= button_tag type: 'button',
-                   class: 'button button-ghost button-icon' do
-    %>
-      <%= inline_svg_tag "icons/notification.svg" %>
+  <div class="flex flex-row items-center gap-3">
+    <%= form_with url: "#",
+                  method: :get,
+                  id: "portfolio-selector-form",
+                  class: "flex flex-row items-center justify-start gap-2",
+                  html: { role: "presentation" } do |f| %>
+      <div class="relative flex flex-col justify-start gap-1.5">
+        <div class="relative [&>div>div]:!w-[350px]">
+
+          <%= render "partials/modules/select",
+                     f: f,
+                     name: :portfolio_id,
+                     options_collection: current_user.portfolios.map { |p| [p.name, p.id] },
+                     desc: nil,
+                     is_half_width: false,
+                     is_small: true,
+                     is_inactive: false %>
+        </div>
+      </div>
+
+      <%= link_to portfolio_path(current_user.portfolios.first&.id || 0),
+                  id: "view-portfolio-link",
+                  class: "button button-accent button-small",
+                  data: {
+                    turbo_frame: "_top",
+                    base_url: "/portfolios/"
+                  } do %>
+        <%= inline_svg_tag "icons/arrow-up-right.svg" %>
+        <%= content_tag :span, "Ver carteira" %>
+      <% end %>
     <% end %>
-    <%= button_tag type: 'button',
-                   class: 'button button-accent button-icon',
-                   data: { action: 'toggle-dark-mode' },
-                   onclick: "document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';" do %>
-      <%= inline_svg_tag "icons/sun.svg" %>
-    <% end %>
+
 
   </div>
+
+  <div class="flex flex-row items-center gap-6">
+
+    <div class="flex flex-row gap-6 items-center justify-end">
+
+      <% if @portfolio.present? && @portfolio.persisted? %>
+
+        <%= button_to run_calculations_portfolio_path(@portfolio),
+                      method: :post,
+                      class: "button button-secondary button-small" do %>
+
+          <%= inline_svg_tag("icons/refresh-cw.svg") %>
+
+          <%= content_tag :span, "Calcular Performance" %>
+        <% end %>
+
+        <%= link_to monthly_report_portfolio_path(@portfolio),
+                    class: "button button-primary button-small" do %>
+
+          <%= inline_svg_tag("icons/file-attachment.svg") %>
+          <%= content_tag :span, "Exportar em PDF" %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%= render "partials/blocks/composed-avatar" %>
+  </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const portfolioSelect = document.getElementById('portfolio-select');
+        const viewPortfolioLink = document.getElementById('view-portfolio-link');
+
+        if (portfolioSelect && viewPortfolioLink) {
+            portfolioSelect.addEventListener('change', function () {
+                const selectedPortfolioId = this.value;
+                if (selectedPortfolioId) {
+                    viewPortfolioLink.href = `/portfolios/${selectedPortfolioId}`;
+                }
+            });
+        }
+    });
+</script>

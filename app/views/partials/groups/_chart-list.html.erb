@@ -25,17 +25,20 @@
   %>
 <% chart_options ||= {} %>
 
+<% chart_id ||= "chart-#{SecureRandom.hex(6)}" %>
+
 <%# Explanation:: This block renders the outer container and the specific chart
   #               requested by the user; it is used to generate the visual report
   #               and works by calling a dynamic helper based on the chart type.
   %>
 <%= render "partials/route/dashboard/chart",
            data_source: data_source,
-           chart_title: chart_title do %>
+           chart_title: chart_title,
+           chart_id: chart_id do %>
 
   <%# Explanation:: This specific line executes the method that draws the graphic
     #               on the screen; it is used to remain flexible for any chart
     #               style and works by turning a text name into a functional command.
     %>
-  <%= send(chart_type, data_source, **chart_options) %>
+  <%= send(chart_type, data_source, id: chart_id, **chart_options) %>
 <% end %>

@@ -8,6 +8,12 @@ Bundler.require(*Rails.groups)
 
 module Meta
   class Application < Rails::Application
+    config.exceptions_app = ->(env) {
+      ErrorsController.action(:show).call(env)
+    }
+
+    config.exceptions_app = self.routes
+
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.1
 
@@ -19,12 +25,15 @@ module Meta
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # config/application.rb
+    config.time_zone = "Brasilia"
+    config.active_record.default_timezone = :local
     # config.eager_load_paths << Rails.root.join("extras")
     config.eager_load_paths << Rails.root.join("app/services")
   end

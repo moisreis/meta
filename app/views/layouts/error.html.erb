@@ -1,0 +1,31 @@
+<html>
+<head>
+  <%= render "shared/head" %>
+</head>
+
+<body>
+<main>
+  <section class="min-h-screen flex items-center justify-center bg-white">
+    <div class="max-w-md w-full text-center px-6">
+
+      <%= content_tag :span, @label,
+                      class: "badge badge-alert mb-4 inline-flex" %>
+
+      <%= content_tag :h1, @title,
+                      class: "text-2xl font-heading font-semibold text-heading mb-2" %>
+
+      <%= content_tag :p, @description,
+                      class: "text-sm text-muted mb-6" %>
+
+      <div class="flex items-center justify-center gap-3">
+        <%= link_to(content_tag(:span, "Voltar"),
+                    :back,
+                    class: "button button-outline") rescue nil %>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

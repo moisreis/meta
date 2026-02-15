@@ -21,8 +21,8 @@
   #               container and works by setting the page title to the portfolio name.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: @portfolio.name,
-           page_desc: "Atualize as informações da sua carteira conforme necessário." do
+           page_title: "Editar #{@portfolio.name}",
+           page_desc: "Atualize as informações da carteira conforme necessário." do
 %>
 
   <%# Explanation:: This helper renders the central input structure to modify

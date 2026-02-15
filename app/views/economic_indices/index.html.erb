@@ -20,7 +20,7 @@
   #               main container by setting the page title and descriptive labels.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Índices Econômicos",
+           page_title: "Lista de Índices Econômicos",
            page_desc: "Visualize os indicadores econômicos cadastrados e seus dados essenciais.",
            current_view: "datatable" do
 %>
@@ -59,72 +59,48 @@
     #               details. It handles data extraction and works by executing
     #               formatting functions for every record in the indices collection.
     columns_body: [
-      :name,
+      ->(economic_index) do
+        normalize_title(economic_index.name)
+      end,
 
       # Explanation:: This function displays the index abbreviation using a unique
       #               badge style to help it stand out. It identifies the index
       #               code quickly and works by applying a monospace font style.
       ->(economic_index) do
-        content_tag(
-          :span,
-          economic_index.abbreviation,
-          class: "font-mono font-semibold text-sm bg-slate-100 px-2 py-1 rounded"
-        )
+        normalize_text(economic_index.abbreviation)
       end,
 
       # Explanation:: This logic displays a shortened version of the index description
       #               to keep the table readable. It shows a default message if
       #               empty and works by cutting the text at sixty characters.
       ->(economic_index) do
-        if economic_index.description.present?
-          content_tag(
-            :span,
-            truncate(economic_index.description, length: 60),
-            class: "text-sm",
-            title: economic_index.description
-          )
-        else
-          content_tag(:span, "N/A", class: "text-muted")
-        end
+        normalize_text(economic_index.description)
       end,
 
       # Explanation:: This function retrieves the most recent numeric value recorded
       #               for the index from its history. It presents the latest rate
       #               and works by formatting the number with four decimal places.
       ->(economic_index) do
-        latest_value = economic_index.latest_value
-        if latest_value.present?
-          content_tag(
-            :span,
-            number_with_precision(latest_value, precision: 4),
-            class: "font-mono font-medium"
-          )
-        else
-          content_tag(:span, "Sem dados", class: "text-muted")
-        end
+        normalize_number(economic_index.latest_value)
       end,
 
-      # Explanation:: This logic finds the date of the very last entry in the index
-      #               history log. It informs the user how fresh the data is
-      #               and works by searching for the most recent chronological date.
       ->(economic_index) do
-        latest_history = economic_index.economic_index_histories.order(date: :desc).first
-        if latest_history.present?
-          content_tag(
-            :span,
-            l(latest_history.date, format: :short),
-            class: "text-sm"
-          )
-        else
-          content_tag(:span, "N/A", class: "text-muted")
-        end
+        # Explanation:: This line retrieves the collection of historical records.
+        #               It points to the related history table so the helper
+        #               can scan for the most recent data point available.
+        histories = economic_index.economic_index_histories
+
+        # Explanation:: This call utilizes the agnostic latest date helper.
+        #               It automatically finds the newest date in the history
+        #               and applies the standardized Brazilian formatting.
+        normalize_latest_date(histories)
       end,
 
       # Explanation:: This instruction formats the database registration timestamp
       #               into a human-readable layout. It tracks the record history
       #               and works by applying the system's standard date styling.
       ->(economic_index) do
-        formatted_timestamp(economic_index.created_at)
+        normalize_date(economic_index.created_at)
       end
     ],
 

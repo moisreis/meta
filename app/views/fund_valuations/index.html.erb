@@ -15,35 +15,42 @@
   #               verify data coverage, and identify gaps in the automated import process.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Cotações de Fundos",
+           page_title: "Lista de cotações de Fundos",
            page_desc: "Monitore as cotações diárias importadas da CVM e outras fontes de dados.",
            current_view: "datatable" do
 %>
   <!-- Data Health Summary Banner -->
-  <div class="flex flex-row items-center justify-between">
-    <div class="flex flex-col justify-start gap-1.5">
-      <div class="flex flex-row justify-between gap-12 border-b border-border pb-1.5">
-        <%= content_tag :span, "Total de registros", class: "font-mono uppercase text-muted" %>
-        <%= content_tag :span, @statistics[:total_records], class: "font-mono uppercase" %>
-      </div>
-      <div class="flex flex-row justify-between gap-12 border-b border-border py-1.5">
-        <%= content_tag :span, "Fundos únicos", class: "font-mono uppercase text-muted" %>
-        <%= content_tag :span, @statistics[:unique_funds], class: "font-mono uppercase" %>
-      </div>
-      <div class="flex flex-row justify-between gap-12 pt-1.5">
-        <%= content_tag :span, "Média", class: "font-mono uppercase text-muted" %>
-        <%= content_tag :span, number_to_currency(@statistics[:average_quota_value] || 0, unit: "R$"), class: "font-mono uppercase" %>
-      </div>
-    </div>
-    <div class="flex flex-col justify-start gap-1.5">
-      <%= link_to data_health_fund_valuations_path, class: "button button-outline" do %>
+  <%= render "partials/route/dashboard/section",
+             columns: 4,
+             has_action: false do
+  %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Registros",
+               card_icon: "repeat" do
+    %>
+      <%= normalize_number(@statistics[:total_records]) %>
+    <% end %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Fundos Únicos",
+               card_icon: "repeat" do
+    %>
+      <%= normalize_number(@statistics[:unique_funds]) %>
+    <% end %>
+    <%= render "partials/route/dashboard/card",
+               card_title: "Média",
+               card_icon: "repeat" do
+    %>
+      <%= normalize_currency(@statistics[:average_quota_value]) %>
+    <% end %>
+    <div class="flex flex-col justify-center items-center gap-1.5 px-6">
+      <%= link_to data_health_fund_valuations_path, class: "button w-full button-outline" do %>
         <%= content_tag :span, "Saúde dos Dados" %>
       <% end %>
-      <%= button_to trigger_import_fund_valuations_path, method: :post, class: "button button-primary" do %>
+      <%= button_to trigger_import_fund_valuations_path, method: :post, class: "button w-full button-primary" do %>
         <%= content_tag :span, "Importar Agora" %>
       <% end %>
     </div>
-  </div>
+  <% end %>
 
   <%= render partial: "partials/blocks/data-table", locals: {
 
@@ -82,83 +89,69 @@
       # [Explanation]: This lambda function displays the valuation date in a readable format
       #                with a calendar icon badge for visual emphasis.
       ->(fund_valuation) do
-        formatted_timestamp(
-          fund_valuation.date
-        )
+        normalize_date(fund_valuation.date)
       end,
 
       # [Explanation]: This lambda function displays the fund name with a link to view
       #                the specific valuation details. It includes truncation for long names.
       ->(fund_valuation) do
-        content_tag(
-          :span,
-          fund_valuation.investment_fund&.fund_name || "N/A",
-          class: "truncate max-w-xs font-mono text-muted uppercase"
-        )
+        normalize_fk(fund_valuation.investment_fund&.fund_name)
       end,
-
 
       # [Explanation]: This lambda function displays the CNPJ with monospace font
       #                and badge styling to make it stand out as a unique identifier.
       ->(fund_valuation) do
-        fund_valuation.fund_cnpj
+        normalize_code(fund_valuation.fund_cnpj)
       end,
 
       # [Explanation]: This lambda function displays the quota value as Brazilian currency
       #                with proper formatting and monospace font for financial clarity.
       ->(fund_valuation) do
-        colored_currency(
+        normalize_currency(
           fund_valuation.quota_value
         )
       end,
 
+      # Explanation:: This function calculates and displays the daily valuation change;
+      #               it provides immediate visual feedback on performance by
+      #               using colors and icons to represent financial trends.
       ->(fund_valuation) do
+        # Explanation:: This line retrieves the daily fluctuation value.
+        #               It captures the numeric difference from the previous day
+        #               to be processed by the specialized trend helper.
         daily_change = fund_valuation.daily_change
 
-        return content_tag(:span, "N/A", class: "text-muted text-sm") unless daily_change.present?
-
-        color_class =
-          daily_change >= 0 ? "!bg-success-50 !text-success-600" : "!bg-danger-50 !text-danger-600"
-
-        content_tag(
-          :div,
-          class: "flex items-center"
-        ) do
-          colored_currency(
-            daily_change.abs,
-            color_class
-          )
-        end
+        # Explanation:: This call utilizes the agnostic trend helper.
+        #               It handles all coloring, icon selection, and currency
+        #               formatting automatically based on the numeric value.
+        normalize_trend(daily_change, format: :currency)
       end,
 
+      # Explanation:: This function calculates and displays the daily percentage
+      #               variation of a fund; it uses a specialized trend helper
+      #               to show growth or decline through synced colors and icons.
       ->(fund_valuation) do
+        # Explanation:: This line captures the numeric percentage change value.
+        #               It retrieves the daily fluctuation data to determine if
+        #               the investment has gained or lost value since yesterday.
         daily_change_pct = fund_valuation.daily_change_percentage
 
-        return content_tag(:span, "N/A", class: "text-muted text-sm") unless daily_change_pct.present?
-
-        color_class =
-          daily_change_pct >= 0 ? "!bg-success-50 !text-success-600" : "!bg-danger-50 !text-danger-600"
-
-        colored_percentage(
-          daily_change_pct.abs,
-          color_class
-        )
+        # Explanation:: This call utilizes the agnostic trend helper for percentages.
+        #               It automatically chooses the color and icon based on the
+        #               value and ensures it follows the standard "SEM DADOS" rule.
+        normalize_trend(daily_change_pct, format: :percentage)
       end,
 
       # [Explanation]: This lambda function displays the data source with an icon badge.
       #                If no source is specified, it shows "Não especificada".
       ->(fund_valuation) do
-        if fund_valuation.source.present?
-          content_tag(:span, fund_valuation.source, class: "text-muted font-mono uppercase")
-        else
-          content_tag(:span, "N/A", class: "text-muted font-mono")
-        end
+        normalize_text(fund_valuation.source)
       end,
 
       # [Explanation]: This lambda function displays the import timestamp showing when
       #                this valuation record was created in the system.
       ->(fund_valuation) do
-        formatted_timestamp(
+        normalize_date(
           fund_valuation.created_at
         )
       end

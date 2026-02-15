@@ -144,9 +144,11 @@ class FundInvestmentsController < ApplicationController
   def create
     @fund_investment = FundInvestment.new(fund_investment_params)
 
-    # Explanation:: This uses **CanCan** to verify that the current user has permission
-    #               to create a new fund investment record.
-    authorize! :create, @fund_investment
+    if @fund_investment.save
+      redirect_to @fund_investment.portfolio, notice: "Investimento criado com sucesso."
+    else
+      render :new, status: :unprocessable_entity
+    end
   end
 
   # == update

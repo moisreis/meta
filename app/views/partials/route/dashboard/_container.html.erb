@@ -21,102 +21,31 @@
   #               It ensures the content takes up the correct amount of
   #               space and hides any messy scrollbars from the view.
   %>
-<section class="flex flex-col col-span-14 no-scrollbar">
+<section class="flex flex-col w-full no-scrollbar">
 
-  <%# Explanation:: This is the sticky top bar of the container.
-    #               It stays at the top while you scroll and uses a
-    #               blur effect to look modern against the background.
-    %>
-  <div class="h-12 px-12 grid grid-cols-2">
-
-    <%# Explanation:: This form provides a global search input in the header.
-      #               It allows the user to quickly look for information
-      #               without leaving the current navigation bar area.
-      %>
-    <%= form_with url: "#",
-                  method: :get,
-                  class: "flex flex-row items-center justify-start",
-                  html: { role: "presentation" } do |f| %>
-      <%= render "partials/modules/input-field",
-                 f: f,
-                 field_type: :search_field,
-                 name: :search,
-                 placeholder: "Pesquisar",
-                 desc: nil,
-                 is_small: true,
-                 icon_name: "search",
-                 is_inactive: false
-      %>
-    <% end %>
-
-    <%# Explanation:: This group holds the system action buttons.
-      #               It provides easy access to user settings and
-      #               notifications at the top right corner of the screen.
-      %>
-    <div class="flex flex-row gap-1.5 items-center justify-end">
-      <%= button_tag type: 'button',
-                     class: 'button button-ghost button-icon' do
-      %>
-        <%= inline_svg_tag "icons/notification.svg" %>
-      <% end %>
-      <%= button_tag type: 'button',
-                     class: 'button button-accent button-icon',
-                     data: { action: 'toggle-dark-mode' },
-                     onclick: "document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';" do %>
-        <%= inline_svg_tag "icons/sun.svg" %>
-      <% end %>
-
-    </div>
-  </div>
+  <%= render "partials/route/dashboard/header" %>
 
   <%# Explanation:: This white background area is the main body of the page.
     #               It contains the large page heading and the primary
     #               content provided by the specific view being rendered.
     %>
-  <div class="bg-white flex flex-col [&>form]:flex [&>form]:!gap-6 [&>form]:p-6 no-scrollbar">
+  <div class="flex flex-col [&>form]:flex [&>form]:!gap-6 [&>form]:p-6 no-scrollbar bg-white">
 
-    <% if current_view == "datatable" %>
-      <div class="h-12 px-12 flex flex-row justify-start gap-3 items-center border-b border-border">
+    <div class="h-24 px-8 grid grid-cols-2 mb-6">
+      <div class="flex flex-row justify-start gap-3 items-end">
         <%= content_tag :h1,
                         page_title,
-                        class: "font-mono text-sm font-medium uppercase"
-        %>
-        <%= content_tag :h1,
-                        "#{@total_items} itens",
-                        class: "font-mono text-sm text-muted uppercase"
+                        class: "font-heading capitalize font-medium text-4xl"
         %>
       </div>
-    <% else %>
-      <div class="px-12 py-6 flex flex-col gap-1.5">
-        <%= content_tag :h1,
-                        page_title,
-                        class: "font-heading text-3xl font-bold"
-        %>
-        <%= content_tag :p,
-                        page_desc,
-                        class: "font-mono uppercase text-sm text-muted"
-        %>
-      </div>
-    <% end %>
+    </div>
 
     <%# Explanation:: This logic chooses the best spacing based on what is shown.
       #               It adjusts the gaps and padding differently for data
       #               tables, detailed forms, or general information.
       %>
-    <% if current_view == "datatable" %>
-      <div class="px-12 py-6 flex flex-col gap-6">
-        <%= yield %>
-      </div>
-    <% elsif current_view == "show" %>
-      <div class="px-12 pt-0 pb-12 flex flex-col gap-16 no-scrollbar">
-        <%= yield %>
-      </div>
-    <% else %>
-      <div class="px-12 pt-0 pb-12">
-        <div class="flex flex-col gap-12">
-          <%= yield %>
-        </div>
-      </div>
-    <% end %>
+    <div class="px-8 py-6 flex flex-col gap-16">
+      <%= yield %>
+    </div>
   </div>
 </section>

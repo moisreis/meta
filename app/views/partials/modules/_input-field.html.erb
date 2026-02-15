@@ -20,6 +20,16 @@
   %>
 <% is_inactive ||= nil %>
 
+<%
+  has_error =
+    f.object.respond_to?(:errors) &&
+    f.object.errors[name].present?
+
+  error_message = has_error ? f.object.errors[name].first : nil
+%>
+
+
+
 <%# Explanation:: Defines the CSS classes for the input label as an array for clarity.
   #               The elements are joined into a single string for use in the HTML attribute.
   %>
@@ -30,8 +40,9 @@
     "gap-1.5",
     "text-xs",
     "font-body",
+    "capitalize",
     "leading-none",
-    "font-semibold",
+    "font-medium",
     "select-none",
     "group-data-[disabled=true]:pointer-events-none",
     "group-data-[disabled=true]:opacity-50",
@@ -58,9 +69,7 @@
     "px-3",
     "py-1",
     "text-sm",
-    "shadow-xs",
     "transition-[color,box-shadow]",
-    "outline-none",
     "disabled:pointer-events-none",
     "disabled:cursor-not-allowed",
     "disabled:opacity-50",
@@ -83,9 +92,12 @@
   %>
 <%
   input_classes_on_focus = [
-    "focus-visible:border-secondary-600",
-    "focus-visible:ring-secondary-100/50",
-    "focus-visible:ring-[3px]"
+    "focus-visible:border-border",
+    "focus-visible:ring-1",
+    "focus-visible:ring-primary-600/20",
+    "focus-visible:outline-primary-600",
+    "focus-visible:outline-1",
+    "focus-visible:outline-offset-2",
   ].join(" ")
 %>
 
@@ -115,12 +127,6 @@
 <%
   error_classes = [
     "!text-danger-600",
-    "!bg-danger-50",
-    "p-1.5",
-    "px-3",
-    "border",
-    "border-danger-100",
-    "rounded-base",
     "w-fit"
   ].join(" ")
 %>
@@ -173,13 +179,35 @@
 
     <% field_type ||= :text_field %>
 
-    <% full_input_classes = "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus} #{mono_class} #{is_small ? '!h-fit !w-fit !px-2.5 !py-0.75' : ''}" %>
+    <%
+      error_input_classes = has_error ? [
+        "!border-danger",
+        "ring-1",
+        "ring-danger-600/20",
+        "focus-visible:!outline-danger-600"
+      ].join(" ") : ""
 
-    <%= f.send(field_type,
-               name,
-               placeholder: placeholder,
-               class: full_input_classes,
-               aria: { describedby: "#{name}-desc" })
+      full_input_classes =
+        [
+          input_classes,
+          input_classes_on_hover,
+          input_classes_on_focus,
+          mono_class,
+          error_input_classes,
+          (is_small ? '!h-fit !w-fit !px-2.5 !py-0.75' : nil)
+        ].compact.join(" ")
+    %>
+    <%= f.send(
+          field_type,
+          name,
+          placeholder: placeholder,
+          class: full_input_classes,
+          aria: {
+            describedby: (desc.present? || has_error) ? "#{name}-desc" : nil,
+            invalid: has_error
+          },
+          html: { autocomplete: "off" }
+        )
     %>
 
     <% if icon_name.present? %>
@@ -188,11 +216,20 @@
                          class: "absolute size-4 right-3 top-1/2 -translate-y-1/2 stroke-muted"
       %>
     <% end %>
+
   </div>
 
-  <%= content_tag :p,
-                  desc,
-                  class: desc_classes,
-                  id: "#{name}-desc" if desc.present?
-  %>
+  <% if has_error %>
+    <%= content_tag :p,
+                    error_message,
+                    class: desc_classes_with_error,
+                    id: "#{name}-desc" if desc.present?
+    %>
+  <% elsif desc.present? %>
+    <%= content_tag :p,
+                    desc,
+                    class: desc_classes,
+                    id: "#{name}-desc" if desc.present?
+    %>
+  <% end %>
 </div>

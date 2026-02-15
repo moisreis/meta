@@ -18,7 +18,7 @@ class FundValuationImportJob < ApplicationJob
 
   # Explanation:: Este método é o ponto de entrada do job. Agora aceita um parâmetro
   #               'months_back' para controlar quantos meses buscar (padrão: 2)
-  def perform(start_date: Date.current, months_back: 2)
+  def perform(start_date: Date.current, months_back: 12)
     start_time = Time.current
 
     Rails.logger.info("=" * 80)
@@ -177,7 +177,7 @@ class FundValuationImportJob < ApplicationJob
 
     CSV.parse(csv_content, headers: true, col_sep: ";", encoding: "ISO-8859-1:UTF-8") do |row|
       # Normalize CNPJ (remove formatting)
-      normalized_cnpj = row["CNPJ_FUNDO"].to_s.gsub(/\D/, "")
+      normalized_cnpj = row["CNPJ_FUNDO_CLASSE"].to_s.gsub(/\D/, "")
 
       # Skip if fund not in our database
       unless existing_cnpjs.include?(normalized_cnpj)

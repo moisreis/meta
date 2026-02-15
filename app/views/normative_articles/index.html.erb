@@ -21,7 +21,7 @@
   #               main container by setting the page title and descriptive labels.
   %>
 <%= render "partials/route/dashboard/wrapper",
-           page_title: "Artigos Normativos",
+           page_title: "Lista de Artigos Normativos",
            page_desc: "Consulte, filtre e gerencie os artigos normativos registrados.",
            current_view: "datatable" do %>
 
@@ -58,25 +58,29 @@
       # Explanation:: This function displays the official identifier or code of
       #               the article. It ensures the reference number is visible and
       #               works by showing a placeholder if no number is recorded.
-      ->(a) { a.article_number.presence || "N/A" },
+      ->(a) do
+        normalize_title(a.article_number.presence)
+      end,
 
       # Explanation:: This line presents the descriptive name of the normative
       #               article. It helps users identify the subject of the rule
       #               and works by displaying the saved string or a default label.
-      ->(a) { a.article_name.presence || "N/A" },
+      ->(a) do
+        normalize_text(a.article_name.presence)
+      end,
 
       # Explanation:: This instruction formats the benchmark target into a
       #               standardized numerical layout. It highlights the target value
       #               and works by applying color coding for better visibility.
       ->(a) do
-        colored_numerical(a.benchmark_target)
+        normalize_number(a.benchmark_target)
       end,
 
       # Explanation:: This logic converts the database creation timestamp into
       #               a human-readable format. It tracks the record history and
       #               works by applying the application's standard date styling.
       ->(a) do
-        formatted_timestamp(a.created_at)
+        normalize_date(a.created_at)
       end
     ],
 

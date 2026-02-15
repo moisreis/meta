@@ -34,6 +34,11 @@
     outline: none;
 }
 
+.ts-wrapper.input-small .ts-control {
+    height: calc(var(--spacing) * 7) !important;
+    padding: calc(var(--spacing) * 1) calc(var(--spacing) * 3) !important;
+}
+
 /*
  * Styles the text input that appears inside the select control
  * when typing a search query. Matches font sizing and colors
@@ -63,8 +68,8 @@
  * higher-contrast text color for clear selection feedback.
  */
 .ts-dropdown .active {
-    background-color: var(--color-primary-50);
-    color: var(--color-primary-700);
+    background-color: var(--color-neutral-50);
+    color: var(--color-body);
     border-radius: var(--radius-base);
 }
 

@@ -15,16 +15,16 @@
   #        - Why:  Ensures a unified, vertically aligned composition across all authentication pages.
   %>
 <section class="relative flex flex-col items-center bg-white justify-center col-span-6 h-full min-h-screen w-full gap-9 overflow-x-hidden m-auto py-6">
+  <div class="absolute top-6 left-6"><%= render "partials/modules/logo", size: "32" %></div>
   <div class="flex flex-col items-center justify-start gap-3 w-1/4">
-    <%= render "partials/modules/logo", size: "56" %>
-    <%= content_tag :h1, welcome_message, class: "text-heading font-body text-2xl font-semibold text-center" %>
+    <%= content_tag :h1, welcome_message, class: "text-heading font-heading text-5xl font-semibold text-center" %>
     <%= content_tag :p, welcome_feedback, class: "text-muted font-body text-base font-normal text-center" %>
   </div>
   <div class="flex flex-col items-start justify-center w-1/4 gap-3">
     <%= yield %>
     <%= render "devise/shared/links" %>
   </div>
-  <div class="absolute bottom-6 left-1/2 -translate-x-1/2">
-    <%= render 'partials/modules/copyright' %>
+  <div class="fixed bottom-0 py-3 left-1/2 -translate-x-1/2 w-full bg-white flex items-center justify-center">
+    <%= render "partials/modules/copyright" %>
   </div>
 </section>

@@ -194,6 +194,31 @@ class PerformanceHistory < ApplicationRecord
     }
   end
 
+  # == market_value
+  #
+  # @author Moisés Reis
+  # @category *Calculation*
+  #
+  # Calculation:: This method calculates the market value at the end of the period
+  #               by adding the initial balance (invested value) to the earnings for that period.
+  #
+  def market_value
+    return BigDecimal('0') unless initial_balance && earnings
+    initial_balance + earnings
+  end
+
+  # == invested_value
+  #
+  # @author Moisés Reis
+  # @category *Calculation*
+  #
+  # Calculation:: This method returns the invested value (initial balance) for the period.
+  #               This represents the value invested at the start of the period.
+  #
+  def invested_value
+    initial_balance || BigDecimal('0')
+  end
+
   private
 
   # == fund_investment_belongs_to_portfolio

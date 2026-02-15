@@ -1,77 +1,27 @@
-<%#
-  # Partial: _section.html
-  # Date: 11/31/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: This partial creates a titled section within the dashboard.
-  #              It manages the layout for grouped content and handles
-  #              optional header buttons and information tooltips.
-  #
-  # Usage: - What: It serves as a visual container that organizes dashboard
-  #                content into clear, titled blocks with a consistent grid.
-  #        - How: It uses a flexible grid system to arrange internal items
-  #               and provides conditional slots for titles and actions.
-  #        - Why: This promotes a clean user interface by separating different
-  #               types of information into easy-to-read segments.
-  %>
-
-<%# Explanation:: This line sets a default of 2 columns if no value is passed.
-  #               It ensures the layout remains stable and visible even
-  #               if a specific column count is forgotten.
-  %>
 <% columns ||= 2 %>
 
-<%# Explanation:: This maps column numbers to complete Tailwind class names.
-  #               Tailwind needs to see full class strings at build time,
-  #               so we use a hash lookup instead of string interpolation.
-  %>
 <% grid_classes = {
                     1 => "grid-cols-1",
-                    2 => "grid-cols-2",
-                    3 => "grid-cols-3",
-                    4 => "grid-cols-4",
-                    5 => "grid-cols-5",
-                    6 => "grid-cols-6"
-                  }[columns] || "grid-cols-2" %>
+                    2 => "grid-cols-1 md:grid-cols-2",
+                    3 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+                    4 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+                    5 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+                    6 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  }[columns] || "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" %>
 
-<%# Explanation:: This variable checks if a special action button is needed.
-  #               By default, it is turned off unless the code
-  #               explicitly asks for a button to be shown.
-  %>
 <% has_action ||= false %>
 
-<%# Explanation:: This stores the destination path for the section button.
-  #               It tells the browser exactly where to take the user
-  #               when they click on the action link.
-  %>
 <% button_route ||= nil %>
 
-<%# Explanation:: This defines the text label that appears on the button.
-  #               It provides a clear instruction to the user, such
-  #               as "Adicionar Novo" or "Ver Todos".
-  %>
 <% button_name ||= nil %>
 
-<%# Explanation:: This identifies the specific icon image for the button.
-  #               It allows the interface to show a visual symbol
-  #               that represents the action being performed.
-  %>
 <% button_icon ||= nil %>
 
-<%# Explanation:: This variable holds the main title text for the section.
-  #               It acts as a primary heading so the user quickly
-  #               understands what this part of the page contains.
-  %>
 <% section_title ||= nil %>
 
-<%# Explanation:: This stores a helpful hint or explanation for the section.
-  #               It provides extra context that appears when a user
-  #               needs more detail about the displayed data.
-  %>
 <% section_desc ||= nil %>
 
-<div class="flex flex-col gap-6 justify-start">
+<section class="flex flex-col gap-6 justify-start ">
 
   <div class="flex flex-row items-center justify-between">
 
@@ -81,22 +31,25 @@
       %>
     <% if section_title.present? %>
 
-      <div class="flex flex-row justify-start items-center gap-1">
-        <%= content_tag :h2, section_title, class: "text-heading font-heading font-medium text-xl capitalize" %>
+      <div class="flex flex-col justify-start items-start gap-1.5">
+        <div class="flex flex-row justify-start items-center gap-1">
+          <%= content_tag :h2, section_title, class: "text-2xl font-body text-body font-medium capitalize" %>
 
-        <%# Explanation:: This adds a small info icon if a description exists.
-          #               When clicked, it reveals the hidden explanation
-          #               text to help the user understand the section.
-          %>
+          <% if section_desc.present? %>
+
+            <%= button_tag class: 'button-ghost !p-1 section-desc-button',
+                           data: {
+                             tippy_target: "##{section_title.parameterize}-desc"
+                           } do
+            %>
+              <%= inline_svg_tag "icons/information-circle.svg", class: "!stroke-muted size-3" %>
+            <% end %>
+          <% end %>
+        </div>
+
         <% if section_desc.present? %>
 
-          <%= button_tag class: 'button-ghost !p-1 section-desc-button',
-                         data: {
-                           tippy_target: "##{section_title.parameterize}-desc"
-                         } do
-          %>
-            <%= inline_svg_tag "icons/info.svg", class: "!stroke-muted size-3" %>
-          <% end %>
+          <%= content_tag :h2, section_desc, class: "text-sm text-muted font-normal" %>
         <% end %>
       </div>
 
@@ -114,7 +67,7 @@
       #               to allow the user to perform tasks in this section.
       %>
     <% if has_action == true %>
-      <%= link_to button_route, class: "button button-outline" do %>
+      <%= link_to button_route, class: "button button-small button-outline" do %>
         <%= inline_svg_tag "icons/#{button_icon}.svg" %>
         <%= content_tag :span, button_name %>
       <% end %>
@@ -128,4 +81,4 @@
   <div class="grid <%= grid_classes %> gap-6">
     <%= yield %>
   </div>
-</div>
+</section>

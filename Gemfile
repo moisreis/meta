@@ -33,6 +33,10 @@ gem 'csv'
 gem 'prawn'
 gem 'prawn-table'
 gem 'prawn-svg'
+gem "victor"
+gem "prawn-svg"
+gem "zlib"
+
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

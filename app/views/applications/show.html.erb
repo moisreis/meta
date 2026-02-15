@@ -1,374 +1,123 @@
-<%#
-  # Partial: show.html.erb
-  # Date: 11/25/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Displays a comprehensive dashboard view for a single Application record.
-  #              Shows investment transaction details, lifecycle status, quota calculations,
-  #              allocation tracking, and consistency validation with visual indicators.
-  #
-  # Usage: - What: Renders the complete show view for the Application resource with detailed
-  #                transaction information, quota availability, redemption allocations, and status tracking.
-  #        - How: Accessed via GET /applications/:id. Uses the @application instance variable
-  #               loaded by ApplicationsController#show along with calculated metrics.
-  #        - Why: Provides users with a centralized dashboard to monitor a specific investment
-  #               application's details, track its lifecycle, and understand quota usage.
-  %>
-
-<%# Explanation:: This layout wrapper organizes the entire page content into a clean
-  #               dashboard structure. It identifies the application by ID and shows
-  #               which fund received the investment for clear context.
-  %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Aplicação ##{@application.id}",
            page_desc: "Investimento em #{@application.fund_investment.investment_fund.fund_name}",
            current_view: "show" do
 %>
 
-  <%# Explanation:: This logic block defines local variables for the view by calculating
-    #               financial metrics and validation states once. It runs before the
-    #               HTML renders to ensure data consistency across all dashboard cards.
-    %>
-  <%
-    allocated_quotas = @application.redemption_allocations.sum(:quotas_used) || 0
-    allocation_percentage = @application.number_of_quotas && @application.number_of_quotas > 0 ?
-                              (allocated_quotas / @application.number_of_quotas * 100) : 0
-    processing_days = if @application.request_date && @application.liquidation_date
-                        (@application.liquidation_date - @application.request_date).to_i
-                      else
-                        nil
-                      end
-    calculated = @application.calculated_quota_value
-    stored = @application.quota_value_at_application
-    is_consistent = calculated && stored && (calculated - stored).abs <= 0.01
-    cotization_valid = !@application.cotization_date ||
-                       !@application.request_date ||
-                       @application.cotization_date >= @application.request_date
-    liquidation_valid = !@application.liquidation_date ||
-                        !@application.cotization_date ||
-                        @application.liquidation_date >= @application.cotization_date
-    calc_consistent = calculated && stored && (calculated - stored).abs <= 0.01
-    positive_values = @application.financial_value && @application.financial_value > 0 &&
-                      (!@application.number_of_quotas || @application.number_of_quotas > 0)
-  %>
-
-  <%# Explanation:: This section groups the core identity data of the investment, such as
-    #               fund names and portfolios. It renders at the top of the page so
-    #               the user can quickly verify which assets they are currently viewing.
-    %>
   <%= render "partials/route/dashboard/section",
              section_title: "Informações da Aplicação",
              section_desc: "Dados da transação de investimento",
              columns: 4,
-             has_action: true,
-             button_route: edit_application_path(@application),
-             button_name: "Editar",
-             button_icon: "pencil" do
+             has_action: false do
   %>
 
-    <%# Explanation:: This card displays the specific fund name as a navigational link
-      #               to the fund details. It acts as the primary reference point to
-      #               help users track where their capital is actually invested.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Fundo de Investimento",
                card_icon: "building-2",
+               status: :teal,
                card_data: @application.fund_investment.investment_fund.administrator_name do
     %>
-      <%= link_to @application.fund_investment.investment_fund.fund_name,
-                  investment_fund_path(@application.fund_investment.investment_fund),
-                  class: "hover:underline" %>
+      <%= normalize_text(@application.fund_investment.investment_fund.fund_name) %>
     <% end %>
 
-    <%# Explanation:: This card identifies the specific portfolio owning the asset by
-      #               displaying the owner's name. It clarifies asset ownership within
-      #               the system by linking directly to the portfolio management page.
-      %>
+
+    <%= render "partials/route/dashboard/card",
+               card_title: "Percentual Alocado",
+               card_icon: "percent" do
+    %>
+      <%= normalize_percentage(application_quota_availability(@application)[:percentage]) %>
+    <% end %>
+
     <%= render "partials/route/dashboard/card",
                card_title: "Carteira",
                card_icon: "wallet",
                card_data: @application.fund_investment.portfolio.user.full_name do
     %>
-      <%= link_to @application.fund_investment.portfolio.name,
-                  portfolio_path(@application.fund_investment.portfolio),
-                  class: "hover:underline" %>
+      <%= normalize_text(@application.fund_investment.portfolio.name) %>
     <% end %>
 
-    <%# Explanation:: This card shows the link between this record and its parent allocation
-      #               percentage. It allows users to navigate the hierarchy of investments
-      #               to see how this specific transaction fits into a larger strategy.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Investimento Relacionado",
                card_icon: "link",
-               card_data: "#{number_with_precision(@application.fund_investment.percentage_allocation, precision: 2)}%",
+               card_data: normalize_card_percentage(@application.fund_investment.percentage_allocation),
                card_data_icon: "percent" do
     %>
-      <%= link_to "Alocação ##{@application.fund_investment.id}",
-                  fund_investment_path(@application.fund_investment),
-                  class: "hover:underline" %>
+      <%= normalize_text("Alocação #{@application.fund_investment.id}") %>
     <% end %>
 
-    <%# Explanation:: This card displays the current processing state of the application
-      #               using color-coded labels. It informs users whether a transaction
-      #               is still pending or if it has been successfully finalized.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Status da Aplicação",
-               card_icon: @application.completed? ? "check" : "clock",
-               card_data: @application.completed? ? "Finalizada" : "Em processamento",
-               card_data_icon: @application.completed? ? "check" : "x",
-               status: (@application.completed? ? :success : :alert) do
+               card_icon: card_icon_boolean_for(application_status_text(@application)[:completed]),
+               status: card_status_boolean_for(application_status_text(@application)[:completed]) do
     %>
-      <%= @application.completed? ? "Completa" : "Pendente" %>
+      <%= normalize_text(application_status_text(@application)[:detail_text]) %>
     <% end %>
   <% end %>
 
-  <%# Explanation:: This section aggregates all money-related values, including price per
-    #               quota and totals. It provides a financial breakdown of the record
-    #               to ensure that the arithmetic of the transaction is fully transparent.
-    %>
   <%= render "partials/route/dashboard/section",
              section_title: "Valores Financeiros",
              section_desc: "Montantes e cotações da aplicação",
              columns: 4 do
   %>
 
-    <%# Explanation:: This card presents the total amount of money deposited into the
-      #               fund for this specific entry. It serves as the principal value
-      #               to help users monitor their initial capital commitments.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Valor Financeiro Investido",
                card_icon: "banknote" do
     %>
-      <%= standard_currency(@application.financial_value) %>
+      <%= normalize_currency(@application.financial_value) %>
     <% end %>
 
-    <%# Explanation:: This card counts how many fund units the user acquired with their
-      #               investment. It tracks the exact quantity of quotas owned, which
-      #               is essential for calculating future gains or redemption limits.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Número de Cotas Adquiridas",
                card_icon: "coins" do
     %>
-      <%= @application.number_of_quotas ? number_with_precision(@application.number_of_quotas, precision: 4) : "N/A" %>
+      <%= normalize_number(@application.number_of_quotas) %>
     <% end %>
 
-    <%# Explanation:: This card displays the price per quota at the time the investment
-      #               was executed. It provides a historical price reference to help
-      #               users compare their entry point against current market values.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Valor da Cota na Aplicação",
-               card_icon: "chart-line" do
+               card_icon: "calculator" do
     %>
-      <%= @application.quota_value_at_application ? standard_currency(@application.quota_value_at_application) : "N/A" %>
+      <%= normalize_currency(@application.quota_value_at_application) %>
     <% end %>
 
-    <%# Explanation:: This card performs a real-time validation by dividing the total value
-      #               by the number of quotas. It highlights discrepancies to ensure
-      #               that the stored data matches the expected mathematical result.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Valor Calculado da Cota",
-               card_icon: "calculator",
-               card_data: is_consistent ? "Consistente" : (calculated ? "Divergente" : "N/A"),
-               card_data_icon: is_consistent ? "check" : "x",
-               status: (
-                 is_consistent ? :success :
-                   calculated ? :alert :
-                     :default
-               ) do
+               card_icon: "calculator" do
     %>
-      <%= calculated ? standard_currency(calculated) : "N/A" %>
+      <%= normalize_currency(@application.calculated_quota_value) %>
     <% end %>
   <% end %>
 
-  <%# Explanation:: This section tracks the chronological progress of the transaction from
-    #               start to finish. It maps the timeline to help users understand
-    #               how long each phase of the financial lifecycle is taking to complete.
-    %>
   <%= render "partials/route/dashboard/section",
-             section_title: "Ciclo de Vida da Transação",
-             section_desc: "Datas e etapas do processo de investimento",
+             section_title: "Datas do Ciclo de Vida",
+             section_desc: "Cronologia da aplicação",
              columns: 4 do
   %>
 
-    <%# Explanation:: This card records the exact date the user submitted their request
-      #               to the system. It marks the chronological beginning of the record
-      #               and serves as the baseline for calculating processing delays.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Data de Solicitação",
                card_icon: "calendar-plus",
-               is_success: true do
+               card_data: normalize_card_time_ago(@application.request_date) do
     %>
-      <%= formatted_timestamp(@application.request_date) %>
+      <%= normalize_date(@application.request_date) %>
     <% end %>
 
-    <%# Explanation:: This card shows the date when the fund's price was officially
-      #               assigned to the transaction. It confirms the day the quota value
-      #               was fixed, ensuring the user knows which market price was used.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Data de Cotização",
                card_icon: "calendar-check-2" do
     %>
-      <%= @application.cotization_date ? formatted_timestamp(@application.cotization_date) : "N/A" %>
+      <%= normalize_date(@application.cotization_date) %>
     <% end %>
 
-    <%# Explanation:: This card displays the final date when the cash movement was
-      #               fully settled. It indicates that the transaction is closed and
-      #               the money has reached its destination within the fund.
-      %>
     <%= render "partials/route/dashboard/card",
                card_title: "Data de Liquidação",
-               card_icon: "calendar-check-2",
-               is_success: @application.liquidation_date.present? do
+               card_icon: "calendar-check-2" do
     %>
-      <%= @application.liquidation_date ? formatted_timestamp(@application.liquidation_date) : "N/A" %>
-    <% end %>
-
-    <%# Explanation:: This card calculates the total number of days elapsed between the
-      #               request and the settlement. It helps users monitor the efficiency
-      #               and speed of the financial institution's internal processes.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Tempo de Processamento",
-               card_icon: "hourglass" do
-    %>
-      <%= processing_days ? "#{processing_days} dias" : "Calculando..." %>
+      <%= normalize_date(@application.liquidation_date) %>
     <% end %>
   <% end %>
 
-  <%# Explanation:: This section monitors how many quotas are currently available for
-    #               future withdrawals. It prevents over-redeeming by subtracting any
-    #               quotas that have already been allocated to other transactions.
-    %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Gestão de Cotas",
-             section_desc: "Disponibilidade e alocação para resgates",
-             columns: 4 do
-  %>
-
-    <%# Explanation:: This card displays the remaining balance of fund units that can
-      #               still be redeemed. It updates automatically as redemptions occur
-      #               to show the user their current liquidable position.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Cotas Disponíveis",
-               card_icon: "package",
-               card_data: @application.fully_allocated? ? "Totalmente alocado" : "Disponível para resgate",
-               is_success: !@application.fully_allocated?,
-               is_danger: @application.fully_allocated? do
-    %>
-      <%= number_with_precision(@application.available_quotas, precision: 4) %>
-    <% end %>
-
-    <%# Explanation:: This card totals the number of units that have already been used in
-      #               previous redemptions. It helps track the consumption of this specific
-      #               application to maintain an accurate historical audit trail.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Cotas Já Alocadas",
-               card_icon: "package-minus",
-               is_danger: allocated_quotas > 0 do
-    %>
-      <%= number_with_precision(allocated_quotas, precision: 4) %>
-    <% end %>
-
-    <%# Explanation:: This card converts the allocated quotas into a percentage of the total.
-      #               It provides an easy visual metric for users to see how much of
-      #               this specific investment has already been withdrawn.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Percentual Alocado",
-               card_icon: "percent" do
-    %>
-      <%= number_with_precision(allocation_percentage, precision: 2) %>%
-    <% end %>
-
-    <%# Explanation:: This card counts how many separate redemption records are drawing
-      #               from this application. It reveals the complexity of the asset's
-      #               usage by showing if it was withdrawn in one or many parts.
-      %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Resgates Vinculados",
-               card_icon: "git-branch" do
-    %>
-      <%= @application.redemption_allocations.count %> alocações
-    <% end %>
-  <% end %>
-
-  <%# Explanation:: This section renders graphical representations of the data to make
-    #               trends easier to spot. It uses charts to simplify the analysis
-    #               of complex timelines and quota distributions for the end user.
-    %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Visualizações",
-             columns: 2 do
-  %>
-
-    <%# Explanation:: This logic block builds a timeline map by linking transaction dates to
-      #               numerical stages like request, cotization, and settlement. It runs
-      #               before the chart renders to provide the necessary data points that
-      #               allow the system to draw a visual progress bar of the investment.
-      %>
-    <%
-      lifecycle_data = {}
-      lifecycle_data[@application.request_date] = 1 if @application.request_date
-      lifecycle_data[@application.cotization_date] = 2 if @application.cotization_date
-      lifecycle_data[@application.liquidation_date] = 3 if @application.liquidation_date
-    %>
-
-    <%# Explanation:: This column chart visualizes the progression of the transaction's
-      #               dates on a vertical axis. It provides a quick way to see where
-      #               the application is currently sitting in its operational lifecycle.
-      %>
-    <%= render "partials/groups/chart-list",
-               chart_type: :column_chart,
-               data_source: lifecycle_data,
-               chart_title: "Linha do Tempo da Transação",
-               chart_options: {
-                 library: {
-                   legend: { display: false },
-                   scales: {
-                     y: {
-                       ticks: {
-                         callback: "function(value) {
-                           const stages = ['', 'Solicitação', 'Cotização', 'Liquidação'];
-                           return stages[value] || '';
-                         }"
-                       }
-                     }
-                   }
-                 }
-               } %>
-
-    <%# Explanation:: This donut chart shows the ratio between available and spent quotas.
-      #               It uses a circular shape to represent the "whole" investment,
-      #               making it clear how much of the original asset still remains.
-      %>
-    <%= render "partials/groups/chart-list",
-               chart_type: :pie_chart,
-               data_source: {
-                 "Disponíveis" => @application.available_quotas,
-                 "Alocadas" => allocated_quotas
-               },
-               chart_title: "Distribuição de Cotas",
-               chart_options: {
-                 donut: true,
-                 legend: "right"
-               } %>
-  <% end %>
-
-  <%# Explanation:: This table lists every specific redemption that pulled quotas from
-    #               this record. It provides a detailed row-by-row breakdown to help
-    #               users reconcile their account balances with physical transactions.
-    %>
   <%= render "partials/groups/table-list",
              section_title: "Alocações de Resgate",
              collection: @application.redemption_allocations.includes(redemption: { fund_investment: [:portfolio, :investment_fund] }),
@@ -393,133 +142,27 @@
                "calendar-check-2"
              ],
              body_procs: [
-               ->(alloc) { link_to("Resgate ##{alloc.redemption.id}", redemption_path(alloc.redemption), class: "font-medium hover:underline") },
-               ->(alloc) { content_tag(:span, alloc.redemption.fund_investment.portfolio.name, class: "font-medium") },
-               ->(alloc) { content_tag(:span, alloc.redemption.fund_investment.portfolio.user.full_name, class: "badge badge-currency") },
-               ->(alloc) { colored_numerical(alloc.quotas_used, "h-auto") },
-               ->(alloc) { alloc.application.quota_value_at_application ? colored_currency(alloc.application.quota_value_at_application) : "N/A" },
-               ->(alloc) { alloc.cost_basis ? colored_currency(alloc.cost_basis, "h-auto") : "N/A" },
-               ->(alloc) { formatted_timestamp(alloc.redemption.request_date) }
+               ->(alloc) do
+                 normalize_title("Resgate ##{alloc.redemption.id}")
+               end,
+               ->(alloc) do
+                 normalize_fk(alloc.redemption.fund_investment.portfolio.name)
+               end,
+               ->(alloc) do
+                 normalize_text(alloc.redemption.fund_investment.portfolio.user.full_name)
+               end,
+               ->(alloc) do
+                 normalize_number(alloc.quotas_used)
+               end,
+               ->(alloc) do
+                 normalize_currency(alloc.application.quota_value_at_application)
+               end,
+               ->(alloc) do
+                 normalize_currency(alloc.cost_basis)
+               end,
+               ->(alloc) do
+                 normalize_date(alloc.redemption.request_date)
+               end,
              ]
   %>
-
-  <%# Explanation:: This section runs automated checks to ensure all entered data is
-    #               logical and error-free. It highlights problematic fields so users
-    #               can fix data entry mistakes before they impact financial reports.
-    %>
-  <%= render "partials/route/dashboard/section",
-             columns: 2,
-             has_action: false do
-  %>
-
-    <%# Explanation:: This group validates that dates were entered in a logical sequence.
-      #               It prevents records where money is "settled" before it was ever
-      #               "requested," maintaining the integrity of the audit timeline.
-      %>
-    <%= render "partials/route/dashboard/section",
-               section_title: "Validações de Data",
-               columns: 1,
-               has_action: false do
-    %>
-      <%# Explanation:: This card performs a specific date check between the request and
-        #               cotization steps. It ensures the price was not fixed before
-        #               the user actually asked for the investment to occur.
-        %>
-      <%= render "partials/blocks/info-card",
-                 title: "Cotização após Solicitação",
-                 subtitle: cotization_valid ? "Válido" : "Inválido - data inconsistente",
-                 main_value: cotization_valid ? "Ok!" : "Erro",
-                 sub_value: cotization_valid ? "Cronologia correta" : "Requer correção",
-                 icon_name: cotization_valid ? "check" : "x",
-                 main_color: cotization_valid ? "success" : "danger"
-      %>
-
-      <%# Explanation:: This card checks the relationship between the cotization and the
-        #               liquidation dates. It verifies that the financial settlement
-        #               only happens after the quota price has been officially set.
-        %>
-      <%= render "partials/blocks/info-card",
-                 title: "Liquidação após Cotização",
-                 subtitle: liquidation_valid ? "Válido" : "Inválido - data inconsistente",
-                 main_value: liquidation_valid ? "Ok!" : "Erro",
-                 sub_value: liquidation_valid ? "Cronologia correta" : "Requer correção",
-                 icon_name: liquidation_valid ? "check" : "x",
-                 main_color: liquidation_valid ? "success" : "danger"
-      %>
-    <% end %>
-
-    <%# Explanation:: This subsection checks if the financial math makes sense across the
-      #               record. It alerts the user if the money totals don't match the
-      #               expected quota prices, preventing accounting errors in the app.
-      %>
-    <%= render "partials/route/dashboard/section",
-               section_title: "Validações Financeiras",
-               columns: 1,
-               has_action: false do
-    %>
-
-      <%# Explanation:: This card validates the mathematical division of currency by quota
-        #               count. It warns the user if the resulting price differs from
-        #               the value stored in the database for this specific transaction.
-        %>
-      <%= render "partials/blocks/info-card",
-                 title: "Consistência de Cálculo",
-                 subtitle: calc_consistent ? "Divisão de valores por cotas é igual à cotação" : "Requer verificação",
-                 main_value: calc_consistent ? "Ok!" : (@application.calculated_quota_value ? "Divergente" : "N/A"),
-                 sub_value: calc_consistent ? "Matemática correta" : "Verificar valores",
-                 icon_name: calc_consistent ? "check" : "x",
-                 main_color: calc_consistent ? "success" : (@application.calculated_quota_value ? "danger" : "secondary")
-      %>
-
-      <%# Explanation:: This card ensures that all monetary and quantity values remain
-        #               above zero. It acts as a safety check to prevent negative
-        #               balances or empty records from corrupting the financial history.
-        %>
-      <%= render "partials/blocks/info-card",
-                 title: "Valores Positivos",
-                 subtitle: positive_values ? "Todos os valores são válidos" : "Verificar integridade",
-                 main_value: positive_values ? "Ok!" : "Atenção",
-                 sub_value: positive_values ? "Valores são maiores que zero" : "Valores inválidos detectados",
-                 icon_name: positive_values ? "check" : "x",
-                 main_color: positive_values ? "success" : "danger"
-      %>
-    <% end %>
-  <% end %>
-
-  <%# Explanation:: This final section displays the database timestamps for when the record
-    #               was created or last changed. It gives users a clear view of the
-    #               document's history and when the most recent updates occurred.
-    %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Metadados do Sistema",
-             columns: 2,
-             has_action: false do
-  %>
-
-    <%# Explanation:: This card shows the creation timestamp converted into a human-friendly
-      #               format. It tells the user exactly when this record was first added
-      #               to the system database to track its historical longevity.
-      %>
-    <%= render "partials/blocks/info-card",
-               title: "Registro Criado",
-               subtitle: formatted_timestamp(@application.created_at),
-               main_value: "Há #{time_ago_in_words(@application.created_at)}",
-               sub_value: "Data de criação",
-               icon_name: "calendar-plus",
-               main_color: "secondary"
-    %>
-
-    <%# Explanation:: This card displays the most recent time any attribute of this record
-      #               was modified. It provides audit transparency by allowing users
-      #               to see how recently the information on their screen was updated.
-      %>
-    <%= render "partials/blocks/info-card",
-               title: "Última Atualização",
-               subtitle: formatted_timestamp(@application.updated_at),
-               main_value: "Há #{time_ago_in_words(@application.updated_at)}",
-               sub_value: "Modificação mais recente",
-               icon_name: "refresh-cw",
-               main_color: "secondary"
-    %>
-  <% end %>
 <% end %>

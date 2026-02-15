@@ -9,7 +9,7 @@
   #
   # Usage: - What: Renders a form select dropdown for user input.
   #                Ensures consistent styling and includes built-in error message display.
-  #        - How: Pass the necessary form builder (`f`), field name (`name`), label text (`label`), and available options (`options_collection`).
+  #        - How: Pass the necessary form builder `f`), field name `name`), label text `label`), and available options `options_collection`).
   #               Optional parameters include `is_half_width`, `desc` (description text), and `is_inactive` (to disable the select).
   #        - Why: Provides a reusable, accessible, and visually consistent select input component.
   #               Centralizes the styling and error presentation logic for form selects across the application.
@@ -38,6 +38,11 @@
   ].join(" ")
 %>
 
+<%# Explanation:: Defines whether the field is smaller.
+  #               A boolean flag that controls sizing classes for a compact input.
+  %>
+<% is_small ||= false %>
+
 <%# [Variable] Defines the CSS classes for the field description text. %>
 <% desc_classes = "flex items-center gap-1.5 text-xs text-muted leading-none font-normal select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50" %>
 
@@ -47,19 +52,29 @@
 <%# [Variable] Checks if the input should have half the width. %>
 <% is_half_width ||= false %>
 
+<%# [Variable] Check if form has errors (handles nil object case) %>
+<% has_errors = f.object.present? && f.object.respond_to?(:errors) && f.object.errors[name].present? %>
+
 <div class="relative flex flex-col justify-start gap-1.5">
-  <%= f.label name, label, class: label_classes %>
-  <div class="relative <%= is_half_width ? '!w-1/2' : '' %>">
+  <% label ||= nil %>
+
+  <% if label.present? %>
+    <%= f.label name, label, class: label_classes %>
+  <% end %>
+  <div class="relative <%= is_half_width ? '!w-1/2' : '' %> ">
     <%= f.select name, options_collection, {}, {
-      class: "js-tomselect",
+      class: [
+        "js-tomselect",
+        (is_small ? "input-small" : nil)
+      ].compact.join(" "),
       disabled: is_inactive,
-      aria: { describedby: "#{name}-desc", invalid: f.object.errors[name].present? }
+      aria: { describedby: "#{name}-desc", invalid: has_errors }
     } %>
     <%= inline_svg_tag "icons/chevron-down.svg",
                        class: "size-3.5 z-10 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 stroke-muted"
     %>
   </div>
-  <% if f.object.errors[name].present? %>
+  <% if has_errors %>
     <%= content_tag :span,
                     f.object.errors.full_messages_for(name).first,
                     class: desc_classes_with_error

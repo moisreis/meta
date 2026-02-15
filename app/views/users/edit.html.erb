@@ -21,8 +21,8 @@
   #               container and works by setting the page title to the user's full name.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: @user.full_name,
-           page_desc: "Atualize suas informações pessoais." do %>
+           page_title: "Editar #{@user.full_name}",
+           page_desc: "Atualize suas informações do usuário." do %>
 
   <%# Explanation:: This helper renders the central input structure to modify
     #               existing user details; it is used to save changes and

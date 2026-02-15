@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_07_185948) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_03_002110) do
   create_schema "extensions"
 
   # These are extensions that must be enabled in order to support this database
@@ -110,6 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_185948) do
     t.datetime "created_at", null: false
     t.decimal "earnings"
     t.bigint "fund_investment_id", null: false
+    t.decimal "initial_balance", precision: 15, scale: 2
     t.decimal "last_12_months_return"
     t.decimal "monthly_return"
     t.date "period"
@@ -117,6 +118,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_185948) do
     t.datetime "updated_at", null: false
     t.decimal "yearly_return"
     t.index ["fund_investment_id"], name: "index_performance_histories_on_fund_investment_id"
+    t.index ["initial_balance"], name: "index_performance_histories_on_initial_balance"
     t.index ["portfolio_id"], name: "index_performance_histories_on_portfolio_id"
   end
 

@@ -405,6 +405,7 @@ GEM
     unicode-emoji (4.1.0)
     uri (1.1.1)
     useragent (0.16.11)
+    victor (0.5.0)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.1)
@@ -420,6 +421,7 @@ GEM
     xpath (3.2.0)
       nokogiri (~> 1.8)
     zeitwerk (2.7.3)
+    zlib (3.2.1)
 
 PLATFORMS
   x64-mingw-ucrt
@@ -465,7 +467,9 @@ DEPENDENCIES
   thruster
   turbo-rails
   tzinfo-data
+  victor
   web-console
+  zlib
 
 BUNDLED WITH
    2.6.9

@@ -19,7 +19,7 @@
   #               main container by setting the page title and descriptive labels.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Aplicações",
+           page_title: "Lista de Aplicações",
            page_desc: "Visualize todas as transações de investimento e resgate registradas.",
            current_view: "datatable" do
 %>
@@ -39,8 +39,9 @@
       "Valor",
       "Cotas",
       "Valor da cota",
+      "Alocação de resgate",
       "Pedido em",
-      "Liquidado em"
+      "Liquidado em",
     ],
 
     # Explanation:: This collection holds visual icons to accompany the column
@@ -52,6 +53,7 @@
       "banknote",
       "percent",
       "calculator",
+      "arrow-down-to-line",
       "calendar-plus",
       "calendar-check-2"
     ],
@@ -65,52 +67,77 @@
       #               linked to the transaction. It ensures the primary asset is
       #               visible and works by safely navigating the investment links.
       ->(app) do
-        fund_name = app.fund_investment&.investment_fund&.fund_name
-        content_tag(:span, "#{fund_name}", class: "font-medium")
+        normalize_title(app.fund_investment&.investment_fund&.fund_name)
       end,
 
       # Explanation:: This logic displays the specific portfolio name where the
       #               investment resides. It clarifies asset location and works
       #               by rendering the name in a distinct, uppercase mono font.
       ->(app) do
-        portfolio_name = app.fund_investment&.portfolio&.name
-        content_tag(:span, "#{portfolio_name}", class: "font-normal text-muted font-mono uppercase")
+        normalize_fk(app.fund_investment&.portfolio&.name)
       end,
 
       # Explanation:: This instruction formats the total financial value into a
       #               standardized currency layout. It highlights the transaction
       #               scale and works by converting raw numbers into Brazilian Reais.
       ->(app) do
-        colored_currency(app.financial_value)
+        normalize_currency(app.financial_value)
       end,
 
       # Explanation:: This line displays the quantity of ownership units acquired
       #               during the transaction. It shows the investment volume and
       #               works by applying clean numerical formatting to the quota count.
       ->(app) do
-        colored_numerical(app.number_of_quotas)
+        normalize_number(app.number_of_quotas)
       end,
 
       # Explanation:: This function shows the price per quota used at the moment
       #               of application. It provides a price reference point and
       #               works by rendering the unit value in a clear currency format.
       ->(app) do
-        colored_currency(app.quota_value_at_application)
+        normalize_currency(app.quota_value_at_application)
+      end,
+
+      ->(app) do
+        # Explanation:: This condition verifies if the quota count is defined.
+        #               If the record lacks this data, it returns a pending
+        #               status badge to signal that the setup is incomplete.
+        return normalize_badge("Pendente") if app.number_of_quotas.blank?
+
+        # Explanation:: This line calculates the current allocation volume.
+        #               It subtracts available quotas from the total to show
+        #               how much of the investment has already been distributed.
+        allocated = app.number_of_quotas - app.available_quotas
+
+        # Explanation:: This line builds the descriptive allocation label.
+        #               It combines the current usage with the total capacity
+        #               using standard numeric formatting for easy comparison.
+        label = safe_join(
+          [
+            allocated,
+            " / ",
+            app.number_of_quotas
+          ]
+        )
+        # Explanation:: This call utilizes the boolean badge helper for status.
+        #               It assigns a red style if the item is fully allocated
+        #               and a green style if there is still room for more quotas.
+        normalize_boolean(app.fully_allocated?, label, label)
       end,
 
       # Explanation:: This instruction presents the exact date when the user
       #               requested the transaction. It tracks the start of the
       #               process and works by applying a friendly timestamp format.
       ->(app) do
-        formatted_timestamp(app.request_date)
+        normalize_date(app.request_date)
       end,
 
       # Explanation:: This logic shows the completion date when the transaction
       #               was fully settled. It confirms the finalization and works
       #               by converting the liquidation date into a readable string.
       ->(app) do
-        formatted_timestamp(app.liquidation_date)
-      end
+        normalize_date(app.liquidation_date)
+      end,
     ],
 
     # Explanation:: This attribute provides the actual list of application objects

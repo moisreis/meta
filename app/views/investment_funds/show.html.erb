@@ -47,9 +47,9 @@
     <%= render "partials/route/dashboard/card",
                card_title: "CNPJ",
                card_icon: "file-text",
-               status: :primary do
+               status: :teal do
     %>
-      <%= @investment_fund.cnpj %>
+      <%= normalize_code(@investment_fund.cnpj) %>
     <% end %>
 
     <%# Explanation:: This card identifies the institution responsible for managing
@@ -60,7 +60,7 @@
                card_title: "Administrador",
                card_icon: "building-2" do
     %>
-      <%= @investment_fund.administrator_name %>
+      <%= normalize_text(@investment_fund.administrator_name) %>
     <% end %>
 
     <%# Explanation:: This card shows the parent fund relationship to clarify the
@@ -71,7 +71,7 @@
                card_title: "Fundo Originador",
                card_icon: "git-branch" do
     %>
-      <%= @investment_fund.originator_fund.presence || "N/A" %>
+      <%= normalize_text(@investment_fund.originator_fund.presence) %>
     <% end %>
 
     <%# Explanation:: This card highlights when the fund was first entered into
@@ -80,9 +80,10 @@
       %>
     <%= render "partials/route/dashboard/card",
                card_title: "Cadastrado em",
-               card_icon: "calendar-plus" do
+               card_icon: "calendar-plus",
+               card_data: normalize_card_time_ago(@investment_fund.created_at) do
     %>
-      <%= formatted_timestamp(@investment_fund.created_at) %>
+      <%= normalize_date(@investment_fund.created_at) %>
     <% end %>
   <% end %>
 
@@ -98,16 +99,18 @@
              headers: ["Artigo", "Número", "Benchmark", "Observações"],
              column_icons: ["file-text", "hash", "target", "info"],
              body_procs: [
-               ->(ifa) { link_to(ifa.normative_article.display_name, normative_article_path(ifa.normative_article), class: "hover:underline") },
-               ->(ifa) { content_tag(:span, ifa.normative_article.article_number.presence || "N/A", class: "font-mono text-sm") },
                ->(ifa) do
-                 if ifa.normative_article.has_benchmark?
-                   content_tag(:span, "#{number_with_precision(ifa.normative_article.benchmark_target, precision: 2)}%", class: "badge badge-success")
-                 else
-                   content_tag(:span, "N/A", class: "text-muted")
-                 end
+                 normalize_title(ifa.normative_article.display_name)
                end,
-               ->(ifa) { ifa.note.presence || content_tag(:span, "—", class: "text-muted") }
+               ->(ifa) do
+                 normalize_text(ifa.normative_article.article_number.presence)
+               end,
+               ->(ifa) do
+                 normalize_percentage(ifa.normative_article.benchmark_target)
+               end,
+               ->(ifa) do
+                 normalize_text(ifa.note.presence)
+               end,
              ]
   %>
 
@@ -117,7 +120,7 @@
     %>
   <%= render "partials/route/dashboard/section",
              section_title: "Métricas de Adoção",
-             section_desc: "Estatísticas de uso do fundo em portfólios",
+             section_desc: "Estatísticas de uso do fundo em carteiras",
              columns: 4 do
   %>
 
@@ -126,11 +129,11 @@
       #               by performing a count on the associated portfolio records.
       %>
     <%= render "partials/route/dashboard/card",
-               card_title: "Portfólios Ativos",
+               card_title: "Carteiras Ativas",
                card_icon: "briefcase",
-               is_success: true do
+               status: :default do
     %>
-      <%= @investment_fund.portfolios.count %>
+      <%= normalize_number(@investment_fund.portfolios.count) %>
     <% end %>
 
     <%# Explanation:: This card displays the sum of all money currently invested
@@ -140,9 +143,9 @@
     <%= render "partials/route/dashboard/card",
                card_title: "Total Investido",
                card_icon: "banknote",
-               is_success: true do
+               status: :teal do
     %>
-      <%= standard_currency(@investment_fund.total_invested) %>
+      <%= normalize_currency(@investment_fund.total_invested) %>
     <% end %>
 
     <%# Explanation:: This card identifies the most recent price per unit to provide
@@ -153,7 +156,7 @@
                card_title: "Cotação Atual",
                card_icon: "chart-line" do
     %>
-      <%= @investment_fund.latest_quota_value ? standard_currency(@investment_fund.latest_quota_value) : "N/A" %>
+      <%= normalize_currency(@investment_fund.latest_quota_value) %>
     <% end %>
 
     <%# Explanation:: This card counts the number of separate allocation records
@@ -164,7 +167,7 @@
                card_title: "Alocações Ativas",
                card_icon: "chart-pie" do
     %>
-      <%= @investment_fund.fund_investments.count %>
+      <%= normalize_number(@investment_fund.fund_investments.count) %>
     <% end %>
   <% end %>
 
@@ -186,7 +189,7 @@
                data_source: @investment_fund.fund_investments.includes(portfolio: :user).map { |fi|
                  ["#{fi.portfolio.name} (#{fi.portfolio.user.full_name})", fi.total_invested_value || 0]
                }.to_h,
-               chart_title: "Distribuição por Portfólio",
+               chart_title: "Distribuição por Carteira",
                chart_options: {
                  prefix: "R$ ",
                  thousands: ".",
@@ -228,11 +231,21 @@
              headers: ["Carteira", "Proprietário", "Alocação", "Valor Investido", "Cotas Detidas"],
              column_icons: ["wallet", "user", "shuffle", "banknote", "percent"],
              body_procs: [
-               ->(fi) { link_to(fi.portfolio.name, portfolio_path(fi.portfolio), class: "hover:underline") },
-               ->(fi) { content_tag(:span, fi.portfolio.user.full_name) },
-               ->(fi) { colored_percentage(fi.percentage_allocation) },
-               ->(fi) { colored_currency(fi.total_invested_value) },
-               ->(fi) { colored_numerical(fi.total_quotas_held) }
+               ->(fi) do
+                 normalize_title(fi.portfolio.name)
+               end,
+               ->(fi) do
+                 normalize_text(fi.portfolio.user.full_name)
+               end,
+               ->(fi) do
+                 normalize_percentage(fi.percentage_allocation)
+               end,
+               ->(fi) do
+                 normalize_currency(fi.total_invested_value)
+               end,
+               ->(fi) do
+                 normalize_number(fi.total_quotas_held)
+               end,
              ]
   %>
 
@@ -291,27 +304,27 @@
              collection: @investment_fund.fund_valuation.order(date: :desc).limit(10),
              action_path: nil,
              action_name: nil,
-             headers: ["Data", "Valor da Cota", "Variação", "Atualizado há"],
+             headers: ["Data", "Valor da Cota", "Variação", "Atualizado em"],
              column_icons: ["calendar", "calculator", "trending-up-down", "clock"],
              body_procs: [
-               ->(val) { formatted_timestamp(val.date) },
-               ->(val) { colored_currency(val.quota_value, "h-auto") },
+               ->(val) do
+                 normalize_date(val.date)
+               end,
+               ->(val) do
+                 normalize_currency(val.quota_value)
+               end,
                ->(val) do
                  previous_val = @investment_fund.fund_valuation.where("date < ?", val.date).order(date: :desc).first
-                 if previous_val && previous_val.quota_value
-                   change = ((val.quota_value - previous_val.quota_value) / previous_val.quota_value * 100).round(2)
-                   if change > 0
-                     content_tag(:span, "+#{change}%", class: "badge badge-success")
-                   elsif change < 0
-                     content_tag(:span, "#{change}%", class: "badge badge-danger")
-                   else
-                     content_tag(:span, "0%", class: "text-muted font-mono")
-                   end
-                 else
-                   content_tag(:span, "N/A", class: "text-muted")
-                 end
+
+                 return normalize_no_data unless previous_val&.quota_value
+
+                 change = ((val.quota_value - previous_val.quota_value) / previous_val.quota_value * 100)
+
+                 normalize_trend(change, format: :percentage)
                end,
-               ->(val) { "#{time_ago_in_words(val.date)}" }
+               ->(val) do
+                 normalize_date(val.date)
+               end,
              ]
   %>
 <% end %>

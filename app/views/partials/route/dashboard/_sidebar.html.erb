@@ -16,90 +16,117 @@
   #        - Why: It ensures the user never gets lost by keeping essential
   #               tools and navigation options visible at all times.
   %>
-<aside class="flex flex-col col-span-2 h-screen max-h-screen sticky overflow-y-scroll no-scrollbar top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-neutral-50">
+<aside class="flex flex-col justify-start items-center h-screen w-16 max-h-screen sticky overflow-y-scroll no-scrollbar top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-white border-r border-border">
 
-  <div class="h-12 bg-transparent grid grid-cols-1 items-center justify-center">
+  <div class="h-16 bg-transparent items-center justify-center">
 
-    <div class="flex flex-row items-center justify-between gap-1 w-full h-12 px-6">
+    <div class="flex flex-row items-center justify-between gap-1 w-full">
       <%= render "partials/modules/logo", size: 24 %>
     </div>
   </div>
 
-  <div class="flex flex-col !gap-6 py-6">
+  <div class="flex flex-col h-full !justify-between [&>div]:flex [&>div]: [&>div]:flex-col [&>div]:!gap-3 [&>div]:!py-6 [&>div]:items-center [&>div]:justify-center [&>div]:w-full">
 
-    <%# Explanation:: This section generates menus for each data category.
+    <div>
+      <%= link_to authenticated_root_path,
+                  class: "button button-accent button-icon" do
+      %>
+        <%= inline_svg_tag "icons/home.svg" %>
+      <% end %>
+      <%= link_to edit_user_path(current_user),
+                  class: "button button-ghost button-icon" do
+      %>
+        <%= inline_svg_tag "icons/settings-2.svg" %>
+      <% end %>
+
+      <div class="w-full h-[1px] border-t border-border"></div>
+
+      <%# Explanation:: This section generates menus for each data category.
       #               It creates buttons to list existing items or add
       #               new ones for every model like Portfolios or Users.
       %>
-    <%= crud_nav_for Portfolio,
-                     singular: "Carteira",
-                     plural: "Carteiras",
-                     icons: {
-                       index: "wallet.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for User,
-                     singular: "Usuário",
-                     plural: "Usuários",
-                     icons: {
-                       index: "users.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for InvestmentFund,
-                     singular: "Fundo",
-                     plural: "Fundos",
-                     icons: {
-                       index: "chart-pie.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for FundInvestment,
-                     singular: "Alocação",
-                     plural: "Alocações",
-                     icons: {
-                       index: "badge-percent.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for Application,
-                     singular: "Aplicação",
-                     plural: "Aplicações",
-                     icons: {
-                       index: "arrow-left-right.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for Redemption,
-                     singular: "Resgate",
-                     plural: "Resgates",
-                     icons: {
-                       index: "circle-minus.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for NormativeArticle,
-                     singular: "Norma",
-                     plural: "Normas",
-                     icons: {
-                       index: "scale.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for FundValuation,
-                     singular: "CVM",
-                     plural: "CVM",
-                     icons: {
-                       index: "calendar-setting.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for EconomicIndex,
-                     singular: "Índice",
-                     plural: "Índices",
-                     icons: {
-                       index: "trending-up.svg",
-                       new: "plus.svg"
-                     } %>
-    <%= crud_nav_for EconomicIndexHistory,
-                     singular: "Histórico",
-                     plural: "Históricos",
-                     icons: {
-                       index: "calendar-clock.svg",
-                       new: "plus.svg"
-                     } %>
+      <%= crud_nav_for Portfolio,
+                       singular: "Carteira",
+                       plural: "Carteiras",
+                       icons: {
+                         index: "wallet.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for User,
+                       singular: "Usuário",
+                       plural: "Usuários",
+                       icons: {
+                         index: "users.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for InvestmentFund,
+                       singular: "Fundo",
+                       plural: "Fundos",
+                       icons: {
+                         index: "chart-pie.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for FundInvestment,
+                       singular: "Alocação",
+                       plural: "Alocações",
+                       icons: {
+                         index: "badge-percent.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for Application,
+                       singular: "Aplicação",
+                       plural: "Aplicações",
+                       icons: {
+                         index: "arrow-left-right.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for Redemption,
+                       singular: "Resgate",
+                       plural: "Resgates",
+                       icons: {
+                         index: "circle-minus.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for NormativeArticle,
+                       singular: "Norma",
+                       plural: "Normas",
+                       icons: {
+                         index: "scale.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for FundValuation,
+                       singular: "CVM",
+                       plural: "CVM",
+                       icons: {
+                         index: "calendar-setting.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for EconomicIndex,
+                       singular: "Índice",
+                       plural: "Índices",
+                       icons: {
+                         index: "trending-up.svg",
+                         new: "plus.svg"
+                       } %>
+      <%= crud_nav_for EconomicIndexHistory,
+                       singular: "Histórico",
+                       plural: "Históricos",
+                       icons: {
+                         index: "calendar-clock.svg",
+                         new: "plus.svg"
+                       } %>
+    </div>
+
+    <div>
+      <%= button_to destroy_user_session_path,
+                    method: :delete,
+                    data: {
+                      turbo_confirm: "Tem certeza que deseja sair?"
+                    },
+                    class: "button button-danger button-icon",
+                    form: { style: "display: flex; align-items: center;" } do %>
+        <%= inline_svg_tag "icons/log-out.svg" %>
+      <% end %>
+    </div>
   </div>
 </aside>

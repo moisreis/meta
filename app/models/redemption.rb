@@ -1,27 +1,3 @@
-# === redemption
-#
-# @author Moisés Reis
-# @added 11/28/2025
-# @package *Meta*
-# @description This model represents a single financial redemption transaction made by a client.
-#              It holds all necessary information about the withdrawal, including dates, values, and the linked investment.
-# @category *Model*
-#
-# Usage:: - *[What]* It manages the record of money withdrawn from an investment fund.
-#         - *[How]* It establishes relationships with investment and allocation records,
-#           validates the data integrity, and provides methods to check the status and calculate values.
-#         - *[Why]* It is necessary to track the history, status, and financial results
-#           of all client withdrawals for reporting and compliance purposes.
-#
-# Attributes:: - *fund_investment_id* @integer - identifies the specific investment record from which the redemption is made.
-#              - *redeemed_liquid_value* @decimal - stores the final amount of money received by the client after all fees and taxes.
-#              - *redeemed_quotas* @decimal - represents the number of quotas (shares) sold back to the fund.
-#              - *redemption_yield* @decimal - tracks the net financial gain or loss (return) resulting specifically from this redemption.
-#              - *redemption_type* @string - indicates the nature of the withdrawal (e.g., partial, total, emergency).
-#              - *request_date* @date - records the day the client formally initiated the redemption request.
-#              - *cotization_date* @date - records the day the redemption's quota value is officially calculated and fixed.
-#              - *liquidation_date* @date - records the day the final money is actually deposited into the client's bank account.
-#
 class Redemption < ApplicationRecord
 
   # Explanation:: This establishes a mandatory one-to-one relationship where a Redemption belongs to a **FundInvestment** record.

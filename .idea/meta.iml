@@ -173,6 +173,7 @@
     <orderEntry type="library" scope="PROVIDED" name="unicode-emoji (v4.1.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="uri (v1.1.1, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="useragent (v0.16.11, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="victor (v0.5.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="warden (v1.2.9, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="web-console (v4.2.1, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="websocket (v1.2.11, ruby-3.4.7-p58) [gem]" level="application" />
@@ -180,6 +181,7 @@
     <orderEntry type="library" scope="PROVIDED" name="websocket-extensions (v0.1.5, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="xpath (v3.2.0, ruby-3.4.7-p58) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="zeitwerk (v2.7.3, ruby-3.4.7-p58) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="zlib (v3.2.1, ruby-3.4.7-p58) [gem]" level="application" />
   </component>
   <component name="RModuleSettingsStorage">
     <LOAD_PATH number="0" />

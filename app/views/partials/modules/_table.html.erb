@@ -6,6 +6,7 @@
   #
   # Description: Renders a dynamic data table. Presents sortable headers,
   #              structured rows, and action buttons for each record.
+  #              Action buttons are conditionally displayed based on available routes.
   #
   # Usage: - What: Displays a complete HTML table using the provided columns
   #                and models. Allows sorting and record-level actions.
@@ -15,12 +16,11 @@
   #        - Why:  Enables consistent, reusable table rendering across the
   #                application while keeping logic centralized.
   %>
-<div class="rounded-base overflow-hidden">
-
+<div class="p-3 rounded-base border border-border bg-white overflow-x-auto">
   <table class="max-w-full border-separate border-spacing-y-1.5 [&>thead]:max-w-full[&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 w-full text-sm table-auto">
 
     <thead>
-    <tr class="[&>th]:w-auto [&>th]:p-1.5 [&>th]:px-3 [&>th]:text-sm [&>th]:text-muted [&>th]:text-left [&>th]:capitalize [&>th]:font-medium [&>th]:font-body">
+    <tr class="[&>th]:w-auto [&>th]:whitespace-nowrap [&>th]:p-0 [&>th]:px-3 [&>th]:text-sm [&>th]:text-body [&>th]:text-left [&>th]:capitalize [&>th]:font-semibold [&>th]:font-body">
 
       <%# [Variable] Ensures columns_header exists.
         #            Provides a fallback empty array when no header is given.
@@ -64,7 +64,7 @@
         #        Produces one table row per record.
         %>
     <% models.each_with_index do |model, row_index| %>
-      <tr class="odd:bg-table-bg hover:bg-table-hover odd:[&>td]:border-y odd:[&>td]:border-border odd:[&>td:first-child]:border-l odd:[&>td:first-child]:rounded-l-base odd:[&>td:last-child]:border-r odd:[&>td:last-child]:rounded-r-base [&>td]:w-auto [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm">
+      <tr class="odd:bg-neutral-50 hover:bg-neutral-100 odd:[&>td]:border-none odd:[&>td]:border-border odd:[&>td:first-child]:border-l odd:[&>td:first-child]:rounded-l-base odd:[&>td:last-child]:border-r odd:[&>td:last-child]:rounded-r-base [&>td]:w-auto [&>td]:whitespace-nowrap [&>td]:text-left [&>td]:p-0 [&>td]:px-3 [&>td]:text-sm">
         <%# [Loop] Iterates through each column configuration.
             #        Selects the correct value for each cell.
             %>
@@ -92,44 +92,61 @@
           </td>
         <% end %>
 
-        <td class="min-h-9 flex flex-col justify-center items-center">
+        <%# [ActionButton] Conditionally renders action menu if any routes exist for this model.
+            #                Only shows the menu button and options if at least one action is available.
+            %>
+        <% if show_action_menu?(model) %>
+          <td class="min-h-9 flex flex-col justify-center items-center">
 
-          <%# [ActionButton] Refers to the ActionMenu. %>
-          <%= button_tag type: 'button',
-                         class: 'button button-ghost button-small row-options-button',
-                         data: { tippy_target: "#options-menu-#{model.id}" } do
-          %>
-            <%= inline_svg_tag "icons/ellipsis.svg" %>
-          <% end %>
+            <%# [ActionButton] Refers to the ActionMenu. %>
+            <%= button_tag type: 'button',
+                           class: 'button button-ghost button-small row-options-button',
+                           data: { tippy_target: "#options-menu-#{model.id}" } do
+            %>
+              <%= inline_svg_tag "icons/ellipsis.svg" %>
+            <% end %>
 
-          <!-- [ActionMenu] -->
-          <div class="options-content" id="options-menu-<%= model.id %>" style="display: none;">
-            <div class="flex flex-col gap-1.5 w-full justify-start items-start">
-              <%= link_to edit_polymorphic_path(model),
-                          data: { turbo: false },
-                          class: 'button button-ghost button-small w-full justify-start' do
-              %>
-                <%= inline_svg_tag "icons/settings-2.svg" %>
-                <%= content_tag :span, "Editar" %>
-              <% end %>
-              <%= link_to polymorphic_path(model),
-                          data: { turbo: false },
-                          class: 'button button-ghost button-small w-full justify-start' do %>
-                <%= inline_svg_tag "icons/external-link.svg" %>
-                <%= content_tag :span, "Ver" %>
-              <% end %>
-              <%= link_to polymorphic_path(model),
-                          data: {
-                            turbo_method: :delete,
-                            turbo_confirm: "Tem certeza que deseja deletar este registro?"
-                          },
-                          class: 'button button-ghost button-small w-full justify-start' do %>
-                <%= inline_svg_tag "icons/trash.svg" %>
-                <%= content_tag :span, "Deletar" %>
-              <% end %>
+            <!-- [ActionMenu] Conditionally rendered action buttons based on available routes -->
+            <div class="options-content" id="options-menu-<%= model.id %>" style="display: none;">
+              <div class="flex flex-col gap-1.5 w-full justify-start items-start">
+
+                <%# [Edit Button] Only shown if edit route exists for this model %>
+                <% if route_exists_for?(model, :edit) %>
+                  <%= link_to edit_polymorphic_path(model),
+                              data: { turbo: false },
+                              class: 'button button-ghost button-small w-full justify-start' do
+                  %>
+                    <%= inline_svg_tag "icons/settings-2.svg" %>
+                    <%= content_tag :span, "Editar" %>
+                  <% end %>
+                <% end %>
+
+                <%# [Show Button] Only shown if show route exists for this model %>
+                <% if route_exists_for?(model, :show) %>
+                  <%= link_to polymorphic_path(model),
+                              data: { turbo: false },
+                              class: 'button button-ghost button-small w-full justify-start' do %>
+                    <%= inline_svg_tag "icons/external-link.svg" %>
+                    <%= content_tag :span, "Ver" %>
+                  <% end %>
+                <% end %>
+
+                <% if route_exists_for?(model, :destroy) %>
+                  <%= button_to polymorphic_path(model),
+                                method: :delete,
+                                data: { turbo_confirm: "Tem certeza que deseja deletar este registro?" },
+                                class: "button button-ghost button-small w-full justify-start" do %>
+                    <%= inline_svg_tag "icons/trash.svg" %>
+                    <%= content_tag :span, "Deletar" %>
+                  <% end %>
+                <% end %>
+              </div>
             </div>
-          </div>
-        </td>
+          </td>
+        <% else %>
+          <%# [EmptyCell] Renders empty cell when no actions are available %>
+          <td></td>
+        <% end %>
       </tr>
     <% end %>
     </tbody>

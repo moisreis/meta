@@ -1,167 +1,66 @@
-# ================================================================
-# Seed para popular os dados de Performance da Carteira Jacoprev
-# Baseado no PDF enviado pelo cliente
-# Data de referência: Dezembro 2025
-# ================================================================
-
-puts "🔍 Buscando carteira Jacoprev..."
-
-# Encontra a carteira Jacoprev
-portfolio = Portfolio.find_by(name: "Carteira Jacoprev")
-
-unless portfolio
-  puts "❌ ERRO: Carteira Jacoprev não encontrada!"
-  exit
-end
-
-puts "✅ Carteira encontrada: #{portfolio.name} (ID: #{portfolio.id})"
-puts ""
-
-# ================================================================
-# DADOS DE PERFORMANCE POR FUNDO (do PDF)
-# ================================================================
-
-performance_data = [
-  {
-    cnpj: "10.740.670/0001-06",
-    fund_name: "CAIXA BRASIL IRF-M 1",
-    monthly_return: 1.13,    # Rentabilidade do Fundo (%)
-    earnings: 4541.37        # Rendimento (R$)
-  },
-  {
-    cnpj: "05.164.356/0001-84",
-    fund_name: "CAIXA BRASIL TÍTULOS PÚBLICOS LP",
-    monthly_return: 1.16,
-    earnings: 6328.47
-  },
-  {
-    cnpj: "23.215.097/0001-55",
-    fund_name: "CAIXA BRASIL GESTÃO ESTRATÉGICA",
-    monthly_return: 0.26,
-    earnings: 227.62
-  },
-  {
-    cnpj: "23.215.008/0001-70",
-    fund_name: "CAIXA BRASIL MATRIZ",
-    monthly_return: 1.16,
-    earnings: 3415.63
-  },
-  {
-    cnpj: "03.737.206/0001-97",
-    fund_name: "CAIXA BRASIL FI REFERENCIADO DI LP",
-    monthly_return: 1.22,
-    earnings: 3503.95
-  },
-  {
-    cnpj: "11.061.217/0001-28",
-    fund_name: "CAIXA BRASIL IMA-GERAL",
-    monthly_return: 0.76,
-    earnings: 1231.63
-  }
+# ── Índices econômicos ─────────────────────────────────────────
+indices = [
+  { name: 'CDI',             abbreviation: 'CDI',        description: 'Certificado de Depósito Interbancário' },
+  { name: 'IPCA',            abbreviation: 'IPCA',       description: 'Índice Nacional de Preços ao Consumidor Amplo' },
+  { name: 'IMA-GERAL',       abbreviation: 'IMAGERAL',   description: 'Índice de Mercado ANBIMA Geral' },
+  { name: 'IMA-B',           abbreviation: 'IMAB',       description: 'IMA atrelado ao IPCA' },
+  { name: 'IMA-B 5',         abbreviation: 'IMAB5',      description: 'IMA-B com prazo até 5 anos' },
+  { name: 'IRF-M 1',         abbreviation: 'IRFM1',      description: 'Índice de Renda Fixa de Mercado até 1 ano' },
+  { name: 'IDKA IPCA 2A',    abbreviation: 'IDKAIPCA2A', description: 'Índice de Duration Constante ANBIMA IPCA 2 anos' },
+  { name: 'Ibovespa',        abbreviation: 'IBOVESPA',   description: 'Índice Bovespa' },
+  { name: 'Meta',            abbreviation: 'META',       description: 'Meta atuarial / benchmark da política de investimentos' },
 ]
 
-# Período de referência (último mês completo)
-reference_period = Date.new(2025, 12, 31) # 31 de dezembro de 2025
+indices.each do |attrs|
+  idx = EconomicIndex.find_or_initialize_by(name: attrs[:name])
 
-puts "📊 Criando registros de performance..."
-puts "📅 Período de referência: #{reference_period.strftime('%B %Y')}"
-puts "=" * 70
+  idx.abbreviation = attrs[:abbreviation]
+  idx.description  = attrs[:description]
 
-created_count = 0
-error_count = 0
-total_earnings = 0
-
-performance_data.each_with_index do |data, index|
-  print "#{index + 1}/#{performance_data.size} - #{data[:fund_name][0..40]}... "
-
-  # Busca o fundo pelo CNPJ
-  fund = InvestmentFund.find_by(cnpj: data[:cnpj])
-
-  unless fund
-    puts "❌ Fundo não encontrado!"
-    error_count += 1
-    next
-  end
-
-  # Busca o FundInvestment correspondente
-  fund_investment = FundInvestment.find_by(
-    portfolio_id: portfolio.id,
-    investment_fund_id: fund.id
-  )
-
-  unless fund_investment
-    puts "❌ Alocação não encontrada!"
-    error_count += 1
-    next
-  end
-
-  # Verifica se já existe registro de performance para este período
-  existing = PerformanceHistory.find_by(
-    portfolio_id: portfolio.id,
-    fund_investment_id: fund_investment.id,
-    period: reference_period
-  )
-
-  if existing
-    # Atualiza o registro existente
-    existing.update!(
-      monthly_return: data[:monthly_return],
-      earnings: data[:earnings]
-    )
-    puts "✅ Atualizado (ID: #{existing.id})"
-  else
-    # Cria novo registro
-    performance = PerformanceHistory.create!(
-      portfolio_id: portfolio.id,
-      fund_investment_id: fund_investment.id,
-      period: reference_period,
-      monthly_return: data[:monthly_return],
-      yearly_return: nil,  # Pode ser calculado depois se necessário
-      last_12_months_return: nil,  # Pode ser calculado depois se necessário
-      earnings: data[:earnings]
-    )
-    puts "✅ Criado (ID: #{performance.id})"
-    created_count += 1
-  end
-
-  total_earnings += data[:earnings]
+  idx.save!
 end
 
-puts "=" * 70
-puts ""
 
-# ================================================================
-# RESUMO FINAL
-# ================================================================
+puts "✅ #{EconomicIndex.count} índices econômicos cadastrados."
 
-puts "📈 RESUMO DA PERFORMANCE"
-puts "=" * 70
-puts "Período: #{reference_period.strftime('%B/%Y')}"
-puts "Registros criados: #{created_count}"
-puts "Erros: #{error_count}"
-puts ""
+# ── Valores mensais de exemplo (2025) ─────────────────────────
+sample_values = {
+  'CDI'        => {
+    Date.new(2025,1,31) => 1.01, Date.new(2025,2,28) => 0.99,
+    Date.new(2025,3,31) => 0.96, Date.new(2025,4,30) => 1.06,
+    Date.new(2025,5,31) => 1.14, Date.new(2025,6,30) => 1.10
+  },
+  'IPCA'       => {
+    Date.new(2025,1,31) => 0.16, Date.new(2025,2,28) => 1.31,
+    Date.new(2025,3,31) => 0.56, Date.new(2025,4,30) => 0.43,
+    Date.new(2025,5,31) => 0.26, Date.new(2025,6,30) => 0.24
+  },
+  'IMAGERAL'   => {
+    Date.new(2025,1,31) => 1.40, Date.new(2025,2,28) => 0.79,
+    Date.new(2025,3,31) => 1.27, Date.new(2025,4,30) => 1.68,
+    Date.new(2025,5,31) => 1.25, Date.new(2025,6,30) => 1.27
+  },
+  'IBOVESPA'   => {
+    Date.new(2025,1,31) => 4.86, Date.new(2025,2,28) => -2.64,
+    Date.new(2025,3,31) => 6.08, Date.new(2025,4,30) => 3.69,
+    Date.new(2025,5,31) => 1.45, Date.new(2025,6,30) => 1.33
+  },
+  'META'       => {
+    Date.new(2025,1,31) => 0.56, Date.new(2025,2,28) => 1.72,
+    Date.new(2025,3,31) => 0.97, Date.new(2025,4,30) => 0.84,
+    Date.new(2025,5,31) => 0.66, Date.new(2025,6,30) => 0.64
+  },
+}
 
-puts "💰 ANÁLISE DE RENDIMENTO"
-puts "-" * 70
-puts "Total de Rendimentos: R$ #{total_earnings.round(2)}"
-puts "Valor da Carteira: R$ #{portfolio.total_invested_value.to_f.round(2)}"
+sample_values.each do |abbr, monthly|
+  idx = EconomicIndex.find_by!(abbreviation: abbr)
 
-# Calcula rentabilidade média da carteira
-portfolio_return = (total_earnings / portfolio.total_invested_value.to_f) * 100
-puts "Rentabilidade da Carteira: #{portfolio_return.round(2)}%"
-puts ""
-
-puts "📊 PERFORMANCE POR FUNDO"
-puts "-" * 70
-
-# Lista todos os registros de performance criados
-PerformanceHistory.where(
-  portfolio_id: portfolio.id,
-  period: reference_period
-).includes(fund_investment: :investment_fund).order('monthly_return DESC').each do |ph|
-  fund_name = ph.fund_investment.investment_fund.fund_name
-  puts "#{ph.monthly_return}% - R$ #{ph.earnings} - #{fund_name[0..50]}"
+  monthly.each do |date, value|
+    EconomicIndexHistory.find_or_create_by!(
+      economic_index: idx,
+      date: date
+    ) { |h| h.value = value }
+  end
 end
 
-puts ""
-puts "🎉 Seed de performance concluído!"
+puts "✅ Histórico de índices inserido."

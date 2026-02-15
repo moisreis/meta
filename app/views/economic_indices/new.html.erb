@@ -21,8 +21,8 @@
   #               to guide the user through the registration process.
   %>
 <%= render 'partials/route/dashboard/wrapper',
-           page_title: "Criar novo fundo",
-           page_desc: "Cadastro de novo fundo de investimento." do
+           page_title: "Criar índice econômico",
+           page_desc: "Cadastro de novo índice econômico." do
 %>
 
   <%# Explanation:: This shared partial generates the actual input fields needed to
@@ -31,7 +31,7 @@
     #               custom labels and icons for the final submission button.
     %>
   <%= render "form",
-             investment_fund: @investment_fund,
+             economic_index: @economic_index,
              button_name: "Adicionar",
              icon_name: "plus" %>
 <% end %>

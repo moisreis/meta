@@ -57,39 +57,35 @@
     #               fund information; it is used to handle data extraction
     #               and works by executing symbols or functions for every record.
     columns_body: [
-      :fund_name,
-      :administrator_name,
+      ->(investment_fund) do
+        normalize_title(investment_fund.fund_name)
+      end,
+
+      ->(investment_fund) do
+        normalize_text(investment_fund.administrator_name)
+      end,
 
       # Explanation:: This function displays the official tax ID (CNPJ) in a
       #               monospaced font for easy reading; it is used for precise
       #               identification and works by wrapping the text in a styled span.
       ->(investment_fund) do
-        content_tag(
-          :span,
-          investment_fund.cnpj,
-          class: "font-mono"
-        )
+        normalize_code(investment_fund.cnpj)
+
       end,
 
       # Explanation:: This instruction calculates and formats the total capital
       #               held in the fund; it is used to show financial status
       #               and works by converting raw numbers into colored currency text.
       ->(investment_fund) do
-        colored_currency(investment_fund.total_invested)
+        normalize_currency(investment_fund.total_invested)
       end,
 
       # Explanation:: This logic identifies if the fund belongs to a parent
       #               group to show hierarchy; it is used for organizational
       #               clarity and works by fetching the originator name if it exists.
       ->(investment_fund) do
-        if investment_fund.originator_fund.present?
-          content_tag(:span,
-                      investment_fund.originator_fund,
-                      class: "font-medium")
-        else
-          content_tag(:span, "N/A", class: "text-muted")
-        end
-      end,
+        normalize_text(investment_fund.originator_fund)
+      end
     ],
 
     # Explanation:: This attribute provides the actual list of fund objects

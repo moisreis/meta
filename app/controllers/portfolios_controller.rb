@@ -1,19 +1,10 @@
-# === portfolios_controller
-#
-# @author Moisés Reis
-# @updated 01/02/2026 - Added PDF export functionality
-# @package Meta
-# @description This controller manages a user's Portfolio records, handling the
-#              listing, creation, modification, deletion, and PDF export.
-# @category Controller
-
 class PortfoliosController < ApplicationController
   include PdfExportable
+  include MonthlyReportable
 
   before_action :authenticate_user!
-  before_action :set_portfolio, only: %i[ show edit update destroy ]
+  before_action :set_portfolio, only: %i[show edit update destroy monthly_report run_calculations]
 
-  # == index
   def index
     base_scope =
       if current_user.admin?
@@ -38,34 +29,35 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # == show
-  # == show
   def show
+
     @portfolio = Portfolio.for_user(current_user).find(params[:id])
 
-    # Dados de alocação (gráfico de pizza)
     @allocation_data = @portfolio.fund_investments.includes(:investment_fund).map do |fi|
       [fi.investment_fund.fund_name, fi.percentage_allocation || 0]
     end
 
-    # Dados de transações (gráfico de linha)
     @monthly_flows = calculate_monthly_flows(@portfolio)
 
-    # ================================================================
-    # DADOS DE PERFORMANCE
-    # ================================================================
-
-    # Busca o período mais recente com dados de performance
-    # Tenta o mês atual primeiro, senão pega o mais recente disponível
     @reference_period = Date.current.end_of_month
 
-    # Performance de cada fundo no período
     @recent_performance = @portfolio.performance_histories
                                     .where(period: @reference_period)
                                     .includes(fund_investment: :investment_fund)
-                                    .order('monthly_return DESC')
 
-    # Se não tem dados para o mês atual, pega o período mais recente
+    @institution_distribution = @portfolio.fund_investments
+                                          .includes(:investment_fund)
+                                          .group_by { |fi| fi.investment_fund.administrator_name }
+                                          .map { |admin, investments| [admin, investments.sum { |fi| fi.percentage_allocation || 0 }] }
+
+    @equity_evolution = @portfolio.value_timeline(12)
+
+    @monthly_earnings_history = @portfolio.performance_histories
+                                          .where('period > ?', 12.months.ago)
+                                          .group_by { |ph| ph.period.beginning_of_month }
+                                          .map { |date, phs| [date.strftime('%b/%y'), phs.sum(&:earnings)] }
+                                          .sort_by { |date_str, _| Date.strptime(date_str, '%b/%y') }
+
     if @recent_performance.empty?
       latest_period = @portfolio.performance_histories.maximum(:period)
       if latest_period
@@ -73,39 +65,52 @@ class PortfoliosController < ApplicationController
         @recent_performance = @portfolio.performance_histories
                                         .where(period: @reference_period)
                                         .includes(fund_investment: :investment_fund)
-                                        .order('monthly_return DESC')
       end
     end
 
-    # Cálculos dos totais da carteira
+    @recent_performance = @recent_performance.order('monthly_return DESC')
+
+    @total_earnings = BigDecimal('0')
+    @portfolio_return = BigDecimal('0')
+    @portfolio_yearly_return = BigDecimal('0')
+    @portfolio_12m_return = BigDecimal('0')
+
     if @recent_performance.any?
-      # Rendimento Total = soma dos rendimentos de todos os fundos
       @total_earnings = @recent_performance.sum(:earnings)
 
-      # Rentabilidade da Carteira = (Rendimento Total / Valor Investido) * 100
-      @portfolio_return = if @portfolio.total_invested_value > 0
-                            (@total_earnings / @portfolio.total_invested_value) * 100
-                          else
-                            0
-                          end
-    else
-      @total_earnings = 0
-      @portfolio_return = 0
+      weighted_return = BigDecimal('0')
+      weighted_yearly = BigDecimal('0')
+      weighted_12m = BigDecimal('0')
+      total_allocation = BigDecimal('0')
+
+      @recent_performance.each do |perf|
+        allocation = perf.fund_investment.percentage_allocation || BigDecimal('0')
+        total_allocation += allocation
+
+        weighted_return += (perf.monthly_return || 0) * allocation
+        weighted_yearly += (perf.yearly_return || 0) * allocation
+        weighted_12m    += (perf.last_12_months_return || 0) * allocation
+      end
+
+      if total_allocation > 0
+        @portfolio_return = weighted_return / total_allocation
+        @portfolio_yearly_return = weighted_yearly / total_allocation
+        @portfolio_12m_return = weighted_12m / total_allocation
+      end
     end
   end
 
-  # == new
   def new
     @portfolio = Portfolio.new
   end
 
-  # == edit
   def edit
   end
 
-  # == create
   def create
     @portfolio = Portfolio.new(portfolio_params.except(:shared_user_id))
+
+    flash[:notice] = "Carteira criada com sucesso."
 
     respond_to do |format|
       if @portfolio.save
@@ -126,7 +131,6 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # == update
   def update
     respond_to do |format|
       if @portfolio.update(portfolio_params.except(:shared_user_id))
@@ -148,19 +152,24 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # == destroy
   def destroy
     @portfolio.destroy!
+
+    flash[:notice] = "Carteira deletada com sucesso."
+
     respond_to do |format|
       format.html { redirect_to portfolios_path, notice: "Portfolio was successfully destroyed.", status: :see_other }
     end
   end
 
-  private
+  def run_calculations
 
-  # == PDF Export Configuration Methods
-  #
-  # These methods configure the PDF export functionality provided by PdfExportable
+    PerformanceCalculationJob.perform_later
+
+    redirect_to portfolio_path(@portfolio), notice: "Cálculo iniciado em segundo plano!"
+  end
+
+  private
 
   def pdf_export_title
     "Carteiras"
@@ -225,7 +234,6 @@ class PortfoliosController < ApplicationController
   end
 
   def pdf_export_data
-    # Explanation:: Use the same scope and filters as the index action
     base_scope = if current_user.admin?
                    Portfolio.all
                  else
@@ -239,12 +247,8 @@ class PortfoliosController < ApplicationController
   def pdf_export_metadata
     {
       'Gerado por' => current_user.full_name,
-      # 'E-mail' => current_user.email,
-      # 'Total de carteiras' => pdf_export_data.size.to_s
     }
   end
-
-  # == Original Private Methods
 
   def calculate_monthly_flows(portfolio)
     monthly_data = []
@@ -252,7 +256,7 @@ class PortfoliosController < ApplicationController
     12.times do |i|
       month_start = i.months.ago.beginning_of_month
       month_end = month_start.end_of_month
-      month_label = month_start.strftime('%b/%y')
+      month_label = month_start.strftime('%b/%Y')
 
       applications_sum = portfolio.fund_investments
                                   .joins(:applications)

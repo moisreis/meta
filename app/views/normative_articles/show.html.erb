@@ -48,7 +48,7 @@
                card_title: "Número do Artigo",
                card_icon: "file-text" do
     %>
-      <%= @normative_article.article_number.presence || "N/A" %>
+      <%= normalize_text(@normative_article.article_number.presence) %>
     <% end %>
 
     <%# Explanation:: This card presents the human-readable name of the normative rule to
@@ -59,7 +59,7 @@
                card_title: "Nome do Artigo",
                card_icon: "file-check" do
     %>
-      <%= @normative_article.article_name.presence || "N/A" %>
+      <%= normalize_text(@normative_article.article_name.presence) %>
     <% end %>
 
     <%# Explanation:: This card shows the specific percentage target used as a performance
@@ -69,15 +69,9 @@
     <%= render "partials/route/dashboard/card",
                card_title: "Meta de Benchmark",
                card_icon: "target",
-               card_data: @normative_article.has_benchmark? ? "Definida" : "Não definida",
-               card_data_icon: @normative_article.has_benchmark? ? "check" : "x",
-               is_success: @normative_article.has_benchmark? do
+               status: card_status_boolean_for(@normative_article.has_benchmark?) do
     %>
-      <% if @normative_article.has_benchmark? %>
-        <%= number_with_precision(@normative_article.benchmark_target, precision: 2) %>%
-      <% else %>
-        N/A
-      <% end %>
+      <%= normalize_number(@normative_article.benchmark_target) %>
     <% end %>
 
     <%# Explanation:: This numeric card tracks how many different investment funds are
@@ -88,7 +82,7 @@
                card_title: "Fundos Vinculados",
                card_icon: "coins" do
     %>
-      <%= @normative_article.investment_funds.count %>
+      <%= normalize_number(@normative_article.investment_funds.count) %>
     <% end %>
   <% end %>
 
@@ -115,51 +109,17 @@
              ],
              body_procs: [
                ->(ifa) do
-                 content_tag(:div, class: "flex flex-col") do
-                   concat link_to(ifa.investment_fund.fund_name, investment_fund_path(ifa.investment_fund), class: "font-medium hover:underline")
-                 end
+                 normalize_title(ifa.investment_fund.fund_name)
                end,
-               ->(ifa) { content_tag(:span, ifa.investment_fund.cnpj, class: "font-mono text-sm") },
-               ->(ifa) { content_tag(:span, ifa.investment_fund.administrator_name) },
-               ->(ifa) { ifa.note.presence || content_tag(:span, "N/A", class: "text-muted font-mono") }
+               ->(ifa) do
+                 normalize_code(ifa.investment_fund.cnpj)
+               end,
+               ->(ifa) do
+                 normalize_text(ifa.investment_fund.administrator_name)
+               end,
+               ->(ifa) do
+                 normalize_text(ifa.note.presence)
+               end,
              ]
   %>
-
-  <%# Explanation:: This metadata section provides an audit trail for the database
-    #               record's history. It identifies when the article was first added
-    #               and when it was last modified to ensure the data is current.
-    %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Metadados",
-             section_desc: "Informações do sistema",
-             columns: 2,
-             has_action: false do
-  %>
-
-    <%# Explanation:: This info card displays the original registration timestamp of the
-      #               article. It calculates how long ago the entry was created and
-      #               works by formatting the system date into a readable text block.
-      %>
-    <%= render "partials/blocks/info-card",
-               title: "Data de Criação",
-               subtitle: "Quando o artigo foi registrado",
-               main_value: formatted_timestamp(@normative_article.created_at),
-               sub_value: "#{time_ago_in_words(@normative_article.created_at)} atrás",
-               icon_name: "calendar-plus",
-               main_color: "secondary"
-    %>
-
-    <%# Explanation:: This info card shows the timestamp of the most recent change
-      #               made to the article record. it serves as a verification tool
-      #               to ensure users are reviewing the most up-to-date regulations.
-      %>
-    <%= render "partials/blocks/info-card",
-               title: "Última Atualização",
-               subtitle: "Quando o artigo foi modificado",
-               main_value: formatted_timestamp(@normative_article.updated_at),
-               sub_value: "#{time_ago_in_words(@normative_article.updated_at)} atrás",
-               icon_name: "calendar-check-2",
-               main_color: "secondary"
-    %>
-  <% end %>
 <% end %>

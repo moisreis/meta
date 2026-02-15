@@ -86,17 +86,17 @@
      *  This palette defines lighter and darker shades for hover,
      *  focus, and disabled states.
      */
-    --color-primary-50: #f3faf9;
-    --color-primary-100: #d5f2eb;
-    --color-primary-200: #ace3d8;
-    --color-primary-300: #7acebf;
-    --color-primary-400: #4eb3a4;
-    --color-primary-500: #38a193;
-    --color-primary-600: #287970;
-    --color-primary-700: #24615c;
-    --color-primary-800: #204f4b;
-    --color-primary-900: #1f423f;
-    --color-primary-950: #0d2625;
+    --color-primary-50: oklch(98.4% 0.0087 185.262);
+    --color-primary-100: oklch(95.57% 0.0309 185.391);
+    --color-primary-200: oklch(91.3% 0.0582 183.18);
+    --color-primary-300: oklch(85.76% 0.0841 183.818);
+    --color-primary-400: oklch(76.53% 0.0944 185.057);
+    --color-primary-500: oklch(67.91% 0.0878 185.786);
+    --color-primary-600: oklch(57.12% 0.074 185.786);
+    --color-primary-700: oklch(48.8% 0.0614 189.57);
+    --color-primary-800: oklch(41.03% 0.0503 189.757);
+    --color-primary-900: oklch(35.69% 0.0414 191.74);
+    --color-primary-950: oklch(25.37% 0.0313 194.658);
 
     /*
      *  Sets the text colors used throughout the application.
@@ -261,6 +261,18 @@
     --color-currency-900: #2c497f;
     --color-currency-950: #1e2d4d;
 
+    --color-indigo-50: oklch(96.2% 0.018 272.314);
+    --color-indigo-100: oklch(93% 0.034 272.788);
+    --color-indigo-200: oklch(87% 0.065 274.039);
+    --color-indigo-300: oklch(78.5% 0.115 274.713);
+    --color-indigo-400: oklch(67.3% 0.182 276.935);
+    --color-indigo-500: oklch(58.5% 0.233 277.117);
+    --color-indigo-600: oklch(51.1% 0.262 276.966);
+    --color-indigo-700: oklch(45.7% 0.24 277.023);
+    --color-indigo-800: oklch(39.8% 0.195 277.366);
+    --color-indigo-900: oklch(35.9% 0.144 278.697);
+    --color-indigo-950: oklch(25.7% 0.09 281.288);
+
     /*
      *  Sets the numerical values shade background color
      *  to be shown in the datatables
@@ -277,6 +289,18 @@
     --color-numerical-900: #3a5710;
     --color-numerical-950: #1c3003;
 
+    --color-inchworm-50: oklch(98.6% 0.0342 117.618);
+    --color-inchworm-100: oklch(96.71% 0.0743 119.178);
+    --color-inchworm-200: oklch(93.81% 0.1407 121.103);
+    --color-inchworm-300: oklch(89.71% 0.2167 123.34);
+    --color-inchworm-400: oklch(84.23% 0.2503 125.939);
+    --color-inchworm-500: oklch(77.02% 0.2367 128.354);
+    --color-inchworm-600: oklch(65.02% 0.2021 129.122);
+    --color-inchworm-700: oklch(53.32% 0.1639 128.373);
+    --color-inchworm-800: oklch(45.35% 0.1365 126.909);
+    --color-inchworm-900: oklch(40.53% 0.1117 126.904);
+    --color-inchworm-950: oklch(27.42% 0.0796 127.858);
+
     /*
      *  Sets the percentage values shade background color
      *  to be shown in the datatables
@@ -292,6 +316,30 @@
     --color-percentage-800: #6137a0;
     --color-percentage-900: #512f83;
     --color-percentage-950: #321c59;
+
+    --color-teal-50: oklch(98.4% 0.014 180.72);
+    --color-teal-100: oklch(95.3% 0.051 180.801);
+    --color-teal-200: oklch(91% 0.096 180.426);
+    --color-teal-300: oklch(85.5% 0.138 181.071);
+    --color-teal-400: oklch(77.7% 0.152 181.912);
+    --color-teal-500: oklch(70.4% 0.14 182.503);
+    --color-teal-600: oklch(60% 0.118 184.704);
+    --color-teal-700: oklch(51.1% 0.096 186.391);
+    --color-teal-800: oklch(43.7% 0.078 188.216);
+    --color-teal-900: oklch(38.6% 0.063 188.416);
+    --color-teal-950: oklch(27.7% 0.046 192.524);
+
+    --color-honeysuckle-50: oklch(98.56% 0.0609 111.587);
+    --color-honeysuckle-100: oklch(96.69% 0.1538 112.884);
+    --color-honeysuckle-200: oklch(94.23% 0.2467 114.169);
+    --color-honeysuckle-300: oklch(90.99% 0.2377 113.942);
+    --color-honeysuckle-400: oklch(85.7% 0.219 111.079);
+    --color-honeysuckle-500: oklch(78.91% 0.1985 108.774);
+    --color-honeysuckle-600: oklch(66.96% 0.1616 100.626);
+    --color-honeysuckle-700: oklch(54.79% 0.1295 92.161);
+    --color-honeysuckle-800: oklch(46.79% 0.1104 88.751);
+    --color-honeysuckle-900: oklch(41.64% 0.0982 88.155);
+    --color-honeysuckle-950: oklch(28.22% 0.0667 84.996);
 
     /*
      * ------------------------------
@@ -397,7 +445,7 @@
     input[type=submit],
     button,
     .button {
-        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base text-sm text-primary-50 font-body font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus:border-primary-100 focus:ring-primary-100/50 focus:ring-[3px] focus-visible:border-primary-100 focus-visible:ring-primary-100/50 focus-visible:ring-[3px] aria-invalid:ring-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 hover:bg-primary-600/90 active:bg-primary-600/80 px-3 py-1.5 has-[>svg]:px-3 shadow-xs [&>svg]:stroke-primary-50 [&>svg]:size-3.5 cursor-pointer focus-visible:scale-90 active:scale-90
+        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base text-sm text-primary-50 font-body font-medium transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-primary-100 focus:outline-primary-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-primary-100 focus-visible:outline-offset-2 focus-visible:outline-primary-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 hover:bg-primary-600/90 active:bg-primary-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-primary-50 [&>svg]:size-3.5 cursor-pointer
     }
 
     /*
@@ -410,7 +458,7 @@
      * ------------------------------
      */
     .button-small {
-        @apply !h-fit !px-2.5 !py-0.75
+        @apply !h-7 !px-2.5 !py-0.75
     }
 
     /*
@@ -421,7 +469,7 @@
      * ------------------------------
      */
     .button-icon {
-        @apply [&>svg]:!size-16 !h-9 !w-9 !p-2
+        @apply [&>svg]:!size-4 !h-9 !w-9 !p-2
     }
 
     /*
@@ -434,7 +482,7 @@
      * ------------------------------
      */
     .button-secondary {
-        @apply border text-primary-900 bg-primary-50 hover:!bg-primary-50/90 border-primary-100 [&>svg]:!stroke-primary-900
+        @apply text-primary-900 bg-primary-50 hover:!bg-primary-50/90 [&>svg]:!stroke-primary-900
     }
 
     /*
@@ -447,7 +495,15 @@
      * ------------------------------
      */
     .button-danger {
-        @apply border border-border text-danger-700 bg-white hover:!bg-white !border-danger-100 !shadow-none [&>svg]:!stroke-danger-700
+        @apply text-danger-700 bg-danger-50 hover:!bg-danger-50/90 !shadow-none [&>svg]:!stroke-danger-700
+    }
+
+    .button-numerical {
+        @apply text-primary-50 bg-primary-500 hover:!bg-primary-500/90 !shadow-none [&>svg]:!stroke-primary-50
+    }
+
+    .button-honeysuckle {
+        @apply text-body bg-honeysuckle-200 hover:!bg-honeysuckle-200/90 !shadow-none [&>svg]:!stroke-body
     }
 
     /*
@@ -491,18 +547,6 @@
 
     /*
      * ------------------------------
-     *  button-sidebar
-     *
-     *  Defines the visual style for the buttons
-     *  that live in the sidebar
-     * ------------------------------
-     */
-    .button-sidebar {
-        @apply bg-accent border !border-border shadow-xs text-body hover:!bg-accent/90 active:!bg-accent/80 [&>svg]:!stroke-body
-    }
-
-    /*
-     * ------------------------------
      *  button-accent
      *
      *  Defines an alternative style for
@@ -510,7 +554,7 @@
      * ------------------------------
      */
     .button-accent {
-        @apply bg-accent shadow-xs text-body hover:!bg-accent/90 active:!bg-accent/80 [&>svg]:!stroke-body
+        @apply bg-neutral-100 shadow-xs text-body hover:!bg-neutral-100/90 active:!bg-neutral-100/80 [&>svg]:!stroke-body
     }
 
     /*
@@ -525,7 +569,7 @@
      * ------------------------------
      */
     .badge {
-        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-2xs font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none border border-primary-100 bg-primary-50 text-primary-700 h-fit shadow-xs w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3
+        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-2xs font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-primary-50 text-primary-700 h-fit w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3 border
     }
 
     /*
@@ -538,7 +582,20 @@
      * ------------------------------
      */
     .badge-outline {
-        @apply bg-white border border-border text-body [&>svg]:stroke-body;
+        @apply bg-white !border border-border text-body [&>svg]:stroke-body;
+    }
+
+    /*
+ * ------------------------------
+ *  badge-outline
+ *
+ *  Sets the badge variant with a neutral outline.
+ *  Applies a clean white background and subtle border.
+ *  Keeps the badge visually lightweight for low-emphasis labels.
+ * ------------------------------
+ */
+    .badge-accent {
+        @apply bg-accent border border-border text-body [&>svg]:stroke-body;
     }
 
     /*
@@ -552,6 +609,18 @@
      */
     .badge-secondary {
         @apply bg-secondary-50 border-secondary-100 text-secondary-600 [&>svg]:stroke-secondary-600;
+    }
+
+    .badge-teal {
+        @apply bg-teal-50 border-teal-100 text-teal-600 [&>svg]:stroke-teal-600;
+    }
+
+    .badge-honeysuckle {
+        @apply bg-honeysuckle-50 border-honeysuckle-100 text-honeysuckle-600 [&>svg]:stroke-honeysuckle-600;
+    }
+
+    .badge-indigo {
+        @apply bg-indigo-50 border-indigo-100 text-indigo-600 [&>svg]:stroke-indigo-600;
     }
 
     /*
@@ -603,6 +672,14 @@
         @apply bg-currency-50 border-currency-100 text-currency-600 [&>svg]:stroke-currency-600;
     }
 
+    .badge-inchworm {
+        @apply bg-inchworm-50 border-inchworm-100 text-inchworm-600 [&>svg]:stroke-inchworm-600;
+    }
+
+    .badge-indigo {
+        @apply bg-indigo-50 border-indigo-100 text-indigo-600 [&>svg]:stroke-indigo-600;
+    }
+
     /*
      * ------------------------------
      *  badge-numerical
@@ -612,7 +689,7 @@
      * ------------------------------
      */
     .badge-numerical {
-        @apply bg-numerical-600 border-numerical-600 text-numerical-50 [&>svg]:stroke-numerical-50;
+        @apply bg-numerical-50 border-numerical-100 text-numerical-600 [&>svg]:stroke-numerical-600;
     }
 
     /*
@@ -635,5 +712,23 @@
     .no-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;
+    }
+
+    /* width */
+    ::-webkit-scrollbar {
+        height: calc(var(--spacing) * 1);
+        width: calc(var(--spacing) * 1);
+    }
+
+    /* Track */
+    ::-webkit-scrollbar-track {
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+        background: var(--color-indigo-300);
+        border-radius: var(--radius-base);
     }
 }

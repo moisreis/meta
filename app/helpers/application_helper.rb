@@ -151,7 +151,6 @@ module ApplicationHelper
     link_to params.permit!.merge(q: (params[:q] || {}).merge(s: new_sort)) do
       content_tag(:div, class: "flex flex-row gap-1 items-center") do
         safe_join([
-                    inline_svg_tag("icons/#{custom_icon}.svg", class: "size-6 bg-numerical-100 stroke-numerical-900 rounded-base p-1.5"),
                     name,
                     inline_svg_tag("icons/#{icon}.svg", class: "size-3 stroke-body")
                   ])
@@ -196,95 +195,82 @@ module ApplicationHelper
     SHADE_STEPS[index]
   end
 
-  # == colored_currency
-  #
-  # @author Moisés Reis
-  # @category *Read*
-  #
-  # Read:: Displays a currency amount with a background color that
-  #        becomes darker for larger values. Helps users visually
-  #        compare monetary figures at a glance.
-  #
+  # == Shared helpers ==========================================================
+
+  # Explanation:: Validates that the value is present, numeric, and non-zero.
+  def valid_nonzero_number?(value)
+    value.present? && value.respond_to?(:to_f) && value.to_f != 0
+  end
+
+  # Explanation:: Resolves semantic color based on value sign.
+  def sign_color_class(numeric_value)
+    return "text-danger-600"  if numeric_value.negative?
+    return "text-alert-600" if numeric_value == 0
+    return "text-body" if numeric_value.positive?
+  end
+
+  # Explanation:: Base CSS classes used by all colored helpers.
+  def colored_base_classes(additional_class = "")
+    [
+      "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium",
+      additional_class
+    ].join(" ")
+  end
+
+  # == colored_currency ========================================================
+
   def colored_currency(value, additional_class = "")
+    return content_tag(:span, "Sem dados", class: "badge badge-alert") unless valid_nonzero_number?(value)
 
-    # Explanation:: Returns a neutral placeholder when the value is blank or zero.
-    #               Prevents meaningless values from being styled or displayed.
-    return content_tag(:span, "N/A", class: "text-muted") unless value.present? && value.to_f != 0
+    numeric_value = value.to_f
 
-    # Explanation:: Determines how intense the color should be for the value.
-    #               Uses shade_for_value to pick the correct shade step.
-    shade = shade_for_value(value)
-
-    # Explanation:: Builds the HTML span showing the formatted currency and
-    #               applies a class that encodes the chosen shade level.
     content_tag(
       :span,
       number_to_currency(value, unit: "R$ ", separator: ",", delimiter: "."),
-      class: "shade px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium currency-shade-#{shade} #{additional_class}"
+      class: [
+        colored_base_classes(additional_class),
+        sign_color_class(numeric_value)
+      ].join(" ")
     )
   end
 
-  # == colored_numerical
-  #
-  # @author Moisés Reis
-  # @category *Read*
-  #
-  # Read:: Displays a numerical amount with a background color that
-  #        becomes darker for larger values. Helps users visually
-  #        compare numerical figures at a glance.
-  #
+  # == colored_numerical =======================================================
+
   def colored_numerical(value, additional_class = "")
+    return content_tag(:span, "Sem dados", class: "badge badge-alert") unless valid_nonzero_number?(value)
 
-    # Explanation:: Returns a neutral placeholder when the value is blank or zero.
-    #               Prevents meaningless values from being styled or displayed.
-    return content_tag(:span, "N/A", class: "text-muted") unless value.present? && value.to_f != 0
+    numeric_value = value.to_f
+    formatted_value = number_with_precision(numeric_value, precision: 1)
 
-    # Explanation:: Determines how intense the color should be for the value.
-    #               Uses shade_for_value to pick the correct shade step.
-    shade = shade_for_value(value)
-
-    # Explanation:: Limits the precision of the numerical value
-    value = number_with_precision(value, precision: 1)
-
-    # Explanation:: Builds the HTML span showing the formatted numerical and
-    #               applies a class that encodes the chosen shade level.
     content_tag(
       :span,
-      value,
-      class: "shade px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium numerical-shade-#{shade} #{additional_class}"
+      formatted_value,
+      class: [
+        colored_base_classes(additional_class),
+        sign_color_class(numeric_value)
+      ].join(" ")
     )
   end
 
-  # == colored_percentage
-  #
-  # @author Moisés Reis
-  # @category *Read*
-  #
-  # Read:: Displays a percentage amount with a background color that
-  #        becomes darker for larger values. Helps users visually
-  #        compare percentage figures at a glance.
-  #
+  # == colored_percentage ======================================================
+
   def colored_percentage(value, additional_class = "")
+    return content_tag(:span, "Sem dados", class: "badge badge-alert") unless valid_nonzero_number?(value)
 
-    # Explanation:: Returns a neutral placeholder when the value is blank or zero.
-    #               Prevents meaningless values from being styled or displayed.
-    return content_tag(:span, "N/A", class: "text-muted") unless value.present? && value.to_f != 0
+    numeric_value = value.to_f
+    formatted_value = number_with_precision(numeric_value, precision: 1)
 
-    # Explanation:: Determines how intense the color should be for the value.
-    #               Uses shade_for_value to pick the correct shade step.
-    shade = shade_for_value(value, max_value: 100)
-
-    # Explanation:: Limits the precision of the numerical value
-    value = number_with_precision(value, precision: 1)
-
-    # Explanation:: Builds the HTML span showing the formatted percentage and
-    #               applies a class that encodes the chosen shade level.
     content_tag(
       :span,
-      "#{value}%",
-      class: "shade px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium percentage-shade-#{shade} #{additional_class}"
+      "#{formatted_value}%",
+      class: [
+        colored_base_classes(additional_class),
+        sign_color_class(numeric_value)
+      ].join(" ")
     )
   end
+
+
 
   # == formatted_timestamp
   #
@@ -299,7 +285,7 @@ module ApplicationHelper
 
     # Explanation:: Returns a placeholder when the datetime value is missing.
     #               Prevents errors and keeps the visual layout stable.
-    return content_tag(:span, "N/A", class: "font-mono text-muted") unless datetime.present?
+    return content_tag(:span, "Sem dados", class: "badge badge-alert") unless datetime.present?
 
     # Explanation:: Uses the formatter to turn the datetime into a formatted
     #               string. Allows injecting alternative formatting logic.
@@ -327,91 +313,7 @@ module ApplicationHelper
     )
   end
 
-  # == crud_nav_for
-  #
-  # @author Moisés Reis
-  # @category *Read*
-  #
-  # Read:: This method generates the full navigation group structure for a given model, including a header and a list of links for key actions.
-  #        It is used to create a dedicated section in the sidebar menu for a resource (like portfolios or funds).
-  #
-  # Attributes:: - *model_class* @Class - The resource class (e.g., `InvestmentFund`) used to find names and paths.
-  #             - *singular* @string - The display name for the single item (optional).
-  #             - *plural* @string - The display name for the collection of items (optional).
-  #             - *icons* @Hash - A hash to override default SVG icons for `index`, `new`, and `reports` links.
-  #
-  def crud_nav_for(model_class, singular: nil, plural: nil, icons: {})
-    singular ||= model_class.model_name.human
-    plural ||= model_class.model_name.human(count: 2)
-    resources = model_class.model_name.route_key
-    count = model_class.count
 
-    default_icons = {
-      index: "wallet.svg",
-      new: "plus.svg",
-      reports: "file-text.svg"
-    }
-
-    icon_set = default_icons.merge(icons.symbolize_keys)
-
-    items = [
-      {
-        icon: icon_set[:index],
-        text: "Visualizar".html_safe,
-        path: url_for(controller: "/#{resources}", action: :index)
-      },
-      {
-        icon: icon_set[:new],
-        text: "Adicionar",
-        path: url_for(controller: "/#{resources}", action: :new)
-      },
-    # {
-    #   icon: icon_set[:reports],
-    #   text: "Exportar",
-    #   path: url_for(controller: "/#{resources}", action: :index, reports: true)
-    # }
-    ]
-
-    # Generate unique ID for this navigation group
-    nav_id = "nav-#{resources}"
-
-    content_tag :div, class: "flex flex-col gap-1.5 items-start justify-start w-full pb-6 px-6" do
-      safe_join([
-                  content_tag(:div, class: "flex flex-row justify-between items-center w-full cursor-pointer", onclick: "const items = document.getElementById('#{nav_id}'); const chevron = this.querySelector('svg'); items.classList.toggle('hidden'); chevron.classList.toggle('rotate-180');") do
-                    safe_join([
-                                content_tag(:h3, plural, class: "text-2xs font-mono uppercase font-medium text-muted leading-0"),
-                                inline_svg_tag("icons/chevron-down.svg", class: "size-5 bg-white border border-border stroke-body rounded-base p-1 transition-transform duration-200"),
-                              ])
-                  end,
-
-                  content_tag(:div, id: nav_id, class: "flex flex-col gap-1 items-start justify-start w-full") do
-                    safe_join(items.map { |item| crud_nav_button(item) })
-                  end,
-                ])
-    end
-  end
-
-  def crud_nav_button(item)
-    active = current_page?(item[:path])
-
-    classes = [
-      "relative",
-      "button",
-      "button-small",
-      "w-full",
-      "!justify-start",
-      ("button-outline" if active),
-      ("[&>span>span]:text-muted" if active),
-      ("[&>svg]:bg-quaternary-100" if active),
-      ("[&>svg]:stroke-quaternary-900" if active),
-      ("button-link" unless active)
-    ].compact.join(" ")
-
-    link_to item[:path], class: classes do
-      inline_svg_tag("icons/#{item[:icon]}", class: "size-5 bg-white border border-border rounded-base p-1") +
-        content_tag(:span, item[:text].html_safe)
-    end
-  end
 
   # == precision_format
   #

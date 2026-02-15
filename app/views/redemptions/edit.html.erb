@@ -1,0 +1,10 @@
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Editar Resgate ##{@redemption.id}",
+           page_desc: "Atualize as informações do resgate conforme necessário." do
+%>
+  <%= render "form",
+             redemption: @redemption,
+             button_name: "Atualizar",
+             icon_name: "refresh-cw"
+  %>
+<% end %>
