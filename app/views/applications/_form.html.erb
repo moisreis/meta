@@ -38,7 +38,7 @@
                f: form,
                name: :fund_investment_id,
                label: "Investimento alvo",
-               options_collection: @fund_investments.map { |fi| ["#{fi.investment_fund.fund_name} | #{fi.portfolio.name}", fi.id] },
+               options_collection: @fund_investments.map { |fi| ["#{fi.investment_fund.fund_name}  |  #{fi.portfolio.name}", fi.id] },
                desc: "Escolha o fundo e a carteira onde a transação será registrada.",
                is_inactive: false
     %>
@@ -59,42 +59,12 @@
     <%= render "partials/modules/input-field",
                f: form,
                name: :financial_value,
-               label: "Valor financeiro da transaction",
+               label: "Valor aplicado",
                placeholder: "5000.00",
                desc: "O valor total (R$) investido ou resgatado na transação.",
-               field_type: :number_field,
+               field_type: :text_field,
                icon_name: "banknote",
                step: 0.01
-    %>
-
-    <%# Explanation:: This input records how many pieces or quotas of
-      #               the fund the user is acquiring or selling, using
-      #               high precision for small fractional amounts.
-      %>
-    <%= render "partials/modules/input-field",
-               f: form,
-               name: :number_of_quotas,
-               label: "Número de Cotas",
-               placeholder: "Ex: 100.50",
-               desc: "A quantidade de cotas compradas ou vendidas.",
-               field_type: :number_field,
-               icon_name: "layers",
-               step: 0.0001
-    %>
-
-    <%# Explanation:: This field stores the price of a single quota
-      #               at the time of the transaction, which is vital
-      #               for future performance calculations.
-      %>
-    <%= render "partials/modules/input-field",
-               f: form,
-               name: :quota_value_at_application,
-               label: "Valor da Cota na Aplicação",
-               placeholder: "Ex: 50.00",
-               desc: "O valor (R$) da cota no momento da transação.",
-               field_type: :number_field,
-               icon_name: "banknote-arrow-up",
-               step: 0.0001
     %>
   <% end %>
 
@@ -106,25 +76,11 @@
              fieldset_title: "Cronograma da Operação",
              fieldset_desc: "Registre as datas importantes de solicitação, cotização e liquidação financeira." do %>
 
-    <%# Explanation:: This date picker records the day the user
-      #               first requested the transaction, serving as
-      #               the initial point of the record.
-      %>
-    <%= render "partials/modules/date-field",
-               f: form,
-               name: :request_date,
-               label: "Data do pedido",
-               placeholder: "DD/MM/AAAA",
-               desc: "Data em que o pedido de aplicação ou resgate foi feito.",
-               field_type: :date_field,
-               icon_name: "calendar"
-    %>
-
     <%# Explanation:: This field tracks the specific day when the
       #               fund price was officially applied to the
       #               transaction for accounting purposes.
       %>
-    <%= render "partials/modules/date-field",
+    <%= render "partials/modules/input-field",
                f: form,
                name: :cotization_date,
                label: "Data de Cotização",
@@ -132,20 +88,6 @@
                desc: "Data em que a cota foi calculada e a transação efetivada.",
                field_type: :date_field,
                icon_name: "calculator"
-    %>
-
-    <%# Explanation:: This line records the final day when the
-      #               money actually moves between bank accounts
-      #               to complete the financial cycle.
-      %>
-    <%= render "partials/modules/date-field",
-               f: form,
-               name: :liquidation_date,
-               label: "Data de Liquidação",
-               placeholder: "DD/MM/AAAA",
-               desc: "Data em que o dinheiro efetivamente entra/sai da conta.",
-               field_type: :date_field,
-               icon_name: "file-text"
     %>
   <% end %>
 

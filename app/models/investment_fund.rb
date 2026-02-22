@@ -77,16 +77,8 @@ class InvestmentFund < ApplicationRecord
 
   accepts_nested_attributes_for :investment_fund_articles, allow_destroy: true
 
-  # == latest_quota_value
-  #
-  # @author Moisés Reis
-  # @category *Value*
-  #
-  # Value:: This method retrieves the most recent quota price (share value) available for the fund from the valuation history.
-  #         It is the standard method used by **FundInvestment** to calculate the current market value.
-  #
   def latest_quota_value
-    fund_valuation.order(date: :desc).first&.quota_value
+    quota_value_on(Date.current)
   end
 
   # == quota_value_on
@@ -100,7 +92,11 @@ class InvestmentFund < ApplicationRecord
   # Attributes:: - *@date* @date - The specific calendar date for which the price is required.
   #
   def quota_value_on(date)
-    fund_valuation.find_by(date: date)&.quota_value
+    fund_valuation
+      .where("date <= ?", date)
+      .where("EXTRACT(DOW FROM date) NOT IN (0, 6)")
+      .order(date: :desc)
+      .first&.quota_value
   end
 
   # == total_invested
@@ -134,5 +130,13 @@ class InvestmentFund < ApplicationRecord
       "originator_fund",
       "updated_at"
     ]
+  end
+
+  private
+
+  def business_days_until_today
+    # Busca nos últimos 7 dias para garantir que pega o último dia útil
+    # mesmo em feriados prolongados
+    (Date.current - 7.days)..Date.current
   end
 end

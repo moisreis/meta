@@ -24,18 +24,7 @@
 <div class="bg-neutral-50 rounded-base flex flex-col p-1" data-chart-id="<%= chart_id %>">
 
   <div class="w-full flex flex-row justify-between items-center h-9 px-3 py-1.5">
-    <%= content_tag :h3, chart_title, class: "text-body font-body text-sm font-medium" %>
-
-    <%= link_to "#",
-                class: "button button-outline button-small w-fit js-export-chart",
-                data: {
-                  chart_id: chart_id,
-                  chart_title: chart_title
-                } do %>
-      <%= inline_svg_tag("icons/file-attachment.svg") %>
-      <%= content_tag :span, "Exportar" %>
-    <% end %>
-
+    <%= content_tag :h3, chart_title, class: "font-heading text-body uppercase font-medium text-sm" %>
   </div>
 
   <div class="p-6 flex items-center justify-center bg-white rounded-base h-full">

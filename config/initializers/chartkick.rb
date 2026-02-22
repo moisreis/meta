@@ -20,12 +20,12 @@ Chartkick.options = {
   #               sequence of colors used when multiple datasets appear in a graph.
   #               It ensures visual consistency across every chart.
   colors: [
-    "#5295df",
+    "#615fff",
     "#91d60c",
     "#9573df",
-    "#17abba",
+    "#4faaa0",
     "#609ed2",
-    "#38a193"
+    "#00d5be"
   ],
 
   # Explanation:: This adds a currency prefix to values displayed on charts. It formats
@@ -65,7 +65,7 @@ Chartkick.options = {
     # Explanation:: This sets the default font applied across all chart text. It controls
     #               the family, size and weight so every chart uses the same typography.
     font: {
-      family: "'Noto Sans Mono'",
+      family: "'Geist Mono'",
       size: 12,
       weight: '400'
     },
@@ -129,7 +129,7 @@ Chartkick.options = {
           borderSkipped: true,
           borderWidth: 0,
           font: {
-            family: "'Noto Sans Mono'",
+            family: "'Geist Mono'",
             size: 12,
             weight: '400'
           },
@@ -155,7 +155,7 @@ Chartkick.options = {
         # Explanation:: This sets the font used in tooltip titles. It keeps titles readable
         #               and aligned with the app's typographic style.
         titleFont: {
-          family: "'Noto Sans Mono'",
+          family: "'Geist Mono'",
           size: 12,
           weight: '400',
           color: '#333333',
@@ -164,7 +164,7 @@ Chartkick.options = {
         # Explanation:: This sets the font for tooltip body text. It follows the same style
         #               rules to maintain visual balance inside the tooltip box.
         bodyFont: {
-          family: "'Noto Sans Mono'",
+          family: "'Geist Mono'",
           size: 12,
           weight: '400',
           color: '#8a8a8a',
@@ -178,7 +178,7 @@ Chartkick.options = {
       x: {
         ticks: {
           font: {
-            family: "'Noto Sans Mono'",
+            family: "'Geist Mono'",
             size: 12
           },
           color: '#8a8a8a',
@@ -191,7 +191,7 @@ Chartkick.options = {
       y: {
         ticks: {
           font: {
-            family: "'Noto Sans Mono'",
+            family: "'Geist Mono'",
             size: 12
           },
           color: '#8a8a8a'

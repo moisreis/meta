@@ -33,6 +33,10 @@ class PortfoliosController < ApplicationController
 
     @portfolio = Portfolio.for_user(current_user).find(params[:id])
 
+    @reference_date = params[:reference_date].present? ?
+                        Date.parse(params[:reference_date]) :
+                        Date.current
+
     @allocation_data = @portfolio.fund_investments.includes(:investment_fund).map do |fi|
       [fi.investment_fund.fund_name, fi.percentage_allocation || 0]
     end
@@ -69,33 +73,43 @@ class PortfoliosController < ApplicationController
     end
 
     @recent_performance = @recent_performance.order('monthly_return DESC')
+    @portfolio_yearly_return = @portfolio.portfolio_yearly_return_percentage(@reference_period)
 
-    @total_earnings = BigDecimal('0')
-    @portfolio_return = BigDecimal('0')
-    @portfolio_yearly_return = BigDecimal('0')
-    @portfolio_12m_return = BigDecimal('0')
+    @total_earnings          = BigDecimal('0')
+    @portfolio_return        = BigDecimal('0')
+    @portfolio_12m_return    = BigDecimal('0')
 
     if @recent_performance.any?
-      @total_earnings = @recent_performance.sum(:earnings)
 
-      weighted_return = BigDecimal('0')
-      weighted_yearly = BigDecimal('0')
-      weighted_12m = BigDecimal('0')
-      total_allocation = BigDecimal('0')
-
-      @recent_performance.each do |perf|
-        allocation = perf.fund_investment.percentage_allocation || BigDecimal('0')
-        total_allocation += allocation
-
-        weighted_return += (perf.monthly_return || 0) * allocation
-        weighted_yearly += (perf.yearly_return || 0) * allocation
-        weighted_12m    += (perf.last_12_months_return || 0) * allocation
+      effective_initial_balance = ->(perf) do
+        if perf.initial_balance&.positive?
+          perf.initial_balance
+        elsif perf.monthly_return&.nonzero? && perf.earnings
+          (perf.earnings / (perf.monthly_return / BigDecimal('100'))).abs
+        else
+          BigDecimal('0')
+        end
       end
 
-      if total_allocation > 0
-        @portfolio_return = weighted_return / total_allocation
-        @portfolio_yearly_return = weighted_yearly / total_allocation
-        @portfolio_12m_return = weighted_12m / total_allocation
+      total_initial_balance = @recent_performance.sum { |p| effective_initial_balance.call(p) }
+      @total_earnings        = @recent_performance.sum(:earnings)
+
+      if total_initial_balance > 0
+        # Monthly: total real gain divided by total capital at risk
+        @portfolio_return = (@total_earnings / total_initial_balance) * 100
+
+        # Yearly & 12m: initial_balance-weighted average of each fund's stored return
+        weighted_yearly = BigDecimal('0')
+        weighted_12m    = BigDecimal('0')
+
+        @recent_performance.each do |perf|
+          weight = effective_initial_balance.call(perf) / total_initial_balance
+
+          weighted_yearly += (perf.yearly_return         || 0) * weight
+          weighted_12m    += (perf.last_12_months_return || 0) * weight
+        end
+
+        @portfolio_12m_return    = weighted_12m
       end
     end
   end
@@ -167,6 +181,16 @@ class PortfoliosController < ApplicationController
     PerformanceCalculationJob.perform_later
 
     redirect_to portfolio_path(@portfolio), notice: "Cálculo iniciado em segundo plano!"
+  end
+
+  def monthly_report
+    report = PortfolioMonthlyReportGenerator.new(@portfolio)
+    pdf_data = report.generate
+
+    send_data pdf_data,
+              filename: "relatorio_#{@portfolio.name.parameterize}_#{Date.current}.pdf",
+              type: 'application/pdf',
+              disposition: 'inline'
   end
 
   private

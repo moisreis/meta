@@ -28,7 +28,8 @@
   error_message = has_error ? f.object.errors[name].first : nil
 %>
 
-
+<% step ||= nil %>
+<% inputmode ||= nil %>
 
 <%# Explanation:: Defines the CSS classes for the input label as an array for clarity.
   #               The elements are joined into a single string for use in the HTML attribute.
@@ -202,11 +203,13 @@
           name,
           placeholder: placeholder,
           class: full_input_classes,
+          step: step,
+          inputmode: inputmode,
           aria: {
             describedby: (desc.present? || has_error) ? "#{name}-desc" : nil,
             invalid: has_error
           },
-          html: { autocomplete: "off" }
+          autocomplete: "off"
         )
     %>
 

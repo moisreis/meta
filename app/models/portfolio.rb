@@ -92,6 +92,40 @@ class Portfolio < ApplicationRecord
     fund_investments.sum(:total_invested_value) || BigDecimal('0')
   end
 
+  def total_current_market_value
+    fund_investments.includes(:investment_fund, :applications, :redemptions)
+                    .sum { |fi| fi.current_market_value }
+  end
+
+  def total_gain
+    fund_investments.includes(:investment_fund, :applications, :redemptions)
+                    .sum { |fi| fi.total_gain }
+  end
+
+  def portfolio_return_percentage(reference_date = nil)
+    perfs = performance_histories
+              .where(period: reference_date || performance_histories.maximum(:period))
+              .includes(:fund_investment)
+
+    return BigDecimal('0') if perfs.empty?
+
+    total_alloc = perfs.sum { |p| p.fund_investment.percentage_allocation.to_d }
+    return BigDecimal('0') if total_alloc.zero?
+
+    weighted = perfs.sum { |p| p.monthly_return.to_d * p.fund_investment.percentage_allocation.to_d }
+    weighted / total_alloc
+  end
+
+  def current_market_value_on(date)
+    quota_value = investment_fund.quota_value_on(date)
+    return BigDecimal('0') unless quota_value
+
+    quotas = applications.where("cotization_date <= ?", date).sum(:number_of_quotas) -
+             redemptions.where("cotization_date <= ?", date).sum(:redeemed_quotas)
+
+    quotas * quota_value
+  end
+
   # == total_quotas_held
   #
   # @author Moisés Reis
@@ -102,6 +136,34 @@ class Portfolio < ApplicationRecord
   #
   def total_quotas_held
     fund_investments.sum(:total_quotas_held) || BigDecimal('0')
+  end
+
+  def portfolio_yearly_return_percentage(reference_date = nil)
+    period = reference_date || performance_histories.maximum(:period)
+    return BigDecimal('0') unless period
+
+    # Busca todos os snapshots do ano corrente
+    perfs = performance_histories
+              .where(period: period.beginning_of_year..period)
+              .includes(:fund_investment)
+
+    return BigDecimal('0') if perfs.empty?
+
+    # Agrupa por fundo e acumula
+    by_fi = perfs.group_by(&:fund_investment_id)
+
+    weighted = BigDecimal('0')
+    total_alloc = BigDecimal('0')
+
+    by_fi.each do |_, fund_perfs|
+      fi = fund_perfs.first.fund_investment
+      alloc = fi.percentage_allocation.to_d
+      accumulated = fund_perfs.sum { |p| p.monthly_return.to_d }
+      weighted += accumulated * alloc
+      total_alloc += alloc
+    end
+
+    total_alloc > 0 ? weighted / total_alloc : BigDecimal('0')
   end
 
   # == valid_allocations?

@@ -87,18 +87,11 @@
 
 <% badge_classes = ["badge", (theme[:badge]), ("badge-accent" if is_outline)].compact.join(" ") %>
 
-<div class="shadow-xs rounded-base h-56 flex flex-col justify-between items-start <%= theme[:card_bg] %> p-1">
-
-  <div class="flex flex-row justify-start gap-1.5 items-center w-full h-9 px-3 py-1.5">
-    <div class="p-1 rounded-base ">
-      <%= inline_svg_tag("icons/#{card_icon}.svg", class: "size-3.5") %>
-    </div>
-    <%= content_tag :h3, card_title, class: "font-body text-body capitalize font-medium text-sm" %>
-  </div>
+<div class="shadow-xs rounded-base h-56 flex flex-col justify-between items-start bg-accent p-1 pb-0">
 
   <div class="flex flex-col justify-between items-start gap-3 p-6 h-full w-full rounded-base bg-white">
 
-    <div class="text-2xl font-bold font-body line-clamp-1 <%= theme[:text] %>">
+    <div class="text-3xl font-normal line-clamp-1 text-muted">
       <%= yield %>
     </div>
 
@@ -119,5 +112,15 @@
         <%= content_tag :p, card_data %>
       </div>
     <% end %>
+  </div>
+
+  <div class="flex flex-row justify-start gap-1.5 items-center w-full h-12 px-3 py-1.5">
+
+    <div class="p-1 rounded-base">
+      <%= inline_svg_tag("icons/#{card_icon}.svg", class: "size-3.5") %>
+    </div>
+
+    <%= content_tag :h3, card_title, class: "font-heading text-body uppercase font-medium text-sm" %>
+
   </div>
 </div>

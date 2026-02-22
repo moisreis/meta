@@ -94,6 +94,23 @@ module NormalizeHelper
     content_tag(:span, formatted_money, class: classes, scope: "row")
   end
 
+  def normalize_quota(value)
+    return normalize_no_data if value.blank? || !valid_nonzero_number?(value)
+
+    classes = "#{BASE_CLASSES} font-mono"
+
+    formatted_money = number_to_currency(
+      value,
+      unit: "R$",
+      separator: ",",
+      delimiter: ".",
+      precision: 6
+    )
+
+    content_tag(:span, formatted_money, class: classes, scope: "row")
+  end
+
+
   def normalize_number(value)
     # Explanation:: This line checks if the number is present and valid.
     #               If the value is missing, it triggers the automatic

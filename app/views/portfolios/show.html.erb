@@ -27,31 +27,49 @@
 %>
 
   <%= render "partials/route/dashboard/section",
+             section_title: "Período de Referência",
+             columns: 1 do
+  %>
+    <%= form_with url: portfolio_path(@portfolio), method: :get, local: true do |f| %>
+      <%= render "partials/modules/select",
+                 f: f,
+                 name: :reference_date,
+                 label: "Data de referência",
+                 desc: "Selecione a data para visualizar os valores da carteira.",
+                 is_half_width: true,
+                 options_collection: @portfolio.performance_histories
+                                               .order(period: :desc)
+                                               .pluck(:period)
+                                               .map { |d| [l(d, format: :long), d] },
+                 is_inactive: false
+      %>
+      <%= f.submit "Aplicar", class: "button button-small button-secondary w-fit" %>
+    <% end %>
+  <% end %>
+
+  <%= render "partials/route/dashboard/section",
              section_title: "KPIs",
              columns: 4 do
   %>
-
     <%= render(
           "partials/route/dashboard/card",
           card_title: "Retorno de investimento",
           card_icon: "wallet",
-          card_data: normalize_card_percentage(@portfolio_return),
-          card_data_icon: card_data_icon_for(@total_earnings),
-          status: card_status_trend_for(@total_earnings)
+          card_data: normalize_card_percentage(@portfolio.portfolio_return_percentage),
+          card_data_icon: card_data_icon_for(@portfolio.total_gain),
+          status: card_status_trend_for(@portfolio.total_gain)
         ) do
     %>
-      <%= normalize_currency(@total_earnings) %>
+      <%= normalize_currency(@portfolio.total_gain) %>
     <% end %>
 
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Minha Carteira",
+          card_title: "Total da Carteira",
           card_icon: "banknote",
-          card_data: normalize_card_text("Valor de referência"),
-          status: :teal
-        ) do
+          ) do
     %>
-      <%= normalize_currency(@portfolio.total_invested_value) %>
+      <%= normalize_currency(@portfolio.total_current_market_value) %>
     <% end %>
 
     <%= render(
@@ -85,7 +103,7 @@
     <%= render "partials/groups/chart-list",
                chart_type: :line_chart,
                data_source: @monthly_earnings_history,
-               chart_title: "Rendimento Mensal (R$)",
+               chart_title: "Rendimento Mensal",
                chart_options: {
                  prefix: "R$ ",
                  thousands: ".",
@@ -102,19 +120,21 @@
                  prefix: "R$ ",
                  thousands: ".",
                  decimal: ",",
-                 points: false
+                 points: true,
+                 dataset: { borderWidth: 0 },
                }
     %>
 
     <%= render "partials/groups/chart-list",
                chart_type: :column_chart,
                data_source: @monthly_flows,
-               chart_title: "Movimentações (Aplicações vs Resgates)",
+               chart_title: "Movimentações",
                chart_options: {
                  stacked: false,
                  prefix: "R$ ",
                  thousands: ".",
-                 decimal: ","
+                 decimal: ",",
+                 dataset: { borderWidth: 0 }
                }
     %>
 
@@ -165,8 +185,8 @@
              collection: @portfolio.fund_investments.includes(:investment_fund),
              action_path: new_fund_investment_path(portfolio_id: @portfolio.id),
              action_name: "Nova alocação",
-             headers: ["Fundo", "Alocação", "Valor Investido", "Cotas"],
-             column_icons: ["layers", "shuffle", "banknote", "percent"],
+             headers: ["Fundo", "Alocação", "Aplicações", "Resgates", "Movimentação", "Cota mais recente", "Valor Final", "Rendimento", "Rent."],
+             column_icons: ["layers", "shuffle", "banknote", "percent", "banknote"],
              body_procs: [
                ->(fi) do
                  normalize_title(fi.investment_fund.fund_name)
@@ -175,11 +195,26 @@
                  normalize_percentage(fi.percentage_allocation)
                end,
                ->(fi) do
-                 normalize_currency(fi.total_invested_value)
+                 normalize_currency(fi.total_applications)
                end,
                ->(fi) do
-                 normalize_number(fi.total_quotas_held)
+                 normalize_currency(fi.total_redemptions)
                end,
+               ->(fi) do
+                 normalize_trend(fi.net_movement)
+               end,
+               ->(fi) do
+                 normalize_currency(fi.investment_fund.latest_quota_value)
+               end,
+               ->(fi) do
+                 normalize_currency(fi.current_market_value)
+               end,
+               ->(fi) do
+                 normalize_currency(fi.total_gain)
+               end,
+               ->(fi) do
+                 normalize_percentage(fi.period_return_percentage)
+               end
              ]
   %>
 
@@ -221,7 +256,7 @@
                color: "success",
                see_all_path: applications_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
                title_proc: ->(app) { app.fund_investment.investment_fund.fund_name },
-               value_proc: ->(app) { "+ R$#{app.financial_value}" },
+               value_proc: ->(app) { normalize_currency(app.financial_value) },
                sub_value_proc: ->(app) { "#{app.number_of_quotas} cotas" } %>
 
     <%# Explanation:: This list displays the five most recent withdrawals from the funds.
@@ -235,7 +270,7 @@
                color: "danger",
                see_all_path: redemptions_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
                title_proc: ->(red) { red.fund_investment.investment_fund.fund_name },
-               value_proc: ->(red) { "- R$#{red.redeemed_liquid_value}" },
+               value_proc: ->(red) { normalize_currency(red.redeemed_liquid_value) },
                sub_value_proc: ->(red) { "#{red.redeemed_quotas} cotas" } %>
 
   <% end %>

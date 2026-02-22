@@ -107,7 +107,7 @@
       # [Explanation]: This lambda function displays the quota value as Brazilian currency
       #                with proper formatting and monospace font for financial clarity.
       ->(fund_valuation) do
-        normalize_currency(
+        normalize_quota(
           fund_valuation.quota_value
         )
       end,
@@ -211,7 +211,7 @@
       label: "Data inicial",
       description: "Exibe cotações a partir desta data.",
       placeholder: "DD/MM/AAAA",
-      icon_name: "calendar-today",
+      icon_name: "calendar",
       type: "date"
     },
     {
@@ -219,7 +219,7 @@
       label: "Data final",
       description: "Exibe cotações até esta data.",
       placeholder: "DD/MM/AAAA",
-      icon_name: "calendar-month",
+      icon_name: "calendar",
       type: "date"
     },
     {
@@ -227,28 +227,28 @@
       label: "CNPJ do Fundo",
       description: "Filtra por parte ou todo o número do CNPJ.",
       placeholder: "XX.XXX.XXX/XXXX-XX",
-      icon_name: "badge"
+      icon_name: "hash"
     },
     {
       key: :investment_fund_fund_name_cont,
       label: "Nome do Fundo",
       description: "Busca fundos pelo nome cadastrado.",
       placeholder: "Nome do fundo",
-      icon_name: "business-center"
+      icon_name: "folder-open"
     },
     {
       key: :source_cont,
       label: "Fonte dos Dados",
       description: "Filtra pela origem da informação (ex: CVM, API externa).",
       placeholder: "Fonte",
-      icon_name: "source"
+      icon_name: "arrow-left-right"
     },
     {
       key: :quota_value_gteq,
       label: "Valor mínimo da cota",
       description: "Exibe apenas cotações acima deste valor.",
       placeholder: "0.00",
-      icon_name: "attach-money",
+      icon_name: "banknote",
       type: "number"
     },
     {
@@ -256,7 +256,7 @@
       label: "Valor máximo da cota",
       description: "Exibe apenas cotações abaixo deste valor.",
       placeholder: "9999.99",
-      icon_name: "money-off",
+      icon_name: "banknote",
       type: "number"
     }
   ],

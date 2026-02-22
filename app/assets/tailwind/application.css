@@ -57,9 +57,9 @@
      *  Ensures readability and consistency across UI components.
      * ------------------------------
      */
-    --font-body: 'Plus Jakarta Sans', sans-serif;
-    --font-heading: 'Plus Jakarta Sans', serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Geist', sans-serif;
+    --font-heading: 'Geist', serif;
+    --font-mono: 'Geist Mono', monospace;
 
     /*
      * ------------------------------
@@ -529,7 +529,7 @@
      * ------------------------------
      */
     .button-ghost {
-        @apply bg-transparent border border-transparent shadow-none text-body hover:!bg-accent/90 [&>svg]:!stroke-body
+        @apply bg-transparent border border-transparent shadow-none text-body hover:!bg-neutral-100 hover:!border-border [&>svg]:!stroke-body
     }
 
     /*
@@ -569,7 +569,7 @@
      * ------------------------------
      */
     .badge {
-        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-2xs font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-primary-50 text-primary-700 h-fit w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3 border
+        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-2xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-primary-50 text-primary-700 h-fit w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3 border
     }
 
     /*
@@ -583,6 +583,19 @@
      */
     .badge-outline {
         @apply bg-white !border border-border text-body [&>svg]:stroke-body;
+    }
+
+    /*
+ * ------------------------------
+ *  badge-primary
+ *
+ *  Sets the badge variant with a neutral outline.
+ *  Applies a clean white background and subtle border.
+ *  Keeps the badge visually lightweight for low-emphasis labels.
+ * ------------------------------
+ */
+    .badge-primary {
+        @apply bg-primary-50 border-primary-100 text-primary-600 [&>svg]:stroke-primary-600;
     }
 
     /*

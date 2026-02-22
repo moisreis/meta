@@ -134,17 +134,33 @@ class FundInvestment < ApplicationRecord
   #               It provides the up-to-date value of the holding.
   #
   def current_market_value
-
-    # Explanation:: This retrieves the most recent share price of the **InvestmentFund**.
-    latest_quota_value = investment_fund.latest_quota_value
-
-    # Explanation:: This returns zero if the latest quota value or the total quotas held
-    #               are missing, preventing a nil or zero division error.
+    latest_quota_value = investment_fund.quota_value_on(Date.new(2026, 1, 30))
     return BigDecimal('0') unless latest_quota_value && total_quotas_held
 
-    # Explanation:: This calculates the market value by multiplying the number of quotas
-    #               held by the current price of each quota.
-    total_quotas_held * latest_quota_value
+    value = total_quotas_held * latest_quota_value
+    # Zera resíduos menores que R$1,00
+    value < BigDecimal('1') ? BigDecimal('0') : value
+  end
+
+  def period_return_percentage
+    latest_perf = performance_histories.order(period: :desc).first
+    return latest_perf.monthly_return if latest_perf
+
+    base = initial_invested_value
+    return BigDecimal('0') if base.zero?
+
+    (total_gain / base) * 100
+  end
+
+
+  def current_market_value_on(date)
+    quota_value = investment_fund.quota_value_on(date)
+    return BigDecimal('0') unless quota_value
+
+    quotas = applications.where("cotization_date <= ?", date).sum(:number_of_quotas) -
+             redemptions.where("cotization_date <= ?", date).sum(:redeemed_quotas)
+
+    quotas * quota_value
   end
 
   # == unrealized_gain_loss
@@ -187,6 +203,32 @@ class FundInvestment < ApplicationRecord
   #
   def total_applications
     applications.sum(:financial_value) || BigDecimal('0')
+  end
+
+  def total_redemptions
+    redemptions.sum(:redeemed_liquid_value)
+  end
+
+  def total_gain
+    total_redemptions + current_market_value - total_applications
+  end
+
+  def initial_date
+    applications.minimum(:cotization_date)
+  end
+
+  def initial_invested_value
+    return BigDecimal('0') unless initial_date
+    applications.where(cotization_date: initial_date).sum(:financial_value)
+  end
+
+  def period_applications
+    return BigDecimal('0') unless initial_date
+    applications.where('cotization_date > ?', initial_date).sum(:financial_value)
+  end
+
+  def net_movement
+    period_applications - total_redemptions
   end
 
   # == total_redemptions

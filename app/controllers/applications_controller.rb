@@ -171,36 +171,35 @@ class ApplicationsController < ApplicationController
   # Attributes:: - *application_params* - The sanitized input data from the user form.
   #
   def create
-    @application = Application.new(application_params)
+    @application = Application.new(application_params.merge(parsed_date_params))
 
-    # Explanation:: This retrieves the fund investment object associated with the
-    #               new application so that its totals can be modified later.
     fund_investment = @application.fund_investment
-
-    # Explanation:: This uses **CanCan** to verify the current user has permission
-    #               to manage the portfolio linked to this fund investment before proceeding.
     authorize! :manage, fund_investment.portfolio
 
-    # Explanation:: This initiates a database transaction, which is a critical step
-    #               that ensures both the application saving and the fund update succeed as a single atomic operation.
+    # Calcula automaticamente cota e número de cotas
+    if @application.cotization_date.present? && @application.financial_value.present?
+      quota_value = fund_investment.investment_fund.quota_value_on(@application.cotization_date)
+
+      if quota_value
+        @application.quota_value_at_application = quota_value
+        @application.number_of_quotas = BigDecimal(@application.financial_value.to_s) / quota_value
+      else
+        @application.errors.add(:cotization_date, "sem cota disponível para esta data")
+        render :new, status: :unprocessable_entity and return
+      end
+    end
+
     ActiveRecord::Base.transaction do
       @application.save!
       update_fund_investment_after_create(fund_investment)
     end
 
     flash[:notice] = "Investimento criado com sucesso."
-
-    # Explanation:: If the transaction is successful, this redirects the user to the
-    #               newly created application's detail page.
     redirect_to application_path(@application)
 
-    # Explanation:: If the application data fails validation, the transaction is rolled back,
-    #               and the user is sent back to the `new` form to correct the errors.
   rescue ActiveRecord::RecordInvalid => e
     render :new, status: :unprocessable_entity
 
-    # Explanation:: If the user lacks permission to perform the action, this redirects
-    #               them to a safe, generic page to prevent unauthorized access.
   rescue CanCan::AccessDenied => e
     redirect_to fund_investments_path
   end
@@ -325,6 +324,52 @@ class ApplicationsController < ApplicationController
       :cotization_date,
       :liquidation_date
     )
+  end
+
+  # == parsed_date_params
+  #
+  # @author Moisés Reis
+  # @category *Utility*
+  #
+  # Utility:: Converts the three date fields from the Brazilian DD/MM/YYYY format
+  #           submitted by the front-end date picker into ISO 8601 (YYYY-MM-DD)
+  #           strings that Rails can reliably cast to Date objects.
+  #           Returns only the fields that are actually present in the request,
+  #           so it is safe to merge over application_params without clobbering
+  #           unrelated attributes.
+  #
+  def parsed_date_params
+    date_fields = %i[request_date cotization_date liquidation_date]
+    raw = params.require(:application)
+
+    date_fields.each_with_object({}) do |field, hash|
+      raw_value = raw[field].presence
+      next unless raw_value
+
+      parsed = parse_br_date(raw_value)
+      hash[field] = parsed if parsed
+    end
+  end
+
+  # == parse_br_date
+  #
+  # @author Moisés Reis
+  # @category *Utility*
+  #
+  # Utility:: Parses a date string that may arrive in DD/MM/YYYY format (Brazilian locale)
+  #           and returns an ISO 8601 string (YYYY-MM-DD).
+  #           Falls back to returning nil so the model validator surfaces a
+  #           human-readable error instead of raising an exception.
+  #
+  # Attributes:: - *value* @string - The raw date string from the request params.
+  #
+  def parse_br_date(value)
+    return value unless value.match?(%r{\A\d{2}/\d{2}/\d{4}\z})
+
+    day, month, year = value.split("/")
+    Date.new(year.to_i, month.to_i, day.to_i).iso8601
+  rescue ArgumentError
+    nil
   end
 
   # == update_fund_investment_after_create

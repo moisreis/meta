@@ -202,6 +202,9 @@ class FundValuationImportJob < ApplicationJob
       }
     end
 
+    # Deduplicate rows (CVM CSVs occasionally contain duplicate entries)
+    rows = rows.uniq { |r| [r[:date], r[:fund_cnpj]] }
+
     # Batch insert/update
     FundValuation.upsert_all(
       rows,

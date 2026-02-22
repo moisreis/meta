@@ -32,6 +32,7 @@ class FundInvestmentsController < ApplicationController
   before_action :load_fund_investment, only: [
     :show,
     :update,
+    :edit,
     :destroy
   ]
 
@@ -41,6 +42,7 @@ class FundInvestmentsController < ApplicationController
   before_action :authorize_fund_investment, only: [
     :show,
     :update,
+    :edit,
     :destroy
   ]
 
@@ -49,6 +51,7 @@ class FundInvestmentsController < ApplicationController
   #               **Portfolio** options, for the form's dropdown menus.
   before_action :load_form_dependencies, only: [
     :new,
+    :edit,
     :create
   ]
 
@@ -178,6 +181,14 @@ class FundInvestmentsController < ApplicationController
     @fund_investment.destroy
   end
 
+  def edit
+
+  end
+
+  def delete
+
+  end
+
   private
 
   # == load_fund_investment
@@ -254,6 +265,17 @@ class FundInvestmentsController < ApplicationController
       :portfolio,
       :investment_fund
     )
+  end
+
+  def market_value_on
+    fund_investment = FundInvestment.find(params[:id])
+    date = Date.parse(params[:date])
+    quota = fund_investment.investment_fund.quota_value_on(date)
+    quotas = fund_investment.applications.sum(:number_of_quotas) -
+             fund_investment.redemptions.sum(:redeemed_quotas)
+    value = quota ? (quotas * quota).round(2) : nil
+
+    render json: { value: value, quota: quota, date: date }
   end
 
   # == load_form_dependencies

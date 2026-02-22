@@ -50,11 +50,13 @@ Rails.application.routes.draw do
 
   resources :investment_funds
 
-  resources :fund_investments, only: [:index, :new, :create, :show] do
+  resources :fund_investments, only: [:index, :edit, :update, :destroy, :new, :create, :show] do
     collection do
       get :export
     end
   end
+
+  get 'fund_investments/:id/market_value_on', to: 'fund_investments#market_value_on'
 
   match "*path",
        to: "errors#show",

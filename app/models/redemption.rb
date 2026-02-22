@@ -1,5 +1,7 @@
 class Redemption < ApplicationRecord
 
+  before_validation :sync_dates
+
   # Explanation:: This establishes a mandatory one-to-one relationship where a Redemption belongs to a **FundInvestment** record.
   #               A redemption cannot exist without being linked to a specific fund investment.
   belongs_to :fund_investment
@@ -97,6 +99,11 @@ class Redemption < ApplicationRecord
   #
   def completed?
     liquidation_date.present?
+  end
+
+  def sync_dates
+    self.request_date = cotization_date if cotization_date.present?
+    self.liquidation_date = cotization_date if cotization_date.present?
   end
 
   # == effective_quota_value

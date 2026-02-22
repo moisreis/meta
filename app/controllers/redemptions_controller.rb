@@ -146,23 +146,24 @@ class RedemptionsController < ApplicationController
   # Attributes:: - *@redemption* @Redemption - the new redemption record, initialized with user parameters.
   #
   def create
-
-    # Explanation:: This initializes a new **Redemption** object using the parameters submitted
-    #               by the user through the `redemption_params` private method.
-    #               The object is not yet saved to the database.
     @redemption = Redemption.new(redemption_params)
-
-    # Explanation:: This retrieves the **FundInvestment** record associated with the new redemption,
-    #               necessary for authorization and quota checks.
-    #               It establishes the context for the transaction.
     fund_investment = @redemption.fund_investment
-
-    # Explanation:: This performs an authorization check using **CanCan** to ensure the user is allowed to create a redemption linked to the specified investment.
-    #               If authorization fails, an exception is raised.
     authorize! :create, @redemption, fund_investment
 
-    # Explanation:: This checks if the requested number of redeemed quotas exceeds the total available quotas in the fund investment.
-    #               If there are insufficient quotas, the method immediately stops and returns a JSON error response.
+    # Calcula automaticamente as cotas resgatadas
+    if @redemption.cotization_date.present? && @redemption.redeemed_liquid_value.present?
+      quota_value = fund_investment.investment_fund.quota_value_on(@redemption.cotization_date)
+
+      if quota_value
+        @redemption.redeemed_quotas = BigDecimal(@redemption.redeemed_liquid_value.to_s) / quota_value
+      else
+        return render json: {
+          status: 'Error',
+          message: 'Sem cota disponível para esta data.'
+        }, status: :unprocessable_entity
+      end
+    end
+
     unless @redemption.redeemed_quotas <= (fund_investment.total_quotas_held || 0)
       return render json: {
         status: 'Error',
@@ -170,25 +171,17 @@ class RedemptionsController < ApplicationController
       }, status: :unprocessable_entity
     end
 
-    # Explanation:: This block initiates an ActiveRecord database transaction.
-    #               All enclosed database operations (save, create, update) must succeed, or the entire block is rolled back.
-    #               This guarantees the integrity of the data if any part of the creation or allocation process fails.
     ActiveRecord::Base.transaction do
       @redemption.save!
       allocate_quotas_fifo(fund_investment, @redemption.redeemed_quotas)
       update_fund_investment_after_redemption(fund_investment)
     end
 
-    # Explanation:: If the transaction is successful, this renders a success JSON response,
-    #               including the attributes of the newly created redemption record.
-    #               It uses the HTTP status `:created` (201).
     render json: {
       status: 'Success',
       data: RedemptionSerializer.new(@redemption).serializable_hash[:data][:attributes]
     }, status: :created
 
-    # Explanation:: This block catches any **ActiveRecord::RecordInvalid** exceptions that occur during the transaction (e.g., validation failures).
-    #               It extracts the error messages and returns a JSON error response with the HTTP status `:unprocessable_entity` (422).
   rescue ActiveRecord::RecordInvalid => e
     render json: {
       status: 'Error',
@@ -462,53 +455,24 @@ class RedemptionsController < ApplicationController
   #              - *remaining_quotas* @decimal - the number of quotas that still need to be allocated for the current redemption.
   #
   def allocate_quotas_fifo(fund_investment, remaining_quotas)
-
-    # Explanation:: This retrieves all **Application** records for the fund investment that still hold quotas, sorted by their cotization date.
-    #               Sorting ensures that the oldest applications (First-In) are processed first (FIFO).
     applications = fund_investment.applications.where('number_of_quotas > 0').order(:cotization_date)
 
-    # Explanation:: This iterates through the sorted applications, starting with the oldest ones.
-    #               The process continues until all redeemed quotas have been allocated.
     applications.each do |app|
-
-      # Explanation:: This breaks the loop if there are no more quotas left to allocate for the redemption.
-      #               It stops unnecessary iteration once the target amount is reached.
       break if remaining_quotas <= 0
 
-      # Explanation:: This calculates the number of quotas to take from the current application. It uses the smaller value between the quotas still available in the application and the quotas still needed for the redemption.
-      #               This ensures the application's balance is not overdrawn.
       quotas_to_use = [app.number_of_quotas, remaining_quotas].min
 
-      # Explanation:: This calculates the financial value corresponding to the quotas being used, based on the application's original quota value.
-      #               This value is used to adjust the application's financial balance.
-      value_to_use = quotas_to_use * app.quota_value_at_application
-
-      # Explanation:: This creates a new **RedemptionAllocation** record to document how many quotas were taken from this specific application for the current redemption.
-      #               This provides an auditable link between the redemption and the source applications.
       RedemptionAllocation.create!(
         redemption: @redemption,
         application: app,
-        quotas_used: quotas_to_use,
-        )
+        quotas_used: quotas_to_use
+      )
 
-      # Explanation:: This calculates the remaining number of quotas left in the original application after the redemption takes place.
-      #               This value updates the application record.
-      new_quotas = app.number_of_quotas - quotas_to_use
-
-      # Explanation:: This calculates the remaining financial value in the original application by subtracting the value corresponding to the redeemed quotas.
-      #               This value updates the application record.
-      new_value = app.financial_value - value_to_use
-
-      # Explanation:: This updates the original **Application** record in the database with the new reduced quota count and financial value.
-      #               `update_columns` is used for performance, as validations are skipped here since the integrity checks occur elsewhere.
       app.update_columns(
-        number_of_quotas: new_quotas,
-        financial_value: new_value,
+        number_of_quotas: app.number_of_quotas - quotas_to_use,
         updated_at: Time.current
       )
 
-      # Explanation:: This reduces the remaining number of quotas needed for the current redemption by the amount that was just allocated.
-      #               This moves the process closer to the termination condition.
       remaining_quotas -= quotas_to_use
     end
   end

@@ -22,9 +22,12 @@
 #
 class Application < ApplicationRecord
 
+  before_validation :sync_dates
+
   # Explanation:: This establishes a direct link, indicating that every application belongs
   #               to a single parent **FundInvestment** record, which represents the entire holding.
   belongs_to :fund_investment
+
 
   # Explanation:: This establishes a one-to-many relationship, indicating that an application's
   #               quotas can be allocated to multiple **RedemptionAllocation** records when the user withdraws funds.
@@ -144,6 +147,11 @@ class Application < ApplicationRecord
     financial_value / number_of_quotas
   end
 
+  def sync_dates
+    self.request_date = cotization_date if cotization_date.present?
+    self.liquidation_date = cotization_date if cotization_date.present?
+  end
+
   private
 
   # == cotization_after_request
@@ -209,9 +217,13 @@ class Application < ApplicationRecord
     #               the number of quotas by the unit quota value.
     expected_value = number_of_quotas * quota_value_at_application
 
-    # Explanation:: This defines a small acceptable margin of error (tolerance) for
-    #               comparing two floating-point (BigDecimal) numbers.
-    tolerance = BigDecimal('0.01')
+    # Explanation:: This defines a relative tolerance of 0.1% of the total financial value.
+    #               A flat tolerance (e.g. R$0.01) is too strict for large transactions because
+    #               fund statements store quota quantities and unit prices at limited precision,
+    #               so their product never perfectly reconstructs the original invested amount.
+    #               Using a percentage of the transaction keeps the check meaningful at any scale:
+    #               tight on small amounts, appropriately lenient on million-real operations.
+    tolerance = financial_value * BigDecimal('0.001')
 
     # Explanation:: This checks if the absolute difference between the stored financial value
     #               and the calculated expected value exceeds the defined tolerance.

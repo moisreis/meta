@@ -16,30 +16,38 @@
   #        - Why: It ensures the user never gets lost by keeping essential
   #               tools and navigation options visible at all times.
   %>
-<aside class="flex flex-col justify-start items-center h-screen w-16 max-h-screen sticky overflow-y-scroll no-scrollbar top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-white border-r border-border">
+<aside class="flex flex-col justify-start items-center h-screen w-64 max-w-64 max-h-screen sticky overflow-y-scroll top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-neutral-50 border-r border-border px-3 py-3">
 
-  <div class="h-16 bg-transparent items-center justify-center">
+  <div class="h-16 bg-transparent items-center justify-start w-full !px-3">
 
     <div class="flex flex-row items-center justify-between gap-1 w-full">
       <%= render "partials/modules/logo", size: 24 %>
     </div>
   </div>
 
-  <div class="flex flex-col h-full !justify-between [&>div]:flex [&>div]: [&>div]:flex-col [&>div]:!gap-3 [&>div]:!py-6 [&>div]:items-center [&>div]:justify-center [&>div]:w-full">
+  <div class="flex flex-col h-full !justify-between [&>div]:flex [&>div]: [&>div]:flex-col [&>div]:!gap-9 [&>div]:!py-6 [&>div]:items-center [&>div]:justify-center [&>div]:w-full [&>div>div]:w-full [&>div>div]:space-y-1.5">
 
     <div>
-      <%= link_to authenticated_root_path,
-                  class: "button button-accent button-icon" do
-      %>
-        <%= inline_svg_tag "icons/home.svg" %>
-      <% end %>
-      <%= link_to edit_user_path(current_user),
-                  class: "button button-ghost button-icon" do
-      %>
-        <%= inline_svg_tag "icons/settings-2.svg" %>
-      <% end %>
 
-      <div class="w-full h-[1px] border-t border-border"></div>
+      <div>
+        <%= link_to authenticated_root_path,
+                    class: "button button-ghost w-full button-small flex justify-start" do
+        %>
+          <%= inline_svg_tag "icons/home.svg" %>
+          <%= content_tag(:span, "Início") %>
+        <% end %>
+
+        <%= button_to destroy_user_session_path,
+                      method: :delete,
+                      data: {
+                        turbo_confirm: "Tem certeza que deseja sair?"
+                      },
+                      class: "button button-danger w-full button-small flex justify-start",
+                      form: { style: "display: flex; align-items: center;" } do %>
+          <%= inline_svg_tag "icons/log-out.svg" %>
+          <%= content_tag(:span, "Sair") %>
+        <% end %>
+      </div>
 
       <%# Explanation:: This section generates menus for each data category.
       #               It creates buttons to list existing items or add
@@ -115,18 +123,6 @@
                          index: "calendar-clock.svg",
                          new: "plus.svg"
                        } %>
-    </div>
-
-    <div>
-      <%= button_to destroy_user_session_path,
-                    method: :delete,
-                    data: {
-                      turbo_confirm: "Tem certeza que deseja sair?"
-                    },
-                    class: "button button-danger button-icon",
-                    form: { style: "display: flex; align-items: center;" } do %>
-        <%= inline_svg_tag "icons/log-out.svg" %>
-      <% end %>
     </div>
   </div>
 </aside>

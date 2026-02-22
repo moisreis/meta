@@ -36,6 +36,7 @@ gem 'prawn-svg'
 gem "victor"
 gem "prawn-svg"
 gem "zlib"
+gem 'inputmask-rails'
 
 
 group :development, :test do

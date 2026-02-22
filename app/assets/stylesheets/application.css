@@ -40,3 +40,11 @@
  * Useful anywhere tabular layouts are rendered.
  */
 @import "helpers/table-shade.css";
+
+
+@font-face {
+    font-family: "Geist Pixel Square";
+    src: url("GeistPixel-Square.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 400;
+}
