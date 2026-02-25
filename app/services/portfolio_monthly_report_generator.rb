@@ -224,7 +224,6 @@ class PortfolioMonthlyReportGenerator
     'IPCA'     => :ipca,
     'IMAGERAL' => :ima_geral,
     'IBOVESPA' => :ibovespa,
-    'META'     => :meta
   }.freeze
 
   def collect_benchmark_data
@@ -249,6 +248,15 @@ class PortfolioMonthlyReportGenerator
 
       result[key] = { monthly: monthly, ytd: ytd }
     end
+
+    # Explanation:: META = taxa de juros anual do portfolio (pro-rata mensal) + IPCA do mês/ano.
+    #               O juros anual é dividido por 12 para obter a parcela mensal,
+    #               e somado diretamente ao acumulado anual de IPCA para o YTD.
+    ipca_monthly = result.dig(:ipca, :monthly).to_f
+    ipca_ytd     = result.dig(:ipca, :ytd).to_f
+    meta_monthly   = @portfolio.annual_interest_rate.to_f + ipca_monthly
+    meta_ytd     = @portfolio.annual_interest_rate.to_f + ipca_ytd
+    result[:meta] = { monthly: meta_monthly, ytd: meta_ytd }
 
     %i[cdi ipca ima_geral ibovespa meta].each { |k| result[k] ||= { monthly: 0.0, ytd: 0.0 } }
     result
@@ -738,7 +746,7 @@ class PortfolioMonthlyReportGenerator
           perf_table << [
             full_month(m[:period]),
             fmt_pct(cart&.dig(:value) || 0),
-            fmt_pct(eco['META']&.dig(per_key)  || bnch[:meta][:monthly]),
+            fmt_pct(meta_monthly_series[per_key][:meta]),
             fmt_pct(eco['CDI']&.dig(per_key)   || bnch[:cdi][:monthly]),
             fmt_pct(eco['IPCA']&.dig(per_key)  || bnch[:ipca][:monthly])
           ]
@@ -1380,7 +1388,7 @@ class PortfolioMonthlyReportGenerator
         per = m[:period].beginning_of_month
         idx_tbl << [
           full_month(m[:period]),
-          fmt_pct(eco['META']&.dig(per)      || bnch[:meta][:monthly]),
+          fmt_pct(meta_monthly_series[per][:meta]),
           fmt_pct(eco['IPCA']&.dig(per)      || bnch[:ipca][:monthly]),
           fmt_pct(eco['CDI']&.dig(per)       || bnch[:cdi][:monthly]),
           fmt_pct(eco['IMAGERAL']&.dig(per)  || bnch[:ima_geral][:monthly]),
@@ -1726,7 +1734,7 @@ class PortfolioMonthlyReportGenerator
           rows << [
             date.year,
             I18n.l(date, format: '%B'),
-            fmt_pct(eco['META']&.dig(period_key)     || 0),
+            fmt_pct(meta_monthly_series[period_key][:meta]),
             fmt_pct(eco['CDI']&.dig(period_key)      || 0),
             fmt_pct(eco['IPCA']&.dig(period_key)     || 0),
             fmt_pct(eco['IBOVESPA']&.dig(period_key) || 0),
@@ -3020,12 +3028,15 @@ class PortfolioMonthlyReportGenerator
   end
 
   def build_meta_series
-    eco  = data[:economic_indices]
-    bnch = data[:benchmarks]
+    # Explanation:: Recalcula a META mês a mês: juros anuais do portfolio dividido
+    #               por 12 (parcela mensal) somado ao IPCA histórico daquele mês.
+    monthly_rate = @portfolio.annual_interest_rate.to_f
+
     data[:monthly_history].map do |m|
-      per = m[:period].beginning_of_month
-      val = eco['META']&.dig(per) || bnch[:meta][:monthly]
-      { period: per, value: val.to_f, label: short_month(m[:period]) }
+      per      = m[:period].beginning_of_month
+      ipca_val = meta_monthly_series[per][:ipca]
+      val      = monthly_rate + ipca_val
+      { period: per, value: val, label: short_month(m[:period]) }
     end
   end
 
@@ -3072,6 +3083,38 @@ class PortfolioMonthlyReportGenerator
       .sum(:financial_value).to_f
   rescue StandardError
     0.0
+  end
+
+  # == meta_monthly_series
+  #
+  # @category Helper
+  #
+  # Explanation:: Retorna um Hash memoizado { Date => { ipca: Float, meta: Float } }
+  #               pré-calculado para os 12 meses do relatório.
+  #               META mensal = annual_interest_rate / 12 + IPCA do mês.
+  #               Evita N+1 queries ao percorrer meses nos gráficos e tabelas.
+  #
+  def meta_monthly_series
+    @meta_monthly_series ||= begin
+                               ipca_index   = EconomicIndex.find_by(abbreviation: 'IPCA')
+                               monthly_rate = @portfolio.annual_interest_rate.to_f
+                               start_date   = (@reference_date - 11.months).beginning_of_month
+
+                               # Carrega todos os registros IPCA do período em uma única query
+                               ipca_by_month = if ipca_index
+                                                 ipca_index.economic_index_histories
+                                                           .where(date: start_date..@reference_date.end_of_month)
+                                                           .index_by { |h| h.date.beginning_of_month }
+                                               else
+                                                 {}
+                                               end
+
+                               Hash.new do |h, date|
+                                 key      = date.beginning_of_month
+                                 ipca_val = ipca_by_month[key]&.value.to_f || 0.0
+                                 h[key]   = { ipca: ipca_val, meta: monthly_rate + ipca_val }
+                               end
+                             end
   end
 
   def monthly_reds_for(fi)
