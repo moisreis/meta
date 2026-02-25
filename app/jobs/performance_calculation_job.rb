@@ -8,6 +8,11 @@
 # utilizando o método de Dietz Modificado para tratar corretamente
 # os fluxos de caixa (aplicações e resgates) ocorridos no período.
 #
+# A partir de 02/2026, também consolida o saldo das **Contas Correntes**
+# do portfólio no patrimônio total, mas os mantém em tabela separada
+# (`current_accounts`) para que o relatório possa exibi-los
+# de forma distinta dos fundos.
+#
 # == Metodologia: Dietz Modificado
 #
 # A rentabilidade simples (Patrimônio Final / Patrimônio Inicial - 1) é
@@ -38,6 +43,16 @@ class PerformanceCalculationJob < ApplicationJob
       .find_each do |fund_investment|
       calculate_snapshot!(fund_investment, reference_date)
     end
+
+    # == Consolidação de Contas Correntes
+    #
+    # Após calcular os snapshots de fundos, percorre os portfólios que
+    # possuem contas correntes com saldo no período de referência e
+    # registra o total no log para auditoria. Os saldos individuais
+    # já são gravados diretamente em `current_accounts` (fora deste job —
+    # via importação manual ou outro mecanismo), mas aqui garantimos que
+    # ao menos o log reflita o valor disponível em caixa.
+    consolidate_current_accounts!(reference_date)
 
     Rails.logger.info("[PerformanceCalculationJob] Finished successfully")
   end
@@ -138,6 +153,44 @@ class PerformanceCalculationJob < ApplicationJob
       yearly_return:         yearly_return,
       last_12_months_return: last_12m
     )
+  end
+
+  # == consolidate_current_accounts!
+  #
+  # Percorre todos os portfólios que possuem registros em `current_accounts`
+  # para o mês de referência e registra o total consolidado em log.
+  #
+  # Os saldos de conta corrente NÃO entram no denominador do Dietz nem
+  # alteram os snapshots de `performance_histories` de fundos individuais —
+  # eles são patrimônio de disponibilidade, sem rentabilidade própria calculável
+  # pelo método de cotas. O relatório os exibe em seção separada.
+  #
+  # Se necessário, este método pode ser estendido para gravar um snapshot
+  # agregado de disponibilidades em tabela futura.
+  #
+  def consolidate_current_accounts!(reference_date)
+    period_end = reference_date.end_of_month
+
+    # Agrupa saldos por portfólio
+    totals = CurrentAccount
+               .where(reference_date: period_end)
+               .group(:portfolio_id)
+               .sum(:balance)
+
+    if totals.empty?
+      Rails.logger.info("[PerformanceCalculationJob] No current accounts found for #{period_end}")
+      return
+    end
+
+    totals.each do |portfolio_id, total_balance|
+      Rails.logger.info(
+        "[PerformanceCalculationJob] Portfolio ##{portfolio_id} — " \
+          "Current accounts total for #{period_end}: R$ #{total_balance}"
+      )
+    end
+  rescue StandardError => e
+    # Não interrompe o job se a tabela ainda não existir (ex: antes da migration)
+    Rails.logger.warn("[PerformanceCalculationJob] Could not consolidate current accounts: #{e.message}")
   end
 
   # == reconstruct_quotas_at

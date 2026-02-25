@@ -1,0 +1,165 @@
+<%#
+  # Partial: show.html.erb
+  # Date: 02/22/2026
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Exibe o detalhe de uma única conta corrente vinculada a um portfólio.
+  #              Apresenta KPIs de saldo, identificação completa da conta e
+  #              informações complementares de enquadramento.
+  #
+  # Usage:: - What: Renderiza a visão de detalhe para um registro CheckingAccount.
+  #         - How: Recebe @checking_account e @portfolio do controller e usa
+  #                os partials padrão de dashboard para compor o layout.
+  #         - Why: Fornece uma visão centralizada de uma disponibilidade específica,
+  #                facilitando auditoria e confirmação dos dados cadastrados.
+  %>
+
+<%# Explanation:: O wrapper define o título como o nome da conta e a descrição
+  #               com a instituição e o mês de referência, contextualizando
+  #               imediatamente o registro que está sendo visualizado.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: @checking_account.name,
+           page_desc: "#{@checking_account.institution_label} — #{l(@checking_account.reference_date, format: :month_year)}",
+           current_view: "show" do
+%>
+
+  <%# Explanation:: Seção de KPIs com o saldo da conta em destaque e metadados
+    #               complementares como moeda, mês de referência e status de
+    #               preenchimento das observações.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Resumo",
+             columns: 3 do
+  %>
+
+    <%# Explanation:: Card principal com o saldo da conta, usando status positivo
+      #               fixo pois disponibilidades em conta corrente não têm rendimento
+      #               calculado neste contexto.
+      %>
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Saldo da Conta",
+          card_icon: "banknote",
+          card_data: normalize_card_text(@checking_account.institution_label),
+          status: "success"
+        ) do
+    %>
+      <%= normalize_currency(@checking_account.balance) %>
+    <% end %>
+
+    <%# Explanation:: Card de referência temporal, indicando o mês de competência
+      #               do saldo cadastrado para este registro.
+      %>
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Mês de Referência",
+          card_icon: "calendar"
+        ) do
+    %>
+      <%= l(@checking_account.reference_date, format: :month_year) %>
+    <% end %>
+
+    <%# Explanation:: Card de moeda da conta, útil para portfólios que eventualmente
+      #               possam ter disponibilidades em moeda estrangeira.
+      %>
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Moeda",
+          card_icon: "circle-dollar-sign"
+        ) do
+    %>
+      <%= @checking_account.currency %>
+    <% end %>
+
+  <% end %>
+
+  <%# Explanation:: Seção com os dados de identificação completos da conta:
+    #               nome, instituição, número da conta e portfólio de vínculo.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Identificação",
+             columns: 2 do
+  %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Nome / Descrição",
+          card_icon: "tag"
+        ) do
+    %>
+      <%= normalize_title(@checking_account.name) %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Instituição Financeira",
+          card_icon: "landmark"
+        ) do
+    %>
+      <%= normalize_badge(@checking_account.institution_label) %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Número da Conta",
+          card_icon: "hash"
+        ) do
+    %>
+      <%= @checking_account.account_number.presence || normalize_muted("Não informado") %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Carteira Vinculada",
+          card_icon: "wallet"
+        ) do
+    %>
+      <%= link_to normalize_title(@portfolio.name),
+                  portfolio_path(@portfolio),
+                  class: "link" %>
+    <% end %>
+
+  <% end %>
+
+  <%# Explanation:: Seção de observações adicionais, exibida apenas quando
+    #               o campo notes foi preenchido, evitando seções vazias.
+    %>
+  <% if @checking_account.notes.present? %>
+    <%= render "partials/route/dashboard/section",
+               section_title: "Observações",
+               columns: 1 do
+    %>
+      <p class="text-sm text-muted"><%= @checking_account.notes %></p>
+    <% end %>
+  <% end %>
+
+  <%# Explanation:: Ações de edição e exclusão disponíveis apenas para usuários
+    #               com permissão de escrita sobre o portfólio, dispostas no
+    #               padrão de rodapé de ação do dashboard.
+    %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Ações",
+             columns: 2 do
+  %>
+
+    <%= link_to edit_portfolio_checking_account_path(@portfolio, @checking_account),
+                class: "button button-secondary w-fit flex items-center gap-2" do
+    %>
+      <%= inline_svg_tag "icons/pencil.svg" %>
+      <span>Editar conta</span>
+    <% end %>
+
+    <%= button_to portfolio_checking_account_path(@portfolio, @checking_account),
+                  method: :delete,
+                  class: "button button-danger w-fit flex items-center gap-2",
+                  data: { turbo_confirm: "Tem certeza que deseja remover \"#{@checking_account.name}\"? Esta ação não pode ser desfeita." } do
+    %>
+      <%= inline_svg_tag "icons/trash-2.svg" %>
+      <span>Excluir conta</span>
+    <% end %>
+
+  <% end %>
+
+<% end %>

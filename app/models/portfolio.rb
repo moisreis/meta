@@ -24,6 +24,8 @@ class Portfolio < ApplicationRecord
   #               is owned by a single **User**.
   belongs_to :user
 
+  has_many :checking_accounts, dependent: :destroy
+
   # Explanation:: This establishes a one-to-many relationship, linking this portfolio
   #               to all individual **FundInvestment** records it contains, and destroys them on deletion.
   has_many :fund_investments, dependent: :destroy
@@ -47,6 +49,9 @@ class Portfolio < ApplicationRecord
   # Explanation:: This validates that the portfolio's name is present and must be
   #               between 2 and 100 characters long.
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
+
+  validates :annual_interest_rate, presence: true,
+            numericality: { greater_than_or_equal_to: 0 }
 
   # Explanation:: This validates that the **Portfolio** must always be associated
   #               with a valid owning **User**.
@@ -90,6 +95,13 @@ class Portfolio < ApplicationRecord
   #
   def total_invested_value
     fund_investments.sum(:total_invested_value) || BigDecimal('0')
+  end
+
+  def meta(reference_date = Date.current)
+    ipca_index = EconomicIndex.find_by(abbreviation: 'IPCA')
+    ipca_value = ipca_index&.value_on(reference_date.beginning_of_month) || BigDecimal('0')
+
+    annual_interest_rate.to_d + ipca_value
   end
 
   def total_current_market_value

@@ -1,0 +1,38 @@
+<%#
+  # Partial: new.html.erb
+  # Date: 02/22/2026
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renderiza a página de criação de uma nova conta corrente vinculada
+  #              a um portfólio. Inicializa um objeto em branco e exibe os campos
+  #              de entrada via partial compartilhada _form.
+  #
+  # Usage:: - What: Renderiza a visão completa para criar um novo CheckingAccount.
+  #         - How: Usa o wrapper do dashboard e delega os campos ao partial _form,
+  #                passando o objeto inicializado e o texto do botão de ação.
+  #         - Why: Fornece a interface para o C do CRUD de CheckingAccount com
+  #                estrutura de UI consistente com o restante do sistema.
+  %>
+
+<%# Explanation:: O wrapper organiza o conteúdo no layout padrão do dashboard,
+  #               deixando claro no título que a ação é de criação e contextualizando
+  #               com o nome do portfólio ao qual a conta será vinculada.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Nova Conta Corrente",
+           page_desc: "Adicione uma disponibilidade em conta corrente para #{@portfolio.name}." do
+%>
+
+  <%# Explanation:: Delega todos os campos do formulário ao partial compartilhado,
+    #               configurando o botão de submit com ícone de adição e texto
+    #               adequado para uma ação de criação.
+    %>
+  <%= render "form",
+             checking_account: @checking_account,
+             portfolio: @portfolio,
+             button_name: "Adicionar",
+             icon_name: "plus"
+  %>
+
+<% end %>

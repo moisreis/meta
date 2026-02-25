@@ -1,28 +1,24 @@
 module NavHelper
 
-  def crud_nav_for(model_class, singular: nil, plural: nil, icons: {})
+  def crud_nav_for(model_class, singular: nil, plural: nil, icons: {}, index_path: nil, new_path: nil)
     singular ||= model_class.model_name.human
     plural   ||= model_class.model_name.human(count: 2)
 
     resources = model_class.model_name.route_key
 
-    default_icons = {
-      index: "wallet.svg",
-      new:   "plus.svg"
-    }
-
+    default_icons = { index: "wallet.svg", new: "plus.svg" }
     icon_set = default_icons.merge(icons.symbolize_keys)
 
     items = [
       {
         icon: icon_set[:index],
-        text: "Ver #{plural}",
-        path: url_for(controller: "/#{resources}", action: :index)
+        text: "Ver todos",
+        path: index_path || url_for(controller: "/#{resources}", action: :index)
       },
       {
         icon: icon_set[:new],
-        text: "Adicionar #{singular}",
-        path: url_for(controller: "/#{resources}", action: :new)
+        text: "Adicionar novo",
+        path: new_path || url_for(controller: "/#{resources}", action: :new)
       }
     ]
 
@@ -30,12 +26,16 @@ module NavHelper
 
     content_tag :div, class: "flex flex-col gap-1.5 w-full" do
       safe_join([
-                  content_tag(
-                    :span,
-                    plural,
-                    class: "px-3 text-2xs font-semibold uppercase text-muted"
-                  ),
-                  content_tag(:div, id: nav_id, class: "flex flex-col gap-1 px-1.5 w-full") do
+                  content_tag(:div, class: "flex flex-row justify-center items-center w-full") do
+                    safe_join([
+                                content_tag(:span, plural,
+                                            class: "px-3 text-2xs font-mono font-semibold uppercase text-muted"),
+                                content_tag(:div, nil,
+                                            class: "h-[2px] bg-neutral-200 w-full")
+                              ])
+                  end,
+                  content_tag(:div, id: nav_id,
+                              class: "flex flex-col gap-1 px-1.5 w-full") do
                     safe_join(items.map { |item| crud_nav_button(item) })
                   end
                 ])
@@ -52,7 +52,7 @@ module NavHelper
       "w-full",
       "flex flex-row justify-start",
       ("button-ghost" unless active),
-      ("button-primary" if active)
+      ("button-honeysuckle" if active)
     ].compact.join(" ")
 
     link_to item[:path], class: classes do

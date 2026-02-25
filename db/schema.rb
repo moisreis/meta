@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_03_002110) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_25_195441) do
   create_schema "extensions"
 
   # These are extensions that must be enabled in order to support this database
@@ -32,6 +32,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_002110) do
     t.date "request_date"
     t.datetime "updated_at", null: false
     t.index ["fund_investment_id"], name: "index_applications_on_fund_investment_id"
+  end
+
+  create_table "public.checking_accounts", force: :cascade do |t|
+    t.string "account_number"
+    t.decimal "balance", precision: 15, scale: 2, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "BRL", null: false
+    t.string "institution"
+    t.string "name", null: false
+    t.text "notes"
+    t.bigint "portfolio_id", null: false
+    t.date "reference_date", null: false
+    t.datetime "updated_at", null: false
+    t.index ["portfolio_id", "reference_date"], name: "index_checking_accounts_on_portfolio_and_date"
+    t.index ["portfolio_id"], name: "index_checking_accounts_on_portfolio_id"
   end
 
   create_table "public.economic_index_histories", force: :cascade do |t|
@@ -86,11 +101,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_002110) do
   end
 
   create_table "public.investment_funds", force: :cascade do |t|
+    t.decimal "administration_fee", precision: 8, scale: 4, comment: "Taxa de administração anual em percentual (ex: 0.5000 = 0,50% a.a.)"
     t.string "administrator_name", null: false
+    t.string "benchmark_index"
     t.string "cnpj", null: false
     t.datetime "created_at", null: false
     t.string "fund_name", null: false
     t.string "originator_fund"
+    t.decimal "performance_fee", precision: 8, scale: 4, comment: "Taxa de performance em percentual (ex: 20.0000 = 20,00% sobre o que exceder o benchmark)"
     t.datetime "updated_at", null: false
     t.index ["cnpj"], name: "index_investment_funds_on_cnpj", unique: true
     t.index ["fund_name"], name: "index_investment_funds_on_fund_name"
@@ -101,8 +119,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_002110) do
     t.string "article_name"
     t.string "article_number"
     t.decimal "benchmark_target"
+    t.string "category"
     t.datetime "created_at", null: false
     t.text "description"
+    t.decimal "maximum_target", precision: 8, scale: 4
+    t.decimal "minimum_target", precision: 8, scale: 4
     t.datetime "updated_at", null: false
   end
 
@@ -123,6 +144,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_002110) do
   end
 
   create_table "public.portfolios", force: :cascade do |t|
+    t.decimal "annual_interest_rate", precision: 8, scale: 4, default: "0.0", null: false
     t.datetime "created_at", null: false
     t.string "name"
     t.datetime "updated_at", null: false
@@ -185,6 +207,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_03_002110) do
   end
 
   add_foreign_key "public.applications", "public.fund_investments"
+  add_foreign_key "public.checking_accounts", "public.portfolios"
   add_foreign_key "public.economic_index_histories", "public.economic_indices"
   add_foreign_key "public.fund_investments", "public.investment_funds"
   add_foreign_key "public.fund_investments", "public.portfolios"

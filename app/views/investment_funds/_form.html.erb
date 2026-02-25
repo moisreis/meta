@@ -1,6 +1,6 @@
 <%#
   # Partial: _form.html.erb
-  # Date: 11/24/2025
+  # Date: 02/23/2026
   # Author: Moisés Reis
   # Package: Meta
   #
@@ -59,6 +59,72 @@
     %>
   <% end %>
 
+  <%# Explanation:: This layout block separates the financial cost information to
+    #               provide clarity on fund fees; it is used to manage profitability
+    #               expectations and works by grouping tax-related input fields.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Custos e Indicadores",
+             fieldset_desc: "Determine as taxas de serviço e o índice de comparação de rendimento." do %>
+
+    <%# Explanation:: This field captures the annual percentage cost for managing
+      #               the fund's operations; it is used to calculate net returns
+      #               and works by storing a decimal value representing the yearly fee.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :administration_fee,
+               label: "Taxa de Administração (%)",
+               placeholder: "0.50",
+               desc: "Percentual cobrado anualmente pela gestão.",
+               field_type: :number_field,
+               step: 0.0001,
+               icon_name: "percent"
+    %>
+
+    <%# Explanation:: This input records the bonus fee paid when the fund beats its
+      #               target; it is used to define incentive costs for the manager
+      #               and works by capturing the percentage over the benchmark.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :performance_fee,
+               label: "Taxa de Performance (%)",
+               placeholder: "20.00",
+               desc: "Percentual cobrado sobre o que exceder o benchmark.",
+               field_type: :number_field,
+               step: 0.0001,
+               icon_name: "trending-up"
+    %>
+
+    <%# Explanation:: This text field identifies the economic index used for
+      #               performance comparison; it is used to measure success
+      #               and works by linking the fund to an index like CDI or IPCA.
+      %>
+<%# Explanation:: This select links the fund to a registered EconomicIndex record
+  #               by its abbreviation, ensuring that grouping and reporting logic
+  #               always finds a matching index in the database.
+  %>
+    <div class="flex flex-col gap-1">
+      <%= form.label :benchmark_index, "Índice de Referência", class: "label" %>
+      <%= form.select :benchmark_index,
+                      options_for_select(
+                        EconomicIndex.order(:abbreviation).map { |i| [i.abbreviation, i.abbreviation] },
+                        investment_fund.benchmark_index
+                      ),
+                      { include_blank: "Nenhum / Não aplicável" },
+                      class: "input" %>
+      <p class="text-xs text-muted-foreground">
+        Indicador utilizado para comparar a rentabilidade.
+      </p>
+      <% if investment_fund.errors[:benchmark_index].any? %>
+        <p class="text-xs text-destructive">
+          <%= investment_fund.errors[:benchmark_index].first %>
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+
   <%# Explanation:: This group organizes management settings to clarify who is
     #               responsible for the fund; it is used to track administrators
     #               and works by placing responsibility fields in a distinct section.
@@ -96,10 +162,10 @@
     %>
   <% end %>
 
-<%# Explanation:: This section defines the legal rules that govern the fund
-  #               to ensure transparency; it is used for compliance auditing
-  #               and works by linking the fund to specific normative articles.
-  %>
+  <%# Explanation:: This section defines the legal rules that govern the fund
+    #               to ensure transparency; it is used for compliance auditing
+    #               and works by linking the fund to specific normative articles.
+    %>
   <%= render "partials/blocks/fieldset",
              fieldset_title: "Regulamentação",
              fieldset_desc: "Selecione as diretrizes e artigos normativos que regem este fundo." do %>
@@ -112,7 +178,7 @@
                f: form,
                name: :normative_article_ids,
                label: "Artigos Normativos",
-               options_collection: NormativeArticle.all.map { |article| [article.display_name, article.id] },
+               options_collection: NormativeArticle.all.map { |article| [article.article_name, article.id] },
                desc: "Selecione os artigos normativos que regulam este fundo."
     %>
   <% end %>
@@ -129,3 +195,7 @@
     <%= content_tag :span, button_name %>
   <% end %>
 <% end %>
+
+
+
+

@@ -46,7 +46,7 @@ class EconomicIndexHistory < ApplicationRecord
   #               ensuring the data remains accurate and clear.
   validates :date, uniqueness: {
     scope: :economic_index_id,
-    message: "this index already has a value recorded for this date"
+    message: "este índice já possui um valor registrado para esta data."
   }
 
   # Explanation:: This is a custom check that prevents users from

@@ -1,0 +1,147 @@
+<%#
+  # Partial: _form.html.erb
+  # Date: 02/25/2026
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: This file provides a structured form for manually registering a
+  #              monthly value for a specific **EconomicIndexHistory** record.
+  #              It is used for indices that cannot be fetched automatically, such
+  #              as Ibovespa and IMA-GERAL, which require a paid license.
+  #
+  # Usage: - What: Renders the input form necessary for creating an
+  #                **EconomicIndexHistory** entry linked to a chosen **EconomicIndex**.
+  #        - How: Utilizes the Rails **form_with** helper and reuses modular partials
+  #               to maintain a consistent visual and functional dashboard layout.
+  #               The date is composed from two separate selects (month + year)
+  #               and assembled into a full date before saving.
+  #        - Why: Provides a simple and safe manual entry mechanism, ensuring that
+  #               indices without free API access remain up to date in the system.
+  %>
+
+<%# Explanation:: This form builder initializes the data entry process for a single
+  #               monthly index value. It wraps all inputs and posts the data to the
+  #               correct controller action for EconomicIndexHistory.
+  %>
+<%= form_with(model: economic_index_history, class: "contents") do |form| %>
+
+  <%# Explanation:: This fieldset groups the index selector and the reference month
+    #               inputs together, as they jointly identify which data point is
+    #               being registered. Without both, the record cannot be saved.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Índice e Período de Referência",
+             fieldset_desc: "Selecione o indicador econômico e o mês ao qual o valor se refere." do %>
+
+    <%# Explanation:: This select field allows the user to choose which economic index
+      #               is being updated. It lists all registered EconomicIndex records
+      #               and works by storing the chosen ID as the foreign key.
+      %>
+    <div class="flex flex-col gap-1">
+      <%= form.label :economic_index_id, "Índice Econômico", class: "label" %>
+      <%= form.select :economic_index_id,
+                      options_for_select(
+                        EconomicIndex.order(:name).map { |i| ["#{i.abbreviation} — #{i.name}", i.id] },
+                        economic_index_history.economic_index_id
+                      ),
+                      { include_blank: "Selecione um índice..." },
+                      class: "input",
+                      required: true %>
+      <p class="text-xs text-muted-foreground">Indicador econômico ao qual este valor pertence.</p>
+      <%# Explanation:: This renders the inline validation error for the index field
+        #               if the record was submitted without a valid selection.
+        %>
+      <% if economic_index_history.errors[:economic_index_id].any? %>
+        <p class="text-xs text-destructive"><%= economic_index_history.errors[:economic_index_id].first %></p>
+      <% end %>
+    </div>
+
+    <%# Explanation:: This pair of selects composes the reference month and year for
+      #               the entry. They are sent as virtual attributes (month_ref and
+      #               year_ref) and assembled into a full date in the controller
+      #               before the record is persisted.
+      %>
+    <div class="flex flex-col gap-1">
+      <span class="label">Mês de Referência</span>
+      <div class="flex gap-3">
+
+        <%# Explanation:: This select captures the month portion of the reference date.
+          #               It uses integer values (1–12) mapped to Portuguese month names
+          #               so the controller can build the full date correctly.
+          %>
+        <%= form.select :month_ref,
+                        options_for_select(
+                          [
+                            ["Janeiro",   1],  ["Fevereiro",  2], ["Março",    3],
+                            ["Abril",     4],  ["Maio",       5], ["Junho",    6],
+                            ["Julho",     7],  ["Agosto",     8], ["Setembro", 9],
+                            ["Outubro",  10],  ["Novembro",  11], ["Dezembro", 12]
+                          ],
+                          economic_index_history.date&.month || Date.current.month
+                        ),
+                        { include_blank: "Mês..." },
+                        class: "input flex-1",
+                        required: true %>
+
+        <%# Explanation:: This select captures the year portion of the reference date.
+          #               It generates a range covering the past 5 years and the current
+          #               year so the user can backfill historical data if needed.
+          %>
+        <%= form.select :year_ref,
+                        options_for_select(
+                          (Date.current.year - 5..Date.current.year).to_a.reverse.map { |y| [y, y] },
+                          economic_index_history.date&.year || Date.current.year
+                        ),
+                        { include_blank: "Ano..." },
+                        class: "input w-28",
+                        required: true %>
+      </div>
+      <p class="text-xs text-muted-foreground">Mês e ano ao qual o valor registrado se refere.</p>
+
+      <%# Explanation:: This renders the inline duplicate error returned by the model's
+        #               uniqueness validation. It blocks saving when a value for the
+        #               same index and date already exists in the database.
+        %>
+      <% if economic_index_history.errors[:date].any? %>
+        <p class="text-xs text-destructive"><%= economic_index_history.errors[:date].first %></p>
+      <% end %>
+    </div>
+
+  <% end %>
+
+  <%# Explanation:: This fieldset groups the numeric value input separately to signal
+    #               that it is the core measurement being recorded. Keeping it apart
+    #               from the identifiers makes the form easier to scan and fill in.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Valor do Índice",
+             fieldset_desc: "Informe o valor percentual oficial divulgado para o período selecionado." do %>
+
+    <%# Explanation:: This numeric input captures the percentage value of the index
+      #               for the selected month. Decimal places use a comma as separator
+      #               to match the Brazilian numeric standard, and the placeholder
+      #               shows the expected format to avoid entry mistakes.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :value,
+               label: "Valor (%)",
+               placeholder: "1,16",
+               desc: "Valor percentual mensal do índice (ex: 1,16 para 1,16%). Use vírgula como separador decimal.",
+               field_type: :text_field,
+               icon_name: "percent" %>
+
+  <% end %>
+
+  <%# Explanation:: This submit button finalizes the registration of the monthly index
+    #               value. It sends all field data to the controller and provides
+    #               visual feedback using the primary-colored style pattern.
+    %>
+  <%= form.button :submit,
+                  name: nil,
+                  class: "button button-primary w-fit flex items-center gap-2" do %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+    <%= content_tag :span, button_name %>
+  <% end %>
+
+<% end %>

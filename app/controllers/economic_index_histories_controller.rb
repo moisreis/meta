@@ -143,20 +143,20 @@ class EconomicIndexHistoriesController < ApplicationController
   # Attributes:: - *economic_index_history_params* - The sanitized input data from the form.
   #
   def create
+    date = Date.new(
+      params[:economic_index_history][:year_ref].to_i,
+      params[:economic_index_history][:month_ref].to_i,
+      1
+    )
+    @economic_index_history = EconomicIndexHistory.new(
+      economic_index_id: params[:economic_index_history][:economic_index_id],
+      date:  date,
+      value: params[:economic_index_history][:value].to_s.gsub(',', '.').to_d
+    )
 
-    # Explanation:: This creates a new record using the safe data received from the web form.
-    #               It maps the user's input to the correct database columns.
-    @economic_index_history = EconomicIndexHistory.new(economic_index_history_params)
-
-    # Explanation:: This checks if the new history record successfully passes all database
-    #               rules and saves it. If successful, it sends the user back to the
-    #               main list with a confirmation message.
     if @economic_index_history.save
-      redirect_to economic_index_histories_path, notice: 'Valor histórico registrado com sucesso.'
+      redirect_to economic_index_histories_path notice: "Valor registrado com sucesso."
     else
-
-      # Explanation:: This handles cases where the data is incorrect, such as a missing value.
-      #               It reloads the creation form and shows the error messages to the user.
       render :new, status: :unprocessable_entity
     end
   end
@@ -214,12 +214,10 @@ class EconomicIndexHistoriesController < ApplicationController
   # Attributes:: - *params* - The raw data hash received from the user form submission.
   #
   def economic_index_history_params
-
-    # Explanation:: This defines which parts of the form data are allowed to enter the database.
-    #               It protects the system by ignoring any unexpected or malicious fields.
     params.require(:economic_index_history).permit(
       :economic_index_id,
-      :date,
+      :month_ref,
+      :year_ref,
       :value
     )
   end

@@ -72,6 +72,11 @@ class NormativeArticle < ApplicationRecord
   #               It receives minimum and maximum values and applies a SQL range filter.
   scope :by_target_range, ->(min, max) { where(benchmark_target: min..max) }
 
+  # app/models/normative_article.rb
+  CATEGORIES = %w[Renda\ Fixa\ Geral Renda\ Variável Investimento\ Exterior 100%\ Títulos\ Públicos].freeze
+
+  validates :category, inclusion: { in: CATEGORIES }, allow_blank: true
+
   # == display_name
   #
   # @author Moisés Reis

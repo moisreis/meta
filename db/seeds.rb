@@ -1,66 +1,91 @@
-# ── Índices econômicos ─────────────────────────────────────────
-indices = [
-  { name: 'CDI',             abbreviation: 'CDI',        description: 'Certificado de Depósito Interbancário' },
-  { name: 'IPCA',            abbreviation: 'IPCA',       description: 'Índice Nacional de Preços ao Consumidor Amplo' },
-  { name: 'IMA-GERAL',       abbreviation: 'IMAGERAL',   description: 'Índice de Mercado ANBIMA Geral' },
-  { name: 'IMA-B',           abbreviation: 'IMAB',       description: 'IMA atrelado ao IPCA' },
-  { name: 'IMA-B 5',         abbreviation: 'IMAB5',      description: 'IMA-B com prazo até 5 anos' },
-  { name: 'IRF-M 1',         abbreviation: 'IRFM1',      description: 'Índice de Renda Fixa de Mercado até 1 ano' },
-  { name: 'IDKA IPCA 2A',    abbreviation: 'IDKAIPCA2A', description: 'Índice de Duration Constante ANBIMA IPCA 2 anos' },
-  { name: 'Ibovespa',        abbreviation: 'IBOVESPA',   description: 'Índice Bovespa' },
-  { name: 'Meta',            abbreviation: 'META',       description: 'Meta atuarial / benchmark da política de investimentos' },
+# db/seeds/update_fund_articles.rb
+# Atualiza benchmark_index, administration_fee e enquadramento (investment_fund_articles)
+# para os 9 fundos BB do portfólio CapelaPrev III
+
+art_i_b   = NormativeArticle.find(3)   # Art. 7º, Inciso I "b"
+art_iii_a = NormativeArticle.find(5)   # Art. 7º, Inciso III "a"
+
+funds_data = [
+  {
+    cnpj:             '50.099.960/0001-29',
+    benchmark_index:  'IPCA',
+    administration_fee: 0.06,
+    article:          art_i_b
+  },
+  {
+    cnpj:             '13.322.205/0001-35',
+    benchmark_index:  'IDkA IPCA 2 ANOS',
+    administration_fee: 0.20,
+    article:          art_i_b
+  },
+  {
+    cnpj:             '14.964.240/0001-10',
+    benchmark_index:  'IMA',
+    administration_fee: 0.20,
+    article:          art_i_b
+  },
+  {
+    cnpj:             '03.543.447/0001-03',
+    benchmark_index:  'IMA-B 5',
+    administration_fee: 0.20,
+    article:          art_i_b
+  },
+  {
+    cnpj:             '07.442.078/0001-05',
+    benchmark_index:  'IMA-B',
+    administration_fee: 0.20,
+    article:          art_i_b
+  },
+  {
+    cnpj:             '07.111.384/0001-69',
+    benchmark_index:  'IRF-M',
+    administration_fee: 0.20,
+    article:          art_i_b
+  },
+  {
+    cnpj:             '11.328.882/0001-35',
+    benchmark_index:  'IRF-M 1',
+    administration_fee: 0.30,
+    article:          art_i_b
+  },
+  {
+    cnpj:             '13.077.418/0001-49',
+    benchmark_index:  'CDI',
+    administration_fee: 0.30,
+    article:          art_iii_a
+  },
+  {
+    cnpj:             '35.292.588/0001-89',
+    benchmark_index:  'IPCA',
+    administration_fee: 0.50,
+    article:          art_iii_a
+  }
 ]
 
-indices.each do |attrs|
-  idx = EconomicIndex.find_or_initialize_by(name: attrs[:name])
+puts "Atualizando fundos BB..."
 
-  idx.abbreviation = attrs[:abbreviation]
-  idx.description  = attrs[:description]
+funds_data.each do |data|
+  fund = InvestmentFund.find_by(cnpj: data[:cnpj])
 
-  idx.save!
-end
-
-
-puts "✅ #{EconomicIndex.count} índices econômicos cadastrados."
-
-# ── Valores mensais de exemplo (2025) ─────────────────────────
-sample_values = {
-  'CDI'        => {
-    Date.new(2025,1,31) => 1.01, Date.new(2025,2,28) => 0.99,
-    Date.new(2025,3,31) => 0.96, Date.new(2025,4,30) => 1.06,
-    Date.new(2025,5,31) => 1.14, Date.new(2025,6,30) => 1.10
-  },
-  'IPCA'       => {
-    Date.new(2025,1,31) => 0.16, Date.new(2025,2,28) => 1.31,
-    Date.new(2025,3,31) => 0.56, Date.new(2025,4,30) => 0.43,
-    Date.new(2025,5,31) => 0.26, Date.new(2025,6,30) => 0.24
-  },
-  'IMAGERAL'   => {
-    Date.new(2025,1,31) => 1.40, Date.new(2025,2,28) => 0.79,
-    Date.new(2025,3,31) => 1.27, Date.new(2025,4,30) => 1.68,
-    Date.new(2025,5,31) => 1.25, Date.new(2025,6,30) => 1.27
-  },
-  'IBOVESPA'   => {
-    Date.new(2025,1,31) => 4.86, Date.new(2025,2,28) => -2.64,
-    Date.new(2025,3,31) => 6.08, Date.new(2025,4,30) => 3.69,
-    Date.new(2025,5,31) => 1.45, Date.new(2025,6,30) => 1.33
-  },
-  'META'       => {
-    Date.new(2025,1,31) => 0.56, Date.new(2025,2,28) => 1.72,
-    Date.new(2025,3,31) => 0.97, Date.new(2025,4,30) => 0.84,
-    Date.new(2025,5,31) => 0.66, Date.new(2025,6,30) => 0.64
-  },
-}
-
-sample_values.each do |abbr, monthly|
-  idx = EconomicIndex.find_by!(abbreviation: abbr)
-
-  monthly.each do |date, value|
-    EconomicIndexHistory.find_or_create_by!(
-      economic_index: idx,
-      date: date
-    ) { |h| h.value = value }
+  unless fund
+    puts "  ✗ Fundo não encontrado: #{data[:cnpj]}"
+    next
   end
+
+  # 1. Atualiza campos diretos do fundo
+  fund.update!(
+    benchmark_index:    data[:benchmark_index],
+    administration_fee: data[:administration_fee]
+  )
+
+  # 2. Substitui o artigo normativo
+  fund.investment_fund_articles.destroy_all
+  InvestmentFundArticle.create!(
+    investment_fund_id:   fund.id,
+    normative_article_id: data[:article].id
+  )
+
+  puts "  ✓ #{data[:cnpj]} → #{data[:article].article_name} | #{data[:benchmark_index]} | #{data[:administration_fee]}%"
 end
 
-puts "✅ Histórico de índices inserido."
+puts "\nConcluído."

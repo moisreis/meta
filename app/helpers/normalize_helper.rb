@@ -211,7 +211,7 @@ module NormalizeHelper
     styles = {
       up: { color: "text-success-600 [&>span]:!text-success-600", icon: "trending-up" },
       down: { color: "text-danger-600 [&>span]:!text-danger-600", icon: "trending-down" },
-      stale: { color: "text-muted", icon: "minus" }
+      stale: { color: "text-muted [&>svg]:hidden", icon: "minus" }
     }[trend]
 
     # Explanation:: This logic chooses the correct formatting method to use.

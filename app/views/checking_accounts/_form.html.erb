@@ -1,0 +1,182 @@
+<%#
+  # Partial: _form.html.erb
+  # Date: 02/22/2026
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Formulário compartilhado para criação e edição de CheckingAccount.
+  #              Captura todos os atributos de uma conta corrente: identificação,
+  #              dados bancários, saldo, mês de referência e observações.
+  #
+  # Usage:: - What: Partial reutilizável para new e edit de CheckingAccount.
+  #         - How: Usa form_with vinculado ao modelo, organizado em fieldsets
+  #                temáticos com os módulos padrão de input, select e textarea.
+  #         - Why: Centraliza os campos em um único partial para garantir
+  #                consistência entre criação e edição e facilitar manutenção.
+  %>
+
+<%# Explanation:: O form_with usa o array [portfolio, checking_account] para que
+  #               o Rails resolva automaticamente a rota nested correta tanto para
+  #               POST (criação) quanto para PATCH (edição).
+  %>
+<%= form_with(model: [@portfolio, checking_account], class: "contents") do |form| %>
+
+  <% if checking_account.errors.any? %>
+    <div class="mb-4 p-4 border border-red-300 bg-red-50 rounded">
+      <h2 class="text-sm font-semibold text-red-700 mb-2">
+        <%= pluralize(checking_account.errors.count, "erro") %> impediram o salvamento:
+      </h2>
+      <ul class="list-disc list-inside text-sm text-red-600">
+        <% checking_account.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <%# Explanation:: Fieldset de identificação agrupa os campos que definem a
+    #               identidade da conta: nome descritivo e instituição financeira.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Identificação",
+             fieldset_desc: "Nomeie a conta e informe a instituição financeira responsável." do
+  %>
+
+    <%# Explanation:: Campo de nome livre para identificar a conta corrente,
+      #               como "CC Principal" ou "Conta Reserva", facilitando
+      #               a distinção quando houver múltiplas contas no portfólio.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :name,
+               label: "Nome",
+               placeholder: "CC Principal, Conta Reserva",
+               desc: "Escolha um nome descritivo para identificar esta conta.",
+               field_type: :text_field,
+               icon_name: "tag"
+    %>
+
+    <%# Explanation:: Campo para o nome da instituição financeira onde a conta
+      #               está mantida. Usado para agrupamento no relatório PDF.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :institution,
+               label: "Instituição Financeira",
+               placeholder: "Bradesco, Caixa Econômica Federal",
+               desc: "Informe o banco ou cooperativa de crédito da conta.",
+               field_type: :text_field,
+               icon_name: "bank"
+    %>
+
+  <% end %>
+
+  <%# Explanation:: Fieldset de dados bancários com campos opcionais de número
+    #               da conta e moeda, permitindo rastreabilidade e suporte futuro
+    #               a contas em moeda estrangeira.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Dados Bancários",
+             fieldset_desc: "Informações adicionais para identificação precisa da conta." do
+  %>
+
+    <%# Explanation:: Número da conta é opcional mas facilita auditoria, especialmente
+      #               quando o portfólio possui múltiplas contas na mesma instituição.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :account_number,
+               label: "Número da Conta",
+               placeholder: "00012345-6",
+               desc: "Facilita a identificação quando há múltiplas contas.",
+               field_type: :text_field,
+               icon_name: "hash"
+    %>
+
+    <%# Explanation:: Campo de moeda com valor padrão BRL. Disponibilizado para
+      #               suporte eventual a portfólios com ativos em moeda estrangeira.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :currency,
+               label: "Moeda",
+               placeholder: "BRL",
+               desc: "Código ISO da moeda",
+               field_type: :text_field,
+               icon_name: "dollar"
+    %>
+
+  <% end %>
+
+  <%# Explanation:: Fieldset financeiro com saldo e data de referência, que são
+    #               os campos obrigatórios e mais críticos do registro. O saldo
+    #               representa a disponibilidade no mês de competência informado.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Saldo e Período",
+             fieldset_desc: "Informe o saldo da conta e o mês de competência deste registro." do
+  %>
+
+    <%# Explanation:: Campo de saldo monetário. Deve refletir o extrato do último
+      #               dia do mês informado, pois o sistema normaliza a data de
+      #               referência para o fim do mês automaticamente.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :balance,
+               label: "Saldo",
+               placeholder: "0,00",
+               desc: "Saldo da conta no encerramento do mês de referência.",
+               field_type: :number_field,
+               icon_name: "banknote",
+               step: :any
+    %>
+
+    <%# Explanation:: Campo de data de referência. Qualquer dia do mês pode ser
+      #               informado — o controller normaliza automaticamente para o
+      #               último dia do mês ao salvar o registro.
+      %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :reference_date,
+               label: "Data de Referência",
+               placeholder: "",
+               desc: "Mês de competência deste saldo. Será ajustado para o último dia do mês.",
+               field_type: :date_field,
+               icon_name: "calendar"
+    %>
+
+  <% end %>
+
+  <%# Explanation:: Fieldset de observações para notas livres sobre a conta,
+    #               como restrições de uso, destinação dos recursos ou
+    #               qualquer informação relevante para auditoria.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Observações",
+             fieldset_desc: "Informações adicionais sobre esta conta. Campo opcional." do
+  %>
+
+    <%= render "partials/modules/textarea",
+               f: form,
+               name: :notes,
+               label: "Observações",
+               placeholder: "Conta vinculada ao RPPS para pagamento de benefícios.",
+               desc: "Opcional. Máximo de 500 caracteres.",
+               rows: 3
+    %>
+
+  <% end %>
+
+  <%# Explanation:: Botão de submit com ícone dinâmico e texto configurável,
+    #               seguindo o padrão dos outros formulários do sistema para
+    #               manter consistência visual na interface.
+    %>
+  <%= form.button :submit,
+                  name: nil,
+                  class: "button button-primary w-fit flex items-center gap-2" do
+  %>
+    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
+    <%= content_tag :span, button_name %>
+  <% end %>
+
+<% end %>

@@ -1,0 +1,62 @@
+<%#
+  # Partial: edit.html.erb
+  # Date: 02/22/2026
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renderiza a página de edição de uma conta corrente existente.
+  #              Exibe o formulário de atualização e uma seção de zona de perigo
+  #              para exclusão permanente do registro.
+  #
+  # Usage:: - What: Renderiza a visão de edição para um CheckingAccount existente.
+  #         - How: Usa o wrapper do dashboard, delega os campos ao _form e
+  #                expõe a ação de exclusão em bloco separado para evitar cliques
+  #                acidentais.
+  #         - Why: Fornece a interface para o U e o D do CRUD de CheckingAccount
+  #                com estrutura de UI consistente com o restante do sistema.
+  %>
+
+<%# Explanation:: O wrapper define o título com o nome da conta sendo editada
+  #               para que o usuário sempre saiba qual registro está modificando,
+  #               reduzindo o risco de alterações inadvertidas.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Editar #{@checking_account.name}",
+           page_desc: "Atualize as informações da conta corrente conforme necessário." do
+%>
+
+  <%# Explanation:: Delega todos os campos do formulário ao partial compartilhado,
+    #               configurando o botão de submit com ícone de atualização e texto
+    #               adequado para uma ação de edição.
+    %>
+  <%= render "form",
+             checking_account: @checking_account,
+             portfolio: @portfolio,
+             button_name: "Atualizar",
+             icon_name: "refresh-cw"
+  %>
+
+  <%# Explanation:: Esta seção de zona de perigo isola a ação destrutiva de exclusão
+    #               do formulário de edição, exigindo confirmação explícita do usuário
+    #               antes de remover permanentemente o registro e seus dados.
+    %>
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Zona de Perigo",
+             fieldset_desc: "A exclusão da conta é permanente e não pode ser desfeita." do
+  %>
+
+    <%= button_to portfolio_checking_account_path(@portfolio, @checking_account),
+                  method: :delete,
+                  class: "button button-danger w-fit flex items-center gap-2",
+                  data: {
+                    turbo_confirm: "Tem certeza que deseja excluir \"#{@checking_account.name}\"? "\
+                      "Esta ação é irreversível."
+                  } do
+    %>
+      <%= inline_svg_tag "icons/trash-2.svg" %>
+      <span>Excluir conta corrente</span>
+    <% end %>
+
+  <% end %>
+
+<% end %>

@@ -1,0 +1,37 @@
+<%#
+  # Partial: new.html.erb
+  # Date: 12/23/2025
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders the view for creating a new **InvestmentFund** record, leveraging the
+  #              shared form partial to collect all necessary fund data from the user.
+  #
+  # Usage: - What: Displays the primary interface for initiating the creation of a new investment
+  #                fund entry in the database.
+  #        - How: Wraps the content in a dashboard layout and renders the shared **_form.html.erb**
+  #               partial, passing the new fund object and specific button labels.
+  #        - Why: Provides a single, consistent entry point for data input, ensuring that all
+  #               newly created fund records adhere to the required schema and validations.
+  %>
+
+<%# Explanation:: This layout wrapper organizes the entire page content into a clean
+  #               dashboard structure to ensure visual consistency. It acts as the
+  #               main container by setting the page title and descriptive labels
+  #               to guide the user through the registration process.
+  %>
+<%= render 'partials/route/dashboard/wrapper',
+           page_title: "Criar entrada de histórico de índices econômicos",
+           page_desc: "Cadastro de novo histórico de índice econômico." do
+%>
+
+  <%# Explanation:: This shared partial generates the actual input fields needed to
+    #               collect fund data from the user. It appears inside the
+    #               wrapper and works by receiving the fund model along with
+    #               custom labels and icons for the final submission button.
+    %>
+  <%= render "form",
+             economic_index_history: @economic_index_history,
+             button_name: "Adicionar",
+             icon_name: "plus" %>
+<% end %>

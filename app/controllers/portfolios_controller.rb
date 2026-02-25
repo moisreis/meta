@@ -184,11 +184,17 @@ class PortfoliosController < ApplicationController
   end
 
   def monthly_report
-    report = PortfolioMonthlyReportGenerator.new(@portfolio)
+    reference_date = if params[:month].present? && params[:year].present?
+                       Date.new(params[:year].to_i, params[:month].to_i, 1).end_of_month
+                     else
+                       Date.current.end_of_month
+                     end
+
+    report = PortfolioMonthlyReportGenerator.new(@portfolio, reference_date)
     pdf_data = report.generate
 
     send_data pdf_data,
-              filename: "relatorio_#{@portfolio.name.parameterize}_#{Date.current}.pdf",
+              filename: "relatorio_#{@portfolio.name.parameterize}_#{reference_date.strftime('%Y-%m')}.pdf",
               type: 'application/pdf',
               disposition: 'inline'
   end
@@ -315,6 +321,7 @@ class PortfoliosController < ApplicationController
     params.require(:portfolio).permit(
       :name,
       :user_id,
+      :annual_interest_rate,
       :shared_user_id
     )
   end

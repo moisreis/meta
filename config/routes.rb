@@ -38,12 +38,13 @@ Rails.application.routes.draw do
 
   resources :portfolios do
     member do
-      get :monthly_report  # <-- ADD THIS
+      get :monthly_report
       post :run_calculations
     end
     collection do
       get :export
     end
+    resources :checking_accounts
   end
 
   resources :users
@@ -59,9 +60,9 @@ Rails.application.routes.draw do
   get 'fund_investments/:id/market_value_on', to: 'fund_investments#market_value_on'
 
   match "*path",
-       to: "errors#show",
-       via: :all,
-       constraints: ->(req) { !req.path.starts_with?("/rails/") }
+        to: "errors#show",
+        via: :all,
+        constraints: ->(req) { !req.path.starts_with?("/rails/") }
 
   match "/403", to: "errors#show", via: :all
   match "/404", to: "errors#show", via: :all

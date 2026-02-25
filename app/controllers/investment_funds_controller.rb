@@ -242,11 +242,14 @@ class InvestmentFundsController < ApplicationController
   #
   def investment_fund_params
     params.require(:investment_fund).permit(
-      :cnpj,
       :fund_name,
-      :originator_fund,
+      :cnpj,
+      :administration_fee,
+      :performance_fee,
+      :benchmark_index,
       :administrator_name,
-      :normative_article_ids
+      :originator_fund,
+      normative_article_ids: []
     )
   end
 end

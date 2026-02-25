@@ -193,7 +193,7 @@
                card_icon: "repeat",
                status: :teal do
     %>
-      <%= normalize_currency(@fund_investment.total_applications - @fund_investment.total_redemptions) %>
+      <%= normalize_currency(@fund_investment.total_gain) %>
     <% end %>
 
 <%# Explanation:: This card calculates the percentage return on the capital
