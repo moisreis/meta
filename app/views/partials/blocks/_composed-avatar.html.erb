@@ -15,9 +15,9 @@
   #        - Why: Keeps consistent user-identity presentation across the app and
   #               centralizes styling and markup.
   %>
-<div class="flex flex-row justify-center items-center p-1.5 pr-3 rounded-full h-9 gap-1.5 border border-border">
+<div class="flex flex-row justify-center items-center bg-white p-0.75 pr-2 rounded-full h-9 gap-1.5 border border-border">
   <%= render 'partials/modules/avatar' %>
   <div class="flex flex-col justify-start items-start -space-y-1">
-    <%= content_tag :span, "Olá, #{current_user.first_name} #{current_user.last_name}", class: "text-sm text-muted font-medium" %>
+    <%= content_tag :span, "Olá, #{current_user.first_name} #{current_user.last_name}", class: "text-xs font-mono uppercase text-muted font-semibold" %>
   </div>
 </div>

@@ -1,47 +1,80 @@
-/*
- * File: application
- * Date: 11/28/2025
- * Author: Moisés Reis
- * Package: Meta
+/* =============================================================================
+ * Stylesheet Aggregator
+ * =============================================================================
  *
- * Description: Central stylesheet aggregator for the application.
- *              This file links together all core third-party and helper styles
- *              that must be globally available across views.
+ * File         : application.css
+ * Author       : Moisés Reis
+ * Created      : 11/28/2025
+ * Last Updated : 11/28/2025
+ * Version      : 1.0.0
  *
- * Usage: - What: Collects and loads foundational CSS assets used throughout the app.
- *        - How: Uses @import statements to pull in library and helper stylesheets.
- *        - Why: Ensures consistent styling and shared UI behavior without repeating
- *               imports in individual components.
- */
+ * -----------------------------------------------------------------------------
+ * TABLE OF CONTENTS
+ * -----------------------------------------------------------------------------
+ *
+ *   1.  Library Imports
+ *   2.  Helper Imports
+ *   3.  Font Faces
+ *
+ * -----------------------------------------------------------------------------
+ * NOTES
+ * -----------------------------------------------------------------------------
+ *
+ *   - This file is the single entry point for all global CSS dependencies.
+ *     Do not import libraries or helpers anywhere else.
+ *   - Order matters: libraries load before helpers to allow helpers to
+ *     override library defaults where needed.
+ *
+ * =============================================================================
+ * © 2025 Meta. All rights reserved.
+ * ============================================================================= */
 
-/*
- * Loads the Tom Select base stylesheet.
- * This provides enhanced dropdown components with searchable and taggable UI.
- * Required wherever select inputs need advanced client-side behavior.
+/* =============================================================================
+ * 1. LIBRARY IMPORTS
+ * ============================================================================= */
+
+/**
+ * TomSelect — Enhanced select inputs.
+ * Searchable, taggable dropdowns with client-side filtering.
+ * Required on any view that uses advanced select fields.
  */
 @import "libraries/tom-select.css";
 
-/*
- * Loads the Flatpickr date/time picker stylesheet.
- * Enables lightweight and customizable calendar widgets for forms.
- * Necessary for any view that uses date or datetime inputs.
+/**
+ * Flatpickr — Date & time picker.
+ * Lightweight calendar widgets for date and datetime inputs.
+ * Required on any view that renders date or datetime form fields.
  */
 @import "libraries/flatpicker.css";
 
-/*
- * Loads the Tippy.js's library.
- * Sets the default Tippy.js to match the app's brand.
+/**
+ * Tippy.js — Tooltip theme.
+ * Scopes the 'meta' theme to match the app's brand.
+ * Required globally — tooltips can appear on any page.
  */
 @import "libraries/tippy.css";
 
-/*
- * Loads helper styles that apply alternating row shading to tables.
- * Improves readability of tabular data by increasing visual separation.
- * Useful anywhere tabular layouts are rendered.
+/* =============================================================================
+ * 2. HELPER IMPORTS
+ * ============================================================================= */
+
+/**
+ * table-shade — Alternating row shading.
+ * Applies zebra-striping to tables for improved row readability.
+ * Active on any view that renders tabular data.
  */
 @import "helpers/table-shade.css";
 
 
+/* =============================================================================
+ * 3. FONT FACES
+ * ============================================================================= */
+
+/**
+ * Geist Pixel Square
+ * Pixel-style display font. Used for decorative or branded UI moments.
+ * Loaded from a local TTF asset — no external dependency.
+ */
 @font-face {
     font-family: "Geist Pixel Square";
     src: url("GeistPixel-Square.ttf") format("truetype");

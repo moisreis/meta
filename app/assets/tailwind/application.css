@@ -1,91 +1,121 @@
+/* =============================================================================
+ * Application Stylesheet
+ * =============================================================================
+ *
+ * File         : application.css
+ * Author       : Moisés Reis
+ * Created      : 11/12/2025
+ * Last Updated : 11/14/2025
+ * Version      : 1.0.0
+ *
+ * -----------------------------------------------------------------------------
+ * TABLE OF CONTENTS
+ * -----------------------------------------------------------------------------
+ *
+ *   1.  Tailwind Imports
+ *   2.  Custom Variants
+ *   3.  Theme Tokens  (@theme)
+ *       3a. Spacing
+ *       3b. Typography — Families & Sizes
+ *       3c. Colors — Brand & Palette
+ *       3d. Radius
+ *   4.  Base Styles  (@layer base)
+ *       4a. Body
+ *       4b. Form
+ *       4c. Number Input
+ *   5.  Components  (@layer components)
+ *       5a. Buttons — Base & Variants
+ *       5b. Badges  — Base & Variants
+ *   6.  Utilities  (@layer utilities)
+ *       6a. Scrollbar
+ *
+ * -----------------------------------------------------------------------------
+ * NOTES
+ * -----------------------------------------------------------------------------
+ *
+ *   - Spacing base unit: 4px. All spacing values are multiples of this.
+ *   - Colors are defined exclusively in @theme and must never be hardcoded.
+ *   - Buttons use the `.button` class. Variants stack on top: `.button-primary`.
+ *   - Badges use the `.badge` class. Variants stack on top: `.badge-success`.
+ *   - Z-index scale is managed at the component level, not defined here.
+ *
+ * =============================================================================
+ * © 2025 Meta. All rights reserved.
+ * ============================================================================= */
+
+/* =============================================================================
+ * 1. TAILWIND IMPORTS
+ * ============================================================================= */
+
 @import 'tailwindcss';
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 
+
+/* =============================================================================
+ * 2. CUSTOM VARIANTS
+ * ============================================================================= */
+
+/**
+ * dark
+ * Enables the dark mode variant scoped to [data-theme=dark].
+ * Apply via: dark:bg-neutral-900, dark:text-white, etc.
+ */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-/*
- * File: application
- * Date: 11/12/2025
- * Author: Moisés Reis
- * Package: Meta
- *
- * Description: Sets up the global theme variables for the application.
- *              Defines spacing, font, and core color palette.
- *
- * Usage: - What: Provides base CSS variables that drive spacing, typography, and colors
- *        - How: Uses `@theme` block to declare reusable CSS custom properties
- *        - Why: Ensures consistent design tokens across components and Tailwind utilities
- */
 
-/*
- * ------------------------------
- *  @theme
- *
- *  Defines the global design tokens for the application.
- *  This block declares custom CSS variables used for spacing,
- *  typography, color palettes, and component radii.
- *
- *  These variables ensure consistency across Tailwind utilities
- *  and maintain visual harmony between components.
- * ------------------------------
+/* =============================================================================
+ * 3. THEME TOKENS
+ * ============================================================================= */
+
+/**
+ * Global design tokens declared via Tailwind's @theme block.
+ * These variables drive every spacing, color, and typography decision.
+ * Never hardcode values — always reference a token.
  */
 @theme {
 
     /**
-     * Resets all unknown theme variables to their initial values
-     * Ensures clean and predictable overrides for custom properties
+     * Resets all color and radius tokens to their initial (empty) values.
+     * Prevents Tailwind defaults from leaking into the custom palette.
      */
     --color-*: initial;
     --radius-*: initial;
 
-    /*
-     * ------------------------------
-     *  Spacing
-     *
-     *  Sets the base spacing unit used throughout the application.
-     *  This value scales margins, paddings, and gaps to maintain visual rhythm.
-     * ------------------------------
+    /* --- 3a. Spacing ------------------------------------------------------- */
+    /**
+     * --spacing
+     * Base unit for all margin, padding, and gap calculations.
+     * Every spacing value in the app is a multiple of 4px.
      */
     --spacing: 4px;
 
-    /*
-     * ------------------------------
-     *  Font families
-     *
-     *  Sets the default typeface for all text content.
-     *  Ensures readability and consistency across UI components.
-     * ------------------------------
+
+    /* --- 3b. Typography — Families & Sizes --------------------------------- */
+    /**
+     * Font families.
+     * --font-body     → Default text for all UI content.
+     * --font-heading  → Display and heading elements.
+     * --font-mono     → Code, keys, labels, and button text.
      */
     --font-body: 'Plus Jakarta Sans', sans-serif;
     --font-heading: 'Plus Jakarta Sans', serif;
     --font-mono: 'Geist Mono', monospace;
 
-    /*
-     * ------------------------------
-     *  Font sizes
-     *
-     *  Sets additional text sizes beyond Tailwind defaults.
-     *  Used for fine-grained typography control in compact UI elements.
-     * ------------------------------
+    /**
+     * Extended text sizes below Tailwind's default `xs` (0.75rem).
+     * --text-3xs → 10px. Reserved for the tightest labels or legal fine print.
+     * --text-2xs → 11.6px. Used for badge text, table meta, and captions.
      */
     --text-3xs: 0.625rem;
     --text-2xs: 0.725rem;
 
-    /*
-     * ------------------------------
-     *  Color palette
-     *
-     *  Defines the core color tokens of the design system.
-     *  Each color serves a specific functional or aesthetic role.
-     * ------------------------------
-     */
-    /*
-     *  Sets the primary color used for key actions, highlights, and
-     *  interactive components such as buttons, links, and icons.
-     *  This palette defines lighter and darker shades for hover,
-     *  focus, and disabled states.
-     */
+
+    /* --- 3c. Colors -------------------------------------------------------- */
+    /* Primary
+     * The main brand color driving CTAs, links, and interactive states.
+     * Scale: 50 (lightest tint) → 950 (deepest shade).
+     * Use 600 for default, 50 for backgrounds, 900/950 for text on light. */
     --color-primary-50: oklch(98.4% 0.0087 185.262);
     --color-primary-100: oklch(95.57% 0.0309 185.391);
     --color-primary-200: oklch(91.3% 0.0582 183.18);
@@ -98,16 +128,18 @@
     --color-primary-900: oklch(35.69% 0.0414 191.74);
     --color-primary-950: oklch(25.37% 0.0313 194.658);
 
-    /*
-     *  Sets the text colors used throughout the application.
-     *  These variables define the visual hierarchy between headings,
-     *  body text, and muted or secondary content. They ensure clarity,
-     *  accessibility, and proper contrast across backgrounds.
-     */
-    --color-heading: #1a1a1a;
-    --color-body: #333333;
-    --color-muted: #8a8a8a;
+    /* Text Colors
+     * Semantic tokens for typographic hierarchy.
+     * --color-heading  → Darkest. Page and section titles.
+     * --color-body     → Default running text.
+     * --color-muted    → Supporting text, hints, placeholders. */
+    --color-heading: oklch(14.5% 0 0);
+    --color-body: oklch(26.9% 0 0);
+    --color-muted: oklch(63.3% 0 0);
 
+    /* Neutral
+     * Structural colors for surfaces, borders, and backgrounds.
+     * Scale: 50 (near-white) → 950 (near-black). */
     --color-neutral-50: oklch(98.5% 0 0);
     --color-neutral-100: oklch(97% 0 0);
     --color-neutral-200: oklch(92.2% 0 0);
@@ -120,147 +152,104 @@
     --color-neutral-900: oklch(20.5% 0 0);
     --color-neutral-950: oklch(14.5% 0 0);
 
-    /*
-     *  Sets the neutral colors used for structural and background elements.
-     *  These variables define surfaces, borders, and accent layers that
-     *  balance vibrant colors and maintain visual clarity across layouts.
-     */
-    --color-white: #ffffff;
+    /* Surface & Structural
+     * Single-purpose tokens for layout and component backgrounds.
+     * --color-white       → Pure white surfaces.
+     * --color-transparent → Fully transparent layer.
+     * --color-border      → Default border color for cards, inputs, dividers.
+     * --color-input       → Input field background tint.
+     * --color-accent      → Subtle hover/active surface highlight. */
+    --color-white: oklch(100% 0 0);
     --color-transparent: transparent;
-    --color-border: #f2f2f5;
+    --color-border: oklch(98.5% 0 0);
     --color-input: #fcfcfe;
-    --color-header: #fcfcfc;
-    --color-table-bg: #fcfcfe;
-    --color-table-hover: #fbfbfe;
-    --color-table-strong: #fafafa;
-    --color-sidebar: #fafafa;
-    --color-accent: #f9f9f9;
-    --color-link: #0000ee;
+    --color-accent: oklch(97% 0 0);
 
-    /*
-     *  Sets the success colors used for positive feedback, confirmations,
-     *  and status indicators. This palette communicates completion, validation,
-     *  or healthy system states. Lighter tones serve as backgrounds or tints,
-     *  while darker ones reinforce emphasis and contrast.
-     */
-    --color-success-50: #f1fcf3;
-    --color-success-100: #dff9e6;
-    --color-success-200: #c0f2ce;
-    --color-success-300: #8fe6a7;
-    --color-success-400: #56d279;
-    --color-success-500: #30b757;
-    --color-success-600: #24a148;
-    --color-success-700: #1e7738;
-    --color-success-800: #1d5e31;
-    --color-success-900: #194e2a;
-    --color-success-950: #082b14;
+    /* Success
+     * Positive feedback, confirmation states, healthy indicators.
+     * Use 50–100 for backgrounds, 600–700 for text and icons. */
+    --color-success-50: oklch(98.2% 0.0143 156.201);
+    --color-success-100: oklch(96.2% 0.0348 157.118);
+    --color-success-200: oklch(92.5% 0.0665 156.37);
+    --color-success-300: oklch(87.1% 0.1188 154.824);
+    --color-success-400: oklch(77.24% 0.1677 149.954);
+    --color-success-500: oklch(72.3% 0.1734 149.954);
+    --color-success-600: oklch(62.7% 0.1536 149.589);
+    --color-success-700: oklch(52.7% 0.1219 150.444);
+    --color-success-800: oklch(44.8% 0.0942 151.703);
+    --color-success-900: oklch(39.3% 0.0752 152.91);
+    --color-success-950: oklch(26.6% 0.0515 153.309);
 
-    /*
-     *  Sets the alert colors used for warnings, cautions, and attention-grabbing
-     *  elements. These hues convey urgency without aggression, helping users
-     *  recognize potential issues or important information that needs review.
-     *  Lighter tones are suitable for subtle backgrounds or soft banners,
-     *  while deeper tones emphasize icons or key alert messages.
-     */
-    --color-alert-50: #fffbeb;
-    --color-alert-100: #fef4c7;
-    --color-alert-200: #fde78a;
-    --color-alert-300: #fddc69;
-    --color-alert-400: #fcc123;
-    --color-alert-500: #f6a10a;
-    --color-alert-600: #da7905;
-    --color-alert-700: #b55508;
-    --color-alert-800: #92410e;
-    --color-alert-900: #78360f;
-    --color-alert-950: #451b03;
+    /* Alert
+     * Warnings and cautionary information requiring user review.
+     * Use 50–100 for soft banners, 600–700 for icons and labels. */
+    --color-alert-50: oklch(98.7% 0.0219 101.388);
+    --color-alert-100: oklch(97.29% 0.0598 102.363);
+    --color-alert-200: oklch(94.48% 0.1088 100.727);
+    --color-alert-300: oklch(90.48% 0.1535 97.291);
+    --color-alert-400: oklch(84.17% 0.1657 85.139);
+    --color-alert-500: oklch(79.48% 0.1553 85.139);
+    --color-alert-600: oklch(68.09% 0.1369 74.912);
+    --color-alert-700: oklch(55.4% 0.1142 65.52);
+    --color-alert-800: oklch(47.6% 0.0964 61.002);
+    --color-alert-900: oklch(42.09% 0.0803 56.839);
+    --color-alert-950: oklch(28.59% 0.0558 52.978);
 
-    /*
-     *  Sets the danger colors used for destructive actions, critical errors,
-     *  or states that require immediate user attention. These hues are bold
-     *  and high-contrast to clearly communicate urgency and importance.
-     *  Light tones are suited for backgrounds in warning banners, while
-     *  darker tones emphasize buttons, icons, or key danger messages.
-     */
-    --color-danger-50: #fef2f3;
-    --color-danger-100: #ffe1e3;
-    --color-danger-200: #ffc9cc;
-    --color-danger-300: #fea3a8;
-    --color-danger-400: #fb6e76;
-    --color-danger-500: #f3404a;
-    --color-danger-600: #da1e28;
-    --color-danger-700: #bd1821;
-    --color-danger-800: #9c181f;
-    --color-danger-900: #811b20;
-    --color-danger-950: #46090c;
+    /* Danger
+     * Destructive actions, critical errors, irreversible states.
+     * High contrast by design — use 50–100 for backgrounds only. */
+    --color-danger-50: oklch(96.94% 0.0131 14.252);
+    --color-danger-100: oklch(93.99% 0.0273 14.449);
+    --color-danger-200: oklch(89.05% 0.0529 12.573);
+    --color-danger-300: oklch(80.96% 0.1045 14.122);
+    --color-danger-400: oklch(71.19% 0.1726 19.134);
+    --color-danger-500: oklch(64.32% 0.2192 19.134);
+    --color-danger-600: oklch(58.4% 0.2257 20.467);
+    --color-danger-700: oklch(51.2% 0.1977 20.002);
+    --color-danger-800: oklch(45.26% 0.1667 17.34);
+    --color-danger-900: oklch(40.69% 0.1393 14.41);
+    --color-danger-950: oklch(26.81% 0.0918 15.901);
 
-    /*
-     *  Sets the secondary color used for complementary elements and
-     *  accent components. It supports visual hierarchy and provides
-     *  contrast with the primary palette in layouts and UI details.
-     */
-    --color-secondary-50: #f2f8fc;
-    --color-secondary-100: #e2eef7;
-    --color-secondary-200: #cbe2f2;
-    --color-secondary-300: #a8d1e8;
-    --color-secondary-400: #7eb7dc;
-    --color-secondary-500: #609ed2;
-    --color-secondary-600: #4b85c5;
-    --color-secondary-700: #4172b4;
-    --color-secondary-800: #3a5e93;
-    --color-secondary-900: #334f75;
-    --color-secondary-950: #233148;
+    /* Secondary — Cool slate-blue supporting palette. */
+    --color-secondary-50: oklch(97.77% 0.0068 236.232);
+    --color-secondary-100: oklch(95.28% 0.0136 236.418);
+    --color-secondary-200: oklch(90.39% 0.0301 231.737);
+    --color-secondary-300: oklch(83.23% 0.0574 230.968);
+    --color-secondary-400: oklch(75.37% 0.0798 237.703);
+    --color-secondary-500: oklch(67.11% 0.0882 237.703);
+    --color-secondary-600: oklch(57.3% 0.0825 241.886);
+    --color-secondary-700: oklch(48.65% 0.0704 242.569);
+    --color-secondary-800: oklch(42.56% 0.058 241.003);
+    --color-secondary-900: oklch(37.17% 0.048 241.732);
+    --color-secondary-950: oklch(27.57% 0.0358 243.643);
 
-    /*
-     *  Sets the tertiary color used for highlights, decorative accents,
-     *  and subtle background tints. It enhances depth and vibrancy
-     *  without competing with primary and secondary tones.
-     */
-    --color-tertiary-50: #eefdfc;
-    --color-tertiary-100: #d3f9fa;
-    --color-tertiary-200: #adf1f4;
-    --color-tertiary-300: #74e4ec;
-    --color-tertiary-400: #34cfdc;
-    --color-tertiary-500: #17abba;
-    --color-tertiary-600: #1790a3;
-    --color-tertiary-700: #197485;
-    --color-tertiary-800: #1d5e6d;
-    --color-tertiary-900: #1d4e5c;
-    --color-tertiary-950: #0d343f;
+    /* Tertiary — Cyan-leaning accent for data visualization or highlights. */
+    --color-tertiary-50: oklch(98.4% 0.0149 194.196);
+    --color-tertiary-100: oklch(95.54% 0.038 196.259);
+    --color-tertiary-200: oklch(91.57% 0.0685 197.535);
+    --color-tertiary-300: oklch(86.31% 0.1065 199.314);
+    --color-tertiary-400: oklch(78.68% 0.1268 203.095);
+    --color-tertiary-500: oklch(67.84% 0.1127 206.21);
+    --color-tertiary-600: oklch(60.73% 0.1027 211.913);
+    --color-tertiary-700: oklch(51.83% 0.0853 213.37);
+    --color-tertiary-800: oklch(44.76% 0.0691 214.65);
+    --color-tertiary-900: oklch(39.58% 0.0567 217.218);
+    --color-tertiary-950: oklch(29.74% 0.0447 219.856);
 
-    /*
-     *  Sets the quaternary color used for highlights, supporting tones,
-     *  and secondary backgrounds. This palette introduces warmth and
-     *  contrast to neutral layouts, often complementing typography,
-     *  borders, or subtle state indicators.
-     */
-    --color-quaternary-50: #fafafe;
-    --color-quaternary-100: #e1e1f8;
-    --color-quaternary-200: #c9c9f4;
-    --color-quaternary-300: #a5a7eb;
-    --color-quaternary-400: #7a7be0;
-    --color-quaternary-500: #625ad7;
-    --color-quaternary-600: #5746ca;
-    --color-quaternary-700: #523cb9;
-    --color-quaternary-800: #493697;
-    --color-quaternary-900: #3c3078;
-    --color-quaternary-950: #2a214a;
+    /* Quaternary — Deep violet for charts, tags, and decorative elements. */
+    --color-quaternary-50: oklch(96.32% 0.0129 277.337);
+    --color-quaternary-100: oklch(93.22% 0.0242 277.871);
+    --color-quaternary-200: oklch(87.4% 0.0465 278.695);
+    --color-quaternary-300: oklch(78.93% 0.0836 279.304);
+    --color-quaternary-400: oklch(67.78% 0.1332 281.15);
+    --color-quaternary-500: oklch(58.85% 0.1724 281.164);
+    --color-quaternary-600: oklch(54.45% 0.1855 281.164);
+    --color-quaternary-700: oklch(46.27% 0.1791 281.063);
+    --color-quaternary-800: oklch(40.37% 0.1471 281.379);
+    --color-quaternary-900: oklch(36.25% 0.1108 282.652);
+    --color-quaternary-950: oklch(26.13% 0.072 284.367);
 
-    /*
-     *  Sets an alternative shade background color
-     *  to be shown in the datatables
-     */
-    --color-currency-50: #f1f7fd;
-    --color-currency-100: #dfedfa;
-    --color-currency-200: #c7e0f6;
-    --color-currency-300: #a0cdf0;
-    --color-currency-400: #73b1e7;
-    --color-currency-500: #5295df;
-    --color-currency-600: #3d7ad3;
-    --color-currency-700: #3466c1;
-    --color-currency-800: #30539d;
-    --color-currency-900: #2c497f;
-    --color-currency-950: #1e2d4d;
-
+    /* Indigo — Rich purple-blue. Used for nav highlights and focus rings. */
     --color-indigo-50: oklch(96.2% 0.018 272.314);
     --color-indigo-100: oklch(93% 0.034 272.788);
     --color-indigo-200: oklch(87% 0.065 274.039);
@@ -273,22 +262,7 @@
     --color-indigo-900: oklch(35.9% 0.144 278.697);
     --color-indigo-950: oklch(25.7% 0.09 281.288);
 
-    /*
-     *  Sets the numerical values shade background color
-     *  to be shown in the datatables
-     */
-    --color-numerical-50: #f9ffe6;
-    --color-numerical-100: #f0ffc8;
-    --color-numerical-200: #dbfe87;
-    --color-numerical-300: #c8fa5c;
-    --color-numerical-400: #b0f02b;
-    --color-numerical-500: #91d60c;
-    --color-numerical-600: #6fab05;
-    --color-numerical-700: #548209;
-    --color-numerical-800: #45660e;
-    --color-numerical-900: #3a5710;
-    --color-numerical-950: #1c3003;
-
+    /* Inchworm — Vivid yellow-green. Used for growth indicators and charts. */
     --color-inchworm-50: oklch(98.6% 0.0342 117.618);
     --color-inchworm-100: oklch(96.71% 0.0743 119.178);
     --color-inchworm-200: oklch(93.81% 0.1407 121.103);
@@ -301,22 +275,7 @@
     --color-inchworm-900: oklch(40.53% 0.1117 126.904);
     --color-inchworm-950: oklch(27.42% 0.0796 127.858);
 
-    /*
-     *  Sets the percentage values shade background color
-     *  to be shown in the datatables
-     */
-    --color-percentage-50: #f6f5fd;
-    --color-percentage-100: #efecfb;
-    --color-percentage-200: #dcd6f7;
-    --color-percentage-300: #cac0f2;
-    --color-percentage-400: #b09bea;
-    --color-percentage-500: #9573df;
-    --color-percentage-600: #8454d3;
-    --color-percentage-700: #7442bf;
-    --color-percentage-800: #6137a0;
-    --color-percentage-900: #512f83;
-    --color-percentage-950: #321c59;
-
+    /* Teal — Balanced blue-green. Used for tags, data, and secondary charts. */
     --color-teal-50: oklch(98.4% 0.014 180.72);
     --color-teal-100: oklch(95.3% 0.051 180.801);
     --color-teal-200: oklch(91% 0.096 180.426);
@@ -329,6 +288,7 @@
     --color-teal-900: oklch(38.6% 0.063 188.416);
     --color-teal-950: oklch(27.7% 0.046 192.524);
 
+    /* Honeysuckle — Warm yellow. Used for highlights, earnings, and callouts. */
     --color-honeysuckle-50: oklch(98.56% 0.0609 111.587);
     --color-honeysuckle-100: oklch(96.69% 0.1538 112.884);
     --color-honeysuckle-200: oklch(94.23% 0.2467 114.169);
@@ -341,79 +301,48 @@
     --color-honeysuckle-900: oklch(41.64% 0.0982 88.155);
     --color-honeysuckle-950: oklch(28.22% 0.0667 84.996);
 
-    /*
-     * ------------------------------
-     *  Radius
-     *
-     *  Sets the default border radius values used across the theme.
-     *  Use smaller values for subtle rounding on cards, buttons,
-     *  and inputs, and the full radius for fully rounded shapes
-     *  like badges, chips, or circular icons.
-     * ------------------------------
+
+    /* --- 3d. Radius -------------------------------------------------------- */
+    /**
+     * --radius-base → 4px. Default for buttons, inputs, cards.
+     * --radius-full → 999px. Fully rounded pills, avatar rings, badges.
      */
-    --radius-base: 7px;
+    --radius-base: 4px;
     --radius-full: 999px;
 }
 
-/*
- * ------------------------------
- *  @layer base
- *
- *  Sets the global foundational styles, including element
- *  resets, base typography, and default structural rules.
- *  Ensures consistent behavior across components and aligns
- *  with theme variables defined in `@theme`.
- * ------------------------------
- */
+
+/* =============================================================================
+ * 4. BASE STYLES
+ * ============================================================================= */
+
 @layer base {
 
-    :root {
-        color-scheme: light;
-        background-color: white;
-        color: black;
-    }
-
-    :root[data-theme="dark"] {
-        color-scheme: dark;
-        background-color: #111;
-        color: #eee;
-    }
-
-    /*
-     * ------------------------------
-     *  body
-     *
-     *  Sets the global default text and background styles
-     *  for the application. Defines the base font family,
-     *  font weight, and background color applied to all layouts.
-     * ------------------------------
+    /* --- 4a. Body ---------------------------------------------------------- */
+    /**
+     * body
+     * Global defaults for the document surface.
+     * White background + body font applied universally to every layout.
      */
     body {
         @apply bg-white font-body font-normal
     }
 
-    /*
-     * ------------------------------
-     *  form
-     *
-     *  Sets the default layout for forms.
-     *  Applies vertical stacking, spacing, and full-width layout
-     *  to ensure consistent alignment and readability.
-     * ------------------------------
+    /* --- 4b. Form ---------------------------------------------------------- */
+    /**
+     * form
+     * Default form layout: vertical flex column with consistent gap.
+     * Ensures all forms are full-width and uniformly spaced without extra markup.
      */
     form {
         @apply flex flex-col gap-6 w-full
     }
 
-    /*
-     * ------------------------------
-     *  number input
-     *
-     *  Sets the browser’s numeric input fields to render without
-     *  the default increment and decrement buttons. Improves visual
-     *  consistency and prevents unwanted UI chrome across WebKit-based
-     *  browsers.
-     * ------------------------------
+    /* --- 4c. Number Input -------------------------------------------------- */
+    /**
+     * input (number) — spinner removal
+     * Strips WebKit's native increment/decrement arrows from number inputs.
+     * Keeps inputs visually clean and consistent with custom UI controls.
      */
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
@@ -422,204 +351,158 @@
     }
 }
 
-/*
- * ------------------------------
- *  @layer components
- *
- *  Defines reusable UI components such as buttons and input styles.
- *  Provides consistent design tokens and interactivity across the app.
- * ------------------------------
- */
+
+/* =============================================================================
+ * 5. COMPONENTS
+ * ============================================================================= */
+
 @layer components {
 
-    /*
-     * ------------------------------
-     *  button
+    /* --- 5a. Buttons ------------------------------------------------------- */
+    /**
+     * .button  (also: button, input[type=submit])
+     * Base button. Always required — variants stack on top of this class.
+     * Sets height, typography, spacing, color, and all interactive states
+     * including focus rings, disabled opacity, and aria-invalid styling.
      *
-     *  Sets the base button style.
-     *  Defines typography, colors, spacing, and interactive states.
-     *  Ensures visual consistency for <button>, <input type="submit">,
-     *  and .button class components.
-     * ------------------------------
+     * Variants (add alongside .button):
+     *   .button-secondary    → Light primary tint. For supporting actions.
+     *   .button-danger       → Light red. For destructive or high-risk actions.
+     *   .button-honeysuckle  → Warm yellow. For highlighted or special actions.
+     *   .button-outline      → Bordered, white bg. For low-emphasis actions.
+     *   .button-ghost        → Transparent. For minimal tertiary actions.
+     *   .button-link         → Transparent, no border. For inline text-level actions.
+     *
+     * Sizes (add alongside .button):
+     *   .button-small        → Reduced height (h-7) and padding. For dense UIs.
+     *   .button-icon         → Square, icon-only variant (h-9 × w-9).
+     *
+     * Usage:
+     *   <button class="button">Primary</button>
+     *   <button class="button button-secondary button-small">Cancel</button>
+     *   <button class="button button-danger">Delete</button>
      */
     input[type=submit],
     button,
     .button {
-        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base text-sm text-primary-50 font-body font-medium transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-primary-100 focus:outline-primary-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-primary-100 focus-visible:outline-offset-2 focus-visible:outline-primary-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 hover:bg-primary-600/90 active:bg-primary-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-primary-50 [&>svg]:size-3.5 cursor-pointer
+        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-xs text-primary-50 font-mono uppercase !font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-primary-100 focus:outline-primary-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-primary-100 focus-visible:outline-offset-2 focus-visible:outline-primary-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 hover:bg-primary-600/90 active:bg-primary-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-primary-50 [&>svg]:!size-3.5 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer
     }
 
-    /*
-     * ------------------------------
-     *  button-small
-     *
-     *  Sets a compact button variant.
-     *  Reduces height and inner spacing.
-     *  Ensures a tighter, more subtle visual footprint for small actions.
-     * ------------------------------
+    /**
+     * .button-small
+     * Compact size modifier. Reduces height to h-7 and tightens padding.
+     * Use inside tables, toolbars, or any space-constrained UI.
      */
     .button-small {
         @apply !h-7 !px-2.5 !py-0.75
     }
 
-    /*
-     * ------------------------------
-     *  button-icon
-     *
-     *  Sets a compact button icon variant.
-     * ------------------------------
+    /**
+     * .button-icon
+     * Square icon-only button. Enforces equal width and height (h-9 × w-9).
+     * Enlarges the inner SVG slightly to fill the compact space.
      */
     .button-icon {
         @apply [&>svg]:!size-4 !h-9 !w-9 !p-2
     }
 
-    /*
-     * ------------------------------
-     *  button-secondary
-     *
-     *  Sets the secondary button appearance.
-     *  Applies a more subtle visual style
-     *  compared to primary buttons while keeping clear interactivity.
-     * ------------------------------
+    /**
+     * .button-secondary
+     * Subtle filled variant using the lightest primary tint as background.
+     * For supporting or secondary actions alongside a primary CTA.
      */
     .button-secondary {
         @apply text-primary-900 bg-primary-50 hover:!bg-primary-50/90 [&>svg]:!stroke-primary-900
     }
 
-    /*
-     * ------------------------------
-     *  button-danger
-     *
-     *  Sets the visual variant for destructive or high-risk actions.
-     *  Applies a light red background, muted red text color, and a soft border.
-     *  On hover, keeps the danger tone without darkening excessively.
-     * ------------------------------
+    /**
+     * .button-danger
+     * Destructive action variant. Light red background with muted red text.
+     * Reserved for delete, revoke, or other irreversible operations.
      */
     .button-danger {
         @apply text-danger-700 bg-danger-50 hover:!bg-danger-50/90 !shadow-none [&>svg]:!stroke-danger-700
     }
 
-    .button-numerical {
-        @apply text-primary-50 bg-primary-500 hover:!bg-primary-500/90 !shadow-none [&>svg]:!stroke-primary-50
-    }
-
+    /**
+     * .button-honeysuckle
+     * Warm yellow variant for highlighted or financially positive actions.
+     * Uses body-colored text for readability against the bright background.
+     */
     .button-honeysuckle {
         @apply text-body bg-honeysuckle-200 hover:!bg-honeysuckle-200/90 !shadow-none [&>svg]:!stroke-body
     }
 
-    /*
-     * ------------------------------
-     *  button-outline
-     *
-     *  Sets the outline variant for buttons.
-     *  Uses a bordered style with a neutral background
-     *  and a hover accent to convey secondary actions.
-     * ------------------------------
+    /**
+     * .button-outline
+     * Bordered button with a white background.
+     * For low-emphasis secondary actions that need clear boundary definition.
      */
     .button-outline {
         @apply border border-border text-body bg-white hover:!bg-accent/90 [&>svg]:!stroke-body
     }
 
-    /*
-     * ------------------------------
-     *  button-ghost
-     *
-     *  Sets the transparent ghost-style button.
-     *  Removes background and border for minimal visual weight.
-     *  Adds hover feedback to maintain interactivity.
-     * ------------------------------
+    /**
+     * .button-ghost
+     * Borderless, transparent button.
+     * Minimal visual weight — for tertiary actions, nav items, or icon buttons.
+     * Reveals a subtle border and background on hover to confirm interactivity.
      */
     .button-ghost {
         @apply bg-transparent border border-transparent shadow-none text-body hover:!bg-neutral-100 hover:!border-border [&>svg]:!stroke-body
     }
 
-    /*
-     * ------------------------------
-     *  button-link
-     *
-     *  Defines the visual style for link-like buttons.
-     *  It presents the element as text-only while keeping
-     *  interactive button behavior and hover feedback.
-     * ------------------------------
+    /**
+     * .button-link
+     * Transparent button styled like an inline link.
+     * No shadow or border by default; shows an accent background on hover.
+     * Use for in-context navigation or soft inline actions.
      */
     .button-link {
         @apply bg-transparent border !border-transparent shadow-none text-body hover:!bg-accent hover:!border-accent [&>svg]:!stroke-body
     }
 
-    /*
-     * ------------------------------
-     *  button-accent
-     *
-     *  Defines an alternative style for
-     *  secondary buttons
-     * ------------------------------
-     */
-    .button-accent {
-        @apply bg-neutral-100 shadow-xs text-body hover:!bg-neutral-100/90 active:!bg-neutral-100/80 [&>svg]:!stroke-body
-    }
 
-    /*
-     * ------------------------------
-     *  badge
+    /* --- 5b. Badges -------------------------------------------------------- */
+    /**
+     * .badge
+     * Base badge/tag component. Always required — color variants stack on top.
+     * Renders as a small inline pill with monospaced uppercase text.
+     * Includes a border by default that color variants override.
      *
-     *  Provides a compact, rounded label for highlighting
-     *  statuses, attributes, or small pieces of contextual
-     *  information. Ensures consistent sizing, alignment,
-     *  and icon handling while adapting to focus, hover,
-     *  and invalid states.
-     * ------------------------------
+     * Color variants (add alongside .badge):
+     *   .badge-outline      → White bg, neutral border. Generic / unclassified.
+     *   .badge-primary      → Primary tint bg. For primary-status tags.
+     *   .badge-accent       → Accent surface. For neutral highlights.
+     *   .badge-secondary    → Secondary tint. For secondary categories.
+     *   .badge-teal         → Teal tint. For chart labels or type tags.
+     *   .badge-honeysuckle  → Yellow tint. For earnings or positive values.
+     *   .badge-indigo       → Indigo tint. For navigation or scope indicators.
+     *   .badge-danger       → Red tint. For errors, rejections, or risk flags.
+     *   .badge-alert        → Yellow-orange tint. For warnings or cautions.
+     *   .badge-success      → Green tint. For completed or healthy states.
+     *   .badge-inchworm     → Bright green tint. For growth or gain indicators.
+     *
+     * Usage:
+     *   <span class="badge badge-success">Completed</span>
+     *   <span class="badge badge-danger">Failed</span>
      */
     .badge {
         @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-2xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-primary-50 text-primary-700 h-fit w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3 border
     }
 
-    /*
-     * ------------------------------
-     *  badge-outline
-     *
-     *  Sets the badge variant with a neutral outline.
-     *  Applies a clean white background and subtle border.
-     *  Keeps the badge visually lightweight for low-emphasis labels.
-     * ------------------------------
-     */
     .badge-outline {
         @apply bg-white !border border-border text-body [&>svg]:stroke-body;
     }
 
-    /*
- * ------------------------------
- *  badge-primary
- *
- *  Sets the badge variant with a neutral outline.
- *  Applies a clean white background and subtle border.
- *  Keeps the badge visually lightweight for low-emphasis labels.
- * ------------------------------
- */
     .badge-primary {
         @apply bg-primary-50 border-primary-100 text-primary-600 [&>svg]:stroke-primary-600;
     }
 
-    /*
- * ------------------------------
- *  badge-outline
- *
- *  Sets the badge variant with a neutral outline.
- *  Applies a clean white background and subtle border.
- *  Keeps the badge visually lightweight for low-emphasis labels.
- * ------------------------------
- */
     .badge-accent {
         @apply bg-accent border border-border text-body [&>svg]:stroke-body;
     }
 
-    /*
-     * ------------------------------
-     *  badge-secondary
-     *
-     *  Sets the badge variant styled with secondary brand colors.
-     *  Applies soft background and border tones.
-     *  Emphasizes supplementary status or category labels.
-     * ------------------------------
-     */
     .badge-secondary {
         @apply bg-secondary-50 border-secondary-100 text-secondary-600 [&>svg]:stroke-secondary-600;
     }
@@ -636,88 +519,36 @@
         @apply bg-indigo-50 border-indigo-100 text-indigo-600 [&>svg]:stroke-indigo-600;
     }
 
-    /*
-     * ------------------------------
-     *  badge-danger
-     *
-     *  Sets the badge variant with a danger-themed palette.
-     *  Applies alert-focused colors for warnings or critical tags.
-     *  Highlights items that demand immediate visual attention.
-     * ------------------------------
-     */
     .badge-danger {
         @apply bg-danger-50 border-danger-100 text-danger-600 [&>svg]:stroke-danger-600;
     }
 
-    /*
-     * ------------------------------
-     *  badge-alert
-     *
-     *  Sets the badge variant with a warning-themed palette.
-     *  Applies alert-focused colors for warnings tags.
-     * ------------------------------
-     */
     .badge-alert {
         @apply bg-alert-50 border-alert-100 text-alert-600 [&>svg]:stroke-alert-600;
     }
 
-    /*
-     * ------------------------------
-     *  badge-success
-     *
-     *  Sets the badge variant with a success-themed palette.
-     *  Applies success-focused colors for successes tags.
-     * ------------------------------
-     */
     .badge-success {
         @apply bg-success-50 border-success-100 text-success-600 [&>svg]:stroke-success-600;
-    }
-
-    /*
-     * ------------------------------
-     *  badge-currency
-     *
-     *  Sets the badge variant with a currency-themed palette.
-     *  Applies currency-focused colors for currency tags.
-     * ------------------------------
-     */
-    .badge-currency {
-        @apply bg-currency-50 border-currency-100 text-currency-600 [&>svg]:stroke-currency-600;
     }
 
     .badge-inchworm {
         @apply bg-inchworm-50 border-inchworm-100 text-inchworm-600 [&>svg]:stroke-inchworm-600;
     }
-
-    .badge-indigo {
-        @apply bg-indigo-50 border-indigo-100 text-indigo-600 [&>svg]:stroke-indigo-600;
-    }
-
-    /*
-     * ------------------------------
-     *  badge-numerical
-     *
-     *  Sets the badge variant with a numerical-themed palette.
-     *  Applies numerical-focused colors for numerical tags.
-     * ------------------------------
-     */
-    .badge-numerical {
-        @apply bg-numerical-50 border-numerical-100 text-numerical-600 [&>svg]:stroke-numerical-600;
-    }
-
-    /*
-     * ------------------------------
-     *  badge-black
-     *
-     *  Sets the badge variant with a black-themed palette.
-     * ------------------------------
-     */
-    .badge-black {
-        @apply bg-body border-none text-white [&>svg]:stroke-white;
-    }
 }
 
+
+/* =============================================================================
+ * 6. UTILITIES
+ * ============================================================================= */
+
 @layer utilities {
+
+    /* --- 6a. Scrollbar ----------------------------------------------------- */
+    /**
+     * .no-scrollbar
+     * Hides the scrollbar visually while keeping the element scrollable.
+     * Use on overflow containers where scrollbar chrome is undesirable.
+     */
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
@@ -727,21 +558,23 @@
         scrollbar-width: none;
     }
 
-    /* width */
+    /**
+     * Global custom scrollbar styling.
+     * Applies to all scrollable elements except those using .no-scrollbar.
+     * Thin 4px track, indigo-300 thumb, base border-radius.
+     */
     ::-webkit-scrollbar {
         height: calc(var(--spacing) * 1);
         width: calc(var(--spacing) * 1);
     }
 
-    /* Track */
     ::-webkit-scrollbar-track {
         box-shadow: none;
         border-radius: 0;
     }
 
-    /* Handle */
     ::-webkit-scrollbar-thumb {
-        background: var(--color-neutral-600);
+        background: var(--color-indigo-300);
         border-radius: var(--radius-base);
     }
 }

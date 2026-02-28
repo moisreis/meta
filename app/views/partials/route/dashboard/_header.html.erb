@@ -2,7 +2,8 @@
     #               It stays at the top while you scroll and uses a
     #               blur effect to look modern against the background.
     %>
-<div class="h-16 px-8 flex flex-row justify-between gap-6">
+<div class="h-16 px-8 flex flex-row justify-between gap-6 border-b border-border sticky top-0 bg-neutral-50/90 z-[9999] backdrop-blur-sm">
+
   <%# Explanation:: Portfolio selector dropdown on the left side.
       #               Allows users to switch between their portfolios
       #               and view the selected portfolio details.
@@ -29,7 +30,7 @@
 
       <%= link_to portfolio_path(current_user.portfolios.first&.id || 0),
                   id: "view-portfolio-link",
-                  class: "button button-accent button-small",
+                  class: "button button-outline button-small",
                   data: {
                     turbo_frame: "_top",
                     base_url: "/portfolios/"
@@ -50,7 +51,7 @@
 
         <%= button_to run_calculations_portfolio_path(@portfolio),
                       method: :post,
-                      class: "button button-secondary button-small" do %>
+                      class: "button button-outline button-small" do %>
 
           <%= inline_svg_tag("icons/refresh-cw.svg") %>
 

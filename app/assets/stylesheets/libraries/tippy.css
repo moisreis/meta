@@ -1,18 +1,43 @@
-/*
- * File: tippy
- * Date: 11/28/2025
- * Author: Moisés Reis
- * Package: Meta
+/* =============================================================================
+ * Tippy.js Stylesheet
+ * =============================================================================
  *
- * Description: Defines the base styling for Tippy.js tooltips under the custom "meta" theme.
- *              Ensures visual consistency with the application's design system by applying
- *              standardized colors, borders, and typography.
+ * File         : tippy.css
+ * Author       : Moisés Reis
+ * Created      : 11/28/2025
+ * Last Updated : 11/28/2025
+ * Version      : 1.0.0
  *
- * Usage: - What: Applies appearance rules to any tooltip using the 'meta' theme.
- *        - How: Targets the Tippy.js component via attribute selector and overrides
- *               background, text color, and border styling.
- *        - Why: Maintains consistent UI language across tooltips used throughout
- *               the application.
+ * -----------------------------------------------------------------------------
+ * TABLE OF CONTENTS
+ * -----------------------------------------------------------------------------
+ *
+ *   1.  Tooltip — Base  (theme: meta)
+ *
+ * -----------------------------------------------------------------------------
+ * NOTES
+ * -----------------------------------------------------------------------------
+ *
+ *   - Styles are scoped to [data-theme~='meta'] to avoid overriding other
+ *     Tippy themes that may be used in the future.
+ *   - All values reference design system tokens. Never hardcode here.
+ *
+ * =============================================================================
+ * © 2025 Meta. All rights reserved.
+ * ============================================================================= */
+
+
+/* =============================================================================
+ * 1. TOOLTIP — BASE  (theme: meta)
+ * ============================================================================= */
+
+/**
+ * .tippy-box[data-theme~='meta']
+ * Scoped theme override for all Tippy.js tooltips using the 'meta' theme.
+ * Replaces the library's default dark background with a white surface,
+ * body-colored text, and the app's standard border to match the UI language.
+ *
+ * Usage: set data-tippy-theme="meta" on any element using Tippy.
  */
 .tippy-box[data-theme~='meta'] {
     background-color: var(--color-white);

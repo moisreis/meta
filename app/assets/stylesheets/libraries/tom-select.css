@@ -1,30 +1,63 @@
-/*
- * File: tom-select
- * Date: 11/27/2025
- * Author: Moisés Reis
- * Package: Meta
+/* =============================================================================
+ * TomSelect Stylesheet
+ * =============================================================================
  *
- * Description: Defines the visual styling applied to TomSelect components.
- *              Ensures all select fields share the same look, spacing, and
- *              interaction behavior as the app’s design system.
+ * File         : tom-select.css
+ * Author       : Moisés Reis
+ * Created      : 11/27/2025
+ * Last Updated : 11/27/2025
+ * Version      : 1.0.0
  *
- * Usage: - What: Styles the select input, dropdown list, typing area, and option states.
- *                Normalizes colors, spacing, font sizes, shadows, and active-item behavior.
- *        - How: Applies CSS rules based entirely on design-system variables. The classes
- *               are automatically used by TomSelect when the library renders its markup.
- *        - Why: Keeps third-party UI elements visually consistent with the rest of the
- *               interface, prevents layout shifts, and maintains accessibility contrasts.
- */
+ * -----------------------------------------------------------------------------
+ * TABLE OF CONTENTS
+ * -----------------------------------------------------------------------------
+ *
+ *   1.  Control (Main Field)
+ *       1a. Base
+ *       1b. Small Variant
+ *       1c. Search Input
+ *       1d. Focus State
+ *       1e. Selected Item
+ *   2.  Dropdown
+ *       2a. Container
+ *       2b. Option — Base
+ *       2c. Option — Active / Highlighted
+ *   3.  Plugin — dropdown_input
+ *       3a. Search Input
+ *       3b. Input Spacing
+ *   4.  Plugin — remove_button
+ *
+ * -----------------------------------------------------------------------------
+ * NOTES
+ * -----------------------------------------------------------------------------
+ *
+ *   - TomSelect renders its own markup automatically. All classes here are
+ *     library-generated and should not be renamed or moved.
+ *   - All values reference design system tokens. Never hardcode here.
+ *   - !important is used where TomSelect's inline styles or specificity
+ *     would otherwise override custom values.
+ *
+ * =============================================================================
+ * © 2025 Meta. All rights reserved.
+ * ============================================================================= */
 
-/*
- * Styles the main visible field rendered by TomSelect.
- * Controls the container’s background, border, height, padding,
- * typography, and focus behavior to match the design system.
+
+/* =============================================================================
+ * 1. CONTROL (MAIN FIELD)
+ * ============================================================================= */
+
+/* --- 1a. Base ------------------------------------------------------------- */
+
+/**
+ * .ts-control
+ * The main visible select field rendered by TomSelect.
+ * Matches input height, padding, typography, background, and border
+ * to the rest of the form system. Shadow inherits Tailwind's ring stack.
  */
 .ts-control {
     border-color: var(--color-border);
     border-radius: var(--radius-base);
-    background-color: var(--color-table-bg) !important;
+    background-color: var(--color-input) !important;
     height: calc(var(--spacing) * 9);
     padding-right: calc(var(--spacing) * 3) !important;
     padding-left: calc(var(--spacing) * 3) !important;
@@ -34,25 +67,73 @@
     outline: none;
 }
 
+
+/* --- 1b. Small Variant ---------------------------------------------------- */
+
+/**
+ * .ts-wrapper.input-small .ts-control
+ * Compact height variant for dense UI contexts such as table filters
+ * or inline selects. Reduces height from h-9 (36px) to h-7 (28px).
+ */
 .ts-wrapper.input-small .ts-control {
     height: calc(var(--spacing) * 7) !important;
     padding: calc(var(--spacing) * 1) calc(var(--spacing) * 3) !important;
 }
 
-/*
- * Styles the text input that appears inside the select control
- * when typing a search query. Matches font sizing and colors
- * with the main field for seamless visual integration.
+
+/* --- 1c. Search Input ----------------------------------------------------- */
+
+/**
+ * .ts-control > input
+ * The inline text input rendered inside the control when the user types
+ * a search query. Inherits size and color from the parent field.
  */
 .ts-control > input {
     font-size: var(--text-sm);
     color: var(--color-body);
 }
 
-/*
- * Styles the dropdown container that appears below the control.
- * Applies a neutral background, border, padding, and radius
- * to ensure visual consistency and proper spacing.
+
+/* --- 1d. Focus State ------------------------------------------------------ */
+
+/**
+ * .plugin-dropdown_input.focus.dropdown-active .ts-control
+ * Active/focused state when the dropdown_input plugin is enabled.
+ * Applies a secondary-colored border and a matching ring shadow
+ * consistent with other focused form fields.
+ */
+.plugin-dropdown_input.focus.dropdown-active .ts-control {
+    border: 1px solid !important;
+    border-color: var(--color-secondary-600) !important;
+    --tw-ring-color: color-mix(in oklab, var(--color-secondary-100) 50%, transparent);
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+
+
+/* --- 1e. Selected Item ---------------------------------------------------- */
+
+/**
+ * .item
+ * The selected value pill rendered inside the control after a choice is made.
+ * Uses body color to clearly distinguish the committed selection from placeholder text.
+ */
+.item {
+    color: var(--color-body) !important;
+}
+
+
+/* =============================================================================
+ * 2. DROPDOWN
+ * ============================================================================= */
+
+/* --- 2a. Container -------------------------------------------------------- */
+
+/**
+ * .ts-dropdown
+ * The floating list that appears below the control.
+ * White surface with a standard border, radius, and tight internal padding
+ * to frame the options list without adding excess whitespace.
  */
 .ts-dropdown {
     border: 1px solid;
@@ -62,21 +143,13 @@
     padding: calc(var(--spacing) * 1.5) !important;
 }
 
-/*
- * Styles the currently highlighted item (via keyboard or hover).
- * Applies the design system’s primary-light background and
- * higher-contrast text color for clear selection feedback.
- */
-.ts-dropdown .active {
-    background-color: var(--color-neutral-50);
-    color: var(--color-body);
-    border-radius: var(--radius-base);
-}
 
-/*
- * Styles each selectable option inside the dropdown.
- * Controls spacing, typography, and muted default color
- * to match other list-based UI elements.
+/* --- 2b. Option — Base ---------------------------------------------------- */
+
+/**
+ * .option
+ * Individual selectable item inside the dropdown.
+ * Muted text and consistent padding matches other list-based UI elements.
  */
 .option {
     font-size: var(--text-sm);
@@ -84,63 +157,80 @@
     padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 3) !important;
 }
 
-/*
- * Adds spacing between the search input field (when the
- * "dropdown_input" plugin is enabled) and the list of options,
- * preventing visual crowding and ensuring readability.
+
+/* --- 2c. Option — Active / Highlighted ------------------------------------ */
+
+/**
+ * .ts-dropdown .active
+ * The currently highlighted option, triggered by hover or keyboard navigation.
+ * Neutral-50 background with body-colored text for clear, accessible feedback.
  */
-.dropdown-input-wrap {
-    margin-bottom: calc(var(--spacing) * 1.5) !important;
+.ts-dropdown .active {
+    background-color: var(--color-neutral-50);
+    color: var(--color-body);
+    border-radius: var(--radius-base);
 }
 
-/*
- * Styles the search input created by the "dropdown_input"
- * plugin. Applies consistent background, padding, height,
- * border, radius, typography, and shadows to match the
- * main select control while remaining visually distinct.
+
+/* =============================================================================
+ * 3. PLUGIN — dropdown_input
+ * ============================================================================= */
+
+/* --- 3a. Search Input ----------------------------------------------------- */
+
+/**
+ * .plugin-dropdown_input .dropdown-input
+ * The search <input> rendered at the top of the dropdown when the
+ * dropdown_input plugin is enabled. Styled to match the main .ts-control
+ * while sitting inside the dropdown surface rather than the trigger field.
  */
 .plugin-dropdown_input .dropdown-input {
-    background-color: var(--color-table-bg);
+    background-color: var(--color-input);
     border: 1px solid var(--color-border);
     padding-left: calc(var(--spacing) * 3) !important;
     padding-right: calc(var(--spacing) * 3) !important;
     padding-top: calc(var(--spacing) * 1) !important;
     padding-bottom: calc(var(--spacing) * 1) !important;
-    height: calc(var(--spacing) * 9) !important;
+    height: calc(var(--spacing) * 7) !important;
     border-radius: var(--radius-base);
     font-size: var(--text-sm);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
     outline: none;
 }
 
-/*
- * Styles the input when it is active.
+
+/* --- 3b. Input Spacing ---------------------------------------------------- */
+
+/**
+ * .dropdown-input-wrap
+ * Wrapper around the dropdown search input.
+ * Bottom margin separates the search field from the option list beneath it.
  */
-.plugin-dropdown_input.focus.dropdown-active .ts-control {
-    border: 1px solid !important;
-    border-color: var(--color-secondary-600) !important;
-    --tw-ring-color: color-mix(in oklab,var(--color-secondary-100)50%,transparent);
-    --tw-ring-shadow: var(--tw-ring-inset,)0 0 0 calc(3px + var(--tw-ring-offset-width))var(--tw-ring-color,currentcolor);
-    box-shadow: var(--tw-inset-shadow),var(--tw-inset-ring-shadow),var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);
+.dropdown-input-wrap {
+    margin-bottom: calc(var(--spacing) * 1.5) !important;
 }
 
-.item {
-    color: var(--color-body) !important;
-}
 
-/*
- * Styles the search input close button
- * in it's base and hover states
+/* =============================================================================
+ * 4. PLUGIN — remove_button
+ * ============================================================================= */
+
+/**
+ * .item .remove  (base)
+ * The × button appended to each selected item pill when the remove_button
+ * plugin is enabled. Left border visually separates it from the item label.
  */
 .ts-wrapper.plugin-remove_button:not(.rtl) .item .remove {
     border-left: 1px solid !important;
     border-color: var(--color-border) !important;
+    border-radius: 0 6px 6px 0 !important;
 }
 
+/**
+ * .item .remove  (hover)
+ * Keeps the remove button background transparent on hover to avoid
+ * an unexpected filled block appearing inside the item pill.
+ */
 .ts-wrapper.plugin-remove_button .item .remove:hover {
     background: transparent;
-}
-
-.ts-wrapper.plugin-remove_button .item .remove {
-    border-radius: 0 6px 6px 0 !important;
 }
