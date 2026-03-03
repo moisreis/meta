@@ -263,3 +263,93 @@
         }
     });
 </script>
+
+<!-- [Script] sidebarApplication -->
+<script>
+    let applicationSidebar;
+    let openApplicationBtn;
+    let closeApplicationBtn;
+    let cancelApplicationBtn;
+    let applicationOverlay;
+
+    function openApplicationSidebar() {
+        applicationSidebar.classList.add('opacity-100');
+        applicationSidebar.classList.remove('opacity-0', 'pointer-events-none');
+        applicationOverlay.classList.remove('hidden');
+    }
+
+    function closeApplicationSidebar() {
+        applicationSidebar.classList.remove('opacity-100');
+        applicationSidebar.classList.add('opacity-0', 'pointer-events-none');
+        applicationOverlay.classList.add('hidden');
+    }
+
+    function setupApplicationSidebarListeners() {
+        applicationSidebar   = document.getElementById('sidebarApplication');
+        openApplicationBtn   = document.getElementById('openApplicationBtn');
+        closeApplicationBtn  = document.getElementById('closeApplicationBtn');
+        cancelApplicationBtn = document.getElementById('cancelApplicationBtn');
+        applicationOverlay   = document.getElementById('applicationOverlay');
+
+        if (applicationSidebar && openApplicationBtn && closeApplicationBtn) {
+            openApplicationBtn.addEventListener('click', openApplicationSidebar);
+            closeApplicationBtn.addEventListener('click', closeApplicationSidebar);
+            cancelApplicationBtn.addEventListener('click', closeApplicationSidebar);
+            applicationOverlay.addEventListener('click', closeApplicationSidebar);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeApplicationSidebar();
+            });
+        } else {
+            console.error("Application sidebar setup failed: one or more IDs were not found in the HTML.");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', setupApplicationSidebarListeners);
+</script>
+
+<!-- [Script] sidebarRedemption -->
+<script>
+    let redemptionSidebar;
+    let openRedemptionBtn;
+    let closeRedemptionBtn;
+    let cancelRedemptionBtn;
+    let redemptionOverlay;
+
+    function openRedemptionSidebar() {
+        redemptionSidebar.classList.add('opacity-100');
+        redemptionSidebar.classList.remove('opacity-0', 'pointer-events-none');
+        redemptionOverlay.classList.remove('hidden');
+    }
+
+    function closeRedemptionSidebar() {
+        redemptionSidebar.classList.remove('opacity-100');
+        redemptionSidebar.classList.add('opacity-0', 'pointer-events-none');
+        redemptionOverlay.classList.add('hidden');
+    }
+
+    function setupRedemptionSidebarListeners() {
+        redemptionSidebar   = document.getElementById('sidebarRedemption');
+        openRedemptionBtn   = document.getElementById('openRedemptionBtn');
+        closeRedemptionBtn  = document.getElementById('closeRedemptionBtn');
+        cancelRedemptionBtn = document.getElementById('cancelRedemptionBtn');
+        redemptionOverlay   = document.getElementById('redemptionOverlay');
+
+        if (redemptionSidebar && openRedemptionBtn && closeRedemptionBtn) {
+            openRedemptionBtn.addEventListener('click', openRedemptionSidebar);
+            closeRedemptionBtn.addEventListener('click', closeRedemptionSidebar);
+            cancelRedemptionBtn.addEventListener('click', closeRedemptionSidebar);
+            redemptionOverlay.addEventListener('click', closeRedemptionSidebar);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeRedemptionSidebar();
+            });
+        } else {
+            console.error("Redemption sidebar setup failed: one or more IDs were not found in the HTML.");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', setupRedemptionSidebarListeners);
+</script>
+
+

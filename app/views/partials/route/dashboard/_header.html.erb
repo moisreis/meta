@@ -2,7 +2,7 @@
     #               It stays at the top while you scroll and uses a
     #               blur effect to look modern against the background.
     %>
-<div class="h-16 px-8 flex flex-row justify-between gap-6 border-b border-border sticky top-0 bg-neutral-50/90 z-[9999] backdrop-blur-sm">
+<div class="h-16 px-8 flex flex-row justify-between gap-6">
 
   <%# Explanation:: Portfolio selector dropdown on the left side.
       #               Allows users to switch between their portfolios
@@ -48,26 +48,50 @@
     <div class="flex flex-row gap-6 items-center justify-end">
 
       <% if @portfolio.present? && @portfolio.persisted? %>
-
         <%= button_to run_calculations_portfolio_path(@portfolio),
                       method: :post,
                       class: "button button-outline button-small" do %>
-
           <%= inline_svg_tag("icons/refresh-cw.svg") %>
-
           <%= content_tag :span, "Calcular Performance" %>
         <% end %>
 
-        <%= link_to monthly_report_portfolio_path(@portfolio),
-                    class: "button button-primary button-small" do %>
+        <%= form_with url: monthly_report_portfolio_path(@portfolio),
+                      method: :get,
+                      local: true,
+                      class: "flex !flex-row items-center gap-2" do |f| %>
 
-          <%= inline_svg_tag("icons/file-attachment.svg") %>
-          <%= content_tag :span, "Exportar em PDF" %>
+          <%= render "partials/modules/select",
+                     f: f,
+                     name: :month,
+                     label: nil,
+                     is_small: true,
+                     desc: nil,
+                     is_long: true,
+                     options_collection: options_for_select(
+                       I18n.t("date.month_names").compact.each_with_index.map { |n, i| [n.capitalize, i + 1] },
+                       Date.current.month
+                     ) %>
+
+          <%= render "partials/modules/select",
+                     f: f,
+                     name: :year,
+                     label: nil,
+                     is_small: true,
+                     desc: nil,
+                     is_long: true,
+                     options_collection: options_for_select(
+                       (2020..Date.current.year).to_a.reverse.map { |y| [y, y] },
+                       Date.current.year
+                     ) %>
+
+          <%= f.button type: "submit", class: "button button-primary button-small self-end" do %>
+            <%= inline_svg_tag("icons/file-attachment.svg") %>
+            <%= content_tag :span, "Exportar em PDF" %>
+          <% end %>
+
         <% end %>
       <% end %>
     </div>
-
-    <%= render "partials/blocks/composed-avatar" %>
   </div>
 </div>
 

@@ -17,11 +17,11 @@
 <div class="flex flex-col gap-6">
   <div class="flex flex-row items-center justify-start gap-3">
     <div class="flex flex-col gap-1">
-      <%= content_tag :h2, fieldset_title, class: "text-heading font-heading font-semibold text-xl" %>
-      <%= content_tag :h2, fieldset_desc, class: "text-muted font-body text-sm" %>
+      <%= content_tag :h2, fieldset_title, class: "text-lg font-mono uppercase text-body font-medium" %>
+      <%= content_tag :h2, fieldset_desc, class: "text-sm font-body text-muted font-normal" %>
     </div>
   </div>
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 gap-6">
     <%= yield %>
   </div>
 </div>

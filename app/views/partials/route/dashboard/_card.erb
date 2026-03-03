@@ -1,126 +1,164 @@
+<%#
+  Partial : _card.html.erb
+  Date    : 11/14/2025
+  Author  : Moisés Reis
+  Package : Meta
+
+  Description:
+    Single-metric display card used across dashboard sections.
+    Renders a labeled header with an icon, a large primary value via yield,
+    and an optional badge for supplementary data such as trends or percentages.
+
+  ============================================================
+  Locals
+  ============================================================
+
+  @param  status         [Symbol]  Color theme key. One of: :default, :success, :danger,
+                                   :alert, :primary, :secondary, :teal, :honeysuckle, :indigo.
+                                   Defaults to :default.
+  @param  is_outline     [Boolean] Renders the badge in outline style when true. Defaults to true.
+  @param  card_title     [String]  Label displayed in the card header. Optional.
+  @param  card_icon      [String]  Icon filename (without extension) shown beside the title. Optional.
+  @param  card_data      [String]  Secondary value rendered inside the badge. Optional.
+  @param  card_data_icon [String]  Icon filename (without extension) prepended to the badge text. Optional.
+
+  ============================================================
+  Notes
+  ============================================================
+
+  - The theme hash falls back to :default if an unrecognised status symbol is passed.
+  - badge_classes merges the base badge, the theme variant, and the outline modifier.
+    is_outline does not replace the theme badge — it stacks on top of it.
+  - card_data_icon is only meaningful when card_data is also present;
+    the icon block is nested inside the card_data conditional.
+
+  @yield  [content]  The primary metric value rendered at large size inside the card body.
+%>
+
+<%# Note: All locals default here — none are guaranteed to be passed by the caller. %>
 <% status ||= :default %>
+<% is_outline ||= true %>
+<% card_title ||= nil %>
+<% card_icon ||= nil %>
+<% card_data ||= nil %>
+<% card_data_icon ||= nil %>
 
-<%
-  is_outline ||= true
-  card_title ||= nil
-  card_icon ||= nil
-  card_data ||= nil
-  card_data_icon ||= nil
-%>
+<%# Note: Resolves the full set of Tailwind classes for the chosen status.
+          Falls back to :default when the symbol does not match any key. %>
+<% theme = {
+             success: {
+               bg: "bg-success-300",
+               border: "border-success-300",
+               card_bg: "bg-success-100",
+               stroke: "stroke-success-50",
+               text: "text-body",
+               badge: "badge-success"
+             },
+             danger: {
+               bg: "bg-danger-300",
+               border: "border-danger-300",
+               card_bg: "bg-danger-100",
+               stroke: "stroke-danger-50",
+               text: "text-body",
+               badge: "badge-danger"
+             },
+             alert: {
+               bg: "bg-alert-300",
+               border: "border-alert-300",
+               card_bg: "bg-alert-100",
+               stroke: "stroke-alert-50",
+               text: "text-body",
+               badge: "badge-alert"
+             },
+             secondary: {
+               bg: "bg-secondary-300",
+               border: "border-secondary-300",
+               card_bg: "bg-secondary-100",
+               stroke: "stroke-secondary-50",
+               text: "text-body",
+               badge: "badge-secondary"
+             },
+             primary: {
+               bg: "bg-primary-300",
+               border: "border-primary-300",
+               card_bg: "bg-primary-100",
+               stroke: "stroke-primary-50",
+               text: "text-body",
+               badge: "badge-primary"
+             },
+             teal: {
+               bg: "bg-teal-300",
+               border: "border-teal-300",
+               card_bg: "bg-teal-100",
+               stroke: "stroke-teal-50",
+               text: "text-body",
+               badge: "badge-teal"
+             },
+             honeysuckle: {
+               bg: "bg-honeysuckle-300",
+               border: "border-honeysuckle-300",
+               card_bg: "bg-honeysuckle-100",
+               stroke: "stroke-honeysuckle-50",
+               text: "text-body",
+               badge: "badge-honeysuckle"
+             },
+             indigo: {
+               bg: "bg-indigo-300",
+               border: "border-indigo-300",
+               card_bg: "bg-indigo-100",
+               stroke: "stroke-indigo-50",
+               text: "text-body",
+               badge: "badge-indigo"
+             },
+             default: {
+               bg: "bg-neutral-200",
+               border: "border-border",
+               card_bg: "bg-accent",
+               stroke: "stroke-body",
+               text: "text-body",
+               badge: "badge-accent"
+             }
+           }[status.to_sym] || theme[:default] %>
 
-<%
-  theme = {
-            success: {
-              bg: "bg-success-300",
-              border: "border-success-300",
-              card_bg: "bg-success-100",
-              stroke: "stroke-success-50",
-              text: "text-body",
-              badge: "badge-success"
-            },
-            danger: {
-              bg: "bg-danger-300",
-              border: "border-danger-300",
-              card_bg: "bg-danger-100",
-              stroke: "stroke-danger-50",
-              text: "text-body",
-              badge: "badge-danger"
-            },
-            alert: {
-              bg: "bg-alert-300",
-              border: "border-alert-300",
-              card_bg: "bg-alert-100",
-              stroke: "stroke-alert-50",
-              text: "text-body",
-              badge: "badge-alert"
-            },
-            secondary: {
-              bg: "bg-secondary-300",
-              border: "border-secondary-300",
-              card_bg: "bg-secondary-100",
-              stroke: "stroke-secondary-50",
-              text: "text-body",
-              badge: "badge-secondary"
-            },
-            primary: {
-              bg: "bg-primary-300",
-              border: "border-primary-300",
-              card_bg: "bg-primary-100",
-              stroke: "stroke-primary-50",
-              text: "text-body",
-              badge: "badge-primary"
-            },
-            teal: {
-              bg: "bg-teal-300",
-              border: "border-teal-300",
-              card_bg: "bg-teal-100",
-              stroke: "stroke-teal-50",
-              text: "text-body",
-              badge: "badge-teal"
-            },
-            honeysuckle: {
-              bg: "bg-honeysuckle-300",
-              border: "border-honeysuckle-300",
-              card_bg: "bg-honeysuckle-100",
-              stroke: "stroke-honeysuckle-50",
-              text: "text-body",
-              badge: "badge-honeysuckle"
-            },
-            indigo: {
-              bg: "bg-indigo-300",
-              border: "border-indigo-300",
-              card_bg: "bg-indigo-100",
-              stroke: "stroke-indigo-50",
-              text: "text-body",
-              badge: "badge-indigo"
-            },
-            default: {
-              bg: "bg-neutral-200",
-              border: "border-border",
-              card_bg: "bg-accent",
-              stroke: "stroke-body",
-              text: "text-body",
-              badge: "badge-accent"
-            }
-          }[status.to_sym] || theme[:default]
-%>
+<%# Note: Composes badge classes from three sources: the base class, the theme
+          variant, and the optional outline modifier. compact removes nil entries
+          so is_outline: false does not leave a blank string in the class list. %>
+<% badge_classes = ["badge", theme[:badge], ("badge-accent" if is_outline)].compact.join(" ") %>
 
-<% badge_classes = ["badge", (theme[:badge]), ("badge-accent" if is_outline)].compact.join(" ") %>
+<div class="rounded-base h-56 flex flex-col justify-between items-start border border-border shadow-xs bg-white pb-0">
 
-<div class="shadow-xs rounded-base h-56 flex flex-col justify-between items-start bg-accent p-1 pb-0">
+  <%# =============================================================
+      Card Header — Icon & Title
+      ============================================================= %>
+  <div class="flex flex-row justify-start gap-1.5 items-center w-full h-12 px-3 py-1.5 border-b border-border bg-input">
+    <div class="p-1 rounded-base">
+      <%= inline_svg_tag "icons/#{card_icon}.svg", class: "size-3.5" %>
+    </div>
+    <%= content_tag :h3, card_title, class: "font-mono text-body capitalize font-normal text-sm" %>
+  </div>
 
-  <div class="flex flex-col justify-between items-start gap-3 p-6 h-full w-full rounded-base bg-white">
+  <%# =============================================================
+      Card Body — Primary Value & Badge
+      ============================================================= %>
+  <div class="flex flex-col justify-between items-start gap-3 px-4 py-6 h-full w-full rounded-base">
 
-    <div class="text-3xl font-normal line-clamp-1 text-muted">
+    <div class="text-3xl font-normal !tracking-tight line-clamp-1 text-body">
       <%= yield %>
     </div>
 
-    <%# Explanation:: This block checks if there is extra info like a
-      #               percentage. If data exists, it draws a small
-      #               colored badge to make that information pop out.
-      %>
     <% if card_data.present? %>
       <div class="<%= badge_classes %> !shadow-none">
 
-        <%# Explanation:: This checks if the badge needs a small arrow or symbol.
-          #               It helps the user understand trends, such as
-          #               whether a value is going up or down.
-          %>
+        <%# Note: card_data_icon is optional even when card_data is present.
+                  Omit it for plain text badges; include it for trend indicators (e.g. arrow-up). %>
         <% if card_data_icon.present? %>
-          <%= inline_svg_tag("icons/#{card_data_icon}.svg") %>
+          <%= inline_svg_tag "icons/#{card_data_icon}.svg" %>
         <% end %>
+
         <%= content_tag :p, card_data %>
       </div>
     <% end %>
-  </div>
-
-  <div class="flex flex-row justify-start gap-1.5 items-center w-full h-12 px-3 py-1.5">
-
-    <div class="p-1 rounded-base">
-      <%= inline_svg_tag("icons/#{card_icon}.svg", class: "size-3.5") %>
-    </div>
-
-    <%= content_tag :h3, card_title, class: "font-mono text-body uppercase font-semibold text-sm" %>
 
   </div>
+
 </div>

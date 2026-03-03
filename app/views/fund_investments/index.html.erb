@@ -6,6 +6,7 @@
   <%= render partial: "partials/blocks/data-table", locals: {
 
     columns_header: [
+      "ID",
       "Fundo",
       "Carteira",
       "Alocação",
@@ -26,6 +27,10 @@
     ],
 
     columns_body: [
+
+      ->(fi) do
+        normalize_fk(fi.id)
+      end,
 
       ->(fi) do
         normalize_title(fi.investment_fund&.fund_name)

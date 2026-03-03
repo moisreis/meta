@@ -1,0 +1,110 @@
+<%#
+  # Partial: _sidebar_application.html.erb
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Slide-over sidebar para registrar uma nova Aplicação diretamente
+  #              na página Portfolio#show. Segue o mesmo esqueleto do _filters.
+  #
+  # Usage: - What: Renderiza um formulário de nova Aplicação dentro de um painel
+  #                lateral, sem sair da página.
+  #        - How: Reutiliza o padrão de IDs/classes do _filters e abre/fecha via
+  #               JS inline. O select de fundo já vem filtrado pelos FundInvestments
+  #               da carteira em questão.
+  #        - Why: Mantém consistência visual/comportamental com os outros sidebars
+  #               da aplicação e evita dependências externas como Stimulus.
+  %>
+
+<div id="sidebarApplication"
+     class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-white border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
+
+  <%= form_with(model: @new_application, class: "flex flex-col h-full") do |form| %>
+
+    <%# ── Header ──────────────────────────────────────────────────────────── %>
+    <div class="h-16 flex flex-row justify-between items-center px-16">
+      <h3 class="font-body font-medium text-2xl">Nova Aplicação</h3>
+
+      <%= button_tag id: "closeApplicationBtn",
+                     type: "button",
+                     class: "button button-ghost button-icon button-small" do %>
+        <%= inline_svg_tag "icons/x.svg" %>
+      <% end %>
+    </div>
+
+    <%# ── Scrollable body ─────────────────────────────────────────────────── %>
+    <div class="flex-grow px-16 space-y-8 overflow-y-auto w-full">
+
+      <%# Destino ─ select escopado apenas aos fundos desta carteira %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Destino da Transação",
+                 fieldset_desc: "Selecione o fundo desta carteira que receberá a movimentação." do %>
+
+        <%= render "partials/modules/select",
+                   f: form,
+                   name: :fund_investment_id,
+                   label: "Fundo alvo",
+                   desc: "Apenas os fundos alocados nesta carteira são exibidos.",
+                   is_half_width: false,
+                   options_collection: @portfolio.fund_investments
+                                                 .includes(:investment_fund)
+                                                 .map { |fi| [fi.investment_fund.fund_name, fi.id] },
+                   is_inactive: false %>
+      <% end %>
+
+      <%# Valores Financeiros %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Valores Financeiros",
+                 fieldset_desc: "Informe o capital investido, a quantidade de cotas e o preço unitário da cota." do %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :financial_value,
+                   label: "Valor aplicado",
+                   placeholder: "5000.00",
+                   is_half_width: false,
+                   desc: "O valor total (R$) investido na transação.",
+                   field_type: :text_field,
+                   icon_name: "banknote",
+                   step: 0.01 %>
+      <% end %>
+
+      <%# Cronograma %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Cronograma da Operação",
+                 fieldset_desc: "Registre as datas importantes de solicitação, cotização e liquidação financeira." do %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :cotization_date,
+                   label: "Data de Cotização",
+                   placeholder: "DD/MM/AAAA",
+                   is_half_width: false,
+                   desc: "Data em que a cota foi calculada e a transação efetivada.",
+                   field_type: :date_field,
+                   icon_name: "calculator" %>
+      <% end %>
+
+      <%# Actions %>
+      <div class="flex flex-row gap-1.5">
+        <%= form.button :submit,
+                        name: nil,
+                        class: "button button-small button-accent flex items-center gap-2" do %>
+          <%= inline_svg_tag "icons/check.svg" %>
+          <%= content_tag :span, "Registrar" %>
+        <% end %>
+
+        <%= button_tag id: "cancelApplicationBtn",
+                       type: "button",
+                       class: "button button-small button-outline flex items-center gap-2" do %>
+          <%= inline_svg_tag "icons/x.svg" %>
+          <%= content_tag :span, "Cancelar" %>
+        <% end %>
+      </div>
+
+    </div>
+  <% end %>
+</div>
+
+<%# ── Overlay ──────────────────────────────────────────────────────────────── %>
+<div class="h-screen w-screen bg-body/10 z-40 hidden fixed top-0 right-0"
+     id="applicationOverlay"></div>

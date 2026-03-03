@@ -149,15 +149,12 @@ class InvestmentFundsController < ApplicationController
   #
   def create
     @investment_fund = InvestmentFund.new(investment_fund_params)
-
-    # Explanation:: This uses **CanCan** to verify that the current user has permission
-    #               to create a new **InvestmentFund** record in the system.
     authorize! :create, InvestmentFund
 
-    # Explanation:: This checks if the new fund object successfully passes
-    #               all database validations and saves the record.
     if @investment_fund.save
+      redirect_to @investment_fund, notice: "Investment fund created successfully."
     else
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -173,7 +170,9 @@ class InvestmentFundsController < ApplicationController
   #
   def update
     if @investment_fund.update(investment_fund_params)
+      redirect_to @investment_fund, notice: "Investment fund updated successfully."
     else
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -188,6 +187,7 @@ class InvestmentFundsController < ApplicationController
   #
   def destroy
     @investment_fund.destroy
+    redirect_to investment_funds_path, notice: "Investment fund deleted successfully."
   end
 
   private

@@ -1,42 +1,58 @@
 <%#
-  # Partial: _chart.html.erb
-  # Date: 11/30/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: This partial creates a visual frame to hold data charts.
-  #              It ensures every graph looks consistent by adding a
-  #              header, a title, and a download button automatically.
-  #
-  # Usage: - What: It serves as a decorative and functional container for
-  #                displaying statistics and visual information.
-  #        - How: Call this partial and provide the title and the data.
-  #               Place the specific chart code inside the block to
-  #               show it within the styled frame.
-  #        - Why: It maintains a professional design across the app.
-  #               This saves time by reusing the same layout for every
-  #               different chart in the system.
-  %>
+  Partial : _chart.html.erb
+  Date    : 11/30/2025
+  Author  : Moisés Reis
+  Package : Meta
+
+  Description:
+    Reusable frame for rendering data charts consistently across the dashboard.
+    Wraps any chart implementation in a titled header and a white content area,
+    and renders an empty state badge when the data source has no records.
+
+  ============================================================
+  Locals
+  ============================================================
+
+  @param  chart_title  [String]   Label displayed in the card header. Required.
+  @param  chart_id     [String]   Value written to data-chart-id on the root element. Optional.
+  @param  data_source  [Array]    Collection checked for presence before yielding. Required.
+
+  ============================================================
+  Notes
+  ============================================================
+
+  - chart_title and data_source are expected to be passed but have no ||= default.
+    Callers must provide both or the template will raise a NameError.
+
+  @yield  [content]  The chart markup rendered inside the white content area
+                     when data_source is non-empty.
+%>
 
 <% chart_id ||= nil %>
 
+<div class="bg-neutral-50 border border-border rounded-base flex flex-col" data-chart-id="<%= chart_id %>">
 
-<div class="bg-neutral-50 rounded-base flex flex-col p-1" data-chart-id="<%= chart_id %>">
-
-  <div class="w-full flex flex-row justify-between items-center h-9 px-3 py-1.5">
-    <%= content_tag :h3, chart_title, class: "font-mono text-body uppercase font-semibold text-sm" %>
+  <%# =============================================================
+      Chart Header — Title
+      ============================================================= %>
+  <div class="w-full flex flex-row justify-between items-center h-9 px-3 py-1.5 bg-input border-b border-border">
+    <%= content_tag :h3, chart_title, class: "font-mono text-body capitalize font-normal text-sm" %>
   </div>
 
+  <%# =============================================================
+      Chart Body — Content or Empty State
+      ============================================================= %>
   <div class="p-6 flex items-center justify-center bg-white rounded-base h-full">
 
-    <%# Explanation:: This block decides whether to show a chart or a message.
-      #               It checks if there is any information available to
-      #               display before trying to draw the visual graph.
-      %>
+    <%# Note: Renders the empty state badge instead of yielding when data_source
+              has no records, preventing charting libraries from receiving an empty
+              dataset and potentially throwing a JavaScript error. %>
     <% if data_source.any? %>
       <%= yield %>
     <% else %>
       <%= content_tag :p, "Sem dados", class: "badge badge-accent" %>
     <% end %>
+
   </div>
+
 </div>

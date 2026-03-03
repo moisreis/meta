@@ -28,6 +28,11 @@
   #               by passing a value to organize how the content is visually aligned.
   %>
 <% section_columns ||= nil %>
+<% has_action   ||= false %>
+<% button_route ||= nil %>
+<% button_name  ||= nil %>
+<% button_icon  ||= nil %>
+<% button_id ||= nil %>
 
 <%# Explanation:: This helper wraps content in a dashboard section to maintain
   #               visual consistency; it is used when building dashboard views
@@ -36,7 +41,11 @@
 <%= render "partials/route/dashboard/section",
            section_title: section_title,
            columns: section_columns,
-           has_action: false do
+           has_action: has_action,
+           button_route: button_route,
+           button_name: button_name,
+           button_id: button_id,
+           button_icon: button_icon do
 %>
 
   <%# Explanation:: This conditional check verifies if data exists before rendering

@@ -178,7 +178,10 @@ class FundInvestmentsController < ApplicationController
   # Attributes:: - *@fund_investment* - The fund investment object to be destroyed.
   #
   def destroy
+    portfolio = @fund_investment.portfolio
     @fund_investment.destroy
+
+    redirect_to portfolio, notice: "Investimento removido com sucesso."
   end
 
   def edit

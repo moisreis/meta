@@ -1,19 +1,25 @@
 <%#
-  # Partial: _wrapper.html
-  # Date: 11/12/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Defines the structural wrapper for authentication views.
-  #              Uses a four-column grid layout to organize background and content sections.
-  #              Provides a flexible layout foundation for login and registration screens.
-  #
-  # Usage: - What: Wraps authentication-related partials such as backgrounds, forms, and containers.
-  #                Serves as the outermost grid layout element for the auth UI.
-  #        - How:  Called using `render 'partials/layouts/auth-wrapper' do ... end`
-  #                Yields inner content (e.g., background and container blocks) to the grid.
-  #        - Why:  Ensures consistent grid-based alignment and visual balance across all auth pages.
-  %>
+  Partial : _wrapper.html.erb
+  Date    : 11/12/2025
+  Author  : Moisés Reis
+  Package : Meta
+
+  Description:
+    Outermost grid wrapper for all authentication views.
+    Establishes a six-column layout that partitions the screen between
+    the decorative background panel and the centered form container.
+
+  ============================================================
+  Notes
+  ============================================================
+
+  - This partial accepts no locals and applies no conditional logic.
+  - Column spans for child sections (background, container) are defined
+    by the partials yielded into it, not here.
+
+  @yield  [content]  The background and container partials rendered inside the grid.
+%>
+
 <section class="relative grid grid-cols-6">
   <%= yield %>
 </section>

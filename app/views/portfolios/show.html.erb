@@ -43,7 +43,11 @@
                                                .map { |d| [l(d, format: :long), d] },
                  is_inactive: false
       %>
-      <%= f.submit "Aplicar", class: "button button-small button-secondary w-fit" %>
+      <%= button_tag type: :submit,
+                     class: "button button-small button-secondary w-fit" do
+      %>
+        <% content_tag :span, "Aplicar" %>
+      <% end %>
     <% end %>
   <% end %>
 
@@ -67,7 +71,7 @@
           "partials/route/dashboard/card",
           card_title: "Total da Carteira",
           card_icon: "banknote",
-          ) do
+        ) do
     %>
       <%= normalize_currency(@portfolio.total_current_market_value) %>
     <% end %>
@@ -252,6 +256,11 @@
     <%= render "partials/groups/recent_activity",
                section_title: "Aplicações",
                section_columns: 1,
+               has_action: true,
+               button_route: "javascript:void(0)",
+               button_name: "Nova Aplicação",
+               button_id: "openApplicationBtn",
+               button_icon: "plus",
                collection: @portfolio.fund_investments.includes(:applications).flat_map(&:applications).sort_by(&:request_date).reverse.first(5),
                color: "success",
                see_all_path: applications_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
@@ -266,6 +275,11 @@
     <%= render "partials/groups/recent_activity",
                section_title: "Resgates",
                section_columns: 1,
+               has_action: true,
+               button_route: "javascript:void(0)",
+               button_name: "Novo Resgate",
+               button_icon: "minus",
+               button_id: "openRedemptionBtn",
                collection: @portfolio.fund_investments.includes(:redemptions).flat_map(&:redemptions).sort_by(&:request_date).reverse.first(5),
                color: "danger",
                see_all_path: redemptions_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
@@ -274,4 +288,7 @@
                sub_value_proc: ->(red) { "#{red.redeemed_quotas} cotas" } %>
 
   <% end %>
+
+  <%= render "partials/route/dashboard/create_application" %>
+  <%= render "partials/route/dashboard/create_redemption" %>
 <% end %>

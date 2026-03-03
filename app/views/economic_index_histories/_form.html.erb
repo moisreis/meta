@@ -33,79 +33,45 @@
              fieldset_title: "Índice e Período de Referência",
              fieldset_desc: "Selecione o indicador econômico e o mês ao qual o valor se refere." do %>
 
-    <%# Explanation:: This select field allows the user to choose which economic index
-      #               is being updated. It lists all registered EconomicIndex records
-      #               and works by storing the chosen ID as the foreign key.
-      %>
-    <div class="flex flex-col gap-1">
-      <%= form.label :economic_index_id, "Índice Econômico", class: "label" %>
-      <%= form.select :economic_index_id,
-                      options_for_select(
-                        EconomicIndex.order(:name).map { |i| ["#{i.abbreviation} — #{i.name}", i.id] },
-                        economic_index_history.economic_index_id
-                      ),
-                      { include_blank: "Selecione um índice..." },
-                      class: "input",
-                      required: true %>
-      <p class="text-xs text-muted-foreground">Indicador econômico ao qual este valor pertence.</p>
-      <%# Explanation:: This renders the inline validation error for the index field
-        #               if the record was submitted without a valid selection.
-        %>
-      <% if economic_index_history.errors[:economic_index_id].any? %>
-        <p class="text-xs text-destructive"><%= economic_index_history.errors[:economic_index_id].first %></p>
-      <% end %>
-    </div>
+    <%= render "partials/modules/select",
+               f: form,
+               name: :economic_index_id,
+               label: "Índice Econômico",
+               desc: "Indicador econômico ao qual este valor pertence.",
+               options_collection: options_for_select(
+                 EconomicIndex.order(:name).map { |i| ["#{i.abbreviation} — #{i.name}", i.id] },
+                 economic_index_history.economic_index_id
+               ) %>
+  <% end %>
 
-    <%# Explanation:: This pair of selects composes the reference month and year for
-      #               the entry. They are sent as virtual attributes (month_ref and
-      #               year_ref) and assembled into a full date in the controller
-      #               before the record is persisted.
-      %>
-    <div class="flex flex-col gap-1">
-      <span class="label">Mês de Referência</span>
-      <div class="flex gap-3">
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Mês de Referência",
+             fieldset_desc: "Mês e ano ao qual o valor registrado se refere.",
+             fieldset_direction: :row do %>
 
-        <%# Explanation:: This select captures the month portion of the reference date.
-          #               It uses integer values (1–12) mapped to Portuguese month names
-          #               so the controller can build the full date correctly.
-          %>
-        <%= form.select :month_ref,
-                        options_for_select(
-                          [
-                            ["Janeiro",   1],  ["Fevereiro",  2], ["Março",    3],
-                            ["Abril",     4],  ["Maio",       5], ["Junho",    6],
-                            ["Julho",     7],  ["Agosto",     8], ["Setembro", 9],
-                            ["Outubro",  10],  ["Novembro",  11], ["Dezembro", 12]
-                          ],
-                          economic_index_history.date&.month || Date.current.month
-                        ),
-                        { include_blank: "Mês..." },
-                        class: "input flex-1",
-                        required: true %>
+    <%= render "partials/modules/select",
+               f: form,
+               name: :month_ref,
+               desc: "Escolha um mês para registrar o histórico",
+               options_collection: options_for_select(
+                 [
+                   ["Janeiro",   1],  ["Fevereiro",  2], ["Março",    3],
+                   ["Abril",     4],  ["Maio",       5], ["Junho",    6],
+                   ["Julho",     7],  ["Agosto",     8], ["Setembro", 9],
+                   ["Outubro",  10],  ["Novembro",  11], ["Dezembro", 12]
+                 ],
+                 economic_index_history.date&.month || Date.current.month
+               ) %>
 
-        <%# Explanation:: This select captures the year portion of the reference date.
-          #               It generates a range covering the past 5 years and the current
-          #               year so the user can backfill historical data if needed.
-          %>
-        <%= form.select :year_ref,
-                        options_for_select(
-                          (Date.current.year - 5..Date.current.year).to_a.reverse.map { |y| [y, y] },
-                          economic_index_history.date&.year || Date.current.year
-                        ),
-                        { include_blank: "Ano..." },
-                        class: "input w-28",
-                        required: true %>
-      </div>
-      <p class="text-xs text-muted-foreground">Mês e ano ao qual o valor registrado se refere.</p>
-
-      <%# Explanation:: This renders the inline duplicate error returned by the model's
-        #               uniqueness validation. It blocks saving when a value for the
-        #               same index and date already exists in the database.
-        %>
-      <% if economic_index_history.errors[:date].any? %>
-        <p class="text-xs text-destructive"><%= economic_index_history.errors[:date].first %></p>
-      <% end %>
-    </div>
+    <%= render "partials/modules/select",
+               f: form,
+               name: :year_ref,
+               desc: "Escolha um ano para registrar o histórico",
+               is_half_width: true,
+               options_collection: options_for_select(
+                 (Date.current.year - 5..Date.current.year).to_a.reverse.map { |y| [y, y] },
+                 economic_index_history.date&.year || Date.current.year
+               ) %>
 
   <% end %>
 

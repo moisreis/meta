@@ -1,84 +1,104 @@
-<% columns ||= 2 %>
+<%#
+  Partial : _section.html.erb
+  Date    : 11/14/2025
+  Author  : Moisés Reis
+  Package : Meta
 
+  Description:
+    Generic section wrapper used to group related content blocks across
+    dashboard pages. Renders an optional title, subtitle, and action button
+    above a responsive CSS grid that yields the caller's content.
+
+  ============================================================
+  Locals
+  ============================================================
+
+  @param  section_title  [String]   Section heading rendered as an H2. Optional.
+  @param  section_desc   [String]   Supporting subtitle below the heading. Optional.
+  @param  columns        [Integer]  Number of grid columns (1–6). Defaults to 2.
+  @param  has_action     [Boolean]  Renders the action button when true. Defaults to false.
+  @param  button_route   [String]   URL or path the action button links to. Required if has_action is true.
+  @param  button_name    [String]   Label text for the action button. Required if has_action is true.
+  @param  button_icon    [String]   Icon filename (without extension) from the icons directory. Required if has_action is true.
+
+  ============================================================
+  Notes
+  ============================================================
+
+  - section_title and section_desc must both be present for the description
+    to render; the desc tag is skipped when section_title is absent.
+  - A hidden .section-desc container is always rendered alongside the visible
+    description. It is toggled by an external JS interaction on the info button.
+  - columns 5 and 6 intentionally resolve to the same 4-column breakpoint —
+    the grid does not grow beyond xl:grid-cols-4 on current layouts.
+  - Any columns value outside 1–6 falls back to "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3".
+
+  @yield  [content]  Card or content elements rendered inside the responsive grid.
+%>
+
+<%# Note: Defaults applied before use — locals are not guaranteed to be passed by every caller. %>
+<% columns ||= 2 %>
+<% has_action ||= false %>
+<% button_route ||= nil %>
+<% button_name ||= nil %>
+<% button_icon ||= nil %>
+<% button_id ||= nil %>
+<% section_title ||= nil %>
+<% section_desc ||= nil %>
+
+<%# Note: Maps the columns integer to its responsive Tailwind class string.
+          Falls back to a sensible 3-column layout for any unmapped value. %>
 <% grid_classes = {
                     1 => "grid-cols-1",
                     2 => "grid-cols-1 md:grid-cols-2",
                     3 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-                    4 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-                    5 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-                    6 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    4 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4",
+                    5 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4",
+                    6 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
                   }[columns] || "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" %>
 
-<% has_action ||= false %>
+<section class="flex flex-col gap-6 justify-start">
 
-<% button_route ||= nil %>
-
-<% button_name ||= nil %>
-
-<% button_icon ||= nil %>
-
-<% section_title ||= nil %>
-
-<% section_desc ||= nil %>
-
-<section class="flex flex-col gap-6 justify-start ">
-
+  <%# =============================================================
+      Section Header — Title, Description & Action Button
+      ============================================================= %>
   <div class="flex flex-row items-center justify-between">
 
-    <%# Explanation:: This block displays the title if one is provided.
-      #               It ensures that empty headings do not take up
-      #               unnecessary space on the dashboard screen.
-      %>
     <% if section_title.present? %>
-
       <div class="flex flex-col justify-start items-start gap-1.5">
+
         <div class="flex flex-row justify-start items-center gap-1">
-          <%= content_tag :h2, section_title, class: "text-2xl font-heading text-body font-medium capitalize" %>
-
-          <% if section_desc.present? %>
-
-            <%= button_tag class: 'button-ghost !p-1 section-desc-button',
-                           data: {
-                             tippy_target: "##{section_title.parameterize}-desc"
-                           } do
-            %>
-              <%= inline_svg_tag "icons/information-circle.svg", class: "!stroke-muted size-3" %>
-            <% end %>
-          <% end %>
+          <%= content_tag :h2, section_title, class: "text-xl font-mono uppercase text-body font-medium" %>
         </div>
 
         <% if section_desc.present? %>
-
-          <%= content_tag :h2, section_desc, class: "text-sm text-muted font-normal" %>
+          <%= content_tag :h2, section_desc, class: "text-sm font-body text-muted font-normal" %>
         <% end %>
+
       </div>
 
-      <%# Explanation:: This hidden container holds the description text.
-        #               It remains invisible until the user interacts with
-        #               the info button to keep the layout clean.
-        %>
+      <%# Note: Hidden container toggled by the info button interaction.
+                Always rendered when a title is present so JS can target it
+                without checking for existence first. %>
       <div class="section-desc" id="<%= section_title.parameterize %>-desc" style="display: none;">
         <%= content_tag :h2, section_desc, class: "text-sm text-muted text-left" %>
       </div>
     <% end %>
 
-    <%# Explanation:: This conditional shows the action button if requested.
-      #               It creates a clickable link with an icon and text
-      #               to allow the user to perform tasks in this section.
-      %>
-    <% if has_action == true %>
-      <%= link_to button_route, class: "button button-small button-outline" do %>
+    <% if has_action %>
+      <%= link_to button_route, id: button_id, class: "button button-small button-outline" do %>
         <%= inline_svg_tag "icons/#{button_icon}.svg" %>
         <%= content_tag :span, button_name %>
       <% end %>
     <% end %>
+
   </div>
 
-  <%# Explanation:: This is the main area where the section content lives.
-    #               It uses the grid classes defined earlier to organize
-    #               any nested elements passed into this block.
-    %>
+  <%# =============================================================
+      Content Grid
+      ============================================================= %>
   <div class="grid <%= grid_classes %> gap-6">
     <%= yield %>
   </div>
+
 </section>

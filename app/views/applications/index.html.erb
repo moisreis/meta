@@ -34,6 +34,7 @@
     #               the table columns. It provides vital context for each field
     #               and works by mapping each string to a specific header cell.
     columns_header: [
+      "ID",
       "Aplicação",
       "Carteira",
       "Valor",
@@ -62,6 +63,13 @@
     #               application details. It handles all data extraction and works
     #               by executing formatting functions for every record in the list.
     columns_body: [
+
+      # Explanation:: This function identifies and labels the name of the fund
+      #               linked to the transaction. It ensures the primary asset is
+      #               visible and works by safely navigating the investment links.
+      ->(app) do
+        normalize_fk(app.id)
+      end,
 
       # Explanation:: This function identifies and labels the name of the fund
       #               linked to the transaction. It ensures the primary asset is

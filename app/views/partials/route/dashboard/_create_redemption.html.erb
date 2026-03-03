@@ -1,0 +1,135 @@
+<%#
+  # Partial: _sidebar_redemption.html.erb
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Slide-over sidebar para registrar um novo Resgate diretamente
+  #              na página Portfolio#show. Segue o mesmo esqueleto do _sidebar_application.
+  #
+  # Usage: - What: Renderiza um formulário de novo Resgate dentro de um painel
+  #                lateral, sem sair da página.
+  #        - How: Reutiliza o padrão de IDs/classes do _filters e abre/fecha via
+  #               JS inline. O select de fundo já vem filtrado pelos FundInvestments
+  #               da carteira em questão.
+  #        - Why: Mantém consistência visual/comportamental com os outros sidebars
+  #               da aplicação e evita dependências externas como Stimulus.
+  %>
+
+<div id="sidebarRedemption"
+     class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-white border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
+
+  <%= form_with(model: @new_redemption, class: "flex flex-col h-full") do |form| %>
+
+    <%# ── Header ──────────────────────────────────────────────────────────── %>
+    <div class="h-16 flex flex-row justify-between items-center px-16">
+      <h3 class="font-body font-medium text-2xl">Novo Resgate</h3>
+
+      <%= button_tag id: "closeRedemptionBtn",
+                     type: "button",
+                     class: "button button-ghost button-icon button-small" do %>
+        <%= inline_svg_tag "icons/x.svg" %>
+      <% end %>
+    </div>
+
+    <%# ── Scrollable body ─────────────────────────────────────────────────── %>
+    <div class="flex-grow px-16 space-y-8 overflow-y-auto w-full">
+
+      <%# Origem ─ select escopado apenas aos fundos desta carteira %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Origem do Resgate",
+                 fieldset_desc: "Selecione o fundo desta carteira de onde o capital será retirado." do %>
+
+        <%= render "partials/modules/select",
+                   f: form,
+                   name: :fund_investment_id,
+                   label: "Fundo alvo",
+                   desc: "Apenas os fundos alocados nesta carteira são exibidos.",
+                   is_half_width: false,
+                   options_collection: @portfolio.fund_investments
+                                                 .includes(:investment_fund)
+                                                 .map { |fi| [fi.investment_fund.fund_name, fi.id] },
+                   is_inactive: false %>
+      <% end %>
+
+      <%# Dados Financeiros %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Dados Financeiros",
+                 fieldset_desc: "Informe o valor líquido recebido, as cotas vendidas e o rendimento obtido." do %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :redeemed_liquid_value,
+                   label: "Valor líquido resgatado",
+                   placeholder: "5000.00",
+                   is_half_width: false,
+                   desc: "O valor total (R$) recebido no resgate após cotização.",
+                   field_type: :number_field,
+                   icon_name: "banknote-arrow-down",
+                   step: :any %>
+
+        <%= form.hidden_field :redemption_yield, value: 0 %>
+      <% end %>
+
+      <%# Prazos e Natureza %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Prazos e Natureza",
+                 fieldset_desc: "Configure o cronograma da operação e a classificação deste resgate." do %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :cotization_date,
+                   label: "Data de Cotização",
+                   placeholder: "DD/MM/AAAA",
+                   is_half_width: false,
+                   desc: "Data em que o valor da cota do resgate foi consolidado.",
+                   field_type: :date_field,
+                   icon_name: "calculator" %>
+
+        <%= form.hidden_field :request_date %>
+        <%= form.hidden_field :liquidation_date %>
+      <% end %>
+
+      <%# Configuração do Resgate %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Configuração do Resgate",
+                 fieldset_desc: "Informe os detalhes sobre como deseja realizar a retirada do seu saldo." do %>
+
+        <%= render "partials/modules/select",
+                   f: form,
+                   name: :redemption_type,
+                   label: "Tipo de Resgate",
+                   is_half_width: false,
+                   options_collection: [
+                     ["Parcial", "partial"],
+                     ["Total", "total"],
+                     ["Emergencial", "emergency"],
+                     ["Programado", "scheduled"]
+                   ],
+                   desc: "Escolha o tipo de resgate conforme a operação.",
+                   is_inactive: false %>
+      <% end %>
+
+      <%# Actions %>
+      <div class="flex flex-row gap-1.5">
+        <%= form.button :submit,
+                        name: nil,
+                        class: "button button-small button-danger flex items-center gap-2" do %>
+          <%= inline_svg_tag "icons/check.svg" %>
+          <%= content_tag :span, "Registrar" %>
+        <% end %>
+
+        <%= button_tag id: "cancelRedemptionBtn",
+                       type: "button",
+                       class: "button button-small button-outline flex items-center gap-2" do %>
+          <%= inline_svg_tag "icons/x.svg" %>
+          <%= content_tag :span, "Cancelar" %>
+        <% end %>
+      </div>
+
+    </div>
+  <% end %>
+</div>
+
+<%# ── Overlay ──────────────────────────────────────────────────────────────── %>
+<div class="h-screen w-screen bg-body/10 z-40 hidden fixed top-0 right-0"
+     id="redemptionOverlay"></div>

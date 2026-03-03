@@ -27,7 +27,9 @@
     "items-center",
     "gap-1.5",
     "text-xs",
-    "font-body",
+    "font-mono",
+    "uppercase",
+    "tracking-tight",
     "leading-none",
     "font-semibold",
     "select-none",
@@ -52,6 +54,8 @@
 <%# [Variable] Checks if the input should have half the width. %>
 <% is_half_width ||= false %>
 
+<% is_long ||= false %>
+
 <%# [Variable] Check if form has errors (handles nil object case) %>
 <% has_errors = f.object.present? && f.object.respond_to?(:errors) && f.object.errors[name].present? %>
 
@@ -61,7 +65,7 @@
   <% if label.present? %>
     <%= f.label name, label, class: label_classes %>
   <% end %>
-  <div class="relative <%= is_half_width ? '!w-1/2' : '' %> ">
+  <div class="relative <%= is_half_width ? '!w-1/2' : '' %> <%= is_long ? '!w-32' : '' %> ">
     <%= f.select name, options_collection, {}, {
       class: [
         "js-tomselect",

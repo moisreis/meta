@@ -1,30 +1,56 @@
 <%#
-  # Partial: _container.html
-  # Date: 11/12/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Defines the main container for authentication pages.
-  #              Organizes the logo, welcome message, form, and footer sections in a vertical layout.
-  #              Uses Tailwind utilities for responsive alignment and spacing.
-  #
-  # Usage: - What: Serves as the central structure for authentication views such as sign up and login.
-  #                Displays the brand logo, introductory text, and form content with consistent spacing.
-  #        - How:  Called with dynamic `welcome_message` and `welcome_feedback` content.
-  #                Yields inner form components (e.g., registration or login forms) to the layout.
-  #        - Why:  Ensures a unified, vertically aligned composition across all authentication pages.
-  %>
+  Partial : _container.html.erb
+  Date    : 11/12/2025
+  Author  : Moisés Reis
+  Package : Meta
+
+  Description:
+    Layout wrapper for all authentication pages (sign in, sign up, password reset).
+    Renders a centered column with a heading, a supporting message, the yielded
+    form content, Devise's shared links, and a fixed copyright footer.
+
+  ============================================================
+  Locals
+  ============================================================
+
+  @param  welcome_message   [String]  Primary heading displayed above the form. Required.
+  @param  welcome_feedback  [String]  Supporting subtitle displayed below the heading. Required.
+
+  ============================================================
+  Notes
+  ============================================================
+
+  - welcome_message and welcome_feedback have no ||= defaults.
+    Every authentication view must pass both or a NameError will be raised.
+  - The copyright bar uses fixed bottom positioning and a negative translate
+    to stay centered regardless of the parent column's width.
+
+  @yield  [content]  The authentication form rendered between the intro text and the Devise links.
+%>
+
 <section class="relative flex flex-col items-center bg-white justify-center col-span-6 h-full min-h-screen w-full gap-9 overflow-x-hidden m-auto py-6">
-  <div class="absolute top-6 left-6"><%= render "partials/modules/logo", size: "32" %></div>
-  <div class="flex flex-col items-center justify-start gap-3 w-1/4">
-    <%= content_tag :h1, welcome_message, class: "text-heading font-heading text-5xl font-semibold text-center" %>
+
+  <%# =============================================================
+      Heading & Supporting Message
+      ============================================================= %>
+  <div class="flex flex-col items-center justify-start gap-3 w-2/3 lg:w-1/4">
+    <%= content_tag :h1, welcome_message, class: "text-heading font-mono text-4xl font-semibold text-center" %>
     <%= content_tag :p, welcome_feedback, class: "text-muted font-body text-base font-normal text-center" %>
   </div>
-  <div class="flex flex-col items-start justify-center w-1/4 gap-3">
+
+  <%# =============================================================
+      Form Content & Devise Links
+      ============================================================= %>
+  <div class="flex flex-col items-start justify-center w-2/3 lg:w-1/4 gap-3">
     <%= yield %>
     <%= render "devise/shared/links" %>
   </div>
+
+  <%# =============================================================
+      Fixed Copyright Footer
+      ============================================================= %>
   <div class="fixed bottom-0 py-3 left-1/2 -translate-x-1/2 w-full bg-white flex items-center justify-center">
     <%= render "partials/modules/copyright" %>
   </div>
+
 </section>

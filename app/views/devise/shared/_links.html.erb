@@ -23,29 +23,29 @@
   #              which ensures the login link does not appear when the user is already on the login page.
   %>
   <%- if controller_name != 'sessions' %>
-    <%= link_to "Já tenho uma conta",
-                new_session_path(resource_name),
-                class: "button button-outline w-full"
-    %>
+    <%= link_to new_session_path(resource_name),
+                class: "button button-outline w-full" do %>
+      <%= content_tag :span, "Já tenho uma conta"%>
+<% end %>
   <% end %>
 
 <%# [Condition]: It checks if Devise registration is enabled AND the current page is not the 'registrations' controller (sign-up page),
   #              which ensures the sign-up link does not appear if registration is disabled or if the user is currently on the sign-up page.
   %>
   <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
-    <%= link_to "Não tenho uma conta",
-                new_registration_path(resource_name),
-                class: "button button-accent w-full"
-    %>
+    <%= link_to new_registration_path(resource_name),
+                class: "button button-secondary w-full" do %>
+      <%= content_tag :span, "Não tenho uma conta"%>
+    <% end %>
   <% end %>
 
 <%# [Condition]: It checks if Devise recovery is enabled AND the current page is not the 'passwords' or 'registrations' controller,
   #              which ensures the recovery link is only visible when relevant to the user's current context.
   %>
   <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
-    <%= link_to "Esqueceu sua senha?",
-                new_password_path(resource_name),
-                class: "button button-outline w-full"
-    %>
+    <%= link_to new_password_path(resource_name),
+                class: "button button-outline w-full" do %>
+      <%= content_tag :span, "Esqueci minha senha"%>
+    <% end %>
   <% end %>
 </div>

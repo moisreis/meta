@@ -32,7 +32,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :applications, only: [:index, :edit, :new, :create, :show]
+  resources :applications
 
   resources :user_portfolio_permissions
 

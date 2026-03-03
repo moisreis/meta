@@ -1,23 +1,25 @@
 <%#
-  # Partial: _composed-avatar.html
-  # Date: 11/14/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Renders a composed user avatar with name and role inside a styled
-  #              horizontal container. Outputs the avatar component followed by
-  #              textual user information.
-  #
-  # Usage: - What: Use when you need a compact identity block displaying the user’s
-  #                profile image, full name, and role.
-  #        - How: Render this partial inside navigation bars, dropdowns, or profile
-  #               summaries.
-  #        - Why: Keeps consistent user-identity presentation across the app and
-  #               centralizes styling and markup.
-  %>
-<div class="flex flex-row justify-center items-center bg-white p-0.75 pr-2 rounded-full h-9 gap-1.5 border border-border">
-  <%= render 'partials/modules/avatar' %>
+  Partial : _composed-avatar.html.erb
+  Date    : 11/14/2025
+  Author  : Moisés Reis
+  Package : Meta
+
+  Description:
+    Compact identity block rendering the user's avatar and full name
+    in a pill-shaped container. Used in navigation bars and page headers.
+
+  ============================================================
+  Dependencies
+  ============================================================
+
+  @uses   current_user  Provides first_name and last_name for the displayed label.
+%>
+
+<div class="flex flex-row justify-start items-center bg-neutral-100 w-full p-1.5 rounded-full h-9 gap-1.5 border border-border">
+  <%= render "partials/modules/avatar" %>
   <div class="flex flex-col justify-start items-start -space-y-1">
-    <%= content_tag :span, "Olá, #{current_user.first_name} #{current_user.last_name}", class: "text-xs font-mono uppercase text-muted font-semibold" %>
+    <%= content_tag :span,
+                    "#{current_user.first_name} #{current_user.last_name}",
+                    class: "text-sm font-body capitalize text-body font-medium" %>
   </div>
 </div>

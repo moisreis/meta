@@ -22,6 +22,17 @@
   %>
 <%= form_with(model: redemption, class: "contents") do |form| %>
 
+  <% if redemption.errors.any? %>
+    <div class="error-messages">
+      <h2><%= pluralize(redemption.errors.count, "erro") %> impediram o resgate:</h2>
+      <ul>
+        <% redemption.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
   <%# Explanation:: This fieldset groups the selection of the investment source to provide
     #               clear visual boundaries. It is used to separate the "where" from
     #               the "how much," helping the user focus on identifying the correct fund.

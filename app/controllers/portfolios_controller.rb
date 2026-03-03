@@ -33,6 +33,9 @@ class PortfoliosController < ApplicationController
 
     @portfolio = Portfolio.for_user(current_user).find(params[:id])
 
+    @new_application = Application.new
+    @new_redemption = Redemption.new
+
     @reference_date = params[:reference_date].present? ?
                         Date.parse(params[:reference_date]) :
                         Date.current
@@ -183,20 +186,21 @@ class PortfoliosController < ApplicationController
     redirect_to portfolio_path(@portfolio), notice: "Cálculo iniciado em segundo plano!"
   end
 
+  # app/controllers/portfolios_controller.rb
+
   def monthly_report
-    reference_date = if params[:month].present? && params[:year].present?
-                       Date.new(params[:year].to_i, params[:month].to_i, 1).end_of_month
-                     else
-                       Date.current.end_of_month
-                     end
+    month = params[:month].to_i
+    year  = params[:year].to_i
 
-    report = PortfolioMonthlyReportGenerator.new(@portfolio, reference_date)
-    pdf_data = report.generate
+    reference_date = Date.new(year, month, -1) # último dia do mês
 
-    send_data pdf_data,
-              filename: "relatorio_#{@portfolio.name.parameterize}_#{reference_date.strftime('%Y-%m')}.pdf",
-              type: 'application/pdf',
-              disposition: 'inline'
+    generator = PortfolioMonthlyReportGenerator.new(@portfolio, reference_date)
+    pdf_bytes = generator.generate
+
+    send_data pdf_bytes,
+              filename: "relatorio_#{@portfolio.id}_#{reference_date.strftime('%Y-%m')}.pdf",
+              type: "application/pdf",
+              disposition: "inline"
   end
 
   private

@@ -105,24 +105,15 @@
   #               by its abbreviation, ensuring that grouping and reporting logic
   #               always finds a matching index in the database.
   %>
-    <div class="flex flex-col gap-1">
-      <%= form.label :benchmark_index, "Índice de Referência", class: "label" %>
-      <%= form.select :benchmark_index,
-                      options_for_select(
-                        EconomicIndex.order(:abbreviation).map { |i| [i.abbreviation, i.abbreviation] },
-                        investment_fund.benchmark_index
-                      ),
-                      { include_blank: "Nenhum / Não aplicável" },
-                      class: "input" %>
-      <p class="text-xs text-muted-foreground">
-        Indicador utilizado para comparar a rentabilidade.
-      </p>
-      <% if investment_fund.errors[:benchmark_index].any? %>
-        <p class="text-xs text-destructive">
-          <%= investment_fund.errors[:benchmark_index].first %>
-        </p>
-      <% end %>
-    </div>
+    <%= render "partials/modules/select",
+               f: form,
+               name: :benchmark_index,
+               label: "Índice de Referência",
+               desc: "Indicador utilizado para comparar a rentabilidade.",
+               options_collection: options_for_select(
+                 EconomicIndex.order(:abbreviation).map { |i| [i.abbreviation, i.abbreviation] },
+                 investment_fund.benchmark_index
+               ) %>
   <% end %>
 
   <%# Explanation:: This group organizes management settings to clarify who is

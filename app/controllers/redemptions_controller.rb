@@ -23,6 +23,8 @@ class RedemptionsController < ApplicationController
   #               Access is strictly restricted to authenticated users.
   before_action :authenticate_user!
 
+  before_action :load_form_collections, only: [:new, :create, :edit, :update]
+
   # Explanation:: This method ensures that the redemption record specified by `params[:id]` is
   #               loaded into the `@redemption` instance variable before certain actions are executed.
   #               This prevents having to repeat the `Redemption.find(params[:id])` call inside `show`, `update`, and `destroy`.
@@ -150,25 +152,22 @@ class RedemptionsController < ApplicationController
     fund_investment = @redemption.fund_investment
     authorize! :create, @redemption, fund_investment
 
-    # Calcula automaticamente as cotas resgatadas
     if @redemption.cotization_date.present? && @redemption.redeemed_liquid_value.present?
-      quota_value = fund_investment.investment_fund.quota_value_on(@redemption.cotization_date)
+      quota_value = fund_investment.investment_fund
+                                   .quota_value_on(@redemption.cotization_date)
 
-      if quota_value
-        @redemption.redeemed_quotas = BigDecimal(@redemption.redeemed_liquid_value.to_s) / quota_value
-      else
-        return render json: {
-          status: 'Error',
-          message: 'Sem cota disponível para esta data.'
-        }, status: :unprocessable_entity
+      unless quota_value
+        @redemption.errors.add(:base, "Sem cota disponível para esta data.")
+        return render :new, status: :unprocessable_entity
       end
+
+      @redemption.redeemed_quotas =
+        BigDecimal(@redemption.redeemed_liquid_value.to_s) / quota_value
     end
 
     unless @redemption.redeemed_quotas <= (fund_investment.total_quotas_held || 0)
-      return render json: {
-        status: 'Error',
-        message: 'Insufficient quotas available for this redemption.'
-      }, status: :unprocessable_entity
+      @redemption.errors.add(:base, "Insufficient quotas available for this redemption.")
+      return render :new, status: :unprocessable_entity
     end
 
     ActiveRecord::Base.transaction do
@@ -177,16 +176,12 @@ class RedemptionsController < ApplicationController
       update_fund_investment_after_redemption(fund_investment)
     end
 
-    render json: {
-      status: 'Success',
-      data: RedemptionSerializer.new(@redemption).serializable_hash[:data][:attributes]
-    }, status: :created
+    redirect_to fund_investment_path(fund_investment),
+                notice: "Resgate criado com sucesso."
 
   rescue ActiveRecord::RecordInvalid => e
-    render json: {
-      status: 'Error',
-      errors: e.record.errors.full_messages
-    }, status: :unprocessable_entity
+    @redemption = e.record
+    render :new, status: :unprocessable_entity
   end
 
   # == update
@@ -285,6 +280,13 @@ class RedemptionsController < ApplicationController
   #
   def load_redemption
     @redemption = Redemption.find(params[:id])
+  end
+
+  def load_form_collections
+    @fund_investments = FundInvestment
+                          .joins(:portfolio)
+                          .where(portfolios: { user_id: current_user.id })
+                          .includes(:investment_fund, :portfolio)
   end
 
   # == authorize_redemption

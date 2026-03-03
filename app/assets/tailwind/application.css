@@ -98,8 +98,8 @@
      * --font-heading  → Display and heading elements.
      * --font-mono     → Code, keys, labels, and button text.
      */
-    --font-body: 'Plus Jakarta Sans', sans-serif;
-    --font-heading: 'Plus Jakarta Sans', serif;
+    --font-body: 'Geist', sans-serif;
+    --font-heading: 'Geist', serif;
     --font-mono: 'Geist Mono', monospace;
 
     /**
@@ -161,7 +161,7 @@
      * --color-accent      → Subtle hover/active surface highlight. */
     --color-white: oklch(100% 0 0);
     --color-transparent: transparent;
-    --color-border: oklch(98.5% 0 0);
+    --color-border: oklch(95% 0 0);
     --color-input: #fcfcfe;
     --color-accent: oklch(97% 0 0);
 

@@ -184,19 +184,18 @@ class EconomicIndicesController < ApplicationController
   # Attributes:: - *@economic_index* - the set of data for the new index.
   #
   def create
-
-    # Explanation:: This creates a new temporary record using the
-    #               information sent by the user, preparing it
-    #               to be saved permanently.
     @economic_index = EconomicIndex.new(economic_index_params)
 
-    # Explanation:: This tries to save the new index; if the information
-    #               is valid, it confirms success, otherwise it
-    #               explains what went wrong.
     if @economic_index.save
-      render json: @economic_index, status: :created
+      respond_to do |format|
+        format.html { redirect_to @economic_index, notice: 'Economic index created successfully.' }
+        format.json { render json: @economic_index, status: :created }
+      end
     else
-      render json: { errors: @economic_index.errors.full_messages }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { errors: @economic_index.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -212,14 +211,16 @@ class EconomicIndicesController < ApplicationController
   # Attributes:: - *@economic_index* - the unique record being updated.
   #
   def update
-
-    # Explanation:: This takes the new information provided and
-    #               attempts to update the existing record with
-    #               these fresh details.
     if @economic_index.update(economic_index_params)
-      render json: @economic_index, status: :ok
+      respond_to do |format|
+        format.html { redirect_to @economic_index, notice: 'Economic index updated successfully.' }
+        format.json { render json: @economic_index, status: :ok }
+      end
     else
-      render json: { errors: @economic_index.errors.full_messages }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: { errors: @economic_index.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -235,13 +236,16 @@ class EconomicIndicesController < ApplicationController
   # Attributes:: - *@economic_index* - the unique record to remove.
   #
   def destroy
-    # Explanation:: This command tells the database to delete the
-    #               index and automatically clean up any
-    #               connected history data.
     if @economic_index.destroy
-      render json: { message: 'Economic index successfully deleted' }, status: :ok
+      respond_to do |format|
+        format.html { redirect_to economic_indices_path, notice: 'Economic index successfully deleted.' }
+        format.json { render json: { message: 'Economic index successfully deleted' }, status: :ok }
+      end
     else
-      render json: { errors: @economic_index.errors.full_messages }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { redirect_to economic_indices_path, alert: @economic_index.errors.full_messages.to_sentence }
+        format.json { render json: { errors: @economic_index.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
