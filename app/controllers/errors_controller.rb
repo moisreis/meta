@@ -3,43 +3,52 @@
 # @author Moisés Reis
 # @added 02/11/2026
 # @package *Meta*
-# @description Este controlador gerencia como o sistema exibe falhas técnicas ou páginas
-#              inexistentes, transformando erros complexos em mensagens amigáveis.
+# @description This controller manages how the system displays technical failures
+#              or non-existent pages, transforming complex errors into friendly
+#              messages for the user.
 # @category *Controller*
 #
-# Usage:: - *[What]* Um centralizador de mensagens de erro que captura falhas do sistema.
-#         - *[How]* Ele identifica o tipo de erro através do **ActionDispatch** e escolhe a mensagem certa.
-#         - *[Why]* É essencial para manter a identidade visual do app mesmo quando algo dá errado.
+# Usage:: - *[What]* A central hub for error messages that captures system failures.
+#         - *[How]* It identifies the error type through **ActionDispatch** and
+#           selects the appropriate message and view.
+#         - *[Why]* It is essential for maintaining the app's visual identity
+#           even when something goes wrong.
 #
-# Attributes:: - *[@status_code]* Integer - o código numérico que identifica o tipo de erro ocorrido.
-#              - *[@label]* String - uma etiqueta curta usada para destacar o código do erro na tela.
-#              - *[@title]* String - o título principal que explica o erro de forma simples.
-#              - *[@description]* String - um texto de apoio que orienta o usuário sobre o que aconteceu.
+# Attributes:: - *[@status_code]* Integer - the numeric code identifying the type of error.
+#              - *[@label]* String - a short label used to highlight the error code on screen.
+#              - *[@title]* String - the main title explaining the error simply.
+#              - *[@description]* String - supporting text that guides the user on what happened.
 #
 class ErrorsController < ApplicationController
-  # Explanation:: Define que este controlador usará um visual simplificado e focado,
-  #               separado do restante da aplicação principal.
+
+  # This sets the controller to use a simplified and focused visual
+  # design, separate from the rest of the main application.
   layout "error"
 
   # == show
   #
   # @author Moisés Reis
-  # @category *Action* #
-  # Category:: Prepara e exibe a página de erro correspondente ao problema encontrado.
-  #            Busca as informações de texto baseadas no código de resposta.
+  # @category *Action*
   #
-  # Attributes:: - *@wrapper* - objeto que contém os detalhes técnicos da falha ocorrida.
+  # This action prepares and displays the error page corresponding to the
+  # problem encountered. It retrieves text info based on the response code.
+  #
+  # Attributes:: - *@wrapper* - object containing technical details of the failure.
   #
   def show
     wrapper = exception_wrapper
+
+    # Determines the final numeric error code after analyzing the failure.
     @status_code = normalize_status(wrapper)
 
+    # Fetches user-friendly text configurations for this specific code.
     error_config = error_messages.fetch(@status_code, error_messages[404])
 
-    @label       = error_config[:label]
-    @title       = error_config[:title]
+    @label = error_config[:label]
+    @title = error_config[:title]
     @description = error_config[:description]
 
+    # Selects the correct visual file and sends the response with the error code.
     render view_for_code(@status_code), status: @status_code
   end
 
@@ -48,13 +57,15 @@ class ErrorsController < ApplicationController
   # == exception_wrapper
   #
   # @author Moisés Reis
-  # @category *Method* #
-  # Category:: Extrai os detalhes da falha que aconteceu dentro do sistema Rails.
-  #            Garante que até erros de rota sejam tratados corretamente.
+  # @category *Method*
+  #
+  # This extracts the details of the failure that occurred within the Rails system.
+  # It ensures that even routing errors are handled correctly.
   #
   def exception_wrapper
-    # Explanation:: Tenta recuperar o erro capturado pelo sistema de rotas do Rails
-    #               para entender o que causou a falha na requisição.
+
+    # Attempts to retrieve the error captured by the Rails routing system
+    # to understand what caused the request failure.
     exception = request.env["action_dispatch.exception"]
 
     ActionDispatch::ExceptionWrapper.new(
@@ -63,6 +74,14 @@ class ErrorsController < ApplicationController
     )
   end
 
+  # == normalize_status
+  #
+  # @author Moisés Reis
+  # @category *Method*
+  #
+  # This ensures that "page not found" errors always receive the 404 code,
+  # avoiding confusion between internal actions and mistyped addresses.
+  #
   def normalize_status(wrapper)
     case wrapper.exception
     when AbstractController::ActionNotFound
@@ -72,19 +91,43 @@ class ErrorsController < ApplicationController
     end
   end
 
+  # == view_for_code
+  #
+  # @author Moisés Reis
+  # @category *Method*
+  #
+  # This decides which view file should be loaded, returning the default
+  # "Not Found" page if the error code is unknown.
+  #
   def view_for_code(code)
     supported_error_codes.fetch(code, "404")
   end
 
+  # == supported_error_codes
+  #
+  # @author Moisés Reis
+  # @category *Method*
+  #
+  # This lists the error codes that have their own specific visual
+  # page within the system's view folder.
+  #
   def supported_error_codes
     { 403 => "403", 404 => "404", 500 => "500" }
   end
 
+  # == error_messages
+  #
+  # @author Moisés Reis
+  # @category *Method*
+  #
+  # This stores the English text that explains each error didactically,
+  # avoiding scary technical jargon for the end user.
+  #
   def error_messages
     {
-      403 => { label: "403", title: "Acesso negado", description: "Você não tem permissão para acessar este recurso." },
-      404 => { label: "404", title: "Página não encontrada", description: "A ação ou página solicitada não existe." },
-      500 => { label: "500", title: "Erro interno do servidor", description: "Ocorreu um erro inesperado. Tente novamente mais tarde." }
+      403 => { label: "403", title: "Acesso Negado", description: "Você não tem permissão para acessar este recurso." },
+      404 => { label: "404", title: "Página Não Encontrada", description: "A ação ou página solicitada não existe." },
+      500 => { label: "500", title: "Erro Interno do Servidor", description: "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde." }
     }
   end
 end

@@ -1,33 +1,33 @@
-# === applications_controller
+# === applications_controller.rb
 #
 # @author Moisés Reis
-# @added 11/24/2025
+# @added 03/03/2026
 # @package *Meta*
-# @description This controller manages all financial application records for investments.
-#              It ensures the current user is authenticated and authorized to access
-#              or modify investment data, working closely with the **FundInvestment**
-#              and **Application** models.
+# @description This controller manages the creation, removal, and listing of
+#              investment records. It ensures that when money is added or
+#              removed, the total balances in the **FundInvestment** and
+#              **Application** models stay perfectly synchronized.
 # @category *Controller*
 #
-# Usage:: - *[What]* This code block controls the listing, viewing, creation,
-#           and deletion of specific investment applications.
-#         - *[How]* It uses **CanCan** to check permissions on the associated
-#           **Portfolio** and executes complex database logic to ensure fund totals
-#           are updated correctly whenever an application is added or removed.
-#         - *[Why]* It centralizes all application-specific actions, protecting
-#           sensitive financial data and maintaining data integrity of the overall fund totals.
+# Usage:: - *[What]* A management tool for tracking individual financial
+#           deposits made into different investment funds.
+#         - *[How]* It calculates shares based on daily prices and updates
+#           the main portfolio totals using secure database steps.
+#         - *[Why]* It provides a clear history of investments while keeping
+#           all financial calculations accurate and automated.
 #
-# Attributes:: - *@application* @object - The specific application being viewed, edited, or destroyed.
-#              - *@applications* @collection - The filtered and paginated list of applications for the index view.
+# Attributes:: - *[@applications]* @collection - the list of investment records
+#              - *[@application]* @model - a single investment entry
+#              - *[@fund_investments]* @collection - available funds for selection
 #
 class ApplicationsController < ApplicationController
 
-  # Explanation:: This command confirms that a user is successfully logged into
-  #               the system before allowing access to any actions within this controller.
+  # This security check ensures that only users who have logged
+  # into the system can view or manage investment records.
   before_action :authenticate_user!
 
-  # Explanation:: This runs before viewing, editing, updating, or destroying an application.
-  #               It finds the specific record from the database using the ID provided in the web address.
+  # This step automatically finds the specific investment record
+  # requested so its details can be shown, edited, or deleted.
   before_action :load_application, only: [
     :show,
     :edit,
@@ -35,9 +35,8 @@ class ApplicationsController < ApplicationController
     :destroy
   ]
 
-  # Explanation:: This runs immediately after loading the application. It checks user
-  #               permissions using **CanCan** to ensure the user is authorized to
-  #               manage the portfolio associated with this application.
+  # This verifies that the logged-in user actually has the right
+  # permission to view or change this specific investment data.
   before_action :authorize_application, only: [
     :show,
     :edit,
@@ -45,9 +44,8 @@ class ApplicationsController < ApplicationController
     :destroy
   ]
 
-  # Explanation:: This runs before showing the new or edit forms. It pre-fetches the
-  #               necessary data, such as a list of available **FundInvestment**
-  #               records, to populate dropdown menus on the form.
+  # This prepares a list of available funds so the user can
+  # easily pick one when creating or editing an investment.
   before_action :load_form_dependencies, only: [
     :new,
     :edit,
@@ -57,56 +55,46 @@ class ApplicationsController < ApplicationController
   # == index
   #
   # @author Moisés Reis
-  # @category *Read*
   #
-  # Read:: This action retrieves all investment applications that the
-  #        currently logged-in user is permitted to view. It then applies
-  #        any sorting and filtering requests before displaying the results.
+  # This action gathers all the investments the user is allowed to see,
+  # organizes them into a list, and allows for searching and sorting.
+  # It makes sure the user only sees data from their own portfolios.
   #
-  # Attributes:: - *params[:q]* - Search parameters used to filter the applications list.
-  #             - *@applications* - The final list of applications prepared for the view.
+  # Attributes:: - *@q* - the search object used to filter the list.
+  #              - *@total_items* - the total number of records found.
   #
   def index
 
-    # Explanation:: This line finds the unique identifiers of all investment funds
-    #               that the current user has access to, ensuring security.
+    # Collects the IDs of every fund investment the current user is allowed to read.
     fund_investments_ids = FundInvestment.accessible_to(current_user).select(:id)
 
-    # Explanation:: This defines the starting point for the application search. It finds
-    #               applications linked to the accessible funds and loads their related
-    #               portfolio and fund data efficiently.
+    # Builds the base scope: applications belonging to accessible funds,
+    # with their portfolio and investment_fund associations eager-loaded.
     base_scope = Application.where(fund_investment_id: fund_investments_ids)
                             .includes(fund_investment: [
                               :portfolio,
                               :investment_fund
                             ])
 
-    # Explanation:: This initializes the search object using the **Ransack** gem,
-    #               applying any search criteria passed in the web address (`params[:q]`).
+    # Initialises the Ransack search object from the query string parameters.
     @q = base_scope.ransack(params[:q])
 
-    # Explanation:: This executes the search query defined by Ransack, returning a
-    #               unique list of applications that match the criteria.
+    # Executes the Ransack query, removing duplicate rows.
     filtered_applications = @q.result(distinct: true)
 
-    # Explanation:: This variable stores the total number of records found in the database.
-    #               It allows the user to see exactly how many items exist in the list.
+    # Stores the unfiltered count so the view can display the total record count.
     @total_items = Application.count
 
-    # Explanation:: This checks the web address for a specific sort column, defaulting
-    #               to sorting by the application's request date if none is specified.
+    # Resolves the sort column, falling back to request_date when absent.
     sort = params[:sort].presence || "request_date"
 
-    # Explanation:: This checks the web address for a specific sort direction, defaulting
-    #               to descending order (newest first) if none is specified.
+    # Resolves the sort direction, falling back to descending order when absent.
     direction = params[:direction].presence || "desc"
 
-    # Explanation:: This applies the determined sort column and direction to the
-    #               filtered list of applications.
+    # Applies the resolved sort column and direction to the filtered result set.
     sorted_applications = filtered_applications.order("#{sort} #{direction}")
 
-    # Explanation:: This prepares the final data for the page, dividing the complete
-    #               list into pages of 20 items to improve performance and readability.
+    # Paginates the sorted result at 14 records per page.
     @applications = sorted_applications.page(params[:page]).per(14)
 
     respond_to do |format|
@@ -117,14 +105,14 @@ class ApplicationsController < ApplicationController
   # == show
   #
   # @author Moisés Reis
-  # @category *Read*
   #
-  # Read:: This action prepares the specific application record that was
-  #        loaded earlier so that the view can display all its details to the user.
-  #
-  # Attributes:: - *@application* - The single application object found by the `load_application` filter.
+  # This displays all the specific details of a single investment,
+  # including calculated performance metrics and verification checks.
+  # It helps the user see if the investment data is consistent.
   #
   def show
+
+    # Prepares specialized math and status checks for the display page.
     prepare_application_metrics
 
     respond_to do |format|
@@ -135,26 +123,22 @@ class ApplicationsController < ApplicationController
   # == new
   #
   # @author Moisés Reis
-  # @category *Read*
   #
-  # Read:: This action creates a new, blank **Application** object. This
-  #        empty object is used by the form to gather input from the user.
-  #
-  # Attributes:: - *@application* - A new, unsaved application instance.
+  # This sets up a fresh, empty investment record so the system
+  # can display a blank form for the user to fill out.
   #
   def new
+
+    # Creates a new empty record to be filled in by the form.
     @application = Application.new
   end
 
   # == edit
   #
   # @author Moisés Reis
-  # @category *Read*
   #
-  # Read:: This action prepares the view to display the existing application
-  #        data, allowing the user to make changes.
-  #
-  # Attributes:: - *@application* - The existing application object loaded by the `before_action` filter.
+  # This prepares an existing investment record so the user can
+  # view its current information and make any necessary changes.
   #
   def edit
   end
@@ -162,21 +146,23 @@ class ApplicationsController < ApplicationController
   # == create
   #
   # @author Moisés Reis
-  # @category *Create*
   #
-  # Create:: This action attempts to save a new application record to the
-  #          database. If successful, it updates the associated fund's totals
-  #          and redirects the user to the new application's detail page.
-  #
-  # Attributes:: - *application_params* - The sanitized input data from the user form.
+  # This saves a new investment to the database while automatically
+  # calculating the number of shares and updating the fund balance.
+  # It ensures that the math is correct before finalizing the save.
   #
   def create
+
+    # Combines the form data with correctly formatted dates.
     @application = Application.new(application_params.merge(parsed_date_params))
 
     fund_investment = @application.fund_investment
+
+    # Checks if the user has permission to manage this specific portfolio.
     authorize! :manage, fund_investment.portfolio
 
-    # Calcula automaticamente cota e número de cotas
+    # Resolves the historical quota value and derives number_of_quotas when
+    # both cotization_date and financial_value are present.
     if @application.cotization_date.present? && @application.financial_value.present?
       quota_value = fund_investment.investment_fund.quota_value_on(@application.cotization_date)
 
@@ -184,11 +170,12 @@ class ApplicationsController < ApplicationController
         @application.quota_value_at_application = quota_value
         @application.number_of_quotas = BigDecimal(@application.financial_value.to_s) / quota_value
       else
-        @application.errors.add(:cotization_date, "sem cota disponível para esta data")
+        @application.errors.add(:cotization_date, "Não há cota disponível para esta data")
         render :new, status: :unprocessable_entity and return
       end
     end
 
+    # Saves the record and updates the main totals in one secure step.
     ActiveRecord::Base.transaction do
       @application.save!
       update_fund_investment_after_create(fund_investment)
@@ -207,35 +194,29 @@ class ApplicationsController < ApplicationController
   # == update
   #
   # @author Moisés Reis
-  # @category *Update*
   #
-  # Update:: This method explicitly disables the direct update of application
-  #          records. Any modification to an application must be performed
-  #          through a defined business process, like deletion and recreation.
-  #
-  # Attributes:: - *@application* - The existing application object.
+  # This prevents users from making direct edits to investment records,
+  # forcing them to delete and recreate them to ensure data integrity.
+  # This keeps the financial history clean and error-free.
   #
   def update
+
+    # Blocks the update and sends the user back to the details page.
     redirect_to application_path(@application), status: :method_not_allowed
   end
 
   # == destroy
   #
   # @author Moisés Reis
-  # @category *Delete*
   #
-  # Delete:: This action deletes the application record from the database.
-  #          It first subtracts the application's value and quotas from the
-  #          associated fund's totals within a secure database transaction.
-  #
-  # Attributes:: - *@application* - The existing application object to be destroyed.
+  # This removes an investment record and subtracts its value and
+  # shares from the fund totals, keeping the overall balance accurate.
+  # It acts like an "undo" button for a financial deposit.
   #
   def destroy
     fund_investment = @application.fund_investment
 
-    # Explanation:: This initiates a database transaction to ensure the fund totals
-    #               are updated before the application is deleted. Both actions must succeed
-    #               or fail together.
+    # Subtracts the values and removes the record in one secure operation.
     ActiveRecord::Base.transaction do
       update_fund_investment_before_destroy(fund_investment)
       @application.destroy!
@@ -243,12 +224,9 @@ class ApplicationsController < ApplicationController
 
     flash[:notice] = "Investimento deletado com sucesso."
 
-    # Explanation:: After successful deletion and update of fund totals, this redirects
-    #               the user to the detail page of the fund investment itself.
+    # Sends the user back to the main fund page after the removal.
     redirect_to fund_investment_path(fund_investment.id), status: :see_other
 
-    # Explanation:: If any database integrity error occurs during the transaction,
-    #               the user is redirected to the application's detail page with an error.
   rescue ActiveRecord::RecordInvalid
     redirect_to application_path(@application)
   end
@@ -258,30 +236,26 @@ class ApplicationsController < ApplicationController
   # == load_application
   #
   # @author Moisés Reis
-  # @category *Utility*
   #
-  # Utility:: This private method finds a single application record in the
-  #           database using the ID from the web request and stores it for
-  #           use by other controller methods.
-  #
-  # Attributes:: - *params[:id]* - The identifier of the application record.
+  # This searches the database for a specific investment using the
+  # ID provided in the web link, making it available for other actions.
   #
   def load_application
+
+    # Finds the specific record or stops the process if not found.
     @application = Application.find(params[:id])
   end
 
   # == load_form_dependencies
   #
   # @author Moisés Reis
-  # @category *Utility*
   #
-  # Utility:: This private method pre-fetches all the **FundInvestment**
-  #           records that the current user can access. This data is used to
-  #           populate the dropdown choices in the `new` and `edit` forms.
-  #
-  # Attributes:: - *@fund_investments* - A collection of accessible fund investment objects.
+  # This gathers the list of portfolios and funds that the user is
+  # allowed to use, specifically for filling out the selection menus.
   #
   def load_form_dependencies
+
+    # Fetches all funds the user can access to populate the dropdowns.
     @fund_investments = FundInvestment.accessible_to(current_user)
                                       .includes(
                                         :portfolio,
@@ -292,29 +266,27 @@ class ApplicationsController < ApplicationController
   # == authorize_application
   #
   # @author Moisés Reis
-  # @category *Security*
   #
-  # Security:: This private method uses **CanCan** to verify that the
-  #            current user possesses the necessary permissions to manage the
-  #            **Portfolio** associated with the current application.
+  # This double-checks that the current user has the authority to
+  # modify the investment based on the portfolio it belongs to.
   #
   def authorize_application
     fund_investment = @application.fund_investment
+
+    # Confirms the user has management rights over this specific portfolio.
     authorize! :manage, fund_investment.portfolio
   end
 
   # == application_params
   #
   # @author Moisés Reis
-  # @category *Security*
   #
-  # Security:: This private method sanitizes all incoming data from the
-  #            application form. It ensures that only specifically permitted
-  #            fields, like `financial_value` and `request_date`, can be saved.
-  #
-  # Attributes:: - *params* - The raw data hash received from the user form submission.
+  # This filters the information coming from the web browser to
+  # ensure only the correct and safe fields are allowed into the app.
   #
   def application_params
+
+    # Only permits specific fields like dates and values to be saved.
     params.require(:application).permit(
       :fund_investment_id,
       :request_date,
@@ -329,19 +301,15 @@ class ApplicationsController < ApplicationController
   # == parsed_date_params
   #
   # @author Moisés Reis
-  # @category *Utility*
   #
-  # Utility:: Converts the three date fields from the Brazilian DD/MM/YYYY format
-  #           submitted by the front-end date picker into ISO 8601 (YYYY-MM-DD)
-  #           strings that Rails can reliably cast to Date objects.
-  #           Returns only the fields that are actually present in the request,
-  #           so it is safe to merge over application_params without clobbering
-  #           unrelated attributes.
+  # This takes dates entered in the Brazilian format (day/month/year)
+  # and converts them into a format the database can understand.
   #
   def parsed_date_params
     date_fields = %i[request_date cotization_date liquidation_date]
     raw = params.require(:application)
 
+    # Loops through each date field to translate the format correctly.
     date_fields.each_with_object({}) do |field, hash|
       raw_value = raw[field].presence
       next unless raw_value
@@ -354,19 +322,18 @@ class ApplicationsController < ApplicationController
   # == parse_br_date
   #
   # @author Moisés Reis
-  # @category *Utility*
   #
-  # Utility:: Parses a date string that may arrive in DD/MM/YYYY format (Brazilian locale)
-  #           and returns an ISO 8601 string (YYYY-MM-DD).
-  #           Falls back to returning nil so the model validator surfaces a
-  #           human-readable error instead of raising an exception.
-  #
-  # Attributes:: - *value* @string - The raw date string from the request params.
+  # This helper logic identifies the standard Brazilian date pattern
+  # and rearranges the numbers into a valid calendar date format.
   #
   def parse_br_date(value)
+
+    # Returns the value as-is if it doesn't match the expected pattern.
     return value unless value.match?(%r{\A\d{2}/\d{2}/\d{4}\z})
 
     day, month, year = value.split("/")
+
+    # Rearranges the day, month, and year into the database's preferred order.
     Date.new(year.to_i, month.to_i, day.to_i).iso8601
   rescue ArgumentError
     nil
@@ -375,34 +342,25 @@ class ApplicationsController < ApplicationController
   # == update_fund_investment_after_create
   #
   # @author Moisés Reis
-  # @category *Business Logic*
   #
-  # Business Logic:: This private method updates the totals of the associated
-  #                  **FundInvestment**. It adds the quotas and financial value of the
-  #                  newly created application to the fund's current running totals.
-  #
-  # Attributes:: - *fund_investment* - The specific fund investment object to be updated.
+  # This adds the value and shares of a new investment to the
+  # main fund record, ensuring the total balance grows correctly.
   #
   def update_fund_investment_after_create(fund_investment)
 
-    # Explanation:: This retrieves the current total number of quotas held in the fund,
-    #               defaulting to zero if the value is missing.
+    # Defaults to zero so arithmetic is safe even when the column is NULL.
     current_quotas = fund_investment.total_quotas_held || BigDecimal('0')
 
-    # Explanation:: This retrieves the current total monetary value invested in the fund,
-    #               defaulting to zero if the value is missing.
+    # Defaults to zero so arithmetic is safe even when the column is NULL.
     current_value = fund_investment.total_invested_value || BigDecimal('0')
 
-    # Explanation:: This extracts the number of quotas from the newly created application,
-    #               defaulting to zero if the value is missing.
+    # Defaults to zero when the application did not resolve a quota count.
     application_quotas = @application.number_of_quotas || BigDecimal('0')
 
-    # Explanation:: This extracts the financial value from the newly created application,
-    #               defaulting to zero if the value is missing.
+    # Defaults to zero as a safety net against unexpected nil financial values.
     application_value = @application.financial_value || BigDecimal('0')
 
-    # Explanation:: This performs the final database update, saving the new, increased
-    #               totals for quotas and invested value back to the fund investment record.
+    # Persists the incremented totals back to the fund investment record.
     fund_investment.update!(
       total_quotas_held: current_quotas + application_quotas,
       total_invested_value: current_value + application_value
@@ -412,42 +370,31 @@ class ApplicationsController < ApplicationController
   # == update_fund_investment_before_destroy
   #
   # @author Moisés Reis
-  # @category *Business Logic*
   #
-  # Business Logic:: This private method updates the totals of the associated
-  #                  **FundInvestment** just before the application is deleted. It
-  #                  subtracts the application's quotas and value from the fund's totals.
-  #
-  # Attributes:: - *fund_investment* - The specific fund investment object to be updated.
+  # This subtracts the value and shares of an investment about to
+  # be deleted from the main fund, preventing the balance from being wrong.
   #
   def update_fund_investment_before_destroy(fund_investment)
 
-    # Explanation:: This retrieves the current total monetary value invested in the fund,
-    #               defaulting to zero if the value is missing.
+    # Defaults to zero so the subtraction is safe even when the column is NULL.
     current_value = fund_investment.total_invested_value || BigDecimal('0')
 
-    # Explanation:: This retrieves the current total number of quotas held in the fund,
-    #               defaulting to zero if the value is missing.
+    # Defaults to zero so the subtraction is safe even when the column is NULL.
     current_quotas = fund_investment.total_quotas_held || BigDecimal('0')
 
-    # Explanation:: This extracts the financial value that is about to be deleted with
-    #               the application, defaulting to zero if the value is missing.
+    # Defaults to zero as a safety net against unexpected nil financial values.
     application_value = @application.financial_value || BigDecimal('0')
 
-    # Explanation:: This extracts the quota amount that is about to be deleted with
-    #               the application, defaulting to zero if the value is missing.
+    # Defaults to zero when the application record has no quota count stored.
     application_quotas = @application.number_of_quotas || BigDecimal('0')
 
-    # Explanation:: This calculates the new total invested value after subtraction,
-    #               ensuring the total never drops below zero (non-negative constraint).
+    # Clamps the resulting total to zero so it never becomes negative.
     new_total_value = [current_value - application_value, BigDecimal('0')].max
 
-    # Explanation:: This calculates the new total number of quotas after subtraction,
-    #               ensuring the total never drops below zero (non-negative constraint).
+    # Clamps the resulting quota count to zero so it never becomes negative.
     new_total_quotas = [current_quotas - application_quotas, BigDecimal('0')].max
 
-    # Explanation:: This performs the final database update, saving the new, reduced
-    #               totals for value and quotas back to the fund investment record.
+    # Persists the decremented totals back to the fund investment record.
     fund_investment.update!(
       total_invested_value: new_total_value,
       total_quotas_held: new_total_quotas
@@ -456,14 +403,17 @@ class ApplicationsController < ApplicationController
 
   # == prepare_application_metrics
   #
-  # @category *Presentation Logic*
+  # @author Moisés Reis
   #
-  # Explanation:: Computes derived, read-only metrics used by the show view.
-  #               This keeps the template declarative and free of business math.
+  # This calculates percentages, time delays, and consistency flags
+  # so the user can see helpful insights on the investment details page.
   #
   def prepare_application_metrics
+
+    # Calculates how much of this investment has already been assigned for withdrawal.
     allocated_quotas = @application.redemption_allocations.sum(:quotas_used) || 0
 
+    # Works out the percentage of the investment that is currently allocated.
     @allocation_percentage =
       if @application.number_of_quotas.to_f.positive?
         (allocated_quotas.to_f / @application.number_of_quotas.to_f) * 100
@@ -471,33 +421,39 @@ class ApplicationsController < ApplicationController
         0
       end
 
+    # Determines how many days passed between the request and the final payment.
     @processing_days =
       if @application.request_date && @application.liquidation_date
         (@application.liquidation_date - @application.request_date).to_i
       end
 
     @calculated_quota_value = @application.calculated_quota_value
-    @stored_quota_value     = @application.quota_value_at_application
+    @stored_quota_value = @application.quota_value_at_application
 
+    # Checks if the share price saved matches the official price within a tiny margin.
     @is_quota_consistent =
       @calculated_quota_value &&
       @stored_quota_value &&
       (@calculated_quota_value - @stored_quota_value).abs <= 0.01
 
+    # Ensures that dates follow a logical order in time.
     @cotization_valid =
       !@application.cotization_date ||
       !@application.request_date ||
       @application.cotization_date >= @application.request_date
 
+    # Verifies that payment didn't happen before the shares were priced.
     @liquidation_valid =
       !@application.liquidation_date ||
       !@application.cotization_date ||
       @application.liquidation_date >= @application.cotization_date
 
+    # Checks if the money values entered are valid positive numbers.
     @positive_values =
       @application.financial_value.to_f.positive? &&
       (@application.number_of_quotas.nil? || @application.number_of_quotas.to_f.positive?)
 
+    # Assigns a visual status color based on whether the data is consistent.
     @quota_consistency_status =
       if @is_quota_consistent
         :success
@@ -507,5 +463,4 @@ class ApplicationsController < ApplicationController
         :default
       end
   end
-
 end
