@@ -1,13 +1,13 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  url: <%= ENV.fetch("SUPABASE_DB_URL") %>
+  url: <%= ENV.fetch("SUPABASE_DB_URL", nil) %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: <%= ENV.fetch("SUPABASE_DB_HOST") %>
-  port: <%= ENV.fetch("SUPABASE_DB_PORT") %>
-  database: <%= ENV.fetch("SUPABASE_DB_NAME") %>
-  username: <%= ENV.fetch("SUPABASE_DB_USER") %>
-  password: <%= ENV.fetch("SUPABASE_DB_PASSWORD") %>
+  host: <%= ENV.fetch("SUPABASE_DB_HOST", nil) %>
+  port: <%= ENV.fetch("SUPABASE_DB_PORT", nil) %>
+  database: <%= ENV.fetch("SUPABASE_DB_NAME", nil) %>
+  username: <%= ENV.fetch("SUPABASE_DB_USER", nil) %>
+  password: <%= ENV.fetch("SUPABASE_DB_PASSWORD", nil) %>
   sslmode: require
 
 development:
