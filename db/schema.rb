@@ -12,15 +12,15 @@
 
 ActiveRecord::Schema[8.1].define(version: 2026_02_25_195441) do
   # create_schema "extensions"
-  execute "CREATE SCHEMA IF NOT EXISTS extensions"
+  # execute "CREATE SCHEMA IF NOT EXISTS extensions"
 
   # These are extensions that must be enabled in order to support this database
-  enable_extension "extensions.pg_stat_statements"
-  enable_extension "extensions.pgcrypto"
-  enable_extension "extensions.uuid-ossp"
-  enable_extension "graphql.pg_graphql"
-  enable_extension "pg_catalog.plpgsql"
-  enable_extension "vault.supabase_vault"
+  # enable_extension "extensions.pg_stat_statements"
+  # enable_extension "extensions.pgcrypto"
+  # enable_extension "extensions.uuid-ossp"
+  # enable_extension "graphql.pg_graphql"
+  # enable_extension "pg_catalog.plpgsql"
+  # enable_extension "vault.supabase_vault"
 
   create_table "public.applications", force: :cascade do |t|
     t.date "cotization_date"
