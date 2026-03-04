@@ -32,7 +32,6 @@ gem 'rubyzip'
 gem 'csv'
 gem 'prawn'
 gem 'prawn-table'
-gem 'prawn-svg'
 gem "victor"
 gem "prawn-svg"
 gem 'inputmask-rails'
