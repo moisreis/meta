@@ -11,7 +11,8 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.1].define(version: 2026_02_25_195441) do
-  create_schema "extensions"
+  # create_schema "extensions"
+  execute "CREATE SCHEMA IF NOT EXISTS extensions"
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "extensions.pg_stat_statements"
