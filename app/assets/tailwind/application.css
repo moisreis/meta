@@ -236,9 +236,7 @@
     --color-tertiary-900: oklch(39.58% 0.0567 217.218);
     --color-tertiary-950: oklch(29.74% 0.0447 219.856);
 
-    @theme {
-        --container-3xl: 1530px;
-    }
+    --container-3xl: 1530px;
 
     /* Quaternary — Deep violet for charts, tags, and decorative elements. */
     --color-quaternary-50: oklch(96.32% 0.0129 277.337);
