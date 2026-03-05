@@ -122,14 +122,18 @@ module NormalizeHelper
     #               the same width, which is ideal for technical data.
     classes = "#{BASE_CLASSES} font-mono"
 
-    # Explanation:: This line adds delimiters to separate thousands and millions.
-    #               It uses a dot as the separator to follow the standard
-    #               Brazilian pattern for displaying large numeric values.
-    formatted_number = number_with_delimiter(value, delimiter: ".")
+    # Explanation:: Formats the number with:
+    #               - maximum 2 decimal places
+    #               - Brazilian thousand delimiter
+    formatted_number = number_with_precision(
+      value,
+      precision: 2,
+      delimiter: ".",
+      separator: ",",
+      strip_insignificant_zeros: true
+    )
 
     # Explanation:: This line creates the final container for the number.
-    #               It combines the data with the specific font styles
-    #               to ensure the value is readable and professionally presented.
     content_tag(:span, formatted_number, class: classes, scope: "row")
   end
 

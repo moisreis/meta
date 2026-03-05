@@ -62,6 +62,18 @@
 
           <%= render "partials/modules/select",
                      f: f,
+                     name: :day,
+                     label: nil,
+                     is_small: true,
+                     desc: nil,
+                     is_long: true,
+                     options_collection: options_for_select(
+                       (1..31).map { |d| [d.to_s.rjust(2, "0"), d] },
+                       Date.current.day
+                     ) %>
+
+          <%= render "partials/modules/select",
+                     f: f,
                      name: :month,
                      label: nil,
                      is_small: true,

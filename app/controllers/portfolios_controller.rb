@@ -189,16 +189,26 @@ class PortfoliosController < ApplicationController
   # app/controllers/portfolios_controller.rb
 
   def monthly_report
+    day   = params[:day].presence&.to_i
     month = params[:month].to_i
     year  = params[:year].to_i
 
-    reference_date = Date.new(year, month, -1) # último dia do mês
+    reference_date = if day
+                       begin
+                         Date.new(year, month, day)
+                       rescue ArgumentError
+                         # Dia inválido para o mês (ex: 31/fev) → usa último dia
+                         Date.new(year, month, -1)
+                       end
+                     else
+                       Date.new(year, month, -1)
+                     end
 
     generator = PortfolioMonthlyReportGenerator.new(@portfolio, reference_date)
     pdf_bytes = generator.generate
 
     send_data pdf_bytes,
-              filename: "relatorio_#{@portfolio.id}_#{reference_date.strftime('%Y-%m')}.pdf",
+              filename: "relatorio_#{@portfolio.id}_#{reference_date.strftime('%Y-%m-%d')}.pdf",
               type: "application/pdf",
               disposition: "inline"
   end

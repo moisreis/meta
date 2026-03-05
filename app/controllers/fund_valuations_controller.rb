@@ -164,7 +164,7 @@ class FundValuationsController < ApplicationController
 
     # Explanation:: This redirects back to the index with a success message,
     #               informing the admin that the import has been queued.
-    redirect_to fund_valuations_path, notice: "Fund valuation import job has been queued. Check back in a few minutes."
+    redirect_to fund_valuations_path, notice: "As cotações estão sendo importadas. Aguarde alguns minutos."
   end
 
   private

@@ -47,7 +47,9 @@
                  selected: params[:month],
                  is_inactive: @available_months.empty?
       %>
-      <%= f.submit "Aplicar", class: "button button-small button-secondary w-fit" %>
+      <%= button_tag type: "submit", class: "button button-small button-secondary w-fit" do %>
+        <%= content_tag(:span, "Aplicar") %>
+      <% end %>
     <% end %>
   <% end %>
 

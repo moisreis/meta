@@ -1,0 +1,195 @@
+<%#
+  # Partial: _sidebar_checking_account.html.erb
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Slide-over sidebar para registrar uma nova Conta Corrente
+  #              diretamente na página Portfolio#show.
+  #
+  # Usage: - What: Renderiza um formulário de nova CheckingAccount dentro de um
+  #                painel lateral, sem sair da página.
+  #        - How: Segue o padrão de IDs/classes do _sidebar_application e abre/
+  #               fecha via JS inline. O portfolio já vem pré-selecionado.
+  #        - Why: Mantém consistência visual/comportamental com os outros sidebars
+  #               da aplicação.
+  %>
+
+<div id="sidebarCheckingAccount"
+     class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-white border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
+
+  <%= form_with model: [@portfolio, CheckingAccount.new],
+                class: "flex flex-col h-full" do |form| %>
+
+    <%# ── Header ──────────────────────────────────────────────────────────── %>
+    <div class="h-16 flex flex-row justify-between items-center px-16">
+      <h3 class="font-body font-medium text-2xl">Nova Conta Corrente</h3>
+
+      <%= button_tag id: "closeCheckingAccountBtn",
+                     type: "button",
+                     class: "button button-ghost button-icon button-small" do %>
+        <%= inline_svg_tag "icons/x.svg" %>
+      <% end %>
+    </div>
+
+    <%# ── Scrollable body ─────────────────────────────────────────────────── %>
+    <div class="flex-grow px-16 space-y-8 overflow-y-auto w-full">
+
+      <%# Identificação %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Identificação",
+                 fieldset_desc: "Nomeie a conta e informe a instituição financeira responsável." do %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :name,
+                   label: "Nome",
+                   placeholder: "CC Principal, Conta Reserva",
+                   desc: "Escolha um nome descritivo para identificar esta conta.",
+                   field_type: :text_field,
+                   icon_name: "tag" %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :institution,
+                   label: "Instituição Financeira",
+                   placeholder: "Bradesco, Caixa Econômica Federal",
+                   desc: "Informe o banco ou cooperativa de crédito da conta.",
+                   field_type: :text_field,
+                   icon_name: "bank" %>
+
+      <% end %>
+
+      <%# Saldo e Período %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Saldo e Período",
+                 fieldset_desc: "Informe o saldo da conta e o mês de competência deste registro." do %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :balance,
+                   label: "Saldo",
+                   placeholder: "0,00",
+                   desc: "Saldo da conta no encerramento do mês de referência.",
+                   field_type: :number_field,
+                   icon_name: "banknote",
+                   step: :any %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :reference_date,
+                   label: "Data de Referência",
+                   placeholder: "",
+                   desc: "Mês de competência deste saldo. Será ajustado para o último dia do mês.",
+                   field_type: :date_field,
+                   icon_name: "calendar" %>
+
+      <% end %>
+
+      <%# Dados Bancários (opcional) %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Dados Bancários",
+                 fieldset_desc: "Campos opcionais para identificação precisa da conta." do %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :account_number,
+                   label: "Número da Conta",
+                   placeholder: "00012345-6",
+                   desc: "Facilita a identificação quando há múltiplas contas.",
+                   field_type: :text_field,
+                   icon_name: "hash" %>
+
+        <%= render "partials/modules/input-field",
+                   f: form,
+                   name: :currency,
+                   label: "Moeda",
+                   placeholder: "BRL",
+                   desc: "Código ISO da moeda.",
+                   field_type: :text_field,
+                   icon_name: "dollar" %>
+
+      <% end %>
+
+      <%# Observações %>
+      <%= render "partials/blocks/fieldset",
+                 fieldset_title: "Observações",
+                 fieldset_desc: "Informações adicionais sobre esta conta. Campo opcional." do %>
+
+        <%= render "partials/modules/textarea",
+                   f: form,
+                   name: :notes,
+                   label: "Observações",
+                   placeholder: "Conta vinculada ao RPPS para pagamento de benefícios.",
+                   desc: "Opcional. Máximo de 500 caracteres.",
+                   rows: 3 %>
+
+      <% end %>
+
+      <%# Actions %>
+      <div class="flex flex-row gap-1.5 pb-8">
+        <%= form.button :submit,
+                        name: nil,
+                        class: "button button-small button-accent flex items-center gap-2" do %>
+          <%= inline_svg_tag "icons/check.svg" %>
+          <%= content_tag :span, "Registrar" %>
+        <% end %>
+
+        <%= button_tag id: "cancelCheckingAccountBtn",
+                       type: "button",
+                       class: "button button-small button-outline flex items-center gap-2" do %>
+          <%= inline_svg_tag "icons/x.svg" %>
+          <%= content_tag :span, "Cancelar" %>
+        <% end %>
+      </div>
+
+    </div>
+  <% end %>
+</div>
+
+<%# ── Overlay ──────────────────────────────────────────────────────────────── %>
+<div class="h-screen w-screen bg-body/10 z-40 hidden fixed top-0 right-0"
+     id="checkingAccountOverlay"></div>
+
+<!-- [Script] sidebarCheckingAccount -->
+<script>
+    let checkingAccountSidebar;
+    let openCheckingAccountBtn;
+    let closeCheckingAccountBtn;
+    let cancelCheckingAccountBtn;
+    let checkingAccountOverlay;
+
+    function openCheckingAccountSidebar() {
+        checkingAccountSidebar.classList.add('opacity-100');
+        checkingAccountSidebar.classList.remove('opacity-0', 'pointer-events-none');
+        checkingAccountOverlay.classList.remove('hidden');
+    }
+
+    function closeCheckingAccountSidebar() {
+        checkingAccountSidebar.classList.remove('opacity-100');
+        checkingAccountSidebar.classList.add('opacity-0', 'pointer-events-none');
+        checkingAccountOverlay.classList.add('hidden');
+    }
+
+    function setupCheckingAccountSidebarListeners() {
+        checkingAccountSidebar    = document.getElementById('sidebarCheckingAccount');
+        openCheckingAccountBtn    = document.getElementById('openCheckingAccountBtn');
+        closeCheckingAccountBtn   = document.getElementById('closeCheckingAccountBtn');
+        cancelCheckingAccountBtn  = document.getElementById('cancelCheckingAccountBtn');
+        checkingAccountOverlay    = document.getElementById('checkingAccountOverlay');
+
+        if (checkingAccountSidebar && openCheckingAccountBtn && closeCheckingAccountBtn) {
+            openCheckingAccountBtn.addEventListener('click', openCheckingAccountSidebar);
+            closeCheckingAccountBtn.addEventListener('click', closeCheckingAccountSidebar);
+            cancelCheckingAccountBtn.addEventListener('click', closeCheckingAccountSidebar);
+            checkingAccountOverlay.addEventListener('click', closeCheckingAccountSidebar);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeCheckingAccountSidebar();
+            });
+        } else {
+            console.error("Checking account sidebar setup failed: one or more IDs were not found in the HTML.");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', setupCheckingAccountSidebarListeners);
+</script>

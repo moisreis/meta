@@ -246,6 +246,29 @@
         ) %>
   <% end %>
 
+  <% if @portfolio.checking_accounts.exists? %>
+    <%= render "partials/groups/table-list",
+               section_title: "Contas Correntes",
+               collection: @portfolio.checking_accounts.order(reference_date: :desc),
+               action_path: "javascript:void(0)",
+               action_name: "Nova Conta",
+               button_id: "openCheckingAccountBtn",
+               action_icon: "plus",
+               headers: ["Nome", "Instituição", "Conta", "Moeda", "Saldo", "Referência"],
+               column_icons: ["tag", "building", "hash", "dollar", "banknote", "calendar"],
+               body_procs: [
+                 ->(ca) { normalize_title(ca.name) },
+                 ->(ca) { ca.institution.presence || "—" },
+                 ->(ca) { ca.account_number.presence || "—" },
+                 ->(ca) { ca.currency },
+                 ->(ca) { normalize_currency(ca.balance) },
+                 ->(ca) { l(ca.reference_date, format: :long) }
+               ]
+    %>
+  <% end %>
+
+  <%= render "partials/route/dashboard/create_checkingaccount" %>
+
   <%= render "partials/route/dashboard/section",
              columns: 2,
              section_title: "APR",

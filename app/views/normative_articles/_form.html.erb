@@ -113,9 +113,39 @@
                placeholder: "0 a 1000",
                desc: "Meta de benchmark atribuída ao artigo.",
                field_type: :number_field,
-               icon_name: "target"
+               icon_name: "target",
+               step: :any
+    %>
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :minimum_target,
+               label: "Meta Mínima",
+               placeholder: "0.00",
+               desc: "Percentual mínimo permitido.",
+               field_type: :number_field,
+               icon_name: "trending-down",
+               step: :any
+    %>
+
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :maximum_target,
+               label: "Meta Máxima",
+               placeholder: "100.00",
+               desc: "Percentual máximo permitido.",
+               field_type: :number_field,
+               icon_name: "trending-up",
+               step: :any
     %>
   <% end %>
+
+  <%= render "partials/modules/select",
+             f: form,
+             name: :category,
+             label: "Categoria",
+             desc: "Classificação regulatória do artigo.",
+             options_collection: NormativeArticle::CATEGORIES.map { |c| [c, c] }
+  %>
 
   <%# Explanation:: This action button finalizes the creation or update of the normative
     #               article record. It submits the gathered data to the database

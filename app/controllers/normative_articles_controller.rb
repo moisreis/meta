@@ -212,7 +212,10 @@ class NormativeArticlesController < ApplicationController
       :article_number,
       :article_body,
       :description,
-      :benchmark_target
+      :benchmark_target,
+      :minimum_target,
+      :maximum_target,
+      :category
     )
   end
 end
