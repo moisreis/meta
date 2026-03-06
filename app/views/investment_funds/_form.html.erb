@@ -170,7 +170,7 @@
                f: form,
                name: :normative_article_ids,
                label: "Artigos Normativos",
-               options_collection: NormativeArticle.all.map { |article| [article.article_name, article.id] },
+               options_collection: NormativeArticle.all.map { |article| ["#{article.article_number} - #{article.article_name}", article.id] },
                desc: "Selecione os artigos normativos que regulam este fundo."
     %>
   <% end %>
