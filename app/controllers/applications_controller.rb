@@ -177,6 +177,7 @@ class ApplicationsController < ApplicationController
     end
 
     ActiveRecord::Base.transaction do
+      fund_investment.skip_allocation_validation = true
       @application.save!
       update_fund_investment_after_create(fund_investment)
       PortfolioAllocationCalculator.recalculate!(portfolio)
