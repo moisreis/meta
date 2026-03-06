@@ -52,6 +52,7 @@
                f: form,
                name: :cnpj,
                label: "CNPJ",
+               id: "investment_fund_cnpj",
                placeholder: "00.000.000/0000-00",
                desc: "O CNPJ precisa ser único no sistema.",
                field_type: :text_field,
@@ -187,6 +188,40 @@
   <% end %>
 <% end %>
 
+<script>
+    (function () {
+        const cnpjField = document.getElementById("investment_fund_cnpj");
+        if (!cnpjField) return;
 
+        cnpjField.addEventListener("input", function () {
+            const cnpj = this.value.replace(/\D/g, "");
+            console.log("CNPJ:", cnpj, "length:", cnpj.length);
+            if (cnpj.length !== 14) return;
+
+            console.log("Disparando fetch...");
+            fetch("/investment_funds/lookup?cnpj=" + cnpj, {
+                headers: { "Accept": "application/json" }
+            })
+                .then(function (res) {
+                    console.log("Status:", res.status);
+                    return res.json();
+                })
+                .then(function (data) {
+                    console.log("Dados:", data);
+
+                    const set = function (id, val) {
+                        const el = document.getElementById(id);
+                        if (el && val != null) el.value = val;
+                    };
+
+                    set("investment_fund_fund_name",          data.fund_name);
+                    set("investment_fund_administrator_name", data.administrator_name);
+                    set("investment_fund_administration_fee", data.administration_fee);
+                    set("investment_fund_performance_fee",    data.performance_fee);
+                })
+                .catch(function (err) { console.error("Erro:", err); });
+        });
+    })();
+</script>
 
 

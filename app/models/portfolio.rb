@@ -208,58 +208,34 @@ class Portfolio < ApplicationRecord
   #                                are returned at the end of the timeline.
   #
   def value_timeline(months_back = 12)
-
-    # Explanation:: Creates an array that will store the cumulative value for each
-    #               month processed. Each entry holds a formatted month label and
-    #               the running portfolio total up to that point.
     timeline = []
-
-    # Explanation:: Keeps a continuously updated sum of all applications and
-    #               redemptions. As each month is processed, this value increases
-    #               or decreases according to the transaction amounts.
     running_total = 0
-
-    # Explanation:: Stores all applications and redemptions in a unified list,
-    #               allowing them to be sorted and grouped chronologically before
-    #               building the final timeline.
     transactions = []
 
-    # Explanation:: Loads all fund investments along with their related
-    #               applications and redemptions, then normalizes each financial
-    #               event into a transaction hash used for later aggregation.
     fund_investments.includes(:applications, :redemptions).each do |fi|
       fi.applications.each do |app|
         transactions << {
           date: app.cotization_date,
-          value: app.financial_value,
-          type: :application
+          value: app.financial_value
         } if app.cotization_date.present?
       end
 
-      # Explanation:: Registers each redemption as a negative transaction so that
-      #               the cumulative total decreases whenever money leaves the
-      #               portfolio. Entries without a cotization date are ignored.
       fi.redemptions.each do |red|
         transactions << {
           date: red.cotization_date,
-          value: -red.redeemed_liquid_value,
-          type: :redemption
+          value: -red.redeemed_liquid_value
         } if red.cotization_date.present?
       end
     end
 
-    # Explanation:: Orders all transactions by date, groups them by month, and for
-    #               each month adds the net monthly change to the running total.
-    #               Each month label and cumulative amount is pushed into timeline.
-    transactions.sort_by { |t| t[:date] }
-                .group_by { |t| t[:date].beginning_of_month }
-                .each do |month, txns|
+    transactions
+      .sort_by { |t| t[:date] }
+      .group_by { |t| t[:date].beginning_of_month }
+      .each do |month, txns|
       running_total += txns.sum { |t| t[:value] }
-      timeline << [month.strftime('%b/%y'), running_total]
+      timeline << [month, running_total]   # ← correção
     end
 
-    # Explanation:: Returns only the specified number of recent months, ensuring
-    #               the final timeline is limited to the requested historical range.
     timeline.last(months_back)
   end
 

@@ -34,21 +34,20 @@
     <%# ── Scrollable body ─────────────────────────────────────────────────── %>
     <div class="flex-grow px-16 space-y-8 overflow-y-auto w-full">
 
-      <%# Destino ─ select escopado apenas aos fundos desta carteira %>
+<%# Destino ─ select de todos os fundos cadastrados %>
       <%= render "partials/blocks/fieldset",
                  fieldset_title: "Destino da Transação",
-                 fieldset_desc: "Selecione o fundo desta carteira que receberá a movimentação." do %>
+                 fieldset_desc: "Selecione o fundo que receberá a aplicação." do %>
+
+        <%= form.hidden_field :portfolio_id, value: @portfolio.id %>
 
         <%= render "partials/modules/select",
                    f: form,
-                   name: :fund_investment_id,
+                   name: :investment_fund_id,
                    label: "Fundo alvo",
-                   desc: "Apenas os fundos alocados nesta carteira são exibidos.",
-                   is_half_width: false,
-                   options_collection: @portfolio.fund_investments
-                                                 .includes(:investment_fund)
-                                                 .map { |fi| [fi.investment_fund.fund_name, fi.id] },
-                   is_inactive: false %>
+                   desc: "Selecione o fundo de investimento.",
+                   options_collection: InvestmentFund.order(:fund_name)
+                                                     .map { |f| [f.fund_name, f.id] } %>
       <% end %>
 
       <%# Valores Financeiros %>

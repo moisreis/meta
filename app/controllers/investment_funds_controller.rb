@@ -190,6 +190,11 @@ class InvestmentFundsController < ApplicationController
     redirect_to investment_funds_path, notice: "Investment fund deleted successfully."
   end
 
+  def lookup
+    result = CvmFundLookupService.call(params[:cnpj].to_s)
+    render json: result
+  end
+
   private
 
   # == load_investment_fund

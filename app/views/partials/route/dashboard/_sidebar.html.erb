@@ -31,7 +31,7 @@
   <%# =============================================================
       Logo
       ============================================================= %>
-  <div class="h-16 bg-transparent items-center justify-start w-full !px-6">
+  <div class="h-16 bg-transparent items-center justify-start w-full !px-3 3xl:!px-6">
     <%= render "partials/blocks/composed-avatar" %>
   </div>
 
@@ -82,11 +82,6 @@
                        singular: "Fundo",
                        plural: "Fundos",
                        icons: { index: "chart-pie.svg", new: "plus.svg" } %>
-
-      <%= crud_nav_for FundInvestment,
-                       singular: "Alocação",
-                       plural: "Alocações",
-                       icons: { index: "badge-percent.svg", new: "plus.svg" } %>
 
       <%= crud_nav_for Application,
                        singular: "Aplicação",

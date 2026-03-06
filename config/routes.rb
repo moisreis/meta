@@ -49,7 +49,9 @@ Rails.application.routes.draw do
 
   resources :users
 
-  resources :investment_funds
+  resources :investment_funds do
+    collection { get :lookup }
+  end
 
   resources :fund_investments, only: [:index, :edit, :update, :destroy, :new, :create, :show] do
     collection do
@@ -62,7 +64,9 @@ Rails.application.routes.draw do
   match "*path",
         to: "errors#show",
         via: :all,
-        constraints: ->(req) { !req.path.starts_with?("/rails/") }
+        constraints: ->(req) {
+          !req.path.starts_with?("/rails/") && !req.path.start_with?("/investment_funds/lookup")
+        }
 
   match "/403", to: "errors#show", via: :all
   match "/404", to: "errors#show", via: :all

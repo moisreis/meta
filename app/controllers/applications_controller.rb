@@ -143,52 +143,52 @@ class ApplicationsController < ApplicationController
   def edit
   end
 
-  # == create
-  #
-  # @author Moisés Reis
-  #
-  # This saves a new investment to the database while automatically
-  # calculating the number of shares and updating the fund balance.
-  # It ensures that the math is correct before finalizing the save.
-  #
   def create
+    portfolio = Portfolio.find(application_params[:portfolio_id])
+    fund = InvestmentFund.find(application_params[:investment_fund_id])
 
-    # Combines the form data with correctly formatted dates.
-    @application = Application.new(application_params.merge(parsed_date_params))
+    authorize! :manage, portfolio
 
-    fund_investment = @application.fund_investment
-
-    # Checks if the user has permission to manage this specific portfolio.
-    authorize! :manage, fund_investment.portfolio
-
-    # Resolves the historical quota value and derives number_of_quotas when
-    # both cotization_date and financial_value are present.
-    if @application.cotization_date.present? && @application.financial_value.present?
-      quota_value = fund_investment.investment_fund.quota_value_on(@application.cotization_date)
-
-      if quota_value
-        @application.quota_value_at_application = quota_value
-        @application.number_of_quotas = BigDecimal(@application.financial_value.to_s) / quota_value
-      else
-        @application.errors.add(:cotization_date, "Não há cota disponível para esta data")
-        render :new, status: :unprocessable_entity and return
-      end
+    fund_investment = FundInvestment.find_or_create_by!(
+      investment_fund: fund,
+      portfolio: portfolio
+    ) do |fi|
+      fi.percentage_allocation = 0
+      fi.total_invested_value = 0
+      fi.total_quotas_held = 0
     end
 
-    # Saves the record and updates the main totals in one secure step.
+    @application = Application.new(
+      application_params.except(:portfolio_id, :investment_fund_id)
+                        .merge(fund_investment: fund_investment)
+                        .merge(parsed_date_params)
+    )
+
+    if @application.cotization_date.present? && @application.financial_value.present?
+      quota_value = fund.quota_value_on(@application.cotization_date)
+
+      unless quota_value
+        @application.errors.add(:cotization_date, "Não há cota disponível para esta data")
+        return render :new, status: :unprocessable_entity
+      end
+
+      @application.quota_value_at_application = quota_value
+      @application.number_of_quotas = BigDecimal(@application.financial_value.to_s) / quota_value
+    end
+
     ActiveRecord::Base.transaction do
       @application.save!
       update_fund_investment_after_create(fund_investment)
+      PortfolioAllocationCalculator.recalculate!(portfolio)
     end
 
     flash[:notice] = "Investimento criado com sucesso."
-    redirect_to application_path(@application)
+    redirect_to portfolio_path(portfolio)
 
-  rescue ActiveRecord::RecordInvalid => e
+  rescue ActiveRecord::RecordInvalid
     render :new, status: :unprocessable_entity
-
-  rescue CanCan::AccessDenied => e
-    redirect_to fund_investments_path
+  rescue CanCan::AccessDenied
+    redirect_to portfolios_path
   end
 
   # == update
@@ -285,9 +285,9 @@ class ApplicationsController < ApplicationController
   # ensure only the correct and safe fields are allowed into the app.
   #
   def application_params
-
-    # Only permits specific fields like dates and values to be saved.
     params.require(:application).permit(
+      :portfolio_id,
+      :investment_fund_id,
       :fund_investment_id,
       :request_date,
       :financial_value,

@@ -174,6 +174,7 @@ class RedemptionsController < ApplicationController
       @redemption.save!
       allocate_quotas_fifo(fund_investment, @redemption.redeemed_quotas)
       update_fund_investment_after_redemption(fund_investment)
+      PortfolioAllocationCalculator.recalculate!(fund_investment.portfolio)
     end
 
     redirect_to fund_investment_path(fund_investment),
