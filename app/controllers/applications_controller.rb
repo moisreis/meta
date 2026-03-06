@@ -185,7 +185,8 @@ class ApplicationsController < ApplicationController
     flash[:notice] = "Investimento criado com sucesso."
     redirect_to portfolio_path(portfolio)
 
-  rescue ActiveRecord::RecordInvalid
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error "Application save failed: #{e.record.errors.full_messages}"
     render :new, status: :unprocessable_entity
   rescue CanCan::AccessDenied
     redirect_to portfolios_path
