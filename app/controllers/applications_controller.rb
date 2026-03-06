@@ -144,6 +144,7 @@ class ApplicationsController < ApplicationController
   end
 
   def create
+    @application = Application.new
     portfolio = Portfolio.find(application_params[:portfolio_id])
     fund = InvestmentFund.find(application_params[:investment_fund_id])
 

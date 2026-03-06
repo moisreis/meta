@@ -243,8 +243,6 @@ class FundInvestment < ApplicationRecord
     redemptions.sum(:redeemed_liquid_value) || BigDecimal('0')
   end
 
-  private
-
   # == portfolio_allocation_within_limits
   #
   # @author Moisés Reis
@@ -252,19 +250,18 @@ class FundInvestment < ApplicationRecord
   #
   # Validation:: This custom validation ensures that the `percentage_allocation`
   #              for this fund, when added to all other fund allocations in the same **Portfolio**, does not exceed 100%.
-  #
-  def portfolio_allocation_within_limits
+  attr_accessor :skip_allocation_validation
 
-    # Explanation:: This exits the validation if the parent **Portfolio** or the allocation percentage is missing.
+  private
+
+  def portfolio_allocation_within_limits
+    return if skip_allocation_validation
     return unless portfolio && percentage_allocation
 
-    # Explanation:: This calculates the sum of all existing allocation percentages in the **Portfolio**,
-    #               plus the new allocation for the current fund investment being saved.
     total_allocation = portfolio.fund_investments
                                 .where.not(id: id)
                                 .sum(:percentage_allocation) + percentage_allocation
 
-    # Explanation:: This adds a validation error if the calculated total allocation exceeds the 100% limit.
     if total_allocation > 100
       errors.add(:percentage_allocation, "it exceeds the portfolio's total allocation limit of 100%")
     end
