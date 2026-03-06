@@ -162,7 +162,6 @@ class ApplicationsController < ApplicationController
     @application = Application.new(
       application_params.except(:portfolio_id, :investment_fund_id)
                         .merge(fund_investment: fund_investment)
-                        .merge(parsed_date_params)
     )
 
     if @application.cotization_date.present? && @application.financial_value.present?
