@@ -22,6 +22,19 @@
   %>
 <%= form_with(model: application, class: "contents") do |form| %>
 
+  <% if application.errors.any? %>
+    <div class="mb-4 p-4 border border-red-300 bg-red-50 rounded">
+      <h2 class="text-sm font-semibold text-red-700 mb-2">
+        <%= pluralize(application.errors.count, "erro") %> impediram o salvamento:
+      </h2>
+      <ul class="list-disc list-inside text-sm text-red-600">
+        <% application.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
   <%# Explanation:: This block creates a visual group for the
     #               transaction destination, helping users identify
     #               exactly where the investment is being placed.
