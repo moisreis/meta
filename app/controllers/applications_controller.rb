@@ -348,57 +348,19 @@ class ApplicationsController < ApplicationController
   # main fund record, ensuring the total balance grows correctly.
   #
   def update_fund_investment_after_create(fund_investment)
-
-    # Defaults to zero so arithmetic is safe even when the column is NULL.
-    current_quotas = fund_investment.total_quotas_held || BigDecimal('0')
-
-    # Defaults to zero so arithmetic is safe even when the column is NULL.
-    current_value = fund_investment.total_invested_value || BigDecimal('0')
-
-    # Defaults to zero when the application did not resolve a quota count.
-    application_quotas = @application.number_of_quotas || BigDecimal('0')
-
-    # Defaults to zero as a safety net against unexpected nil financial values.
-    application_value = @application.financial_value || BigDecimal('0')
-
-    # Persists the incremented totals back to the fund investment record.
-    fund_investment.update!(
-      total_quotas_held: current_quotas + application_quotas,
-      total_invested_value: current_value + application_value
+    fund_investment.update_columns(
+      total_quotas_held:    (fund_investment.total_quotas_held  || 0) + (@application.number_of_quotas || 0),
+      total_invested_value: (fund_investment.total_invested_value || 0) + (@application.financial_value  || 0)
     )
   end
 
-  # == update_fund_investment_before_destroy
-  #
-  # @author Moisés Reis
-  #
-  # This subtracts the value and shares of an investment about to
-  # be deleted from the main fund, preventing the balance from being wrong.
-  #
   def update_fund_investment_before_destroy(fund_investment)
+    new_value  = [(fund_investment.total_invested_value || 0) - (@application.financial_value    || 0), 0].max
+    new_quotas = [(fund_investment.total_quotas_held    || 0) - (@application.number_of_quotas  || 0), 0].max
 
-    # Defaults to zero so the subtraction is safe even when the column is NULL.
-    current_value = fund_investment.total_invested_value || BigDecimal('0')
-
-    # Defaults to zero so the subtraction is safe even when the column is NULL.
-    current_quotas = fund_investment.total_quotas_held || BigDecimal('0')
-
-    # Defaults to zero as a safety net against unexpected nil financial values.
-    application_value = @application.financial_value || BigDecimal('0')
-
-    # Defaults to zero when the application record has no quota count stored.
-    application_quotas = @application.number_of_quotas || BigDecimal('0')
-
-    # Clamps the resulting total to zero so it never becomes negative.
-    new_total_value = [current_value - application_value, BigDecimal('0')].max
-
-    # Clamps the resulting quota count to zero so it never becomes negative.
-    new_total_quotas = [current_quotas - application_quotas, BigDecimal('0')].max
-
-    # Persists the decremented totals back to the fund investment record.
-    fund_investment.update!(
-      total_invested_value: new_total_value,
-      total_quotas_held: new_total_quotas
+    fund_investment.update_columns(
+      total_invested_value: new_value,
+      total_quotas_held:    new_quotas
     )
   end
 
