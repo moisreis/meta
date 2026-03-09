@@ -1,82 +1,68 @@
-# === investment_fund
+# === investment_fund.rb
 #
-# @author Moisés Reis
-# @added 11/25/2025
-# @package *Meta*
-# @description This class represents a single financial product, specifically an investment fund.
-#              It stores the fund's public details, official identification (**cnpj**),
-#              and provides methods to access its historical and current quota (share) price.
-# @category *Model*
+# Description:: Represents a financial investment fund within the system.
+#               This model manages the fund's identification, associated
+#               regulatory articles, and historical quota valuations.
 #
-# Usage:: - *[What]* This code block defines a specific investment product
-#           that users can invest in through a **FundInvestment** record.
-#         - *[How]* It uses the CNPJ as a unique key to fetch daily pricing data
-#           from the **FundValuation** table and links to regulatory **NormativeArticles**.
-#         - *[Why]* The application needs this central class to standardize fund data,
-#           validate official identifiers, and provide accurate, timely pricing for all portfolio calculations.
+# Usage:: - *What* - Serves as the central repository for investment fund metadata.
+#         - *How* - It links funds to portfolios, tracks regulatory compliance,
+#           and provides methods to query historical asset pricing.
+#         - *Why* - Necessary to provide a standardised reference for funds across
+#           user portfolios and performance reporting.
 #
-# Attributes:: - *cnpj* @string - The unique official identifier (CNPJ) for the investment fund.
-#              - *fund_name* @string - The official registered name of the investment fund.
-#              - *administrator_name* @string - The name of the institution responsible for managing the fund.
-#              - *originator_fund* @string - The name of the fund that originated this investment (if applicable).
+# Attributes:: - *@cnpj* [String] - The unique tax identification number for the fund.
+#              - *@fund_name* [String] - The formal name of the investment fund.
+#              - *@administrator_name* [String] - The entity responsible for managing the fund.
+#              - *@originator_fund* [String] - The name of the originating or parent fund, if applicable.
 #
 class InvestmentFund < ApplicationRecord
 
-  # Explanation:: This establishes a one-to-many relationship, linking this fund to all
-  #               **FundInvestment** records that represent users holding units in it.
-  has_many :fund_investments, dependent: :destroy
-
-  # Explanation:: This establishes a many-to-many relationship, allowing easy retrieval
-  #               of all **Portfolios** that hold an investment in this fund.
-  has_many :portfolios, through: :fund_investments
-
-  # Explanation:: This establishes a linking table for the many-to-many relationship
-  #               with regulatory articles, and ensures the links are destroyed on deletion.
+  has_many :fund_investments,         dependent: :destroy
+  has_many :portfolios,               through: :fund_investments
   has_many :investment_fund_articles, dependent: :destroy
+  has_many :normative_articles,       through: :investment_fund_articles
+  has_many :fund_valuations,
+           class_name:  "FundValuation",
+           foreign_key: "fund_cnpj",
+           primary_key: "cnpj",
+           dependent:   :destroy
 
-  # Explanation:: This establishes a many-to-many relationship, linking the fund
-  #               to the specific **NormativeArticles** that govern it.
-  has_many :normative_articles, through: :investment_fund_articles
-
-  # Explanation:: This establishes a link to the daily quota price records (**FundValuation**)
-  #               using the fund's `cnpj` as the primary key for the association.
-  has_many :fund_valuation, class_name: 'FundValuation', foreign_key: 'fund_cnpj', primary_key: 'cnpj', dependent: :destroy
-
-  # Explanation:: This validates that the fund's CNPJ is present, unique, and adheres
-  #               to the required official Brazilian format (XX.XXX.XXX/XXXX-XX).
   validates :cnpj, presence: true, uniqueness: true, format: {
-    with: /\A\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\z/,
-    message: "must be in the format XX.XXX.XXX/XXXX-XX"
+    with:    /\A\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\z/,
+    message: "deve estar no formato XX.XXX.XXX/XXXX-XX"
   }
+  validates :fund_name,          presence: true, length: { minimum: 3, maximum: 200 }
+  validates :administrator_name, presence: true, length: { minimum: 3, maximum: 100 }
+  validates :originator_fund,    length: { maximum: 200 }, allow_blank: true
 
-  # Explanation:: This validates that the official name of the fund is present
-  #               and must be between 3 and 200 characters long.
-  validates :fund_name, presence: true, length: {
-    minimum: 3,
-    maximum: 200
-  }
+  # =============================================================
+  # Scopes
+  # =============================================================
 
-  # Explanation:: This validates that the name of the fund's administrator is present
-  #               and must be between 3 and 100 characters long.
-  validates :administrator_name, presence: true, length: {
-    minimum: 3,
-    maximum: 100
-  }
-
-  # Explanation:: This validates the length of the optional originator fund name
-  #               and allows the field to be left blank.
-  validates :originator_fund, length: { maximum: 200 }, allow_blank: true
-
-  # Explanation:: This defines a query scope that easily retrieves all funds managed
-  #               by a specific administrator, identified by name.
   scope :by_administrator, ->(admin) { where(administrator_name: admin) }
+  scope :active,           -> { joins(:fund_investments).distinct }
 
-  # Explanation:: This defines a query scope that finds all funds that currently have
-  #               at least one **FundInvestment** record, meaning they are actively held by users.
-  scope :active, -> { joins(:fund_investments).distinct }
+  # Returns all funds accessible through portfolios that the given user can read.
+  # Used by Ability to gate InvestmentFund read permissions for non-admin users.
+  scope :readable_by, ->(user) {
+    joins(fund_investments: :portfolio)
+      .where(portfolios: { id: Portfolio.readable_by(user).select(:id) })
+      .distinct
+  }
 
   accepts_nested_attributes_for :investment_fund_articles, allow_destroy: true
 
+  # =============================================================
+  # Public Methods
+  # =============================================================
+
+  # == latest_quota_value
+  #
+  # @author Moisés Reis
+  #
+  # Retrieves the most recent available quota value for the investment fund.
+  #
+  # Returns:: - The latest quota value as a BigDecimal or nil.
   def latest_quota_value
     quota_value_on(Date.current)
   end
@@ -84,59 +70,41 @@ class InvestmentFund < ApplicationRecord
   # == quota_value_on
   #
   # @author Moisés Reis
-  # @category *Value*
   #
-  # Value:: This method retrieves the specific quota price (share value) that was valid on a given date.
-  #         It is used to perform historical performance calculations based on past prices.
+  # Finds the quota value for the fund on a given date, excluding weekends
+  # to ensure only business day values are returned.
   #
-  # Attributes:: - *@date* @date - The specific calendar date for which the price is required.
+  # Parameters:: - *date* - The date to check for a valid quota valuation.
   #
+  # Returns:: - The quota value found for that date as a BigDecimal.
   def quota_value_on(date)
-    fund_valuation
+    fund_valuations
       .where("date <= ?", date)
       .where("EXTRACT(DOW FROM date) NOT IN (0, 6)")
       .order(date: :desc)
-      .first&.quota_value
+      .limit(1)
+      .pick(:quota_value)
   end
 
   # == total_invested
   #
   # @author Moisés Reis
-  # @category *Aggregation*
   #
-  # Aggregation:: This method calculates the sum of all money invested across all **FundInvestment** records that hold this fund.
-  #              It provides the gross amount invested by all users into this product.
+  # Calculates the sum of all invested values across all portfolio holdings for this fund.
   #
+  # Returns:: - The total capital invested as a BigDecimal.
   def total_invested
-    fund_investments.sum(:total_invested_value) || BigDecimal('0')
+    fund_investments.sum(:total_invested_value) || BigDecimal("0")
   end
 
-  # == ransackable_attributes
+  # == self.ransackable_attributes
   #
   # @author Moisés Reis
-  # @category *Query*
   #
-  # Query:: This method defines which columns of the **InvestmentFund** model can be safely searched or filtered by users through advanced query tools like Ransack.
-  #         It explicitly lists all the safe, searchable attributes.
+  # Defines which attributes are available for searching and filtering through Ransack.
   #
+  # Returns:: - An array of searchable attribute names.
   def self.ransackable_attributes(auth_object = nil)
-    [
-      "administrator_name",
-      "cnpj",
-      "created_at",
-      "fund_name",
-      "id",
-      "id_value",
-      "originator_fund",
-      "updated_at"
-    ]
-  end
-
-  private
-
-  def business_days_until_today
-    # Busca nos últimos 7 dias para garantir que pega o último dia útil
-    # mesmo em feriados prolongados
-    (Date.current - 7.days)..Date.current
+    %w[administrator_name cnpj created_at fund_name id originator_fund updated_at]
   end
 end

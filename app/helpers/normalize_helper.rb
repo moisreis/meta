@@ -154,7 +154,8 @@ module NormalizeHelper
     content_tag(:span, value, class: classes, scope: "row")
   end
 
-  def normalize_percentage(value)
+  def normalize_percentage(value, precision: 2)
+
     # Explanation:: This line checks if the percentage value is available.
     #               If the input is empty, it displays the standard message
     #               for missing data to keep the table rows consistent.
@@ -168,7 +169,7 @@ module NormalizeHelper
     # Explanation:: This line formats the number with a percent sign.
     #               It uses a comma as the decimal separator and ensures
     #               the value follows the local mathematical notation.
-    formatted_percentage = number_to_percentage(value, precision: 2, separator: ",", delimiter: ".")
+    formatted_percentage = number_to_percentage(value, precision: precision, separator: ",", delimiter: ".")
 
     # Explanation:: This line produces the final HTML tag for the view.
     #               It wraps the formatted percentage in a span that

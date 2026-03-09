@@ -27,6 +27,7 @@
   #               when trying to check for a button route that does not exist.
   %>
 <% action_path ||= nil %>
+<% section_desc ||= nil %>
 <% section_columns ||= nil %>
 <% has_action   ||= false %>
 <% button_route ||= nil %>
@@ -40,6 +41,7 @@
   %>
 <%= render "partials/route/dashboard/section",
            section_title: section_title,
+           section_desc: section_desc,
            columns: 1,
            has_action: action_path.present?,
            button_route: action_path,

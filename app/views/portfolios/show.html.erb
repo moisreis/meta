@@ -186,41 +186,33 @@
 
   <%= render "partials/groups/table-list",
              section_title: "Lista de fundos alocados",
-             collection: @portfolio.fund_investments.includes(:investment_fund),
+             section_desc: "Dados de #{l(@reference_date, format: :long)}",
+             collection: @portfolio.fund_investments.includes(:investment_fund, :applications, :redemptions),
              action_path: new_fund_investment_path(portfolio_id: @portfolio.id),
              action_name: "Nova alocação",
-             headers: ["Fundo", "Alocação", "Aplicações", "Resgates", "Movimentação", "Cota mais recente", "Valor Final", "Rendimento", "Rent."],
+             headers: [
+               "Fundo",
+               "Alocação",
+               "Aplicações",
+               "Resgates",
+               "Movimentação",
+               "Cota mais recente",
+               "Valor Final",
+               "Rendimento",
+               "Rent."
+             ],
              column_icons: ["layers", "shuffle", "banknote", "percent", "banknote"],
              body_procs: [
-               ->(fi) do
-                 normalize_title(fi.investment_fund.fund_name)
-               end,
-               ->(fi) do
-                 normalize_percentage(fi.percentage_allocation)
-               end,
-               ->(fi) do
-                 normalize_currency(fi.total_applications)
-               end,
-               ->(fi) do
-                 normalize_currency(fi.total_redemptions)
-               end,
-               ->(fi) do
-                 normalize_trend(fi.net_movement)
-               end,
-               ->(fi) do
-                 normalize_currency(fi.investment_fund.latest_quota_value)
-               end,
-               ->(fi) do
-                 normalize_currency(fi.current_market_value)
-               end,
-               ->(fi) do
-                 normalize_currency(fi.total_gain)
-               end,
-               ->(fi) do
-                 normalize_percentage(fi.period_return_percentage)
-               end
-             ]
-  %>
+               ->(fi) { normalize_title(fi.investment_fund.fund_name) },
+               ->(fi) { normalize_percentage(fi.percentage_allocation) },
+               ->(fi) { normalize_currency(fi.total_applications) },
+               ->(fi) { normalize_currency(fi.total_redemptions) },
+               ->(fi) { normalize_trend(fi.net_movement) },
+               ->(fi) { normalize_currency(fi.investment_fund.quota_value_on(@reference_date)) },
+               ->(fi) { normalize_currency(fi.current_market_value(@reference_date)) },
+               ->(fi) { normalize_currency(fi.total_gain(@reference_date)) },
+               ->(fi) { normalize_percentage(fi.period_return_percentage(@reference_date), precision: 4) }
+             ] %>
 
   <% if @recent_performance.any? %>
 

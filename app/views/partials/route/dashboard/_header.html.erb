@@ -48,11 +48,27 @@
     <div class="flex flex-row gap-6 items-center justify-end">
 
       <% if @portfolio.present? && @portfolio.persisted? %>
-        <%= button_to run_calculations_portfolio_path(@portfolio),
+        <%= form_with url: run_calculations_portfolio_path(@portfolio),
                       method: :post,
-                      class: "button button-outline button-small" do %>
-          <%= inline_svg_tag("icons/refresh-cw.svg") %>
-          <%= content_tag :span, "Calcular Performance" %>
+                      model: false,
+                      local: true,
+                      class: "flex !flex-row items-center gap-2" do |form| %>
+
+          <%# Use the partial for the month field %>
+          <%= render "partials/modules/input-field",
+                     f: form,
+                     name: :month,
+                     field_type: :month_field,
+                     is_small: true,
+                     value: @reference_date&.strftime("%Y-%m") || Date.current.strftime("%Y-%m"),
+                     label: nil,
+                     desc: nil %>
+
+          <%= button_tag type: :submit,
+                         class: "button button-outline button-small flex items-center gap-1" do %>
+            <%= inline_svg_tag("icons/refresh-cw.svg", class: "size-4") %>
+            <span>Calcular Performance</span>
+          <% end %>
         <% end %>
 
         <%= form_with url: monthly_report_portfolio_path(@portfolio),

@@ -236,6 +236,7 @@
     --color-tertiary-900: oklch(39.58% 0.0567 217.218);
     --color-tertiary-950: oklch(29.74% 0.0447 219.856);
 
+    /* Container — Responsive configuration for bigger screens. */
     --container-3xl: 1530px;
 
     /* Quaternary — Deep violet for charts, tags, and decorative elements. */
@@ -387,7 +388,7 @@
     input[type=submit],
     button,
     .button {
-        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-xs text-primary-50 font-mono uppercase !font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-primary-100 focus:outline-primary-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-primary-100 focus-visible:outline-offset-2 focus-visible:outline-primary-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 hover:bg-primary-600/90 active:bg-primary-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-primary-50 [&>svg]:!size-3.5 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer
+        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-xs text-secondary-50 font-mono uppercase !font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-secondary-100 focus:outline-secondary-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-secondary-100 focus-visible:outline-offset-2 focus-visible:outline-secondary-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-secondary-600 hover:bg-secondary-600/90 active:bg-secondary-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-secondary-50 [&>svg]:!size-3.5 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer
     }
 
     /**
@@ -414,7 +415,7 @@
      * For supporting or secondary actions alongside a primary CTA.
      */
     .button-secondary {
-        @apply text-primary-900 bg-primary-50 hover:!bg-primary-50/90 [&>svg]:!stroke-primary-900
+        @apply text-secondary-900 bg-secondary-50 hover:!bg-secondary-50/90 [&>svg]:!stroke-secondary-900
     }
 
     /**
@@ -433,6 +434,16 @@
      */
     .button-honeysuckle {
         @apply text-body bg-honeysuckle-200 hover:!bg-honeysuckle-200/90 !shadow-none [&>svg]:!stroke-body
+    }
+
+    /**
+     * .button-sidebar
+     * Compact button variant designed for use inside sidebar navigation areas.
+     * Uses the primary dark background with light text to maintain contrast
+     * and visual consistency with the sidebar layout.
+     */
+    .button-sidebar {
+        @apply !h-7 !px-2.5 !py-0.75 text-primary-50 bg-primary-950 hover:!bg-primary-900 !shadow-none [&>svg]:!stroke-primary-50
     }
 
     /**
@@ -565,18 +576,16 @@
      * Applies to all scrollable elements except those using .no-scrollbar.
      * Thin 4px track, indigo-300 thumb, base border-radius.
      */
-    ::-webkit-scrollbar {
-        height: calc(var(--spacing) * 1);
-        width: calc(var(--spacing) * 1);
-    }
-
-    ::-webkit-scrollbar-track {
-        box-shadow: none;
-        border-radius: 0;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: var(--color-indigo-300);
-        border-radius: var(--radius-base);
-    }
+    /*::-webkit-scrollbar {*/
+    /*    height: calc(var(--spacing) * 1);*/
+    /*    width: calc(var(--spacing) * 1);*/
+    /*}*/
+    /*::-webkit-scrollbar-track {*/
+    /*    box-shadow: none;*/
+    /*    border-radius: 0;*/
+    /*}*/
+    /*::-webkit-scrollbar-thumb {*/
+    /*    background: var(--color-indigo-300);*/
+    /*    border-radius: var(--radius-base);*/
+    /*}*/
 }

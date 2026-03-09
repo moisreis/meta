@@ -29,9 +29,9 @@ module NavHelper
                   content_tag(:div, class: "flex flex-row justify-center items-center w-full") do
                     safe_join([
                                 content_tag(:span, plural,
-                                            class: "px-3 text-2xs font-mono font-semibold uppercase text-muted"),
+                                            class: "px-3 text-2xs font-mono font-semibold uppercase text-primary-50"),
                                 content_tag(:div, nil,
-                                            class: "h-[2px] bg-neutral-200 w-full")
+                                            class: "h-[2px] bg-primary-900 w-full")
                               ])
                   end,
                   content_tag(:div, id: nav_id,
@@ -51,7 +51,7 @@ module NavHelper
       "button-small",
       "w-full",
       "flex flex-row justify-start",
-      ("button-ghost" unless active),
+      ("button-sidebar" unless active),
       ("button-honeysuckle" if active)
     ].compact.join(" ")
 

@@ -1,325 +1,178 @@
-# === redemptions_controller
+# =============================================================
+# Configuration & Dependencies
+# =============================================================
+
+# FIX: Renamed to avoid constant redefinition collisions at boot.
+REDEMPTIONS_ALLOWED_SORT_COLUMNS = %w[request_date cotization_date liquidation_date redeemed_liquid_value redeemed_quotas].freeze
+REDEMPTIONS_ALLOWED_DIRECTIONS   = %w[asc desc].freeze
+
+# === redemptions_controller.rb
 #
-# @author Moisés Reis
-# @added 11/28/2025
-# @package *Meta*
-# @description This controller manages all client requests related to withdrawing money (redemptions) from their **FundInvestment** accounts.
-#              It handles listing, creation, viewing, and deletion of redemption records,
-#              while enforcing business rules, especially the FIFO quota allocation method.
-# @category *Controller*
-#
-# Usage:: - *[What]* It processes all HTTP requests for redemption transactions, serving the necessary views and APIs.
-#         - *[How]* It uses strong parameters, model scopes, Ransack for filtering,
-#           and ActiveRecord transactions to ensure data integrity during creation and destruction.
-#         - *[Why]* It provides the secured, authenticated interface necessary for clients or administrators
-#           to manage investment withdrawals correctly and safely, adhering to allocation logic.
+# Description:: Manages the lifecycle of investment redemptions within the system.
 #
 class RedemptionsController < ApplicationController
 
   include PdfExportable
 
-  # Explanation:: This is a security measure that ensures the user is logged
-  #               into the application before they can execute any action within this controller.
-  #               Access is strictly restricted to authenticated users.
   before_action :authenticate_user!
+  before_action :load_form_collections, only: %i[new create edit update]
+  before_action :load_redemption,       only: %i[show edit update destroy]
+  before_action :authorize_redemption,  only: %i[show update destroy]
 
-  before_action :load_form_collections, only: [:new, :create, :edit, :update]
+  # =============================================================
+  # Error handling
+  # =============================================================
 
-  # Explanation:: This method ensures that the redemption record specified by `params[:id]` is
-  #               loaded into the `@redemption` instance variable before certain actions are executed.
-  #               This prevents having to repeat the `Redemption.find(params[:id])` call inside `show`, `update`, and `destroy`.
-  before_action :load_redemption, only: %i[show edit update destroy]
-
-  # Explanation:: This method checks if the current logged-in user has the necessary permissions to manage the redemption being accessed.
-  #               It uses the **CanCan** authorization system to protect the records from unauthorized viewing or manipulation.
-  before_action :authorize_redemption, only: [
-    :show,
-    :update,
-    :destroy
-  ]
-
-  # == index
-  #
-  # @author Moisés Reis
-  # @category *Actions*
-  #
-  # Category:: This action retrieves and displays a paginated list of all redemption records the current user is authorized to view.
-  #            It supports searching, filtering, and sorting via the Ransack gem.
-  #
-  # Attributes:: - *@q* @Ransack::Search - holds the search object for the collection, enabling complex filtering.
-  #              - *@redemptions* @ActiveRecord::Relation - contains the final, paginated, and sorted list of redemption records to be displayed.
-  #
-  def index
-
-    # Explanation:: This retrieves the IDs of all **FundInvestment** records that the current user has access to.
-    #               This ensures the user can only see redemptions related to their own investments.
-    fund_investment_ids = FundInvestment.accessible_to(current_user).select(:id)
-
-    # Explanation:: This establishes the initial query scope by filtering redemptions linked to the accessible fund investments.
-    #               It eagerly loads related data (portfolio, investment fund) to prevent N+1 query issues during rendering.
-    base_scope = Redemption.where(fund_investment_id: fund_investment_ids)
-                           .includes(
-                             fund_investment: [
-                               :portfolio,
-                               :investment_fund
-                             ],
-                             )
-
-    # Explanation:: This initializes the Ransack search object using the base scope and
-    #               any filtering parameters passed in the `params[:q]` hash.
-    #               This allows for dynamic searching on the records.
-    @q = base_scope.ransack(params[:q])
-
-    # Explanation:: This executes the search query defined by Ransack, ensuring that only distinct results are returned.
-    #               The result is assigned to the `filtered` variable for further processing.
-    filtered = @q.result(distinct: true)
-
-    # Explanation:: This determines the column by which the records should be sorted,
-    #               defaulting to `request_date` if no sort parameter is provided.
-    #               It reads the sort parameter from the request.
-    sort = params[:sort].presence || "request_date"
-
-    # Explanation:: This determines the sort direction (ascending or descending),
-    #               defaulting to `desc` (descending) if no direction parameter is provided.
-    #               It reads the direction parameter from the request.
-    direction = params[:direction].presence || "desc"
-
-    # Explanation:: This variable stores the total number of records found in the database.
-    #               It allows the user to see exactly how many items exist in the list.
-    @total_items = Redemption.count
-
-    # Explanation:: This applies the determined sort column and direction to the filtered set of redemptions.
-    #               The result is assigned to the `sorted` variable.
-    sorted = filtered.order("#{sort} #{direction}")
-
-    # Explanation:: This applies pagination to the sorted result, showing a maximum of 20 records per page.
-    #               The final result is assigned to the `@redemptions` instance variable for use in the view.
-    @redemptions = sorted.page(params[:page]).per(14)
-
+  rescue_from ActiveRecord::RecordNotFound do |e|
     respond_to do |format|
-      format.html
+      format.html { redirect_to portfolios_path, alert: "Registro não encontrado." }
+      format.json { render json: { error: e.message }, status: :not_found }
     end
   end
 
-  # == show
-  #
-  # @author Moisés Reis
-  # @category *Actions*
-  #
-  # Category:: This action retrieves the details of a single redemption record and returns them as a JSON response.
-  #            It is typically used by API calls to fetch data for display.
-  #
-  # Attributes:: - *@redemption* @Redemption - the specific record loaded by the `before_action`.
-  #
-  def show
+  rescue_from CanCan::AccessDenied do |e|
+    respond_to do |format|
+      format.html { redirect_to portfolios_path, alert: e.message }
+      format.json { render json: { error: e.message }, status: :forbidden }
+    end
   end
 
-  # == new
-  #
-  # @author Moisés Reis
-  # @category *Actions*
-  #
-  # Category:: This action initializes a new, unsaved **Redemption** object for the creation form.
-  #            It also retrieves the list of possible investment funds the user can redeem from.
-  #
-  # Attributes:: - *@redemption* @Redemption - a new, unsaved instance of the **Redemption** model.
-  #              - *@fund_investments* @ActiveRecord::Relation - a collection of **FundInvestment** records accessible to the current user.
-  #
+  rescue_from StandardError do |e|
+    Rails.logger.error("[RedemptionsController] #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+    respond_to do |format|
+      format.html { redirect_to portfolios_path, alert: "Ocorreu um erro inesperado." }
+      format.json { render json: { error: "Internal server error" }, status: :internal_server_error }
+    end
+  end
+
+  # =============================================================
+  # Public Methods
+  # =============================================================
+
+  def index
+    fund_investment_ids = FundInvestment.accessible_to(current_user).select(:id)
+
+    base_scope = Redemption
+                   .where(fund_investment_id: fund_investment_ids)
+                   .includes(fund_investment: [:portfolio, :investment_fund])
+
+    @q = base_scope.ransack(params[:q])
+    filtered = @q.result(distinct: true)
+
+    @total_items = filtered.count
+
+    sort      = REDEMPTIONS_ALLOWED_SORT_COLUMNS.include?(params[:sort]) ? params[:sort] : "request_date"
+    direction = REDEMPTIONS_ALLOWED_DIRECTIONS.include?(params[:direction]) ? params[:direction] : "desc"
+
+    @redemptions = filtered.order("#{sort} #{direction}").page(params[:page]).per(14)
+
+    respond_to { |f| f.html }
+  end
+
+  def show; end
+
   def new
-
-    # Explanation:: This creates a blank **Redemption** object, which is required by the form builder to populate the creation form.
-    #               It prepares the object for initial data entry.
     @redemption = Redemption.new
-
-    # Explanation:: This retrieves all the **FundInvestment** records that the current user is authorized to interact with.
-    #               This collection populates the dropdown menu in the form, ensuring the user only selects valid investments.
-    @fund_investments = FundInvestment.accessible_to(current_user)
   end
 
-  # == create
-  #
-  # @author Moisés Reis
-  # @category *Actions*
-  #
-  # Category:: This action processes the submission of the redemption creation form, attempts to save the record,
-  #            and executes the FIFO quota allocation logic.
-  #            It ensures that all database operations are wrapped in a transaction for atomicity.
-  #
-  # Attributes:: - *@redemption* @Redemption - the new redemption record, initialized with user parameters.
-  #
   def create
-    @redemption = Redemption.new(redemption_params)
+    @redemption     = Redemption.new(redemption_params)
     fund_investment = @redemption.fund_investment
-    authorize! :create, @redemption, fund_investment
+
+    unless fund_investment
+      @redemption.errors.add(:fund_investment_id, "não encontrado")
+      return render :new, status: :unprocessable_entity
+    end
+
+    authorize! :manage, fund_investment.portfolio
 
     if @redemption.cotization_date.present? && @redemption.redeemed_liquid_value.present?
-      quota_value = fund_investment.investment_fund
-                                   .quota_value_on(@redemption.cotization_date)
+      quota_value = fund_investment.investment_fund.quota_value_on(@redemption.cotization_date)
 
       unless quota_value
         @redemption.errors.add(:base, "Sem cota disponível para esta data.")
         return render :new, status: :unprocessable_entity
       end
 
-      @redemption.redeemed_quotas =
-        BigDecimal(@redemption.redeemed_liquid_value.to_s) / quota_value
+      @redemption.redeemed_quotas = BigDecimal(@redemption.redeemed_liquid_value.to_s) / quota_value
     end
 
-    unless @redemption.redeemed_quotas <= (fund_investment.total_quotas_held || 0)
-      @redemption.errors.add(:base, "Insufficient quotas available for this redemption.")
+    # Early quota check with a friendly message before hitting model validation.
+    if (@redemption.redeemed_quotas || 0) > (fund_investment.total_quotas_held || 0)
+      @redemption.errors.add(:base, "Cotas insuficientes: disponível #{fund_investment.total_quotas_held}.")
       return render :new, status: :unprocessable_entity
     end
 
     ActiveRecord::Base.transaction do
       @redemption.save!
       allocate_quotas_fifo(fund_investment, @redemption.redeemed_quotas)
-      update_fund_investment_after_redemption(fund_investment)
+      fund_investment.update_balances!(
+        quotas_delta: -@redemption.redeemed_quotas,
+        value_delta:  -@redemption.redeemed_liquid_value
+      )
       PortfolioAllocationCalculator.recalculate!(fund_investment.portfolio)
     end
 
-    redirect_to fund_investment_path(fund_investment),
-                notice: "Resgate criado com sucesso."
+    redirect_to fund_investment_path(fund_investment), notice: "Resgate criado com sucesso."
 
   rescue ActiveRecord::RecordInvalid => e
     @redemption = e.record
     render :new, status: :unprocessable_entity
   end
 
-  # == update
-  #
-  # @author Moisés Reis
-  # @category *Actions*
-  #
-  # Category:: This action prevents the user from modifying an existing redemption record.
-  #            Redemption records are treated as immutable financial events to maintain a complete audit trail.
-  #
-  def update
-    authorize! :manage, @redemption.fund_investment.portfolio
+  def edit; end
 
+  def update
     if @redemption.update(redemption_params)
-      redirect_to redemption_path(@redemption), notice: 'Redemption atualizada com sucesso.'
+      redirect_to redemption_path(@redemption), notice: "Resgate atualizado com sucesso."
     else
       render :edit, status: :unprocessable_entity
     end
   end
 
-  def edit
-    @fund_investments = FundInvestment.accessible_to(current_user)
-  end
-
-
-  # == destroy
-  #
-  # @author Moisés Reis
-  # @category *Actions*
-  #
-  # Category:: This action handles the permanent deletion of a redemption record.
-  #            Crucially, it first reverts the quotas and financial values back to the original applications before deletion.
-  #
-  # Attributes:: - *@redemption* @Redemption - the record to be deleted.
-  #
   def destroy
-
-    # Explanation:: This retrieves the associated **FundInvestment** record,
-    #               which is necessary for reverting the quota balances.
-    #               It provides the context for updating the investment portfolio.
     fund_investment = @redemption.fund_investment
 
-    # Explanation:: This initiates a database transaction to ensure that the
-    #               quota reversion and the redemption deletion happen together or not at all.
-    #               If any step fails, the entire process is rolled back.
     ActiveRecord::Base.transaction do
       revert_quotas_on_destroy(fund_investment)
       @redemption.destroy!
+      PortfolioAllocationCalculator.recalculate!(fund_investment.portfolio)
     end
 
-    # Explanation:: If the deletion and quota reversion are successful, this renders a
-    #               JSON response confirming the successful deletion.
-    #               It uses the HTTP status `:ok` (200).
-    render json: {
-      status: 'Success',
-      message: 'Redemption deleted successfully'
-    }, status: :ok
+    render json: { status: "Success", message: "Resgate deletado com sucesso." }, status: :ok
 
-    # Explanation:: This handles validation errors during the deletion process
-    #               (though less common here) and returns a JSON error response.
-    #               This acts as a safeguard against data integrity issues.
   rescue ActiveRecord::RecordInvalid => e
-    render json: {
-      status: 'Error',
-      message: 'Failed to delete redemption',
-      errors: e.record.errors.full_messages
-    }, status: :unprocessable_entity
-
-    # Explanation:: This handles cases where the redemption record specified by the ID does not exist in the database.
-    #               It returns a JSON error with the HTTP status `:not_found` (404).
+    render json: { status: "Error", message: "Falha ao deletar resgate.", errors: e.record.errors.full_messages }, status: :unprocessable_entity
   rescue ActiveRecord::RecordNotFound => e
-    render json: {
-      status: 'Error',
-      message: "Redemption not found: #{e.message}"
-    }, status: :not_found
-
-    # Explanation:: This handles access denial exceptions raised by the **CanCan** authorization gem.
-    #               It returns a JSON error with the HTTP status `:forbidden` (403).
+    render json: { status: "Error", message: "Resgate não encontrado: #{e.message}" }, status: :not_found
   rescue CanCan::AccessDenied => e
-    render json: {
-      status: 'Error',
-      message: e.message
-    }, status: :forbidden
+    render json: { status: "Error", message: e.message }, status: :forbidden
   end
+
+  # =============================================================
+  # Private Methods
+  # =============================================================
 
   private
 
-  # == load_redemption
-  #
-  # @author Moisés Reis
-  # @category *Method*
-  #
-  # Category:: This private method finds a **Redemption** record by its
-  #            ID and assigns it to the `@redemption` instance variable.
-  #            It serves as a helper method for the `before_action` callback.
-  #
   def load_redemption
     @redemption = Redemption.find(params[:id])
   end
 
+  # FIX: Previously filtered only by portfolios.user_id = current_user.id, which
+  # excluded shared portfolios where the user has manage permission.
+  # Updated to use FundInvestment.accessible_to so that users with crud permission
+  # on a shared portfolio can also create redemptions against it.
   def load_form_collections
     @fund_investments = FundInvestment
-                          .joins(:portfolio)
-                          .where(portfolios: { user_id: current_user.id })
+                          .accessible_to(current_user)
                           .includes(:investment_fund, :portfolio)
   end
 
-  # == authorize_redemption
-  #
-  # @author Moisés Reis
-  # @category *Method*
-  #
-  # Category:: This private method enforces access control for the `show`, `update`, and `destroy` actions.
-  #            Authorization is based on the user's rights to manage the parent **Portfolio** of the associated **FundInvestment**.
-  #
   def authorize_redemption
-
-    # Explanation:: This retrieves the linked **FundInvestment** record from the redemption object.
-    #               It establishes the path to the higher-level **Portfolio** for authorization checks.
-    fund_investment = @redemption.fund_investment
-
-    # Explanation:: This uses **CanCan** to authorize the user's access to the parent portfolio,
-    #               but only if the action being performed is `show`, `update`, or `destroy`.
-    #               If the user cannot manage the portfolio, they cannot manage the redemption.
-    authorize! :manage, fund_investment.portfolio if %w[show update destroy].include?(action_name)
+    authorize! :manage, @redemption.fund_investment.portfolio
   end
 
-  # == redemption_params
-  #
-  # @author Moisés Reis
-  # @category *Method*
-  #
-  # Category:: This private method defines and sanitizes the parameters allowed to be passed from the client to create or update a redemption.
-  #            It prevents mass assignment vulnerabilities by explicitly permitting only safe attributes.
-  #
-  # Attributes:: - *@return* @Hash - returns a hash containing only the whitelisted parameters for redemption creation.
-  #
   def redemption_params
     params.require(:redemption).permit(
       :fund_investment_id,
@@ -333,381 +186,109 @@ class RedemptionsController < ApplicationController
     )
   end
 
-  # == update_fund_investment_after_redemption
-  #
-  # @author Moisés Reis
-  # @category *Method*
-  #
-  # Category:: This private method recalculates and updates the total quotas held and total invested
-  #            value of the parent **FundInvestment** after a successful redemption.
-  #            It deducts the redeemed amounts from the investment balances.
-  #
-  # Attributes:: - *fund_investment* @FundInvestment - the investment record to be updated.
-  #
-  def update_fund_investment_after_redemption(fund_investment)
-
-    # Explanation:: This retrieves the current total number of quotas held in the fund investment,
-    #               defaulting to zero if the value is nil.
-    #               It establishes the starting balance for the calculation.
-    current_quotas = fund_investment.total_quotas_held || BigDecimal('0')
-
-    # Explanation:: This retrieves the current total invested value in the fund, defaulting to zero if the value is nil.
-    #               It establishes the starting financial balance.
-    current_value = fund_investment.total_invested_value || BigDecimal('0')
-
-    # Explanation:: This retrieves the number of quotas redeemed in the current transaction, defaulting to zero if the value is nil.
-    #               It determines the amount to be deducted.
-    redeemed_quotas = @redemption.redeemed_quotas || BigDecimal('0')
-
-    # Explanation:: This retrieves the final liquid value redeemed in the current transaction, defaulting to zero if the value is nil.
-    #               It determines the financial value to be deducted.
-    redeemed_value = @redemption.redeemed_liquid_value || BigDecimal('0')
-
-    # Explanation:: This calculates the new total invested value by subtracting the redeemed liquid value
-    #               from the current invested value, ensuring the result is never negative.
-    #               This updates the portfolio's overall value.
-    new_total_value = [current_value - redeemed_value, BigDecimal('0')].max
-
-    # Explanation:: This calculates the new total quotas held by subtracting the redeemed quotas
-    #               from the current total quotas, ensuring the result is never negative.
-    #               This updates the portfolio's quota count.
-    new_total_quotas = [current_quotas - redeemed_quotas, BigDecimal('0')].max
-
-    # Explanation:: This updates the **FundInvestment** record with the newly calculated totals for quotas and invested value.
-    #               The `!` ensures an exception is raised if the update fails, triggering a transaction rollback.
-    fund_investment.update!(
-      total_quotas_held: new_total_quotas,
-      total_invested_value: new_total_value
-    )
-  end
-
-  # == revert_quotas_on_destroy
-  #
-  # @author Moisés Reis
-  # @category *Method*
-  #
-  # Category:: This private method reverses the effects of a redemption when the record is destroyed.
-  #            It restores the quotas and financial values back to the original
-  #            **Application** records and the parent **FundInvestment**.
-  #
-  # Attributes:: - *fund_investment* @FundInvestment - the parent investment record whose balances need restoration.
-  #
-  def revert_quotas_on_destroy(fund_investment)
-
-    # Explanation:: This retrieves the current total invested value from the fund investment record.
-    #               This is the starting point before adding the reverted value back.
-    current_value = fund_investment.total_invested_value || BigDecimal('0')
-
-    # Explanation:: This retrieves the current total number of quotas held from the fund investment record.
-    #               This is the starting point before adding the reverted quotas back.
-    current_quotas = fund_investment.total_quotas_held || BigDecimal('0')
-
-    # Explanation:: This calculates the total financial value to be reverted by summing up
-    #               the quota value (at application time) for all quotas used in the redemption.
-    #               This determines the amount to be restored to the `total_invested_value`.
-    reverted_value = @redemption.redemption_allocations.sum do |allocation|
-      allocation.quotas_used * allocation.application.quota_value_at_application
-    end
-
-    # Explanation:: This calculates the total number of quotas to be reverted by summing the `quotas_used`
-    #               across all associated redemption allocations.
-    #               This determines the quota amount to be restored.
-    reverted_quotas = @redemption.redemption_allocations.sum(:quotas_used) || BigDecimal('0')
-
-    # Explanation:: This iterates through each **RedemptionAllocation** record associated with the redemption being destroyed.
-    #               The purpose is to restore the quotas to the specific applications they were redeemed from.
-    @redemption.redemption_allocations.each do |allocation|
-
-      # Explanation:: This retrieves the original **Application** record that the quotas were taken from.
-      #               It is necessary to directly update the application's balances.
-      application = allocation.application
-
-      # Explanation:: This calculates the financial value corresponding to the quotas being restored,
-      #               using the original quota value at the time of the application.
-      #               It ensures the financial restoration is accurate to the original application.
-      restored_financial_value = allocation.quotas_used * application.quota_value_at_application
-
-      # Explanation:: This updates the original **Application** record by increasing
-      #               its `number_of_quotas` and `financial_value` by the amounts that were redeemed.
-      #               This effectively undoes the FIFO allocation and restores the application's status.
-      application.update!(
-        number_of_quotas: application.number_of_quotas + allocation.quotas_used,
-        financial_value: application.financial_value + restored_financial_value
-      )
-    end
-
-    # Explanation:: This updates the parent **FundInvestment** record by adding the
-    #               total reverted value and quotas back to its current balances.
-    #               This completes the full reversal of the redemption transaction.
-    fund_investment.update!(
-      total_invested_value: current_value + reverted_value,
-      total_quotas_held: current_quotas + reverted_quotas
-    )
-  end
-
   # == allocate_quotas_fifo
   #
-  # @author Moisés Reis
-  # @category *Method*
-  #
-  # Category:: This private method implements the First-In, First-Out (FIFO)
-  #            logic to allocate redeemed quotas against the oldest **Application** records.
-  #            It creates new **RedemptionAllocation** records and reduces the balances of the original applications.
-  #
-  # Attributes:: - *fund_investment* @FundInvestment - the investment record containing the applications to redeem from.
-  #              - *remaining_quotas* @decimal - the number of quotas that still need to be allocated for the current redemption.
-  #
+  # Distributes the redeemed amount across existing applications using FIFO.
+  # Uses available_quotas (which accounts for prior redemption allocations) rather
+  # than the raw number_of_quotas field to avoid over-allocating a partially
+  # redeemed application.
   def allocate_quotas_fifo(fund_investment, remaining_quotas)
-    applications = fund_investment.applications.where('number_of_quotas > 0').order(:cotization_date)
+    applications = fund_investment.applications
+                                  .includes(:redemption_allocations)
+                                  .where("number_of_quotas > 0")
+                                  .order(:cotization_date)
 
     applications.each do |app|
       break if remaining_quotas <= 0
 
-      quotas_to_use = [app.number_of_quotas, remaining_quotas].min
+      available     = app.available_quotas
+      next if available <= 0
+
+      quotas_to_use = [available, remaining_quotas].min
 
       RedemptionAllocation.create!(
-        redemption: @redemption,
+        redemption:  @redemption,
         application: app,
         quotas_used: quotas_to_use
-      )
-
-      app.update_columns(
-        number_of_quotas: app.number_of_quotas - quotas_to_use,
-        updated_at: Time.current
       )
 
       remaining_quotas -= quotas_to_use
     end
   end
 
-  # == pdf_export_title
-  #
-  # @author Moisés Reis
-  # @category *Configuration*
-  #
-  # Configuration:: This method defines the main title displayed at the top of the PDF export.
-  #                 It provides clear identification of the document type.
-  #
-  def pdf_export_title
-    "Resgates"
+  def revert_quotas_on_destroy(fund_investment)
+    allocations    = @redemption.redemption_allocations.includes(:application)
+    reverted_value = allocations.sum { |a| a.quotas_used * a.application.quota_value_at_application }
+
+    allocations.each do |allocation|
+      app = allocation.application
+      app.update_columns(
+        number_of_quotas: app.number_of_quotas + allocation.quotas_used,
+        updated_at:       Time.current
+      )
+    end
+
+    fund_investment.update_balances!(
+      quotas_delta: allocations.sum(:quotas_used),
+      value_delta:  reverted_value
+    )
   end
 
-  # == pdf_export_subtitle
-  #
-  # @author Moisés Reis
-  # @category *Configuration*
-  #
-  # Configuration:: This method defines the descriptive subtitle shown below the main title.
-  #                 It clarifies the purpose and scope of the exported data.
-  #
-  def pdf_export_subtitle
-    "Histórico de resgates realizados"
-  end
+  def pdf_export_title    = "Resgates"
+  def pdf_export_subtitle = "Histórico de resgates realizados"
 
-  # == pdf_export_columns
-  #
-  # @author Moisés Reis
-  # @category *Configuration*
-  #
-  # Configuration:: This method defines the structure of the PDF table, including column headers,
-  #                 data extraction logic, and column widths. Each column specification includes
-  #                 a header label, a key (symbol, string, or lambda), and an optional width.
-  #
-  # Attributes:: - *@return* @Array<Hash> - An array of column definitions for the PDF table.
-  #
   def pdf_export_columns
-
-    # Explanation:: This retrieves the helper proxy to access formatting methods.
-    #               It allows the controller to use logic usually reserved for views.
     h = ActionController::Base.helpers
 
     [
-      {
-        header: "Data Solicitação",
-        # Explanation:: This lambda extracts the request date from each redemption record.
-        #               It formats the date using I18n localization or returns 'N/A' if nil.
-        key: ->(redemption) do
-          redemption.request_date ?
-            I18n.l(redemption.request_date, format: :short) :
-            'N/A'
-        end,
-        width: 85
-      },
-      {
-        header: "Data Cotização",
-        # Explanation:: This lambda extracts the cotization date from each redemption record.
-        #               It formats the date using I18n localization or returns 'N/A' if nil.
-        key: ->(redemption) do
-          redemption.cotization_date ?
-            I18n.l(redemption.cotization_date, format: :short) :
-            'N/A'
-        end,
-        width: 85
-      },
-      {
-        header: "Fundo",
-        # Explanation:: This lambda navigates through the association chain to retrieve
-        #               the fund name from the related InvestmentFund record.
-        key: ->(redemption) do
-          redemption.fund_investment.investment_fund.fund_name
-        end,
-        width: 150
-      },
-      {
-        header: "Carteira",
-        # Explanation:: This lambda retrieves the portfolio name from the parent
-        #               FundInvestment record, showing which portfolio this redemption belongs to.
-        key: ->(redemption) do
-          redemption.fund_investment.portfolio.name
-        end,
-        width: 100
-      },
-      {
-        header: "Tipo",
-        # Explanation:: This lambda translates the redemption type from database values
-        #               ('total', 'partial') to Portuguese display labels for clarity.
-        key: ->(redemption) do
-          case redemption.redemption_type
-          when 'total'
-            'Total'
-          when 'partial'
-            'Parcial'
-          else
-            redemption.redemption_type || 'N/A'
-          end
-        end,
-        width: 60
-      },
+      { header: "Data Solicitação", key: ->(r) { r.request_date   ? I18n.l(r.request_date,   format: :short) : "N/A" }, width: 85 },
+      { header: "Data Cotização",   key: ->(r) { r.cotization_date ? I18n.l(r.cotization_date, format: :short) : "N/A" }, width: 85 },
+      { header: "Fundo",     key: ->(r) { r.fund_investment.investment_fund.fund_name }, width: 150 },
+      { header: "Carteira",  key: ->(r) { r.fund_investment.portfolio.name },             width: 100 },
+      { header: "Tipo",      key: ->(r) { r.redemption_type&.capitalize || "N/A" },       width: 60  },
       {
         header: "Cotas Resgatadas",
-        # Explanation:: This lambda formats the redeemed quotas using the helper proxy.
-        #               It ensures consistent decimal precision across the document.
-        key: ->(redemption) do
-          h.number_with_precision(
-            redemption.redeemed_quotas,
-            precision: 2,
-            separator: ",",
-            delimiter: "."
-          )
-        end,
+        key: ->(r) { h.number_with_precision(r.redeemed_quotas, precision: 2, separator: ",", delimiter: ".") },
         width: 90
       },
       {
         header: "Valor Líquido",
-        # Explanation:: This lambda formats the redeemed liquid value as Brazilian currency.
-        #               It uses the helper proxy to ensure consistent currency formatting.
-        key: ->(redemption) do
-          h.number_to_currency(
-            redemption.redeemed_liquid_value,
-            unit: "R$ ",
-            separator: ",",
-            delimiter: "."
-          )
-        end,
+        key: ->(r) { h.number_to_currency(r.redeemed_liquid_value, unit: "R$ ", separator: ",", delimiter: ".") },
         width: 90
       },
       {
         header: "Rendimento",
-        # Explanation:: This lambda formats the redemption yield as currency if present.
-        #               It returns 'N/A' for nil values to maintain data clarity.
-        key: ->(redemption) do
-          if redemption.redemption_yield
-            h.number_to_currency(
-              redemption.redemption_yield,
-              unit: "R$ ",
-              separator: ",",
-              delimiter: "."
-            )
-          else
-            'N/A'
-          end
-        end,
+        key: ->(r) { r.redemption_yield ? h.number_to_currency(r.redemption_yield, unit: "R$ ", separator: ",", delimiter: ".") : "N/A" },
         width: 80
       }
     ]
   end
 
-  # == pdf_export_data
-  #
-  # @author Moisés Reis
-  # @category *Configuration*
-  #
-  # Configuration:: This method retrieves the collection of redemption records to be exported.
-  #                 It applies the same scoping, filtering, and sorting logic as the index action
-  #                 to ensure consistency between the displayed data and the exported data.
-  #
-  # Attributes:: - *@return* @ActiveRecord::Relation - The filtered and sorted collection of redemptions.
-  #
   def pdf_export_data
-    # Explanation:: This retrieves only the fund investment IDs that the current user
-    #               has permission to access, establishing the authorization scope.
     fund_investment_ids = FundInvestment.accessible_to(current_user).select(:id)
 
-    # Explanation:: This creates the base query scope by filtering redemptions linked
-    #               to accessible fund investments and eagerly loading related associations.
-    base_scope = Redemption.where(fund_investment_id: fund_investment_ids)
-                           .includes(
-                             fund_investment: [
-                               :portfolio,
-                               :investment_fund
-                             ]
-                           )
+    base_scope = Redemption
+                   .where(fund_investment_id: fund_investment_ids)
+                   .includes(fund_investment: [:portfolio, :investment_fund])
 
-    # Explanation:: This initializes the Ransack search object with any filter
-    #               parameters passed in the URL, preserving the user's current filters.
     @q = base_scope.ransack(params[:q])
 
-    # Explanation:: This determines the sorting column and direction, defaulting to
-    #               request_date descending to show most recent redemptions first.
-    sort = params[:sort].presence || "request_date"
-    direction = params[:direction].presence || "desc"
+    sort      = REDEMPTIONS_ALLOWED_SORT_COLUMNS.include?(params[:sort]) ? params[:sort] : "request_date"
+    direction = REDEMPTIONS_ALLOWED_DIRECTIONS.include?(params[:direction]) ? params[:direction] : "desc"
 
-    # Explanation:: This executes the search query and applies the sorting order,
-    #               returning the final collection ready for PDF generation.
     @q.result(distinct: true).order("#{sort} #{direction}")
   end
 
-  # == pdf_export_metadata
-  #
-  # @author Moisés Reis
-  # @category *Utility*
-  #
-  # Utility:: This method compiles the summary information for the PDF report.
-  #            It calculates aggregate statistics and formats them for display
-  #            in the metadata section of the exported document.
-  #
-  # Attributes:: - *pdf_export_data* - The collection of records used to calculate the total.
-  #
   def pdf_export_metadata
-    # Explanation:: This retrieves the helper proxy to access formatting methods.
-    #               It allows the controller to use logic usually reserved for views.
-    h = ActionController::Base.helpers
-
-    # Explanation:: This retrieves the complete data collection to calculate
-    #               aggregate statistics like totals and counts.
+    h    = ActionController::Base.helpers
     data = pdf_export_data
 
     {
-      'Usuário' => current_user.full_name,
-      'E-mail' => current_user.email,
-      # Explanation:: This counts the total number of redemption records in the export.
-      'Total de resgates' => data.size.to_s,
-      # Explanation:: This calculates and formats the sum of all redeemed liquid values
-      #               using the helper proxy for consistent currency formatting.
-      'Valor total resgatado' => h.number_to_currency(
-        data.sum(:redeemed_liquid_value),
-        unit: "R$ ",
-        separator: ",",
-        delimiter: "."
-      ),
-      # Explanation:: This calculates and formats the sum of all redeemed quotas
-      #               using the helper proxy for consistent number formatting.
-      'Cotas totais resgatadas' => h.number_with_precision(
-        data.sum(:redeemed_quotas),
-        precision: 2,
-        separator: ",",
-        delimiter: "."
-      )
+      "Usuário"               => current_user.full_name,
+      "E-mail"                => current_user.email,
+      "Total de resgates"     => data.size.to_s,
+      "Valor total resgatado" => h.number_to_currency(data.sum(:redeemed_liquid_value), unit: "R$ ", separator: ",", delimiter: "."),
+      "Cotas totais resgatadas" => h.number_with_precision(data.sum(:redeemed_quotas), precision: 2, separator: ",", delimiter: ".")
     }
   end
 end
