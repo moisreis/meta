@@ -21,7 +21,6 @@
 #              - *[@fund_investments]* @collection - available funds for selection
 #
 class ApplicationsController < ApplicationController
-
   # This security check ensures that only users who have logged
   # into the system can view or manage investment records.
   before_action :authenticate_user!
@@ -64,7 +63,6 @@ class ApplicationsController < ApplicationController
   #              - *@total_items* - the total number of records found.
   #
   def index
-
     # Collects the IDs of every fund investment the current user is allowed to read.
     fund_investments_ids = FundInvestment.accessible_to(current_user).select(:id)
 
@@ -111,7 +109,6 @@ class ApplicationsController < ApplicationController
   # It helps the user see if the investment data is consistent.
   #
   def show
-
     # Prepares specialized math and status checks for the display page.
     prepare_application_metrics
 
@@ -128,7 +125,6 @@ class ApplicationsController < ApplicationController
   # can display a blank form for the user to fill out.
   #
   def new
-
     # Creates a new empty record to be filled in by the form.
     @application = Application.new
   end
@@ -150,14 +146,15 @@ class ApplicationsController < ApplicationController
 
     authorize! :manage, portfolio
 
-    fund_investment = FundInvestment.find_or_create_by!(
-      investment_fund: fund,
-      portfolio: portfolio
-    ) do |fi|
-      fi.percentage_allocation = 0
-      fi.total_invested_value = 0
-      fi.total_quotas_held = 0
-    end
+fund_investment = FundInvestment.find_or_create_by!(
+  investment_fund: fund,
+  portfolio: portfolio
+) do |fi|
+  fi.skip_allocation_validation = true  # ← aqui
+  fi.percentage_allocation = 0
+  fi.total_invested_value = 0
+  fi.total_quotas_held = 0
+end
 
     @application = Application.new(
       application_params.except(:portfolio_id, :investment_fund_id)
@@ -202,7 +199,6 @@ class ApplicationsController < ApplicationController
   # This keeps the financial history clean and error-free.
   #
   def update
-
     # Blocks the update and sends the user back to the details page.
     redirect_to application_path(@application), status: :method_not_allowed
   end
@@ -243,7 +239,6 @@ class ApplicationsController < ApplicationController
   # ID provided in the web link, making it available for other actions.
   #
   def load_application
-
     # Finds the specific record or stops the process if not found.
     @application = Application.find(params[:id])
   end
@@ -256,7 +251,6 @@ class ApplicationsController < ApplicationController
   # allowed to use, specifically for filling out the selection menus.
   #
   def load_form_dependencies
-
     # Fetches all funds the user can access to populate the dropdowns.
     @fund_investments = FundInvestment.accessible_to(current_user)
                                       .includes(
@@ -329,7 +323,6 @@ class ApplicationsController < ApplicationController
   # and rearranges the numbers into a valid calendar date format.
   #
   def parse_br_date(value)
-
     # Returns the value as-is if it doesn't match the expected pattern.
     return value unless value.match?(%r{\A\d{2}/\d{2}/\d{4}\z})
 
@@ -356,8 +349,8 @@ class ApplicationsController < ApplicationController
   end
 
   def update_fund_investment_before_destroy(fund_investment)
-    new_value  = [(fund_investment.total_invested_value || 0) - (@application.financial_value    || 0), 0].max
-    new_quotas = [(fund_investment.total_quotas_held    || 0) - (@application.number_of_quotas  || 0), 0].max
+    new_value  = [ (fund_investment.total_invested_value || 0) - (@application.financial_value    || 0), 0 ].max
+    new_quotas = [ (fund_investment.total_quotas_held    || 0) - (@application.number_of_quotas  || 0), 0 ].max
 
     fund_investment.update_columns(
       total_invested_value: new_value,
@@ -373,7 +366,6 @@ class ApplicationsController < ApplicationController
   # so the user can see helpful insights on the investment details page.
   #
   def prepare_application_metrics
-
     # Calculates how much of this investment has already been assigned for withdrawal.
     allocated_quotas = @application.redemption_allocations.sum(:quotas_used) || 0
 
