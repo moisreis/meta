@@ -18,16 +18,16 @@ class Portfolio < ApplicationRecord
 
   belongs_to :user
 
-  has_many :checking_accounts,         dependent: :destroy
-  has_many :fund_investments,          dependent: :destroy
-  has_many :investment_funds,          through: :fund_investments
+  has_many :checking_accounts, dependent: :destroy
+  has_many :fund_investments, dependent: :destroy
+  has_many :investment_funds, through: :fund_investments
   has_many :user_portfolio_permissions, dependent: :destroy
-  has_many :authorized_users,          through: :user_portfolio_permissions, source: :user
-  has_many :performance_histories,     dependent: :destroy
+  has_many :authorized_users, through: :user_portfolio_permissions, source: :user
+  has_many :performance_histories, dependent: :destroy
 
-  validates :name,                 presence: true, length: { minimum: 2, maximum: 100 }
+  validates :name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :annual_interest_rate, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :user_id,              presence: true
+  validates :user_id, presence: true
 
   # =============================================================
   # Scopes
@@ -105,6 +105,42 @@ class Portfolio < ApplicationRecord
   rescue StandardError => e
     Rails.logger.warn("[Portfolio#total_current_market_value] SQL optimisation failed, falling back: #{e.message}")
     fund_investments.includes(:investment_fund).sum(&:current_market_value)
+  end
+
+  # == estimated_current_month_earnings
+  #
+  # @author Moisés Reis
+  #
+  # Estimates earnings for the current in-progress month using the same
+  # Modified Dietz logic as PerformanceCalculationJob, but reading live
+  # quota valuations instead of relying on persisted performance_histories.
+  #
+  # Returns:: - Estimated earnings as a BigDecimal, or zero if data is insufficient.
+  def estimated_current_month_earnings
+    period_start = Date.current.beginning_of_month
+    period_end = Date.current
+
+    fund_investments.includes(:investment_fund, :applications, :redemptions).sum do |fi|
+      fund = fi.investment_fund
+
+      quota_start = closest_quota_value(fund.cnpj, period_start)
+      quota_end = closest_quota_value(fund.cnpj, period_end)
+
+      next BigDecimal("0") unless quota_start && quota_end
+
+      quotas_at_start = reconstruct_quotas_at(fi, period_start - 1.day)
+      quotas_at_end = reconstruct_quotas_at(fi, period_end)
+
+      next BigDecimal("0") if quotas_at_start <= 0 && quotas_at_end <= 0
+
+      initial_balance = quotas_at_start * quota_start
+      final_balance = quotas_at_end * quota_end
+
+      net_cash_flow = fi.applications.where(cotization_date: period_start..period_end).sum(:financial_value) -
+                      fi.redemptions.where(cotization_date: period_start..period_end).sum(:redeemed_liquid_value)
+
+      final_balance - initial_balance - net_cash_flow
+    end
   end
 
   # == total_gain
@@ -187,14 +223,14 @@ class Portfolio < ApplicationRecord
 
     return BigDecimal("0") if perfs.empty?
 
-    weighted    = BigDecimal("0")
+    weighted = BigDecimal("0")
     total_alloc = BigDecimal("0")
 
     perfs.group_by(&:fund_investment_id).each do |_, fund_perfs|
-      fi    = fund_perfs.first.fund_investment
+      fi = fund_perfs.first.fund_investment
       alloc = fi.percentage_allocation.to_d
       accumulated = fund_perfs.sum { |p| p.monthly_return.to_d }
-      weighted    += accumulated * alloc
+      weighted += accumulated * alloc
       total_alloc += alloc
     end
 
@@ -249,9 +285,9 @@ class Portfolio < ApplicationRecord
     data = {}
 
     fund_investments.includes(:investment_fund, :applications).each do |fi|
-      fund_name      = fi.investment_fund.fund_name
+      fund_name = fi.investment_fund.fund_name
       data[fund_name] = []
-      running_quotas  = 0
+      running_quotas = 0
 
       fi.applications.order(:cotization_date).each do |app|
         next unless app.cotization_date.present? && app.number_of_quotas.present?
@@ -283,5 +319,45 @@ class Portfolio < ApplicationRecord
   # Returns:: - An array of searchable association names.
   def self.ransackable_associations(auth_object = nil)
     %w[user]
+  end
+
+  private
+
+  # == reconstruct_quotas_at
+  #
+  # @author Moisés Reis
+  #
+  # Calculates the net number of quotas held for a given fund investment
+  # up to and including a specific date, by summing all applications and
+  # subtracting all redemptions cotized on or before that date.
+  #
+  # Parameters:: - *fund_investment* - The FundInvestment record to calculate quotas for.
+  #              - *date*            - The cutoff date for the quota reconstruction.
+  #
+  # Returns:: - The net quota balance as a BigDecimal.
+  def reconstruct_quotas_at(fund_investment, date)
+    apps = fund_investment.applications.where("cotization_date <= ?", date).sum(:number_of_quotas)
+    reds = fund_investment.redemptions.where("cotization_date <= ?", date).sum(:redeemed_quotas)
+    BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
+  end
+
+  # == closest_quota_value
+  #
+  # @author Moisés Reis
+  #
+  # Attempts to retrieve the quota value for a fund on a specific date.
+  # If no valuation exists for that exact date, it walks back up to 5
+  # calendar days to account for weekends and market holidays.
+  #
+  # Parameters:: - *cnpj*        - The fund's CNPJ identifier.
+  #              - *target_date* - The preferred date for the quota valuation lookup.
+  #
+  # Returns:: - The quota value as a BigDecimal, or nil if no valuation is found.
+  def closest_quota_value(cnpj, target_date)
+    5.times do |offset|
+      v = FundValuation.find_by(fund_cnpj: cnpj, date: target_date - offset.days)
+      return v.quota_value if v
+    end
+    nil
   end
 end

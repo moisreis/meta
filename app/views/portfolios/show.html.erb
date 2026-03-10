@@ -57,10 +57,8 @@
   %>
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Retorno de investimento",
+          card_title: "Rendimento Acumulado do Ano",
           card_icon: "wallet",
-          card_data: normalize_card_percentage(@portfolio.portfolio_return_percentage),
-          card_data_icon: card_data_icon_for(@portfolio.total_gain),
           status: card_status_trend_for(@portfolio.total_gain)
         ) do
     %>
@@ -85,6 +83,15 @@
         ) do
     %>
       <%= normalize_percentage(@portfolio_yearly_return) %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Rentabilidade dos Mês Atual",
+          card_icon: "trending-up",
+        ) do
+    %>
+      <%= normalize_card_percentage(@portfolio.portfolio_return_percentage) %>
     <% end %>
 
     <%= render(

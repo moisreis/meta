@@ -40,6 +40,7 @@
           <%= render "partials/modules/select",
                      f: f,
                      name: :portfolio_id,
+                     selected: @portfolio&.id,
                      options_collection: current_user.portfolios.map { |p| [p.name, p.id] },
                      desc: nil,
                      is_half_width: false,
