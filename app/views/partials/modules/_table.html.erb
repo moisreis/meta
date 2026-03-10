@@ -92,16 +92,17 @@
           </td>
         <% end %>
 
-        <%# [ActionButton] Conditionally renders action menu if any routes exist for this model.
-            #                Only shows the menu button and options if at least one action is available.
-            %>
         <% if show_action_menu?(model) %>
           <td class="min-h-9 flex flex-col justify-center items-center">
 
             <%# [ActionButton] Refers to the ActionMenu. %>
             <%= button_tag type: 'button',
                            class: 'button button-ghost button-small row-options-button',
-                           data: { tippy_target: "#options-menu-#{model.id}" } do
+                           data: {
+                             controller: "tippy",
+                             tippy_type_value: "menu",
+                             tippy_target: "#options-menu-#{model.id}"
+                           } do
             %>
               <%= inline_svg_tag "icons/ellipsis.svg" %>
             <% end %>
@@ -109,19 +110,15 @@
             <!-- [ActionMenu] Conditionally rendered action buttons based on available routes -->
             <div class="options-content" id="options-menu-<%= model.id %>" style="display: none;">
               <div class="flex flex-col gap-1.5 w-full justify-start items-start">
-
-                <%# [Edit Button] Only shown if edit route exists for this model %>
                 <% if route_exists_for?(model, :edit) %>
                   <%= link_to edit_polymorphic_path(model),
                               data: { turbo: false },
-                              class: 'button button-ghost button-small w-full justify-start' do
-                  %>
+                              class: 'button button-ghost button-small w-full justify-start' do %>
                     <%= inline_svg_tag "icons/settings-2.svg" %>
                     <%= content_tag :span, "Editar" %>
                   <% end %>
                 <% end %>
 
-                <%# [Show Button] Only shown if show route exists for this model %>
                 <% if route_exists_for?(model, :show) %>
                   <%= link_to polymorphic_path(model),
                               data: { turbo: false },
@@ -144,7 +141,6 @@
             </div>
           </td>
         <% else %>
-          <%# [EmptyCell] Renders empty cell when no actions are available %>
           <td></td>
         <% end %>
       </tr>
