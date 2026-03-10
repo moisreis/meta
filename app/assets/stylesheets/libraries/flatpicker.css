@@ -157,7 +157,7 @@
  * the accent input surface used elsewhere in the app.
  */
 .flatpickr-current-month .numInputWrapper {
-    background-color: var(--color-accent) !important;
+    background-color: var(--color-input) !important;
     border: 1px solid var(--color-border) !important;
     border-radius: var(--radius-base) !important;
     margin-left: calc(var(--spacing) * 1.5) !important;
@@ -219,8 +219,10 @@
 }
 
 .flatpickr-weekday {
-    font-size: var(--text-sm) !important;
+    font-size: var(--text-xs) !important;
     font-weight: 600 !important;
+    font-family: var(--font-mono) !important;
+    text-transform: uppercase;
     color: var(--color-muted) !important;
 }
 
@@ -238,7 +240,7 @@
  */
 .dayContainer {
     padding: calc(var(--spacing) * 3);
-    background-color: var(--color-table-bg) !important;
+    background-color: var(--color-input) !important;
     border-radius: var(--radius-base) !important;
 }
 
@@ -278,10 +280,10 @@
  * and a subtle primary border. Clearly distinct from hover and selected states.
  */
 .flatpickr-day.today {
-    background-color: var(--color-primary-50);
+    background-color: var(--color-primary-950);
     border-radius: var(--radius-base) !important;
-    color: var(--color-primary-900);
-    border-color: var(--color-primary-100);
+    color: var(--color-primary-50);
+    border-color: transparent;
 }
 
 
@@ -294,6 +296,6 @@
  */
 .flatpickr-day.selected {
     background-color: var(--color-primary-900) !important;
-    color: var(--color-primary-50) !important;
-    border-color: var(--color-primary-900) !important;
+    color: var(--color-primary-50);
+    border-color: transparent;
 }

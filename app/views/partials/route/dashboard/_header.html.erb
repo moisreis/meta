@@ -1,13 +1,30 @@
-<%# Explanation:: This is the sticky top bar of the container.
-    #               It stays at the top while you scroll and uses a
-    #               blur effect to look modern against the background.
-    %>
+<%#
+# Partial Name: portfolio_header.erb
+# Date: 2026-03-10
+# Author: Moisés Reis
+# Package: Portfolios
+#
+# Description:: This partial represents the persistent top navigation bar used
+#               within the portfolio management interface. It provides tools
+#               for switching between portfolios, triggering performance
+#               calculations, and exporting data reports to PDF files.
+#
+# Locals:: @param [Portfolio] portfolio - The current portfolio instance being viewed.
+#          @param [Date] reference_date - The date used to pre-fill calculation forms.
+#
+# Notes:: The sticky behavior and background blur are handled by CSS classes to
+#         ensure the bar remains accessible while scrolling through data.
+%>
+
+<%# ============================================================= %>
+<%# Portfolio Selection & Quick View %>
+<%# ============================================================= %>
+
+<%# This container groups the portfolio dropdown and the direct link
+    to view details. It allows the user to quickly navigate between
+    different investment sets managed within their account. %>
 <div class="h-16 px-8 flex flex-row justify-between gap-6">
 
-  <%# Explanation:: Portfolio selector dropdown on the left side.
-      #               Allows users to switch between their portfolios
-      #               and view the selected portfolio details.
-      %>
   <div class="flex flex-row items-center gap-3">
     <%= form_with url: "#",
                   method: :get,
@@ -17,6 +34,9 @@
       <div class="relative flex flex-col justify-start gap-1.5">
         <div class="relative [&>div>div]:!w-[350px]">
 
+          <%# This partial renders the searchable select input.
+              It lists all portfolios owned by the current user
+              to enable rapid context switching. %>
           <%= render "partials/modules/select",
                      f: f,
                      name: :portfolio_id,
@@ -28,6 +48,9 @@
         </div>
       </div>
 
+      <%# This link navigates the user to the specific portfolio page.
+          Its destination is updated dynamically by JavaScript when
+          the dropdown value changes. %>
       <%= link_to portfolio_path(current_user.portfolios.first&.id || 0),
                   id: "view-portfolio-link",
                   class: "button button-outline button-small",
@@ -39,22 +62,25 @@
         <%= content_tag :span, "Ver carteira" %>
       <% end %>
     <% end %>
-
-
   </div>
 
-  <div class="flex flex-row items-center gap-6">
+  <%# ============================================================= %>
+  <%# Performance Calculations & PDF Export %>
+  <%# ============================================================= %>
 
+  <%# This section contains administrative actions for the portfolio.
+      It only appears if a valid portfolio record is currently selected
+      and successfully saved in the database. %>
+  <div class="flex flex-row items-center gap-6">
     <div class="flex flex-row gap-6 items-center justify-end">
 
       <% if @portfolio.present? && @portfolio.persisted? %>
+
         <%= form_with url: run_calculations_portfolio_path(@portfolio),
                       method: :post,
                       model: false,
                       local: true,
                       class: "flex !flex-row items-center gap-2" do |form| %>
-
-          <%# Use the partial for the month field %>
           <%= render "partials/modules/input-field",
                      f: form,
                      name: :month,
@@ -63,11 +89,10 @@
                      value: @reference_date&.strftime("%Y-%m") || Date.current.strftime("%Y-%m"),
                      label: nil,
                      desc: nil %>
-
           <%= button_tag type: :submit,
                          class: "button button-outline button-small flex items-center gap-1" do %>
             <%= inline_svg_tag("icons/refresh-cw.svg", class: "size-4") %>
-            <span>Calcular Performance</span>
+            <%= content_tag :span, "Calcular Performance" %>
           <% end %>
         <% end %>
 
@@ -75,66 +100,12 @@
                       method: :get,
                       local: true,
                       class: "flex !flex-row items-center gap-2" do |f| %>
-
-          <%= render "partials/modules/select",
-                     f: f,
-                     name: :day,
-                     label: nil,
-                     is_small: true,
-                     desc: nil,
-                     is_long: true,
-                     options_collection: options_for_select(
-                       (1..31).map { |d| [d.to_s.rjust(2, "0"), d] },
-                       Date.current.day
-                     ) %>
-
-          <%= render "partials/modules/select",
-                     f: f,
-                     name: :month,
-                     label: nil,
-                     is_small: true,
-                     desc: nil,
-                     is_long: true,
-                     options_collection: options_for_select(
-                       I18n.t("date.month_names").compact.each_with_index.map { |n, i| [n.capitalize, i + 1] },
-                       Date.current.month
-                     ) %>
-
-          <%= render "partials/modules/select",
-                     f: f,
-                     name: :year,
-                     label: nil,
-                     is_small: true,
-                     desc: nil,
-                     is_long: true,
-                     options_collection: options_for_select(
-                       (2020..Date.current.year).to_a.reverse.map { |y| [y, y] },
-                       Date.current.year
-                     ) %>
-
           <%= f.button type: "submit", class: "button button-primary button-small self-end" do %>
             <%= inline_svg_tag("icons/file-attachment.svg") %>
             <%= content_tag :span, "Exportar em PDF" %>
           <% end %>
-
         <% end %>
       <% end %>
     </div>
   </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const portfolioSelect = document.getElementById('portfolio-select');
-        const viewPortfolioLink = document.getElementById('view-portfolio-link');
-
-        if (portfolioSelect && viewPortfolioLink) {
-            portfolioSelect.addEventListener('change', function () {
-                const selectedPortfolioId = this.value;
-                if (selectedPortfolioId) {
-                    viewPortfolioLink.href = `/portfolios/${selectedPortfolioId}`;
-                }
-            });
-        }
-    });
-</script>

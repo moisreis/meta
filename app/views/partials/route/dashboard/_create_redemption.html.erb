@@ -63,9 +63,8 @@
                    placeholder: "5000.00",
                    is_half_width: false,
                    desc: "O valor total (R$) recebido no resgate após cotização.",
-                   field_type: :number_field,
                    icon_name: "banknote-arrow-down",
-                   step: :any %>
+                   currency_mask: true %>
 
         <%= form.hidden_field :redemption_yield, value: 0 %>
       <% end %>
@@ -75,14 +74,12 @@
                  fieldset_title: "Prazos e Natureza",
                  fieldset_desc: "Configure o cronograma da operação e a classificação deste resgate." do %>
 
-        <%= render "partials/modules/input-field",
+        <%= render "partials/modules/date-field",
                    f: form,
                    name: :cotization_date,
                    label: "Data de Cotização",
-                   placeholder: "DD/MM/AAAA",
                    is_half_width: false,
                    desc: "Data em que o valor da cota do resgate foi consolidado.",
-                   field_type: :date_field,
                    icon_name: "calculator" %>
 
         <%= form.hidden_field :request_date %>

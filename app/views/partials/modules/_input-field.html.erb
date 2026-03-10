@@ -18,7 +18,9 @@
 <%# Explanation:: Defines whether the field is inactive.
   #               Prevents interaction or modifies visual state when true.
   %>
+<% field_type ||= :text_field %>
 <% is_inactive ||= nil %>
+<% currency_mask ||= false %>
 
 <%
   has_error =
@@ -179,7 +181,6 @@
 
     <% placeholder ||= nil %>
 
-    <% field_type ||= :text_field %>
 
     <%
       error_input_classes = has_error ? [
@@ -199,26 +200,52 @@
           (is_small ? '!h-fit !w-fit !px-2.5 !py-0.75' : nil)
         ].compact.join(" ")
     %>
-    <%= f.send(
-          field_type,
-          name,
-          placeholder: placeholder,
-          class: full_input_classes,
-          step: step,
-          inputmode: inputmode,
-          aria: {
-            describedby: (desc.present? || has_error) ? "#{name}-desc" : nil,
-            invalid: has_error
-          },
-          autocomplete: "off"
-        )
-    %>
+    <% if currency_mask %>
+      <%# Wrapper com Stimulus controller %>
+      <div data-controller="currency-mask">
+
+        <%# Input visível — apenas display, não submetido %>
+        <input
+          type="text"
+          placeholder="<%= placeholder %>"
+          class="<%= full_input_classes %> !font-mono"
+          inputmode="numeric"
+          autocomplete="off"
+          data-currency-mask-target="display"
+          data-action="input->currency-mask#format"
+          aria-describedby="<%= (desc.present? || has_error) ? "#{name}-desc" : nil %>"
+          aria-invalid="<%= has_error %>"
+          />
+
+        <%# Hidden field — submetido com o valor numérico limpo %>
+        <%= f.hidden_field name,
+                           data: { "currency-mask-target": "hidden" }
+        %>
+
+      </div>
+    <% else %>
+      <%= f.send(
+            field_type,
+            name,
+            placeholder: placeholder,
+            class: full_input_classes,
+            step: step,
+            inputmode: inputmode,
+            aria: {
+              describedby: (desc.present? || has_error) ? "#{name}-desc" : nil,
+              invalid: has_error
+            },
+            autocomplete: "off"
+          )
+      %>
+    <% end %>
 
     <% if icon_name.present? %>
-
-      <%= inline_svg_tag "icons/#{icon_name}.svg",
-                         class: "absolute size-4 right-3 top-1/2 -translate-y-1/2 stroke-muted"
-      %>
+      <div class="absolute right-0 top-1/2 -translate-y-1/2 w-9 rounded-tr-base rounded-tb-base bg-neutral-100 h-full flex items-center justify-center border-l border-border">
+        <%= inline_svg_tag "icons/#{icon_name}.svg",
+                           class: "size-4 stroke-muted"
+        %>
+      </div>
     <% end %>
 
   </div>

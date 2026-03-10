@@ -18,128 +18,6 @@
   #          ensures consistent behavior across pages using the same widgets.
   %>
 
-<!-- [Libary] TomSelect -->
-<script>
-    var settings = {
-        create: false,
-        allowEmptyOption: true,
-        maxItems: 1,
-        sortField: {
-            field: 'text',
-            direction: 'asc'
-        },
-        placeholder: 'Escolha uma opção',
-        searchField: ['text'],
-        plugins: {
-            dropdown_input: {},
-        },
-        render: {
-            option: function (data, escape) {
-                return '<div class="option">' + escape(data.text) + '</div>';
-            }
-        }
-    };
-
-    document.querySelectorAll('.js-tomselect').forEach(function (selectEl) {
-        new TomSelect(selectEl, settings);
-    });
-</script>
-
-<!-- [Libary] Flatpickr -->
-<script>
-    flatpickr(".datetime", {
-        dateFormat: "d/m/Y",
-        altInput: true,
-        altFormat: "d/m/Y",
-        allowInput: false,
-        disableMobile: true,
-        monthSelectorType: "static",
-        yearSelectorType: "static",
-        prevArrow: `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
-                   `,
-        nextArrow: `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
-                   `,
-
-        locale: {
-            firstDayOfWeek: 1,
-            weekdays: {
-                shorthand: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
-                longhand: [
-                    "Domingo",
-                    "Segunda-feira",
-                    "Terça-feira",
-                    "Quarta-feira",
-                    "Quinta-feira",
-                    "Sexta-feira",
-                    "Sábado",
-                ]
-            },
-            months: {
-                shorthand: [
-                    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-                    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-                ],
-                longhand: [
-                    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-                    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-                ]
-            }
-        }
-    });
-</script>
-
-<!-- [Libary] Tippy.js -->
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-
-        tippy('.row-options-button', {
-
-            content(reference) {
-                const targetSelector = reference.dataset.tippyTarget;
-
-                if (targetSelector) {
-                    const contentElement = document.querySelector(targetSelector);
-
-                    return contentElement ? contentElement.innerHTML : 'Menu not found';
-                }
-                return 'Error loading menu content.';
-            },
-
-            allowHTML: true,
-            placement: 'bottom',
-            theme: 'meta',
-            arrow: false,
-            interactive: true,
-            offset: [4, 0]
-        });
-
-        tippy('.section-desc-button', {
-
-            content(reference) {
-                const targetSelector = reference.dataset.tippyTarget;
-
-                if (targetSelector) {
-                    const contentElement = document.querySelector(targetSelector);
-
-                    return contentElement ? contentElement.innerHTML : 'Description not found';
-                }
-                return 'Error loading description content.';
-            },
-
-            appendTo: () => document.body,
-
-            allowHTML: true,
-            placement: 'right',
-            theme: 'meta',
-            arrow: false,
-            interactive: false,
-            offset: [0, 4]
-        });
-    });
-</script>
-
 <!-- [Script] sidebarFilters -->
 <script>
     let sidebar;
@@ -176,77 +54,7 @@
     document.addEventListener('DOMContentLoaded', setupEventListeners);
 </script>
 
-<script>
-    document.addEventListener("click", function (event) {
-        const button = event.target.closest(".js-export-chart");
-        if (!button) return;
-
-        event.preventDefault();
-
-        const chartId = button.dataset.chartId;
-        const rawTitle = button.dataset.chartTitle || "";
-
-        const chart = Chartkick.charts[chartId];
-        if (!chart || !chart.getChartObject) return;
-
-        const sourceCanvas = chart.getChartObject().canvas;
-
-        const padding = 32;
-        const headerHeight = 48;
-
-        const exportCanvas = document.createElement("canvas");
-        exportCanvas.width = sourceCanvas.width + padding * 2;
-        exportCanvas.height = sourceCanvas.height + padding * 2 + headerHeight;
-
-        const ctx = exportCanvas.getContext("2d");
-
-        // Background
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
-        // Header text style
-        ctx.fillStyle = "#8a8a8a"; // gray-900
-        ctx.font = "400 14px Geist Pixel Square, system-ui, sans-serif";
-        ctx.textBaseline = "middle";
-
-        // Title (TOP-LEFT, UPPERCASE)
-        ctx.textAlign = "left";
-        ctx.fillText(
-            rawTitle.toUpperCase(),
-            padding,
-            headerHeight / 2
-        );
-
-        // Date/time (TOP-RIGHT, pt-BR)
-        const formattedDate = new Date().toLocaleString("pt-BR", {
-            dateStyle: "short",
-            timeStyle: "short"
-        });
-
-        ctx.textAlign = "right";
-        ctx.fillText(
-            formattedDate,
-            exportCanvas.width - padding,
-            headerHeight / 2
-        );
-
-        // Draw chart
-        ctx.drawImage(
-            sourceCanvas,
-            padding,
-            headerHeight + padding
-        );
-
-        // Download
-        const link = document.createElement("a");
-        link.href = exportCanvas.toDataURL("image/png");
-        link.download = `${chartId}.png`;
-        link.click();
-    });
-
-
-</script>
-
+<!-- [Script] portfolioDropdown -->
 <script>
     // Explanation:: This script watches the portfolio dropdown for changes.
     //               When a new option is picked, it updates the button's link.
@@ -285,11 +93,11 @@
     }
 
     function setupApplicationSidebarListeners() {
-        applicationSidebar   = document.getElementById('sidebarApplication');
-        openApplicationBtn   = document.getElementById('openApplicationBtn');
-        closeApplicationBtn  = document.getElementById('closeApplicationBtn');
+        applicationSidebar = document.getElementById('sidebarApplication');
+        openApplicationBtn = document.getElementById('openApplicationBtn');
+        closeApplicationBtn = document.getElementById('closeApplicationBtn');
         cancelApplicationBtn = document.getElementById('cancelApplicationBtn');
-        applicationOverlay   = document.getElementById('applicationOverlay');
+        applicationOverlay = document.getElementById('applicationOverlay');
 
         if (applicationSidebar && openApplicationBtn && closeApplicationBtn) {
             openApplicationBtn.addEventListener('click', openApplicationSidebar);
@@ -297,7 +105,7 @@
             cancelApplicationBtn.addEventListener('click', closeApplicationSidebar);
             applicationOverlay.addEventListener('click', closeApplicationSidebar);
 
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') closeApplicationSidebar();
             });
         } else {
@@ -329,11 +137,11 @@
     }
 
     function setupRedemptionSidebarListeners() {
-        redemptionSidebar   = document.getElementById('sidebarRedemption');
-        openRedemptionBtn   = document.getElementById('openRedemptionBtn');
-        closeRedemptionBtn  = document.getElementById('closeRedemptionBtn');
+        redemptionSidebar = document.getElementById('sidebarRedemption');
+        openRedemptionBtn = document.getElementById('openRedemptionBtn');
+        closeRedemptionBtn = document.getElementById('closeRedemptionBtn');
         cancelRedemptionBtn = document.getElementById('cancelRedemptionBtn');
-        redemptionOverlay   = document.getElementById('redemptionOverlay');
+        redemptionOverlay = document.getElementById('redemptionOverlay');
 
         if (redemptionSidebar && openRedemptionBtn && closeRedemptionBtn) {
             openRedemptionBtn.addEventListener('click', openRedemptionSidebar);
@@ -341,7 +149,7 @@
             cancelRedemptionBtn.addEventListener('click', closeRedemptionSidebar);
             redemptionOverlay.addEventListener('click', closeRedemptionSidebar);
 
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') closeRedemptionSidebar();
             });
         } else {
@@ -350,6 +158,67 @@
     }
 
     document.addEventListener('DOMContentLoaded', setupRedemptionSidebarListeners);
+</script>
+
+<!-- [Script] sidebarCheckingAccount -->
+<script>
+    let checkingAccountSidebar;
+    let openCheckingAccountBtn;
+    let closeCheckingAccountBtn;
+    let cancelCheckingAccountBtn;
+    let checkingAccountOverlay;
+
+    function openCheckingAccountSidebar() {
+        checkingAccountSidebar.classList.add('opacity-100');
+        checkingAccountSidebar.classList.remove('opacity-0', 'pointer-events-none');
+        checkingAccountOverlay.classList.remove('hidden');
+    }
+
+    function closeCheckingAccountSidebar() {
+        checkingAccountSidebar.classList.remove('opacity-100');
+        checkingAccountSidebar.classList.add('opacity-0', 'pointer-events-none');
+        checkingAccountOverlay.classList.add('hidden');
+    }
+
+    function setupCheckingAccountSidebarListeners() {
+        checkingAccountSidebar    = document.getElementById('sidebarCheckingAccount');
+        openCheckingAccountBtn    = document.getElementById('openCheckingAccountBtn');
+        closeCheckingAccountBtn   = document.getElementById('closeCheckingAccountBtn');
+        cancelCheckingAccountBtn  = document.getElementById('cancelCheckingAccountBtn');
+        checkingAccountOverlay    = document.getElementById('checkingAccountOverlay');
+
+        if (checkingAccountSidebar && openCheckingAccountBtn && closeCheckingAccountBtn) {
+            openCheckingAccountBtn.addEventListener('click', openCheckingAccountSidebar);
+            closeCheckingAccountBtn.addEventListener('click', closeCheckingAccountSidebar);
+            cancelCheckingAccountBtn.addEventListener('click', closeCheckingAccountSidebar);
+            checkingAccountOverlay.addEventListener('click', closeCheckingAccountSidebar);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeCheckingAccountSidebar();
+            });
+        } else {
+            console.error("Checking account sidebar setup failed: one or more IDs were not found in the HTML.");
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', setupCheckingAccountSidebarListeners);
+</script>
+
+<!-- [Script] portfolioDropdownSync -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const portfolioSelect = document.getElementById('portfolio-select');
+        const viewPortfolioLink = document.getElementById('view-portfolio-link');
+
+        if (portfolioSelect && viewPortfolioLink) {
+            portfolioSelect.addEventListener('change', function () {
+                const selectedPortfolioId = this.value;
+                if (selectedPortfolioId) {
+                    viewPortfolioLink.href = `/portfolios/${selectedPortfolioId}`;
+                }
+            });
+        }
+    });
 </script>
 
 

@@ -23,6 +23,7 @@
   #         Prevents interaction or modifies visual state when true.
   %>
 <% is_inactive ||= nil %>
+<% field_type ||= :text_field %>
 
 <%# [Variable] Defines the CSS classes for the input label.
   #            Controls spacing, font style, and disabled appearance.
@@ -47,7 +48,7 @@
 <%# [Variable] Defines the CSS classes for the input element.
   #            Handles spacing, borders, focus rings, colors, and disabled states.
   %>
-<% input_classes = "placeholder:text-muted bg-table-bg border border-border pr-6 h-9 w-full min-w-0 rounded-base px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
+<% input_classes = "placeholder:text-muted bg-input border border-border pr-6 h-9 w-full min-w-0 rounded-base px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm aria-invalid:ring-danger-600/20 aria-invalid:border-danger" %>
 
 <%# [Variable] Defines the CSS classes for the input element.
   #            It handles the state of the element when it is being hovered.
@@ -82,20 +83,17 @@
   %>
   <div class="relative <%= is_half_width ? '!w-1/2' : '' %>">
     <% placeholder ||= nil %>
-    <% if placeholder.present? %>
-      <%= f.send(field_type || :date_field,
-                 name,
-                 placeholder: placeholder,
-                 class: "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus} datetime",
-                 aria: { describedby: "#{name}-desc" })
-      %>
-    <% else %>
-      <%= f.send(field_type || :date_field,
-                 name,
-                 class: "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus} datetime",
-                 aria: { describedby: "#{name}-desc" })
-      %>
-    <% end %>
+<%# depois: um único f.send %>
+    <%= f.send(
+          field_type || :date_field,
+          name,
+          placeholder: "Dia/Mês/Ano",
+          class: "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus}",
+          data: { controller: "datepicker" },
+          aria: { describedby: "#{name}-desc" },
+          autocomplete: "off"
+        )
+    %>
     <%= inline_svg_tag "icons/#{icon_name}.svg",
                        class: "absolute size-4 right-3 top-1/2 -translate-y-1/2 stroke-muted"
     %>

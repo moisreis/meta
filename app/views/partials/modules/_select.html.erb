@@ -67,11 +67,9 @@
   <% end %>
   <div class="relative <%= is_half_width ? '!w-1/2' : '' %> <%= is_long ? '!w-32' : '' %> ">
     <%= f.select name, options_collection, {}, {
-      class: [
-        "js-tomselect",
-        (is_small ? "input-small" : nil)
-      ].compact.join(" "),
+      class: (is_small ? "input-small" : nil),
       disabled: is_inactive,
+      data: { controller: "tom-select" },
       aria: { describedby: "#{name}-desc", invalid: has_errors }
     } %>
     <%= inline_svg_tag "icons/chevron-down.svg",

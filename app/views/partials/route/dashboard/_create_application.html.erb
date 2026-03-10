@@ -59,12 +59,10 @@
                    f: form,
                    name: :financial_value,
                    label: "Valor aplicado",
-                   placeholder: "5000.00",
-                   is_half_width: false,
+                   placeholder: "0,00",
                    desc: "O valor total (R$) investido na transação.",
-                   field_type: :text_field,
                    icon_name: "banknote",
-                   step: 0.01 %>
+                   currency_mask: true %>
       <% end %>
 
       <%# Cronograma %>
@@ -72,14 +70,12 @@
                  fieldset_title: "Cronograma da Operação",
                  fieldset_desc: "Registre as datas importantes de solicitação, cotização e liquidação financeira." do %>
 
-        <%= render "partials/modules/input-field",
+        <%= render "partials/modules/date-field",
                    f: form,
                    name: :cotization_date,
                    label: "Data de Cotização",
-                   placeholder: "DD/MM/AAAA",
                    is_half_width: false,
                    desc: "Data em que a cota foi calculada e a transação efetivada.",
-                   field_type: :date_field,
                    icon_name: "calculator" %>
       <% end %>
 
