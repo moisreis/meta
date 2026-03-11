@@ -7,7 +7,7 @@
       default: "%d/%m/%Y"
       short: "%d de %B"
       long: "%d de %B de %Y"
-      month_year: "%B de %Y"   # ← add this line
+      month_year: "%b/%Y"   # ← add this line
 
     day_names:
       - Domingo

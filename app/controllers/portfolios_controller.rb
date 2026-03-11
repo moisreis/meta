@@ -7,7 +7,7 @@
 # names, causing Ruby to emit "already initialized constant" warnings and, in
 # some load-order scenarios, silently clobbering the other controller's whitelist.
 PORTFOLIOS_ALLOWED_SORT_COLUMNS = %w[id name created_at updated_at].freeze
-PORTFOLIOS_ALLOWED_DIRECTIONS   = %w[asc desc].freeze
+PORTFOLIOS_ALLOWED_DIRECTIONS = %w[asc desc].freeze
 
 # === portfolios_controller.rb
 #
@@ -26,7 +26,7 @@ class PortfoliosController < ApplicationController
   # It now uses Portfolio.for_user(current_user) so the find raises ActiveRecord::RecordNotFound
   # (caught by rescue_from below) for portfolios the user cannot see at all.
   before_action :set_portfolio, only: %i[show edit update destroy monthly_report run_calculations]
-  
+
   # FIX: Explicit manage-level authorisation for mutating actions. Reading (show) is
   # already gated by for_user; modification requires ownership or crud permission.
   before_action :authorize_portfolio_management!, only: %i[edit update destroy run_calculations monthly_report]
@@ -69,7 +69,7 @@ class PortfoliosController < ApplicationController
 
     @total_items = filtered.count
 
-    sort      = PORTFOLIOS_ALLOWED_SORT_COLUMNS.include?(params[:sort]) ? params[:sort] : "id"
+    sort = PORTFOLIOS_ALLOWED_SORT_COLUMNS.include?(params[:sort]) ? params[:sort] : "id"
     direction = PORTFOLIOS_ALLOWED_DIRECTIONS.include?(params[:direction]) ? params[:direction] : "asc"
 
     @portfolios = @models = filtered.order("portfolios.#{sort} #{direction}").page(params[:page]).per(14)
@@ -79,7 +79,7 @@ class PortfoliosController < ApplicationController
 
   def show
     @new_application = Application.new
-    @new_redemption  = Redemption.new
+    @new_redemption = Redemption.new
 
     @reference_date = params[:reference_date].present? ? Date.parse(params[:reference_date]) : Date.current
 
@@ -91,8 +91,8 @@ class PortfoliosController < ApplicationController
     end
 
     @institution_distribution = fund_investments
-                                   .group_by { |fi| fi.investment_fund.administrator_name }
-                                   .map { |admin, investments| [admin, investments.sum { |fi| fi.percentage_allocation || 0 }] }
+                                  .group_by { |fi| fi.investment_fund.administrator_name }
+                                  .map { |admin, investments| [admin, investments.sum { |fi| fi.percentage_allocation || 0 }] }
 
     @monthly_flows = calculate_monthly_flows(@portfolio)
 
@@ -105,26 +105,22 @@ class PortfoliosController < ApplicationController
     if @recent_performance.empty?
       latest_period = @portfolio.performance_histories.maximum(:period)
       if latest_period
-        @reference_period   = latest_period
+        @reference_period = latest_period
         @recent_performance = @portfolio.performance_histories
                                         .where(period: @reference_period)
                                         .includes(fund_investment: :investment_fund)
       end
     end
 
-    @recent_performance       = @recent_performance.order("monthly_return DESC")
-    @portfolio_yearly_return  = @portfolio.portfolio_yearly_return_percentage(@reference_period)
+    @recent_performance = @recent_performance.order("monthly_return DESC")
+    @portfolio_yearly_return = @portfolio.portfolio_yearly_return_percentage(@reference_period)
 
     @equity_evolution = @portfolio.value_timeline(12)
 
-    @monthly_earnings_history = @portfolio.performance_histories
-                                          .where("period > ?", 12.months.ago)
-                                          .group_by { |ph| ph.period.beginning_of_month }
-                                          .map { |date, phs| [date.strftime("%b/%y"), phs.sum(&:earnings)] }
-                                          .sort_by { |date_str, _| Date.strptime(date_str, "%b/%y") }
+    @monthly_earnings_history = @portfolio.monthly_earnings_history
 
-    @total_earnings       = BigDecimal("0")
-    @portfolio_return     = BigDecimal("0")
+    @total_earnings = BigDecimal("0")
+    @portfolio_return = BigDecimal("0")
     @portfolio_12m_return = BigDecimal("0")
 
     if @recent_performance.any?
@@ -139,14 +135,14 @@ class PortfoliosController < ApplicationController
       end
 
       total_initial_balance = @recent_performance.sum { |p| effective_initial_balance.call(p) }
-      @total_earnings       = @recent_performance.sum(:earnings)
+      @total_earnings = @recent_performance.sum(:earnings)
 
       if total_initial_balance > 0
         @portfolio_return = (@total_earnings / total_initial_balance) * 100
 
         weighted_12m = BigDecimal("0")
         @recent_performance.each do |perf|
-          weight        = effective_initial_balance.call(perf) / total_initial_balance
+          weight = effective_initial_balance.call(perf) / total_initial_balance
           weighted_12m += (perf.last_12_months_return || 0) * weight
         end
 
@@ -204,27 +200,35 @@ class PortfoliosController < ApplicationController
   end
 
   def monthly_report
-    day   = params[:day].presence&.to_i
-    month = params[:month].to_i
-    year  = params[:year].to_i
+    day = params[:day].presence&.to_i
+    month = params[:month].presence&.to_i
+    year = params[:year].presence&.to_i
 
-    reference_date = if day
-                       begin
-                         Date.new(year, month, day)
-                       rescue ArgumentError
+    reference_date = if month && year
+                       if day
+                         begin
+                           Date.new(year, month, day)
+                         rescue ArgumentError
+                           Date.new(year, month, -1)
+                         end
+                       else
                          Date.new(year, month, -1)
                        end
                      else
-                       Date.new(year, month, -1)
+                       Date.current.end_of_month
                      end
 
-    generator = PortfolioMonthlyReportGenerator.new(@portfolio, reference_date)
-    pdf_bytes = generator.generate
-
-    send_data pdf_bytes,
-              filename:    "relatorio_#{@portfolio.id}_#{reference_date.strftime('%Y-%m-%d')}.pdf",
-              type:        "application/pdf",
-              disposition: "inline"
+    begin
+      generator = PortfolioMonthlyReportGenerator.new(@portfolio, reference_date)
+      pdf_bytes = generator.generate
+      send_data pdf_bytes,
+                filename: "relatorio_#{@portfolio.id}_#{reference_date.strftime('%Y-%m-%d')}.pdf",
+                type: "application/pdf",
+                disposition: "inline"
+    rescue => e
+      Rails.logger.error("[monthly_report] #{e.class}: #{e.message}\n#{e.backtrace.first(10).join("\n")}")
+      raise
+    end
   end
 
   # =============================================================
@@ -259,13 +263,13 @@ class PortfoliosController < ApplicationController
   end
 
   def grant_permission_if_present
-    shared_user_id   = params.dig(:portfolio, :shared_user_id)
+    shared_user_id = params.dig(:portfolio, :shared_user_id)
     permission_level = params.dig(:portfolio, :grant_crud_permission) || "read"
 
     return unless shared_user_id.present?
 
     UserPortfolioPermission.find_or_create_by!(
-      user_id:      shared_user_id,
+      user_id: shared_user_id,
       portfolio_id: @portfolio.id
     ) do |p|
       p.permission_level = permission_level
@@ -273,9 +277,10 @@ class PortfoliosController < ApplicationController
   end
 
   def calculate_monthly_flows(portfolio)
-    monthly_data = 12.times.map do |i|
-      month_start = i.months.ago.beginning_of_month
-      month_end   = month_start.end_of_month
+    all_months = (1..12).map { |m| Date.new(Date.current.year, m, 1) }
+
+    monthly_data = all_months.map do |month_start|
+      month_end = month_start.end_of_month
 
       applications_sum = Application
                            .joins(:fund_investment)
@@ -289,8 +294,8 @@ class PortfoliosController < ApplicationController
                           .where(cotization_date: month_start..month_end)
                           .sum(:redeemed_liquid_value)
 
-      { month: month_start.strftime("%b/%Y"), applications: applications_sum, redemptions: redemptions_sum }
-    end.reverse
+      { month: month_start.strftime("%b/%y"), applications: applications_sum, redemptions: redemptions_sum }
+    end
 
     [
       { name: "Aplicações", data: monthly_data.map { |m| [m[:month], m[:applications]] } },

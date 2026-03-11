@@ -268,7 +268,7 @@ class Portfolio < ApplicationRecord
     timeline = all_months.map do |month|
       running_total += BigDecimal((app_by_month[month] || 0).to_s)
       running_total -= BigDecimal((red_by_month[month] || 0).to_s)
-      [month, running_total]
+      [month.strftime("%b/%y"), running_total]
     end
 
     timeline.last(months_back)
@@ -321,6 +321,74 @@ class Portfolio < ApplicationRecord
     %w[user]
   end
 
+  # == yearly_earnings
+  #
+  # @author Moisés Reis
+  #
+  # Calculates the total earnings of the portfolio from the beginning of the
+  # year up to the end of the month of the given reference date.
+  #
+  # Parameters:: *reference_date* - The date used to determine the year and month range.
+  #                                 Defaults to Date.current.
+  #
+  # Returns:: - The sum of earnings as a Float, or 0.0 if no records are found.
+  def yearly_earnings(reference_date = Date.current)
+    beginning = reference_date.beginning_of_year
+    ending = reference_date.end_of_month
+
+    performance_histories
+      .where(period: beginning..ending)
+      .sum(:earnings)
+      .to_f
+  end
+
+  # == monthly_earnings_history
+  #
+  # @author Moisés Reis
+  #
+  # Generates a chronological dataset of total earnings for each month of a specific year.
+  # This method ensures every month is represented, defaulting to zero if no data exists.
+  #
+  # Parameters:: - year [Integer] - The calendar year to pull records for, defaulting to the current year.
+  #
+  # Returns:: - Array - A collection of pairs containing the formatted month name and its total earnings.
+  def monthly_earnings_history(year = Date.current.year)
+
+    # # Prepares an array of the first day of every month for the requested year.
+    # # This acts as the skeleton to ensure no months are missing from the result.
+    all_months = (1..12).map { |m| Date.new(year, m, 1) }
+
+    # # Aggregates earnings by grouping performance records into their respective months.
+    # # It calculates the sum of all earnings found within each monthly timeframe.
+    earnings_by_month = performance_histories
+                          .where(period: Date.new(year).beginning_of_year..Date.new(year).end_of_year)
+                          .group_by { |ph| ph.period.beginning_of_month }
+                          .transform_values { |phs| phs.sum(&:earnings) }
+
+    # # Maps the full year of months to the calculated earnings or zero if empty.
+    # # It formats the date into a short month/year string for chart display.
+    all_months.map { |month| [month.strftime("%b/%y"), earnings_by_month[month] || 0] }
+  end
+
+  # == monthly_earnings
+  #
+  # @author Moisés Reis
+  #
+  # Calculates the total earnings of the portfolio within the month of the
+  # given reference date, by summing the earnings field of all performance
+  # history records whose period falls within that month.
+  #
+  # Parameters:: - *reference_date* - The date used to determine the month range.
+  #                                   Defaults to Date.current.
+  #
+  # Returns:: - The sum of earnings as a Float, or 0.0 if no records are found.
+  def monthly_earnings(reference_date = Date.current)
+    performance_histories
+      .where(period: reference_date.beginning_of_month..reference_date.end_of_month)
+      .sum(:earnings)
+      .to_f
+  end
+
   private
 
   # == reconstruct_quotas_at
@@ -345,19 +413,22 @@ class Portfolio < ApplicationRecord
   #
   # @author Moisés Reis
   #
-  # Attempts to retrieve the quota value for a fund on a specific date.
-  # If no valuation exists for that exact date, it walks back up to 5
-  # calendar days to account for weekends and market holidays.
+  # Attempts to retrieve the most recent quota value for a fund on or before
+  # a specific date, excluding weekends. Uses a single SQL query ordered by
+  # date descending instead of iterating day by day, which is more robust
+  # against gaps caused by holidays or missing import runs.
   #
   # Parameters:: - *cnpj*        - The fund's CNPJ identifier.
-  #              - *target_date* - The preferred date for the quota valuation lookup.
+  #              - *target_date* - The upper bound date for the quota valuation lookup.
   #
   # Returns:: - The quota value as a BigDecimal, or nil if no valuation is found.
   def closest_quota_value(cnpj, target_date)
-    5.times do |offset|
-      v = FundValuation.find_by(fund_cnpj: cnpj, date: target_date - offset.days)
-      return v.quota_value if v
-    end
-    nil
+    FundValuation
+      .where(fund_cnpj: cnpj)
+      .where("date <= ? AND EXTRACT(DOW FROM date) NOT IN (0, 6)", target_date)
+      .order(date: :desc)
+      .limit(1)
+      .pluck(:quota_value)
+      .first
   end
 end

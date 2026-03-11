@@ -20,12 +20,12 @@ Chartkick.options = {
   #               sequence of colors used when multiple datasets appear in a graph.
   #               It ensures visual consistency across every chart.
   colors: [
-    "#615fff",
-    "#91d60c",
-    "#9573df",
-    "#4faaa0",
-    "#609ed2",
-    "#00d5be"
+    "rgb(59, 130, 246)",
+    "rgb(16, 185, 129)",
+    "rgb(245, 158, 11)",
+    "rgb(239, 68, 68)",
+    "rgb(139, 92, 246)",
+    "rgb(14, 165, 233)"
   ],
 
   # Explanation:: This adds a currency prefix to values displayed on charts. It formats

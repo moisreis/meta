@@ -1,12 +1,22 @@
 <%#
   # Partial: show.html.erb
-  # Date: 12/3/2025
+  # Date: 2025-12-03
   # Author: Moisés Reis
   # Package: Meta
   #
   # Description: Displays the detailed dashboard view for a single investment portfolio.
   #              It consolidates summary statistics, performance charts, a list of
   #              allocated funds, recent transaction history, and sharing permissions.
+  #
+  # Locals:
+  # @param [Portfolio] @portfolio - The specific portfolio record being displayed.
+  # @param [Array] @monthly_earnings_history - Dataset for the monthly earnings line chart.
+  # @param [Array] @equity_evolution - Dataset representing total value over time.
+  # @param [Array] @monthly_flows - Data for transaction and movement bar/line charts.
+  # @param [Array] @institution_distribution - Data for the institution pie chart.
+  # @param [Array] @allocation_data - Data for the fund allocation distribution chart.
+  # @param [Array] @recent_performance - List of recent performance metrics for individual funds.
+  # @param [Date] @reference_date - The specific date used to filter and calculate values.
   #
   # Usage: - What: Renders the comprehensive detail page for a specific user's investment portfolio.
   #                It allows the owner to monitor and manage their allocated funds and performance.
@@ -16,9 +26,13 @@
   #               and initiating new investment or redemption transactions.
   %>
 
-<%# Explanation:: This layout wrapper organizes the entire page content into a clean
-  #               dashboard structure. It sets the main title and owner description
-  #               so the user always knows which portfolio is being viewed.
+<%# =============================================================
+  # Page Wrapper & Header
+  # ============================================================= %>
+
+<%# This layout wrapper organizes the entire page content into a clean
+  # dashboard structure. It sets the main title and owner description
+  # so the user always knows which portfolio is being viewed.
   %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: @portfolio.name,
@@ -26,6 +40,14 @@
            current_view: "show" do
 %>
 
+  <%# =============================================================
+    # Reference Date Filter
+    # ============================================================= %>
+
+  <%# This section allows the user to select a specific date from the
+    # portfolio's history. Changing this date updates all the metrics
+    # and charts displayed on the page to reflect that period.
+    %>
   <%= render "partials/route/dashboard/section",
              section_title: "Período de Referência",
              columns: 1 do
@@ -51,24 +73,22 @@
     <% end %>
   <% end %>
 
+  <%# =============================================================
+    # Key Performance Indicators (KPIs)
+    # ============================================================= %>
+
+  <%# This grid displays high-level financial metrics such as total gains,
+    # total market value, and percentage returns. It provides an immediate
+    # pulse check on the portfolio's health and growth.
+    %>
   <%= render "partials/route/dashboard/section",
              section_title: "KPIs",
              columns: 4 do
   %>
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Rendimento Acumulado do Ano",
-          card_icon: "wallet",
-          status: card_status_trend_for(@portfolio.total_gain)
-        ) do
-    %>
-      <%= normalize_currency(@portfolio.total_gain) %>
-    <% end %>
-
-    <%= render(
-          "partials/route/dashboard/card",
           card_title: "Total da Carteira",
-          card_icon: "banknote",
+          card_icon: "banknote"
         ) do
     %>
       <%= normalize_currency(@portfolio.total_current_market_value) %>
@@ -76,27 +96,46 @@
 
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Rentabilidade do Ano",
+          card_title: "Rendimento Acumulado do Ano",
+          card_icon: "wallet",
+          status: card_status_trend_for(@portfolio.yearly_earnings)
+        ) do
+    %>
+      <%= normalize_trend(@portfolio.yearly_earnings) %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Rendimento do Mês",
+          card_icon: "wallet",
+          status: card_status_trend_for(@portfolio.estimated_current_month_earnings)
+        ) do %>
+      <%= normalize_trend(@portfolio.estimated_current_month_earnings) %>
+    <% end %>
+
+    <%= render(
+          "partials/route/dashboard/card",
+          card_title: "Rendimento Acumulada do Ano",
           card_icon: "calendar",
           card_data: normalize_card_text("Ano Atual"),
           status: card_status_trend_for(@portfolio_yearly_return)
         ) do
     %>
-      <%= normalize_percentage(@portfolio_yearly_return) %>
+      <%= normalize_trend(@portfolio_yearly_return, format: :percentage) %>
     <% end %>
 
     <%= render(
           "partials/route/dashboard/card",
           card_title: "Rentabilidade dos Mês Atual",
           card_icon: "trending-up",
-        ) do
+          ) do
     %>
-      <%= normalize_card_percentage(@portfolio.portfolio_return_percentage) %>
+      <%= normalize_trend(@portfolio.portfolio_return_percentage, format: :percentage) %>
     <% end %>
 
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Últimos 12 meses",
+          card_title: "Rentabilidade dos Últimos 12 meses",
           card_icon: "trending-up",
           card_data: normalize_card_time_ago(@reference_period),
           status: card_status_trend_for(@portfolio_12m_return)
@@ -106,33 +145,40 @@
     <% end %>
   <% end %>
 
+  <%# =============================================================
+    # Analytical Charts & Visualizations
+    # ============================================================= %>
+
+  <%# This section presents visual data for monthly earnings, asset evolution,
+    # cash flows, and institutional distribution. It helps users identify
+    # patterns and trends in their investment behavior over time.
+    %>
   <%= render "partials/route/dashboard/section",
              section_title: "Análise Detalhada",
              columns: 2 do
   %>
 
     <%= render "partials/groups/chart-list",
-               chart_type: :line_chart,
+               chart_type: :column_chart,
                data_source: @monthly_earnings_history,
                chart_title: "Rendimento Mensal",
                chart_options: {
                  prefix: "R$ ",
                  thousands: ".",
                  decimal: ",",
-                 curve: true
+                 dataset: { borderWidth: 0 }
                }
     %>
 
     <%= render "partials/groups/chart-list",
-               chart_type: :area_chart,
+               chart_type: :column_chart,
                data_source: @equity_evolution,
                chart_title: "Evolução do Patrimônio",
                chart_options: {
                  prefix: "R$ ",
                  thousands: ".",
                  decimal: ",",
-                 points: true,
-                 dataset: { borderWidth: 0 },
+                 dataset: { borderWidth: 0 }
                }
     %>
 
@@ -148,19 +194,16 @@
                  dataset: { borderWidth: 0 }
                }
     %>
-
-    <%= render "partials/groups/chart-list",
-               chart_type: :pie_chart,
-               data_source: @institution_distribution,
-               chart_title: "Distribuição por Instituição",
-               chart_options: {
-                 donut: true,
-                 legend: "bottom",
-                 suffix: "%"
-               }
-    %>
   <% end %>
 
+  <%# =============================================================
+    # Asset Allocation & Transaction Visuals
+    # ============================================================= %>
+
+  <%# These charts specifically illustrate how the portfolio's assets are
+    # divided among different funds and the history of transactions.
+    # It provides clarity on diversification and liquidity changes.
+    %>
   <%= render "partials/route/dashboard/section",
              section_title: "Visualizações",
              columns: 2 do
@@ -178,30 +221,35 @@
     %>
 
     <%= render "partials/groups/chart-list",
-               chart_type: :line_chart,
-               data_source: @monthly_flows,
-               chart_title: "Transações",
+               chart_type: :pie_chart,
+               data_source: @institution_distribution,
+               chart_title: "Distribuição por Instituição",
                chart_options: {
-                 stacked: true,
-                 prefix: "R$ ",
-                 thousands: ".",
-                 decimal: ",",
-                 curve: true,
+                 donut: true,
+                 legend: "bottom",
+                 suffix: "%"
                }
     %>
   <% end %>
 
+  <%# =============================================================
+    # Fund Investment & Performance Tables
+    # ============================================================= %>
+
+  <%# This table lists all active fund investments, showing detailed values
+    # for applications, redemptions, and current market values. It acts
+    # as the primary ledger for individual fund performance.
+    %>
   <%= render "partials/groups/table-list",
              section_title: "Lista de fundos alocados",
              section_desc: "Dados de #{l(@reference_date, format: :long)}",
+             th_descs: Array.new(3, nil) + Array.new(4, "Até #{l(@reference_date, format: :default)}"),
              collection: @portfolio.fund_investments.includes(:investment_fund, :applications, :redemptions),
              action_path: new_fund_investment_path(portfolio_id: @portfolio.id),
              action_name: "Nova alocação",
              headers: [
                "Fundo",
                "Alocação",
-               "Aplicações",
-               "Resgates",
                "Movimentação",
                "Cota mais recente",
                "Valor Final",
@@ -212,8 +260,6 @@
              body_procs: [
                ->(fi) { normalize_title(fi.investment_fund.fund_name) },
                ->(fi) { normalize_percentage(fi.percentage_allocation) },
-               ->(fi) { normalize_currency(fi.total_applications) },
-               ->(fi) { normalize_currency(fi.total_redemptions) },
                ->(fi) { normalize_trend(fi.net_movement) },
                ->(fi) { normalize_currency(fi.investment_fund.quota_value_on(@reference_date)) },
                ->(fi) { normalize_currency(fi.current_market_value(@reference_date)) },
@@ -221,12 +267,16 @@
                ->(fi) { normalize_percentage(fi.period_return_percentage(@reference_date), precision: 4) }
              ] %>
 
+  <%# This secondary table highlights the most recent monthly performance
+    # of the funds, focusing on earnings and percentage returns to help
+    # identify the best-performing assets in the current period.
+    %>
   <% if @recent_performance.any? %>
-
     <%= render(
           "partials/groups/table-list",
           section_title: "Performance dos Fundos",
           collection: @recent_performance,
+          th_descs: [nil] + Array.new(2, "#{l(@reference_period, format: :month_year)}"),
           action_path: "#",
           action_name: "Ver histórico",
           headers: ["Fundo", "Rentabilidade", "Rendimento"],
@@ -245,10 +295,19 @@
         ) %>
   <% end %>
 
+  <%# =============================================================
+    # Cash Management (Checking Accounts)
+    # ============================================================= %>
+
+  <%# This section lists bank accounts associated with the portfolio.
+    # It allows the user to track liquid cash balances alongside
+    # their invested assets for a complete financial overview.
+    %>
   <% if @portfolio.checking_accounts.exists? %>
     <%= render "partials/groups/table-list",
                section_title: "Contas Correntes",
                collection: @portfolio.checking_accounts.order(reference_date: :desc),
+               th_descs: [nil, nil, nil, nil, nil, "Por conta"],
                action_path: "javascript:void(0)",
                action_name: "Nova Conta",
                button_id: "openCheckingAccountBtn",
@@ -268,6 +327,14 @@
 
   <%= render "partials/route/dashboard/create_checkingaccount" %>
 
+  <%# =============================================================
+    # Recent Activity (Applications & Redemptions)
+    # ============================================================= %>
+
+  <%# This section tracks the most recent movements within the portfolio.
+    # It shows the latest deposits (applications) and withdrawals
+    # (redemptions) to keep the user informed of recent liquidity changes.
+    %>
   <%= render "partials/route/dashboard/section",
              columns: 2,
              section_title: "APR",
@@ -283,16 +350,22 @@
                button_name: "Nova Aplicação",
                button_id: "openApplicationBtn",
                button_icon: "plus",
-               collection: @portfolio.fund_investments.includes(:applications).flat_map(&:applications).sort_by(&:request_date).reverse.first(5),
+               collection: @portfolio.fund_investments
+                                     .includes(:applications)
+                                     .flat_map(&:applications)
+                                     .select { |app| app.request_date&.year == Date.current.year }
+                                     .sort_by(&:request_date)
+                                     .reverse
+                                     .first(5),
                color: "success",
                see_all_path: applications_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
                title_proc: ->(app) { app.fund_investment.investment_fund.fund_name },
                value_proc: ->(app) { normalize_currency(app.financial_value) },
                sub_value_proc: ->(app) { "#{app.number_of_quotas} cotas" } %>
 
-    <%# Explanation:: This list displays the five most recent withdrawals from the funds.
-      #               It applies a danger theme to separate redemptions from deposits,
-      #               helping the user track their liquidity and cash outflows.
+    <%# This list displays the five most recent withdrawals from the funds.
+      # It applies a danger theme to separate redemptions from deposits,
+      # helping the user track their liquidity and cash outflows.
       %>
     <%= render "partials/groups/recent_activity",
                section_title: "Resgates",
@@ -302,7 +375,13 @@
                button_name: "Novo Resgate",
                button_icon: "minus",
                button_id: "openRedemptionBtn",
-               collection: @portfolio.fund_investments.includes(:redemptions).flat_map(&:redemptions).sort_by(&:request_date).reverse.first(5),
+               collection: @portfolio.fund_investments
+                                     .includes(:redemptions)
+                                     .flat_map(&:redemptions)
+                                     .select { |red| red.request_date&.year == Date.current.year }
+                                     .sort_by(&:request_date)
+                                     .reverse
+                                     .first(5),
                color: "danger",
                see_all_path: redemptions_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
                title_proc: ->(red) { red.fund_investment.investment_fund.fund_name },
@@ -311,6 +390,13 @@
 
   <% end %>
 
+  <%# =============================================================
+    # Transaction Modals
+    # ============================================================= %>
+
+  <%# These partials provide the hidden modal forms used to create new
+    # applications and redemptions directly from the dashboard view.
+    %>
   <%= render "partials/route/dashboard/create_application" %>
   <%= render "partials/route/dashboard/create_redemption" %>
 <% end %>

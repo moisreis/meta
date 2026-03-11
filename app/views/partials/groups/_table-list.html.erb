@@ -34,6 +34,7 @@
 <% button_name  ||= nil %>
 <% button_icon  ||= nil %>
 <% button_id ||= nil %>
+<% th_descs ||= [] %>
 
 <%# Explanation:: This layout container creates a secure, titled section for the table.
   #               It renders the **section** partial to manage header actions and
@@ -77,6 +78,7 @@
                  columns_header: headers,
                  columns_icons: columns_icons,
                  columns_body: body_procs,
+                 th_descs: th_descs,
                  models: collection
                } %>
 

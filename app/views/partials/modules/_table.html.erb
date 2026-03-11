@@ -16,6 +16,9 @@
   #        - Why:  Enables consistent, reusable table rendering across the
   #                application while keeping logic centralized.
   %>
+
+<% th_descs ||= [] %>
+
 <div class="p-3 rounded-base border border-border bg-white overflow-x-auto">
   <table class="max-w-full border-separate border-spacing-y-1.5 [&>thead]:max-w-full[&>thead]:w-full [&>tbody]:max-w-full [&>tbody]:w-full [&>tbody>tr]:h-9 [&>tbody>tr]:w-full [&>tbody>tr]:max-w-full [&>thead>tr]:h-9 w-full text-sm table-auto">
 
@@ -40,12 +43,17 @@
         <%# [Renderer] Builds the <th> element and inserts the sortable helper.
           #            Passes the header label, the column body, and its icon.
           %>
-        <th>
+        <th class="h-9">
+          <div class="flex flex-col justify-start items-start h-9">
 
-          <%# [Renderer] Calls the sortable helper.
+            <%# [Renderer] Calls the sortable helper.
             #            Builds a sortable column header using the label, body key, and icon.
             %>
-          <%= sortable(col_header, columns_body[i], columns_icons[i]) %>
+            <%= sortable(col_header, columns_body[i], columns_icons[i]) %>
+            <% if th_descs[i].present? %>
+              <%= content_tag :span, th_descs[i], class: "font-medium font-mono text-2xs uppercase text-muted" %>
+            <% end %>
+          </div>
         </th>
       <% end %>
       <th>

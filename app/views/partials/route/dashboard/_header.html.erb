@@ -100,11 +100,38 @@
         <%= form_with url: monthly_report_portfolio_path(@portfolio),
                       method: :get,
                       local: true,
+                      data: { turbo: false },
                       class: "flex !flex-row items-center gap-2" do |f| %>
+
+          <%= render "partials/modules/select",
+                     f: f,
+                     name: :month,
+                     label: nil,
+                     is_small: true,
+                     desc: nil,
+                     is_long: true,
+                     options_collection: options_for_select(
+                       I18n.t("date.month_names").compact.each_with_index.map { |n, i| [n.capitalize, i + 1] },
+                       Date.current.month
+                     ) %>
+
+          <%= render "partials/modules/select",
+                     f: f,
+                     name: :year,
+                     label: nil,
+                     is_small: true,
+                     desc: nil,
+                     is_long: true,
+                     options_collection: options_for_select(
+                       (2020..Date.current.year).to_a.reverse.map { |y| [y, y] },
+                       Date.current.year
+                     ) %>
+
           <%= f.button type: "submit", class: "button button-primary button-small self-end" do %>
             <%= inline_svg_tag("icons/file-attachment.svg") %>
             <%= content_tag :span, "Exportar em PDF" %>
           <% end %>
+
         <% end %>
       <% end %>
     </div>
