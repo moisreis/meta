@@ -40,37 +40,93 @@
            current_view: "show" do
 %>
 
-  <%# =============================================================
-    # Reference Date Filter
-    # ============================================================= %>
-
-  <%# This section allows the user to select a specific date from the
-    # portfolio's history. Changing this date updates all the metrics
-    # and charts displayed on the page to reflect that period.
-    %>
+<%# =============================================================
+  # Reference Date Filter + Actions
+  # ============================================================= %>
   <%= render "partials/route/dashboard/section",
              section_title: "Período de Referência",
              columns: 1 do
   %>
-    <%= form_with url: portfolio_path(@portfolio), method: :get, local: true do |f| %>
-      <%= render "partials/modules/select",
-                 f: f,
-                 name: :reference_date,
-                 label: "Data de referência",
-                 desc: "Selecione a data para visualizar os valores da carteira.",
-                 is_half_width: true,
-                 options_collection: @portfolio.performance_histories
-                                               .order(period: :desc)
-                                               .pluck(:period)
-                                               .map { |d| [l(d, format: :long), d] },
-                 is_inactive: false
+    <div class="flex flex-row justify-start gap-3">
+      <%= form_with url: portfolio_path(@portfolio),
+                    method: :get,
+                    local: true,
+                    id: "reference-date-form",
+                    class: "flex flex-row items-center gap-2 w-fit" do |f|
       %>
-      <%= button_tag type: :submit,
-                     class: "button button-small button-secondary w-fit" do
-      %>
-        <% content_tag :span, "Aplicar" %>
+        <div class="relative [&>div>div]:!w-[350px]">
+          <%= render "partials/modules/select",
+                     f: f,
+                     name: :reference_date,
+                     label: nil,
+                     desc: nil,
+                     is_half_width: false,
+                     is_small: true,
+                     options_collection: @portfolio.performance_histories
+                                                   .order(period: :desc)
+                                                   .pluck(:period)
+                                                   .map { |d| [l(d, format: :long), d] },
+                     selected: @reference_date,
+                     is_inactive: false
+          %>
+        </div>
       <% end %>
-    <% end %>
+
+      <%= button_tag type: "button",
+                     class: "button button-primary button-small",
+                     data: {
+                       controller: "tippy",
+                       tippy_type_value: "menu",
+                       tippy_target: "#reference-date-actions"
+                     } do %>
+        <%= content_tag :span, "Ações" %>
+        <%= inline_svg_tag "icons/chevron-down.svg" %>
+      <% end %>
+
+      <div id="reference-date-actions" style="display: none;">
+        <div class="flex flex-col gap-1.5 w-full justify-start items-start">
+
+          <%= button_tag type: "submit",
+                         form: "reference-date-form",
+                         class: "button button-ghost button-small w-full justify-start" do %>
+            <%= inline_svg_tag "icons/calendar.svg" %>
+            <%= content_tag :span, "Aplicar" %>
+          <% end %>
+
+          <% if @portfolio.present? && @portfolio.persisted? %>
+
+            <%= form_with url: run_calculations_portfolio_path(@portfolio),
+                          method: :post,
+                          local: true,
+                          class: "w-full" do |form|
+            %>
+              <%= hidden_field_tag :month, @reference_date.strftime("%Y-%m") %>
+              <%= button_tag type: :submit,
+                             class: "button button-ghost button-small w-full justify-start" do %>
+                <%= inline_svg_tag "icons/refresh-cw.svg" %>
+                <%= content_tag :span, "Calcular Performance" %>
+              <% end %>
+            <% end %>
+
+            <%= form_with url: monthly_report_portfolio_path(@portfolio),
+                          method: :get,
+                          local: true,
+                          data: { turbo: false },
+                          class: "w-full" do |f|
+            %>
+              <%= hidden_field_tag :month, @reference_date.month %>
+              <%= hidden_field_tag :year, @reference_date.year %>
+              <%= f.button type: "submit",
+                           class: "button button-secondary button-small w-full justify-start" do %>
+                <%= inline_svg_tag "icons/file-attachment.svg" %>
+                <%= content_tag :span, "Exportar em PDF" %>
+              <% end %>
+            <% end %>
+
+          <% end %>
+        </div>
+      </div>
+    </div>
   <% end %>
 
   <%# =============================================================
@@ -128,7 +184,7 @@
           "partials/route/dashboard/card",
           card_title: "Rentabilidade dos Mês Atual",
           card_icon: "trending-up",
-          ) do
+        ) do
     %>
       <%= normalize_trend(@portfolio.portfolio_return_percentage, format: :percentage) %>
     <% end %>
@@ -166,7 +222,20 @@
                  prefix: "R$ ",
                  thousands: ".",
                  decimal: ",",
-                 dataset: { borderWidth: 0 }
+                 library: {
+                   plugins: {
+                     colorschemes: false
+                   },
+                   elements: {
+                     bar: { borderWidth: 0 }
+                   }
+                 },
+                 dataset: {
+                   borderWidth: 0,
+                   backgroundColor: @monthly_earnings_history.map { |_, v|
+                     v.to_f >= 0 ? "rgba(34, 197, 94, 0.8)" : "rgba(239, 68, 68, 0.8)"
+                   }
+                 }
                }
     %>
 
@@ -191,6 +260,7 @@
                  prefix: "R$ ",
                  thousands: ".",
                  decimal: ",",
+                 colors: ["rgba(34, 197, 94, 0.8)", "rgba(239, 68, 68, 0.8)"],
                  dataset: { borderWidth: 0 }
                }
     %>
@@ -259,7 +329,7 @@
              column_icons: ["layers", "shuffle", "banknote", "percent", "banknote"],
              body_procs: [
                ->(fi) { normalize_title(fi.investment_fund.fund_name) },
-               ->(fi) { normalize_percentage(fi.percentage_allocation) },
+               ->(fi) { normalize_percentage([fi.percentage_allocation, 0].max) },
                ->(fi) { normalize_trend(fi.net_movement) },
                ->(fi) { normalize_currency(fi.investment_fund.quota_value_on(@reference_date)) },
                ->(fi) { normalize_currency(fi.current_market_value(@reference_date)) },

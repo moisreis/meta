@@ -227,7 +227,8 @@
       label: "CNPJ do Fundo",
       description: "Filtra por parte ou todo o número do CNPJ.",
       placeholder: "XX.XXX.XXX/XXXX-XX",
-      icon_name: "hash"
+      icon_name: "hash",
+      cnpj_mask: true
     },
     {
       key: :investment_fund_fund_name_cont,
@@ -249,7 +250,7 @@
       description: "Exibe apenas cotações acima deste valor.",
       placeholder: "0.00",
       icon_name: "banknote",
-      type: "number"
+      currency_mask: true
     },
     {
       key: :quota_value_lteq,
@@ -257,8 +258,8 @@
       description: "Exibe apenas cotações abaixo deste valor.",
       placeholder: "9999.99",
       icon_name: "banknote",
-      type: "number"
-    }
+      currency_mask: true
+    },
   ],
 
   # [Explanation]: This is the ID of the Turbo Frame that the filter submission targets.

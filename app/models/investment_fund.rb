@@ -17,6 +17,8 @@
 #
 class InvestmentFund < ApplicationRecord
 
+  before_validation :format_cnpj
+
   has_many :fund_investments,         dependent: :destroy
   has_many :portfolios,               through: :fund_investments
   has_many :investment_fund_articles, dependent: :destroy
@@ -106,5 +108,13 @@ class InvestmentFund < ApplicationRecord
   # Returns:: - An array of searchable attribute names.
   def self.ransackable_attributes(auth_object = nil)
     %w[administrator_name cnpj created_at fund_name id originator_fund updated_at]
+  end
+
+  private
+
+  def format_cnpj
+    return unless cnpj.present?
+    digits = cnpj.gsub(/\D/, "")
+    self.cnpj = digits.sub(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '\1.\2.\3/\4-\5')
   end
 end

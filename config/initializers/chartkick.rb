@@ -20,12 +20,12 @@ Chartkick.options = {
   #               sequence of colors used when multiple datasets appear in a graph.
   #               It ensures visual consistency across every chart.
   colors: [
-    "rgb(59, 130, 246)",
-    "rgb(16, 185, 129)",
-    "rgb(245, 158, 11)",
-    "rgb(239, 68, 68)",
-    "rgb(139, 92, 246)",
-    "rgb(14, 165, 233)"
+    "rgb(22, 163, 74)", # @note Dark green  — growth, positive performance
+    "rgb(220, 38, 38)", # @note Dark red    — loss, negative performance
+    "rgb(37, 99, 235)", # @note Brand blue  — neutral, reference metric
+    "rgb(217, 119, 6)", # @note Amber       — caution, intermediate value
+    "rgb(124, 58, 237)", # @note Purple      — secondary metric
+    "rgb(15, 118, 110)", # @note Dark teal   — complementary series
   ],
 
   # Explanation:: This adds a currency prefix to values displayed on charts. It formats

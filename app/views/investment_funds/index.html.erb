@@ -154,12 +154,14 @@
       placeholder: "Administrador",
       icon_name: "id-card"
     },
+    # TODO: CNPJ format not passing
     {
       key: :cnpj_cont,
       label: "CNPJ",
       description: "Filtra fundos pelo CNPJ informado.",
       placeholder: "00.000.000/0000-00",
-      icon_name: "hash"
+      icon_name: "hash",
+      cnpj_mask: true
     },
     {
       key: :originator_fund_cont,

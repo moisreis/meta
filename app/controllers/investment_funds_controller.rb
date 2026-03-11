@@ -46,6 +46,11 @@ class InvestmentFundsController < ApplicationController
   # =============================================================
 
   def index
+    if params.dig(:q, :cnpj_cont).present?
+      digits = params[:q][:cnpj_cont].gsub(/\D/, "")
+      params[:q][:cnpj_cont] = digits.sub(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '\1.\2.\3/\4-\5')
+    end
+
     base_scope = InvestmentFund.all.order(created_at: :desc)
 
     @q           = base_scope.ransack(params[:q])

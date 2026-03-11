@@ -47,16 +47,28 @@
         #               input box so the user can type their search criteria.
         %>
       <% filters.each do |filter| %>
-        <%= render partial: "partials/modules/input-field", locals: {
-          f: f,
-          name: filter[:key],
-          label: filter[:label],
-          desc: filter[:description],
-          placeholder: filter[:placeholder],
-          field_type: :text_field,
-          is_half_width: false,
-          icon_name: filter[:icon_name],
-        } %>
+        <% if filter[:type] == "date" %>
+          <%= render partial: "partials/modules/date-field", locals: {
+            f: f,
+            name: filter[:key],
+            label: filter[:label],
+            desc: filter[:description],
+            icon_name: filter[:icon_name]
+          } %>
+        <% else %>
+          <%= render partial: "partials/modules/input-field", locals: {
+            f: f,
+            name: filter[:key],
+            label: filter[:label],
+            desc: filter[:description],
+            placeholder: filter[:placeholder],
+            field_type: :text_field,
+            is_half_width: false,
+            icon_name: filter[:icon_name],
+            cnpj_mask: filter[:cnpj_mask] || false,
+            currency_mask: filter[:currency_mask] || false
+          } %>
+        <% end %>
       <% end %>
 
       <div class="flex flex-row gap-1.5">

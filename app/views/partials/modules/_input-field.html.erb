@@ -21,6 +21,8 @@
 <% field_type ||= :text_field %>
 <% is_inactive ||= nil %>
 <% currency_mask ||= false %>
+<% cnpj_mask ||= false %>
+<% bank_account_mask ||= false %>
 
 <%
   has_error =
@@ -201,10 +203,7 @@
         ].compact.join(" ")
     %>
     <% if currency_mask %>
-      <%# Wrapper com Stimulus controller %>
       <div data-controller="currency-mask">
-
-        <%# Input visível — apenas display, não submetido %>
         <input
           type="text"
           placeholder="<%= placeholder %>"
@@ -216,13 +215,43 @@
           aria-describedby="<%= (desc.present? || has_error) ? "#{name}-desc" : nil %>"
           aria-invalid="<%= has_error %>"
           />
-
-        <%# Hidden field — submetido com o valor numérico limpo %>
-        <%= f.hidden_field name,
-                           data: { "currency-mask-target": "hidden" }
-        %>
-
+        <%= f.hidden_field name, data: { "currency-mask-target": "hidden" } %>
       </div>
+
+    <% elsif cnpj_mask %>
+      <div data-controller="cnpj-mask">
+        <input
+          type="text"
+          placeholder="<%= placeholder || '00.000.000/0000-00' %>"
+          class="<%= full_input_classes %> !font-mono"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="18"
+          data-cnpj-mask-target="display"
+          data-action="input->cnpj-mask#format"
+          aria-describedby="<%= (desc.present? || has_error) ? "#{name}-desc" : nil %>"
+          aria-invalid="<%= has_error %>"
+          />
+        <%= f.hidden_field name, data: { "cnpj-mask-target": "hidden" } %>
+      </div>
+
+    <% elsif bank_account_mask %>
+      <div data-controller="bank-account-mask">
+        <input
+          type="text"
+          placeholder="<%= placeholder || '00000-0' %>"
+          class="<%= full_input_classes %> !font-mono"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="13"
+          data-bank-account-mask-target="display"
+          data-action="input->bank-account-mask#format"
+          aria-describedby="<%= (desc.present? || has_error) ? "#{name}-desc" : nil %>"
+          aria-invalid="<%= has_error %>"
+          />
+        <%= f.hidden_field name, data: { "bank-account-mask-target": "hidden" } %>
+      </div>
+
     <% else %>
       <%= f.send(
             field_type,

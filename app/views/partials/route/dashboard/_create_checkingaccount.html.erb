@@ -72,15 +72,15 @@
                    desc: "Saldo da conta no encerramento do mês de referência.",
                    field_type: :number_field,
                    icon_name: "banknote",
-                   step: :any %>
+                   step: :any,
+                   currency_mask: true %>
 
-        <%= render "partials/modules/input-field",
+        <%= render "partials/modules/date-field",
                    f: form,
                    name: :reference_date,
                    label: "Data de Referência",
-                   placeholder: "",
+                   is_half_width: false,
                    desc: "Mês de competência deste saldo. Será ajustado para o último dia do mês.",
-                   field_type: :date_field,
                    icon_name: "calendar" %>
 
       <% end %>

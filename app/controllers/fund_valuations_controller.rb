@@ -38,6 +38,13 @@ class FundValuationsController < ApplicationController
   #          It supports searching by date range, fund CNPJ, source, and sorting options.
   #
   def index
+    if params.dig(:q, :fund_cnpj_cont).present?
+      digits = params[:q][:fund_cnpj_cont].gsub(/\D/, "")
+      if digits.length == 14
+        params[:q][:fund_cnpj_cont] = digits.sub(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '\1.\2.\3/\4-\5')
+      end
+    end
+
     # Initialize Ransack search object
     @q = FundValuation.ransack(params[:q])
 
