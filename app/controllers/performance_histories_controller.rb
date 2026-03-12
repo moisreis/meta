@@ -103,7 +103,7 @@ class PerformanceHistoriesController < ApplicationController
 
     if @performance_history.save
       respond_to do |format|
-        format.html { redirect_to performance_history_path(@performance_history), notice: "Performance history was successfully created." }
+        format.html { redirect_to performance_history_path(@performance_history), notice: "Histórico de performance criado com sucesso" }
         format.json {
           render json: {
             status: "Success",
@@ -127,7 +127,7 @@ class PerformanceHistoriesController < ApplicationController
   def update
     if @performance_history.update(performance_history_params)
       respond_to do |format|
-        format.html { redirect_to performance_history_path(@performance_history), notice: "Performance history was successfully updated." }
+        format.html { redirect_to performance_history_path(@performance_history), notice: "Histórico de performance atualizado com sucesso" }
         format.json {
           render json: {
             status: "Success",
@@ -147,13 +147,13 @@ class PerformanceHistoriesController < ApplicationController
     @performance_history.destroy!
 
     respond_to do |format|
-      format.html { redirect_to performance_histories_path, notice: "Performance history was successfully deleted.", status: :see_other }
-      format.json { render json: { status: "Success", message: "Performance history deleted successfully" }, status: :ok }
+      format.html { redirect_to performance_histories_path, notice: "Histórico de performance deletado com sucesso.", status: :see_other }
+      format.json { render json: { status: "Success", message: "Histórico de performance deletado com sucesso." }, status: :ok }
     end
 
   rescue ActiveRecord::RecordNotDestroyed => e
     respond_to do |format|
-      format.html { redirect_to performance_history_path(@performance_history), alert: "Failed to delete performance history" }
+      format.html { redirect_to performance_history_path(@performance_history), alert: "Houve um problema ao deletar o histórico de performance" }
       format.json { render json: { status: "Error", message: "Failed to delete", errors: e.record.errors.full_messages }, status: :unprocessable_entity }
     end
   end

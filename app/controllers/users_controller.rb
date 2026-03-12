@@ -140,7 +140,7 @@ class UsersController < ApplicationController
 
     # Explanation:: This redirects the administrator to the list of all users (`index` page)
     #               after the deletion is successfully completed.
-    redirect_to users_url, notice: "User was successfully destroyed.", status: :see_other
+    redirect_to users_url, notice: "Usuário deletado com sucesso.", status: :see_other
   end
 
   # == edit
@@ -176,7 +176,7 @@ class UsersController < ApplicationController
     # Explanation:: This attempts to update the user record with the new, permitted attributes,
     #               checking for successful validation and database save.
     if @user.update(user_params)
-      redirect_to @user, notice: "User was successfully updated."
+      redirect_to @user, notice: "Usuário atualizado com sucesso."
     else
       render :edit, status: :unprocessable_entity
     end

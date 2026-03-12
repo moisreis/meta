@@ -77,7 +77,8 @@ class ApplicationsController < ApplicationController
     @application = Application.new
   end
 
-  def edit; end
+  def edit
+  end
 
   def create
     portfolio = Portfolio.find(application_params[:portfolio_id])

@@ -76,7 +76,7 @@ class NormativeArticlesController < ApplicationController
       respond_to do |format|
         format.html {
           redirect_to normative_article_path(@normative_article),
-                      notice: 'Normative article was successfully created.'
+                      notice: 'Artigo normativo criado com sucesso.'
         }
         format.json {
           render json: {
@@ -115,7 +115,7 @@ class NormativeArticlesController < ApplicationController
       respond_to do |format|
         format.html {
           redirect_to normative_article_path(@normative_article),
-                      notice: 'Normative article was successfully updated.'
+                      notice: 'Artigo normativo atualizado com sucesso.'
         }
         format.json {
           render json: {
@@ -144,13 +144,13 @@ class NormativeArticlesController < ApplicationController
     respond_to do |format|
       format.html {
         redirect_to normative_articles_path,
-                    notice: 'Normative article was successfully deleted.',
+                    notice: 'Artigo normativo deletado com sucesso.',
                     status: :see_other
       }
       format.json {
         render json: {
           status: 'Success',
-          message: 'Normative article deleted successfully'
+          message: 'Artigo normativo deletado com sucesso.'
         }, status: :ok
       }
     end
@@ -159,7 +159,7 @@ class NormativeArticlesController < ApplicationController
     respond_to do |format|
       format.html {
         redirect_to normative_article_path(@normative_article),
-                    alert: 'Failed to delete normative article'
+                    alert: 'Houve um problema ao deletar o artigo normativo'
       }
       format.json {
         render json: {

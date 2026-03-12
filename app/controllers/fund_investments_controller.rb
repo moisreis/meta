@@ -84,7 +84,8 @@ class FundInvestmentsController < ApplicationController
     end
   end
 
-  def update; end
+  def update
+  end
 
   def destroy
     portfolio = @fund_investment.portfolio

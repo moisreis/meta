@@ -80,7 +80,7 @@ class InvestmentFundsController < ApplicationController
     authorize! :create, InvestmentFund
 
     if @investment_fund.save
-      redirect_to @investment_fund, notice: "Investment fund created successfully."
+      redirect_to @investment_fund, notice: "O credenciamento de fundo de investimento foi criado com sucesso"
     else
       render :new, status: :unprocessable_entity
     end
@@ -88,7 +88,7 @@ class InvestmentFundsController < ApplicationController
 
   def update
     if @investment_fund.update(investment_fund_params)
-      redirect_to @investment_fund, notice: "Investment fund updated successfully."
+      redirect_to @investment_fund, notice: "O credenciamento de fundo de investimento foi atualizado com sucesso"
     else
       render :edit, status: :unprocessable_entity
     end
@@ -96,7 +96,7 @@ class InvestmentFundsController < ApplicationController
 
   def destroy
     @investment_fund.destroy
-    redirect_to investment_funds_path, notice: "Investment fund deleted successfully."
+    redirect_to investment_funds_path, notice: "O credenciamento de fundo de investimento foi deletado com sucesso"
   end
 
   def lookup

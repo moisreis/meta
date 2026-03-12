@@ -26,6 +26,7 @@
 # - *@total_balance* [Decimal] - The sum of all account balances.
 #
 class CheckingAccountsController < ApplicationController
+
   # =============================================================
   #                        CONFIGURATION
   # =============================================================
@@ -118,6 +119,7 @@ class CheckingAccountsController < ApplicationController
   # It ensures the form starts with sensible information.
   #
   def new
+
     # Initializes a new record with standard defaults for easier
     # entry by automatically setting the current date and currency.
     @checking_account = @portfolio.checking_accounts.new(
@@ -268,6 +270,7 @@ class CheckingAccountsController < ApplicationController
   # It ensures the data retrieved is strictly related to the parent.
   #
   def set_checking_account
+
     # Limits the search to only accounts owned by the
     # current portfolio to prevent unauthorized access.
     @checking_account = @portfolio.checking_accounts.find(params[:id])
@@ -282,6 +285,7 @@ class CheckingAccountsController < ApplicationController
   # It filters the raw input for safety and standardization.
   #
   def checking_account_params
+
     # Specifies exactly which fields are allowed to be
     # saved to the database to prevent unwanted changes.
     permitted = params.require(:checking_account).permit(
@@ -315,6 +319,7 @@ class CheckingAccountsController < ApplicationController
   # It translates human input into a technical date object.
   #
   def parse_reference_date(month_param)
+
     # Returns the end of the current month if no
     # selection was made by the user in the menu.
     return Date.current.end_of_month if month_param.blank?

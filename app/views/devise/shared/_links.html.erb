@@ -1,51 +1,68 @@
 <%#
-  # Partial: _links.html
-  # Date: 11/25/2025
+  # Partial: _links.html.erb
+  # Date: 2026-03-12
   # Author: Moisés Reis
   # Package: Meta
   #
-  # Description: Renders navigation links to other authentication actions (login, registration, password recovery) based on the current controller context.
-  #              This partial ensures that only relevant links appear on each Devise view.
+  # Description: Renders contextual navigation links for authentication actions like
+  #              logging in, registering, or recovering passwords. This partial
+  #              ensures users can easily switch between different account states.
   #
-  # Usage: - What: Displays contextual links that guide the user to different parts of the authentication flow (e.g., login from sign-up).
-  #                This allows users to switch actions without navigating back manually.
-  #        - How: Is rendered within various Devise views (sessions, registrations, passwords).
-  #               Uses conditional logic based on the controller name to determine which link to display.
-  #        - Why: Improves user experience by providing quick access to related authentication pages, reducing friction in the sign-in/sign-up process.
-  %>
+  # Locals: @param resource_name [Symbol] - The name of the Devise resource (e.g., :user).
+  #         @param devise_mapping [Object] - Configuration object for the current resource.
+  #
+  # Usage: - What: Displays secondary action buttons that guide the user through the
+  #                identity flow, such as moving from "Sign Up" to "Log In."
+  #         - How: Uses conditional checks on the current controller name to hide
+  #                redundant links and only show relevant navigation options.
+  #         - Why: Reduces user friction by providing clear paths to alternative
+  #                actions without requiring the use of the browser's back button.
+%>
+
+<%# ============================================================= %>
+<%# Visual Separator & Text Label %>
+<%# ============================================================= %>
+
 <div class="relative flex items-center justify-center w-full my-3">
+
+  <%# This helper generates a small text badge centered over a horizontal line.
+    # It provides a clear visual break between the primary form and secondary links.
+  %>
   <%= content_tag :p, "Ou", class: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white font-semibold font-body text-muted uppercase text-xs w-12 text-center" %>
+
   <div class="h-[1px] bg-border w-full"></div>
+
 </div>
+
+<%# ============================================================= %>
+<%# Navigation Action Links %>
+<%# ============================================================= %>
+
 <div class="flex flex-row items-center justify-between gap-3 w-full">
 
-<%# [Condition]: It checks if the current page is not the 'sessions' controller (login page),
-  #              which ensures the login link does not appear when the user is already on the login page.
-  %>
+  <%# This condition verifies if the user is currently outside of the login page.
+    # It prevents the "Already have an account" link from appearing to users who are already logging in.
+    %>
   <%- if controller_name != 'sessions' %>
+
     <%= link_to new_session_path(resource_name),
                 class: "button button-outline w-full" do %>
-      <%= content_tag :span, "Já tenho uma conta"%>
-<% end %>
+
+      <%= content_tag :span, "Já tenho uma conta" %>
+
+    <% end %>
+
   <% end %>
 
-<%# [Condition]: It checks if Devise registration is enabled AND the current page is not the 'registrations' controller (sign-up page),
-  #              which ensures the sign-up link does not appear if registration is disabled or if the user is currently on the sign-up page.
-  %>
+  <%# This check confirms that the system allows new registrations and that the user is not on the sign-up page.
+    # It ensures the "Create account" button only shows up when relevant and supported by the application.
+    %>
   <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+
     <%= link_to new_registration_path(resource_name),
-                class: "button button-secondary w-full" do %>
-      <%= content_tag :span, "Não tenho uma conta"%>
+                class: "button button-outline w-full" do %>
+      <%= content_tag :span, "Não tenho uma conta" %>
     <% end %>
   <% end %>
 
-<%# [Condition]: It checks if Devise recovery is enabled AND the current page is not the 'passwords' or 'registrations' controller,
-  #              which ensures the recovery link is only visible when relevant to the user's current context.
-  %>
-  <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
-    <%= link_to new_password_path(resource_name),
-                class: "button button-outline w-full" do %>
-      <%= content_tag :span, "Esqueci minha senha"%>
-    <% end %>
-  <% end %>
 </div>

@@ -29,7 +29,7 @@ class InvestmentFundArticlesController < ApplicationController
 
     respond_to do |format|
       if @investment_fund_article.save
-        format.html { redirect_to @investment_fund_article, notice: "Investment fund article was successfully created." }
+        format.html { redirect_to @investment_fund_article, notice: "Artigo de fundo de investimento foi criado com sucesso." }
         format.json { render :show, status: :created, location: @investment_fund_article }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -42,7 +42,7 @@ class InvestmentFundArticlesController < ApplicationController
   def update
     respond_to do |format|
       if @investment_fund_article.update(investment_fund_article_params)
-        format.html { redirect_to @investment_fund_article, notice: "Investment fund article was successfully updated.", status: :see_other }
+        format.html { redirect_to @investment_fund_article, notice: "Artigo de fundo de investimento foi atualizado com sucesso.", status: :see_other }
         format.json { render :show, status: :ok, location: @investment_fund_article }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -56,7 +56,7 @@ class InvestmentFundArticlesController < ApplicationController
     @investment_fund_article.destroy!
 
     respond_to do |format|
-      format.html { redirect_to investment_fund_articles_path, notice: "Investment fund article was successfully destroyed.", status: :see_other }
+      format.html { redirect_to investment_fund_articles_path, notice: "Artigo de fundo de investimento foi deletado com sucesso.", status: :see_other }
       format.json { head :no_content }
     end
   end
