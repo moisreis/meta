@@ -98,16 +98,7 @@
             <%= form_with url: run_calculations_portfolio_path(@portfolio),
                           method: :post,
                           local: true,
-                          class: "w-full",
-                          data: {
-                            controller: "calculation-progress",
-                            action: "submit->calculation-progress#submit",
-                            "calculation-progress-poll-url-value":
-                              calculation_progress_portfolio_path(
-                                @portfolio,
-                                month: @reference_date.strftime("%Y-%m")
-                              )
-                          } do |form|
+                          class: "w-full" do |form|
             %>
               <%= hidden_field_tag :month, @reference_date.strftime("%Y-%m") %>
               <%= button_tag type: :submit,
@@ -128,7 +119,7 @@
               <%= f.button type: "submit",
                            class: "button button-secondary button-small w-full justify-start" do %>
                 <%= inline_svg_tag "icons/file-attachment.svg" %>
-                <%= content_tag :span, "Exportar em PDF" %>
+                <%= content_tag :span, "Gerar relatório" %>
               <% end %>
             <% end %>
 
