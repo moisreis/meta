@@ -1,23 +1,19 @@
 # === economic_index_histories_controller.rb
 #
-# @author Moisés Reis
-# @added 12/4/2025
-# @package *Meta*
-# @description This controller manages historical value records for **EconomicIndex** entries.
-#              It handles listing and creation of time-series data points, allowing
-#              administrators to maintain the historical values of economic indicators.
-# @category *Controller*
+# Description:: This controller manages historical value records for **EconomicIndex** entries.
+#               It handles listing and creation of time-series data points, allowing
+#               administrators to maintain the historical values of economic indicators.
 #
-# Usage:: - *[What]* This code block controls the listing and creation of economic index values,
+# Usage:: - *What* - This code block controls the listing and creation of economic index values,
 #           allowing users to view and add historical data points for financial indicators.
-#         - *[How]* It uses search filters to display history records and provides a simple
+#         - *How* - It uses search filters to display history records and provides a simple
 #           form submission process to save new dates and values into the database.
-#         - *[Why]* It provides the necessary interface to build the historical datasets
+#         - *Why* - It provides the necessary interface to build the historical datasets
 #           that power performance calculations and trend analysis throughout the app.
 #
-# Attributes:: - *[@economic_index_history]* @object - The specific history record being created.
-#              - *[@economic_index_histories]* @collection - The filtered and paginated list of history records.
-#              - *[@economic_index]* @object - The parent economic index used for filtering.
+# Attributes:: - *@economic_index_history* [Object] - The specific history record being created.
+#              - *@economic_index_histories* [Collection] - The filtered and paginated list of history records.
+#              - *@economic_index* [Object] - The parent economic index used for filtering.
 #
 class EconomicIndexHistoriesController < ApplicationController
 
@@ -42,6 +38,10 @@ class EconomicIndexHistoriesController < ApplicationController
     :create
   ]
 
+  # =============================================================
+  #                       PUBLIC METHODS
+  # =============================================================
+  #
   # == index
   #
   # @author Moisés Reis
@@ -52,7 +52,6 @@ class EconomicIndexHistoriesController < ApplicationController
   #
   # Attributes:: - *@models* - The paginated list of **EconomicIndexHistory** records.
   #              - *@economic_index_histories* - An alias for the paginated list used in the view.
-  #
   def index
 
     # This defines the initial set of history records. If a specific economic index
@@ -108,7 +107,6 @@ class EconomicIndexHistoriesController < ApplicationController
   # This empty object is used by the form to gather input from the user for creation.
   #
   # Attributes:: - *@economic_index_history* - A new, unsaved history instance.
-  #
   def new
 
     # This initializes an empty record for the history table to be used in the form.
@@ -128,8 +126,10 @@ class EconomicIndexHistoriesController < ApplicationController
   # database. It validates the data and redirects back to the history list.
   #
   # Attributes:: - *economic_index_history_params* - The sanitized input data from the form.
-  #
   def create
+
+    # This handles date construction and value sanitization to prepare
+    # the history record for safe storage in the database.
     date = Date.new(
       params[:economic_index_history][:year_ref].to_i,
       params[:economic_index_history][:month_ref].to_i,
@@ -151,6 +151,10 @@ class EconomicIndexHistoriesController < ApplicationController
     end
   end
 
+  # =============================================================
+  #                       PRIVATE METHODS
+  # =============================================================
+
   private
 
   # == load_economic_index
@@ -161,7 +165,6 @@ class EconomicIndexHistoriesController < ApplicationController
   # if the `economic_index_id` parameter is present in the request.
   #
   # Attributes:: - *params[:economic_index_id]* - The parent index identifier.
-  #
   def load_economic_index
 
     # This searches the database for a specific economic indicator using its ID.
@@ -177,7 +180,6 @@ class EconomicIndexHistoriesController < ApplicationController
   # privileges required to create new historical economic data.
   #
   # Attributes:: - *current_user* - The currently authenticated user object.
-  #
   def authorize_admin!
 
     # This checks the admin status of the person currently logged in.
@@ -195,7 +197,6 @@ class EconomicIndexHistoriesController < ApplicationController
   # history record form to ensure only permitted fields are saved.
   #
   # Attributes:: - *params* - The raw data hash received from the user form.
-  #
   def economic_index_history_params
 
     # This specifies exactly which fields, like values and dates, are safe

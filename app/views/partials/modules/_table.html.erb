@@ -139,7 +139,10 @@
                 <% if route_exists_for?(model, :destroy) %>
                   <%= button_to polymorphic_path(model),
                                 method: :delete,
-                                data: { turbo_confirm: "Tem certeza que deseja deletar este registro?" },
+                                data: {
+                                  turbo_confirm: "Tem certeza que deseja deletar este registro?",
+                                  turbo_frame: "_top"
+                                },
                                 class: "button button-ghost button-small w-full justify-start" do %>
                     <%= inline_svg_tag "icons/trash.svg" %>
                     <%= content_tag :span, "Deletar" %>

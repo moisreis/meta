@@ -15,10 +15,10 @@
   #        - Why: The loader prevents user interaction and reassures the user
   #               that the application is working during waiting periods.
   %>
-<div id="page-loader" class="fixed inset-0 bg-accent flex items-center justify-center hidden z-[9999]">
+<div id="page-loader" class="fixed inset-0 bg-body/10 backdrop-blur-sm flex items-center justify-center hidden z-[9999]">
   <div class="flex flex-col items-center gap-6">
     <div class="relative">
-      <%= inline_svg_tag("icons/loader.svg", class: "w-6 h-6 animate-spin stroke-body") %>
+      <%= inline_svg_tag("icons/loader.svg", class: "w-6 h-6 animate-spin stroke-primary-900") %>
     </div>
   </div>
 </div>

@@ -1,24 +1,20 @@
 # === dashboard_controller.rb
 #
-# @author Moisés Reis
-# @added 03/03/2026
-# @package *Meta*
-# @description This controller serves as the intelligence hub of the app,
-#              gathering data from **Portfolios**, **Applications**, and
-#              **Redemptions** to build a visual summary of the user's
-#              entire financial situation.
-# @category *Controller*
+# Description:: This controller serves as the intelligence hub of the app,
+#               gathering data from **Portfolios**, **Applications**, and
+#               **Redemptions** to build a visual summary of the user's
+#               entire financial situation.
 #
-# Usage:: - *[What]* A high-level overview page that shows totals, gains,
+# Usage:: - *What* - A high-level overview page that shows totals, gains,
 #           losses, and performance charts at a single glance.
-#         - *[How]* It calculates math across all investments and prepares
+#         - *How* - It calculates math across all investments and prepares
 #           organized data structures for interactive charts.
-#         - *[Why]* It helps users quickly understand how their money is
+#         - *Why* - It helps users quickly understand how their money is
 #           growing and where their biggest investments are located.
 #
-# Attributes:: - *[@total_market_value]* @decimal - the current worth of all assets
-#              - *[@roi]* @percentage - the return on investment ratio
-#              - *[@monthly_flows]* @hash - data used for cash-flow bar charts
+# Attributes:: - *@total_market_value* [Decimal] - The current worth of all assets.
+#              - *@roi* [Percentage] - The return on investment ratio.
+#              - *@monthly_flows* [Hash] - Data used for cash-flow bar charts.
 #
 class DashboardController < ApplicationController
 
@@ -33,7 +29,6 @@ class DashboardController < ApplicationController
   # This is the main action that triggers all the math and data
   # gathering needed to populate the dashboard view. It calls
   # specialized helpers to handle metrics, charts, and activity.
-  #
   def index
 
     # Triggers the calculation of all global financial totals.
@@ -55,7 +50,6 @@ class DashboardController < ApplicationController
   # This helper sums up the values of every investment the user owns.
   # It works out the total invested amount, the current market worth,
   # and whether the user is currently seeing a profit or a loss.
-  #
   def calculate_portfolio_metrics
 
     # Adds up the original cost of every investment across all portfolios.
@@ -125,7 +119,6 @@ class DashboardController < ApplicationController
   # This prepares the specific lists and numbers required to draw
   # pie charts and bar graphs. It organizes money flows by month so
   # users can see how their activity changes over time.
-  #
   def prepare_chart_data
 
     # Creates a map of portfolio names and their values for the allocation chart.
@@ -169,7 +162,6 @@ class DashboardController < ApplicationController
   #
   # This finds the five most recent deposits and withdrawals so
   # the user can see their latest movements without searching.
-  #
   def load_recent_activity
 
     # Fetches the last 5 deposits including related fund and portfolio names.

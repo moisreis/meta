@@ -23,10 +23,11 @@ Rails.application.routes.draw do
     collection do
       get :data_health
       post :trigger_import
+      get  :import_progress
     end
   end
 
-  resources :redemptions, only: [:index, :edit, :update, :new, :create, :show] do
+  resources :redemptions, only: [:index, :edit, :update, :new, :create, :show, :destroy] do
     collection do
       get :export
     end
@@ -40,6 +41,7 @@ Rails.application.routes.draw do
     member do
       get :monthly_report
       post :run_calculations
+      get  :calculation_progress
     end
     collection do
       get :export

@@ -19,95 +19,67 @@ class FundValuationImportJob < ApplicationJob
   # Explanation:: Este método é o ponto de entrada do job. Agora aceita um parâmetro
   #               'months_back' para controlar quantos meses buscar (padrão: 2)
   def perform(start_date: Date.current, months_back: 12)
-    start_time = Time.current
+    job_key  = "fund_valuation_import_progress"
+    progress = ->(pct, step) {
+      Rails.cache.write(job_key, { percent: pct, step: step, done: pct >= 100 }, expires_in: 30.minutes)
+    }
 
-    Rails.logger.info("=" * 80)
+    start_time = Time.current
     Rails.logger.info("[FundValuationImportJob] Starting CVM import at #{start_time}")
-    Rails.logger.info("[FundValuationImportJob] Will download last #{months_back} months")
-    Rails.logger.info("=" * 80)
 
     FileUtils.mkdir_p(TMP_DIR)
 
-    # Load existing fund CNPJs for filtering
+    progress.call(5, "Carregando fundos da base…")
     existing_cnpjs = Set.new(InvestmentFund.pluck(:cnpj).map { |c| c.gsub(/\D/, "") })
-    Rails.logger.info("[FundValuationImportJob] Tracking #{existing_cnpjs.size} funds from database")
 
     if existing_cnpjs.empty?
-      Rails.logger.warn("[FundValuationImportJob] No investment funds found in database. Import cancelled.")
-      return { status: :skipped, message: "No funds to track" }
+      Rails.logger.warn("[FundValuationImportJob] No investment funds found. Import cancelled.")
+      progress.call(100, "Nenhum fundo encontrado.")
+      return
     end
 
-    reference_date = start_date.beginning_of_month
-    files_processed = 0
-    total_records = 0
-    total_skipped = 0
-
-    # Explanation:: Calcula a data limite - não busca além desse ponto
-    cutoff_date = start_date.beginning_of_month - months_back.months
-
-    Rails.logger.info("[FundValuationImportJob] Will stop at: #{cutoff_date.strftime('%Y-%m')}")
+    reference_date    = start_date.beginning_of_month
+    cutoff_date       = start_date.beginning_of_month - months_back.months
+    months_to_process = months_back
+    months_done       = 0
+    files_processed   = 0
+    total_records     = 0
+    total_skipped     = 0
 
     loop do
-      # Explanation:: Para o loop se já passou do limite de meses
       break if reference_date < cutoff_date
 
-      zip_name = format(
-        FILE_TEMPLATE,
-        year: reference_date.year,
-        month: reference_date.month
-      )
-      zip_path = TMP_DIR.join(zip_name)
-      zip_url = "#{BASE_URL}/#{zip_name}"
+      pct = 10 + ((months_done.to_f / months_to_process) * 80).round
+      progress.call(pct, "Processando #{reference_date.strftime('%m/%Y')}…")
 
-      # Explanation:: Tenta baixar o arquivo, mas não para o loop se falhar
-      #               (pode ser que o mês ainda não tenha dados disponíveis)
+      zip_name = format(FILE_TEMPLATE, year: reference_date.year, month: reference_date.month)
+      zip_path = TMP_DIR.join(zip_name)
+      zip_url  = "#{BASE_URL}/#{zip_name}"
+
       if download_zip(zip_url, zip_path)
-        # Extract and import with filtering
-        result = extract_and_import(zip_path, existing_cnpjs)
-        total_records += result[:imported]
-        total_skipped += result[:skipped]
+        result         = extract_and_import(zip_path, existing_cnpjs)
+        total_records  += result[:imported]
+        total_skipped  += result[:skipped]
         files_processed += 1
       end
 
-      reference_date = reference_date.prev_month
+      months_done    += 1
+      reference_date  = reference_date.prev_month
     end
 
-    end_time = Time.current
-    duration = (end_time - start_time).round(2)
+    progress.call(100, "Importação concluída! #{total_records} registros importados.")
 
-    # Success message
-    Rails.logger.info("=" * 80)
-    Rails.logger.info("[FundValuationImportJob] ✓ IMPORT COMPLETED SUCCESSFULLY!")
-    Rails.logger.info("=" * 80)
-    Rails.logger.info("[FundValuationImportJob] Files processed: #{files_processed}")
-    Rails.logger.info("[FundValuationImportJob] Records imported/updated: #{total_records}")
-    Rails.logger.info("[FundValuationImportJob] Records skipped (not in database): #{total_skipped}")
-    Rails.logger.info("[FundValuationImportJob] Duration: #{duration} seconds")
-    Rails.logger.info("[FundValuationImportJob] Finished at: #{end_time}")
-    Rails.logger.info("=" * 80)
-
-    {
-      status: :success,
-      files_processed: files_processed,
-      records_imported: total_records,
-      records_skipped: total_skipped,
-      duration_seconds: duration,
-      started_at: start_time,
-      finished_at: end_time
-    }
+    Rails.logger.info("[FundValuationImportJob] Done. Files: #{files_processed}, Records: #{total_records}")
 
   rescue StandardError => e
-    Rails.logger.error("=" * 80)
-    Rails.logger.error("[FundValuationImportJob] ✗ IMPORT FAILED!")
-    Rails.logger.error("=" * 80)
-    Rails.logger.error("[FundValuationImportJob] Error: #{e.message}")
-    Rails.logger.error("[FundValuationImportJob] Backtrace: #{e.backtrace.first(5).join("\n")}")
-    Rails.logger.error("=" * 80)
+    Rails.logger.error("[FundValuationImportJob] FAILED: #{e.message}")
+    Rails.cache.write("fund_valuation_import_progress",
+                      { percent: 0, step: "Erro: #{e.message}", done: true },
+                      expires_in: 10.minutes)
     raise
 
   ensure
     FileUtils.rm_rf(TMP_DIR)
-    Rails.logger.info("[FundValuationImportJob] Cleaned up temporary files")
   end
 
   private

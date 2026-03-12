@@ -88,10 +88,21 @@
                        plural: "Normas",
                        icons: { index: "scale.svg", new: "plus.svg" } %>
 
-      <%= crud_nav_for FundValuation,
-                       singular: "CVM",
-                       plural: "CVM",
-                       icons: { index: "calendar-setting.svg", new: "plus.svg" } %>
+      <%= crud_nav_for Application,
+                       singular: "Aplicação",
+                       plural: "Aplicações",
+                       icons: { index: "trending-up.svg" },
+                       show_new: false %>
+
+      <%= crud_nav_for Redemption,
+                       singular: "Resgate",
+                       plural: "Resgates",
+                       icons: { index: "trending-down.svg" },
+                       show_new: false %>
+
+      <%= crud_nav_for FundValuation, singular: "CVM", plural: "CVM",
+                       icons: { index: "calendar-setting.svg" },
+                       show_new: false %>
 
       <%= crud_nav_for EconomicIndex,
                        singular: "Índice",

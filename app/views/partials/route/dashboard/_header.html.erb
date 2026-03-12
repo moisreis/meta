@@ -64,4 +64,20 @@
       <% end %>
     <% end %>
   </div>
+
+  <% if controller_name == "fund_valuations" && action_name == "index" %>
+    <div class="flex flex-row items-center">
+      <%= form_with url: trigger_import_fund_valuations_path,
+                    method: :post,
+                    data: {
+                      controller: "calculation-progress",
+                      action: "submit->calculation-progress#submit",
+                      "calculation-progress-poll-url-value": import_progress_fund_valuations_path
+                    } do |f| %>
+        <%= f.button type: "submit", class: "button button-primary button-small" do %>
+          <%= content_tag :span, "Importar Cotações" %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
 </div>

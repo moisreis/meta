@@ -1,24 +1,24 @@
 # === economic_indices_controller.rb
 #
-# @author Moisés Reis
-# @added 12/17/2025
-# @package *Controller*
-# @description This controller manages web requests related to **EconomicIndex** records,
-#              handling how the application creates, displays, updates, and removes
-#              financial indicators like inflation or interest rates.
-# @category *Controller*
+# Description:: This controller manages web requests related to **EconomicIndex** records,
+#               handling how the application creates, displays, updates, and removes
+#               financial indicators like inflation or interest rates.
 #
-# Usage:: - *[What]* This code acts as the manager for all interactions between the
+# Usage:: - *What* - This code acts as the manager for all interactions between the
 #           user interface and the economic index data stored in the database.
-#         - *[How]* It receives requests, verifies if the user is allowed to perform
+#         - *How* - It receives requests, verifies if the user is allowed to perform
 #           the action, and sends back the requested data in a digital format.
-#         - *[Why]* It provides a secure and organized way to manage the financial
+#         - *Why* - It provides a secure and organized way to manage the financial
 #           benchmarks that the rest of the application uses for calculations.
 #
-# Attributes:: - *[@economic_indices]* @collection - a group of index records found
-#              - *[@economic_index]* @object - a single specific economic index record
+# Attributes:: - *@economic_indices* [Collection] - A group of index records found.
+#              - *@economic_index* [Object] - A single specific economic index record.
 #
 class EconomicIndicesController < ApplicationController
+
+  # =============================================================
+  #                        CONFIGURATION
+  # =============================================================
 
   # This ensures that only people who have logged into their
   # accounts can access any of the information or actions
@@ -43,18 +43,20 @@ class EconomicIndicesController < ApplicationController
     :show
   ]
 
+  # =============================================================
+  #                       PUBLIC METHODS
+  # =============================================================
+
   # == index
   #
   # @author Moisés Reis
-  # @category *Action*
   #
   # This retrieves a list of all economic indexes, allowing
   # users to search for specific ones and see only a few
   # results at a time to keep the screen organized.
   #
-  # Attributes:: - *@q* - a search object to find indices by name.
-  #              - *@economic_indices* - the final paginated list of indices.
-  #
+  # Attributes:: - *@q* - A search object to find indices by name.
+  #              - *@economic_indices* - The final paginated list of indices.
   def index
 
     # This defines the initial set of economic indices by getting all records
@@ -101,14 +103,12 @@ class EconomicIndicesController < ApplicationController
   # == show
   #
   # @author Moisés Reis
-  # @category *Action*
   #
   # This displays the full details of a single economic index,
   # including its most recent value and a history of
   # changes if the user asks for them.
   #
-  # Attributes:: - *@economic_index* - the specific index record being viewed.
-  #
+  # Attributes:: - *@economic_index* - The specific index record being viewed.
   def show
 
     # This converts the database record into a format that
@@ -134,6 +134,7 @@ class EconomicIndicesController < ApplicationController
       format.json { render json: response_data, status: :ok }
     end
   rescue ArgumentError
+
     # This handles cases where the dates provided are not
     # valid calendar days, redirecting the user safely.
     respond_to do |format|
@@ -145,14 +146,12 @@ class EconomicIndicesController < ApplicationController
   # == new
   #
   # @author Moisés Reis
-  # @category *Action*
   #
   # This prepares an empty record for a new economic index.
   # It provides the blank structure needed for the
   # creation form to appear correctly.
   #
-  # Attributes:: - *@economic_index* - a fresh, unsaved index object.
-  #
+  # Attributes:: - *@economic_index* - A fresh, unsaved index object.
   def new
     @economic_index = EconomicIndex.new
   end
@@ -160,14 +159,12 @@ class EconomicIndicesController < ApplicationController
   # == edit
   #
   # @author Moisés Reis
-  # @category *Action*
   #
   # This loads an existing index so it can be modified.
   # It fetches the data from the database to fill
   # in the fields on the editing page.
   #
-  # Attributes:: - *@economic_index* - the existing index record to be updated.
-  #
+  # Attributes:: - *@economic_index* - The existing index record to be updated.
   def edit
     @economic_index = EconomicIndex.find(params[:id])
   end
@@ -175,14 +172,12 @@ class EconomicIndicesController < ApplicationController
   # == create
   #
   # @author Moisés Reis
-  # @category *Action*
   #
   # This takes information provided by an administrator and
   # attempts to save a brand new economic index into
   # the application's database.
   #
-  # Attributes:: - *@economic_index* - the set of data for the new index.
-  #
+  # Attributes:: - *@economic_index* - The set of data for the new index.
   def create
     @economic_index = EconomicIndex.new(economic_index_params)
 
@@ -202,14 +197,12 @@ class EconomicIndicesController < ApplicationController
   # == update
   #
   # @author Moisés Reis
-  # @category *Action*
   #
   # This allows an administrator to change the details
   # of an existing index, such as correcting its
   # name or updating its description.
   #
-  # Attributes:: - *@economic_index* - the unique record being updated.
-  #
+  # Attributes:: - *@economic_index* - The unique record being updated.
   def update
     if @economic_index.update(economic_index_params)
       respond_to do |format|
@@ -227,14 +220,12 @@ class EconomicIndicesController < ApplicationController
   # == destroy
   #
   # @author Moisés Reis
-  # @category *Action*
   #
   # This permanently removes an economic index and all
   # of its historical records from the application
   # as requested by an administrator.
   #
-  # Attributes:: - *@economic_index* - the unique record to remove.
-  #
+  # Attributes:: - *@economic_index* - The unique record to remove.
   def destroy
     if @economic_index.destroy
       respond_to do |format|
@@ -249,6 +240,10 @@ class EconomicIndicesController < ApplicationController
     end
   end
 
+  # =============================================================
+  #                       HELPER UTILITIES
+  # =============================================================
+
   private
 
   # == set_economic_index
@@ -259,11 +254,11 @@ class EconomicIndicesController < ApplicationController
   # the database using its ID before any specific
   # task is performed on it.
   #
-  # Attributes:: - *@economic_index* - the record found in the database.
-  #
+  # Attributes:: - *@economic_index* - The record found in the database.
   def set_economic_index
     @economic_index = EconomicIndex.find(params[:id])
   rescue ActiveRecord::RecordNotFound
+
     # This sends a clear message saying the index
     # could not be found if the ID provided
     # does not exist in the system.
@@ -278,10 +273,9 @@ class EconomicIndicesController < ApplicationController
   # of information to be saved, preventing unauthorized
   # data from entering the system.
   #
-  # Attributes:: - *name* - allows the full name to be saved.
-  #              - *abbreviation* - allows the short code to be saved.
-  #              - *description* - allows the explanatory text to be saved.
-  #
+  # Attributes:: - *name* - Allows the full name to be saved.
+  #              - *abbreviation* - Allows the short code to be saved.
+  #              - *description* - Allows the explanatory text to be saved.
   def economic_index_params
     params.require(:economic_index).permit(:name, :abbreviation, :description)
   end
@@ -294,10 +288,10 @@ class EconomicIndicesController < ApplicationController
   # required permission level to make administrative
   # changes to the index data.
   #
-  # Attributes:: - *current_user* - the person currently using the app.
-  #
+  # Attributes:: - *current_user* - The person currently using the app.
   def authorize_admin!
     unless current_user.admin?
+
       # This blocks the user and sends a message stating
       # they do not have the right permissions to
       # perform this specific action.

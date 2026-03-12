@@ -20,16 +20,9 @@ class PortfoliosController < ApplicationController
 
   before_action :authenticate_user!
 
-  # FIX: set_portfolio used Portfolio.find without any access filter, meaning any
-  # authenticated user could reach edit/update/destroy/monthly_report/run_calculations
-  # for portfolios they do not own or have permissions on.
-  # It now uses Portfolio.for_user(current_user) so the find raises ActiveRecord::RecordNotFound
-  # (caught by rescue_from below) for portfolios the user cannot see at all.
-  before_action :set_portfolio, only: %i[show edit update destroy monthly_report run_calculations]
+  before_action :set_portfolio, only: %i[show edit update destroy monthly_report run_calculations calculation_progress]
 
-  # FIX: Explicit manage-level authorisation for mutating actions. Reading (show) is
-  # already gated by for_user; modification requires ownership or crud permission.
-  before_action :authorize_portfolio_management!, only: %i[edit update destroy run_calculations monthly_report]
+  before_action :authorize_portfolio_management!, only: %i[edit update destroy run_calculations monthly_report calculation_progress]
 
   # =============================================================
   # Error handling
@@ -231,6 +224,73 @@ class PortfoliosController < ApplicationController
     end
   end
 
+  # Trecho a adicionar / adaptar em app/controllers/portfolios_controller.rb
+  #
+  # ─── Ação que executa os cálculos ────────────────────────────────────────────
+
+  def run_calculations
+    month = params[:month] # "2025-01"
+    date = Date.parse("#{month}-01").end_of_month
+
+    # Chave única por portfolio + mês (evita colisão entre usuários)
+    @progress_key = "calc_progress_#{@portfolio.id}_#{month}"
+
+    # Garante que o cache começa zerado
+    Rails.cache.write(@progress_key, { percent: 0, step: "Iniciando…", done: false }, expires_in: 10.minutes)
+
+    # Helper interno para atualizar progresso de qualquer ponto do service
+    progress = ->(percent, step) do
+      Rails.cache.write(@progress_key, { percent:, step:, done: percent >= 100 }, expires_in: 10.minutes)
+    end
+
+    # ── Passo 1 ── Cotas e valuations ──────────────────────────
+    progress.call(10, "Buscando cotas do período…")
+    fund_investments = @portfolio.fund_investments.includes(:investment_fund, :applications, :redemptions)
+
+    # ── Passo 2 ── Calcular valor de mercado ───────────────────
+    progress.call(30, "Calculando valor de mercado…")
+    fund_investments.each do |fi|
+      fi.current_market_value(date) # chama o método existente (força memoização/cálculo)
+    end
+
+    # ── Passo 3 ── Registrar performance histories ─────────────
+    progress.call(55, "Registrando performance dos fundos…")
+    fund_investments.each do |fi|
+      # Adapte aqui para o seu service real de gravação de PerformanceHistory
+      safe_date = [date, Date.current].min   # nunca ultrapassa hoje
+
+      PerformanceHistory.find_or_initialize_by(
+        fund_investment: fi,
+        portfolio:       @portfolio,          # ← campo obrigatório
+        period:          safe_date
+      ).tap do |ph|
+        ph.monthly_return = fi.period_return_percentage(safe_date)
+        ph.earnings       = fi.total_gain(safe_date)
+        ph.save!
+      end
+    end
+
+    # ── Passo 4 ── Consolidar métricas do portfolio ────────────
+    progress.call(80, "Consolidando métricas da carteira…")
+    @portfolio.touch # ou qualquer callback de recalculação que você já tenha
+
+    # ── Passo 5 ── Concluído ───────────────────────────────────
+    progress.call(100, "Concluído!")
+
+    redirect_to portfolio_path(@portfolio, reference_date: date),
+                notice: "Performance calculada com sucesso."
+  end
+
+  # ─── Endpoint de polling (GET /portfolios/:id/calculation_progress) ──────────
+
+  def calculation_progress
+    month = params[:month] || Date.current.strftime("%Y-%m")
+    progress_key = "calc_progress_#{@portfolio.id}_#{month}"
+    data = Rails.cache.read(progress_key) || { percent: 0, step: "Aguardando…", done: false }
+
+    render json: data
+  end
+
   # =============================================================
   # Private Methods
   # =============================================================
@@ -299,7 +359,7 @@ class PortfoliosController < ApplicationController
 
     [
       { name: "Aplicações", data: monthly_data.map { |m| [m[:month], m[:applications]] } },
-      { name: "Resgates",   data: monthly_data.map { |m| [m[:month], m[:redemptions]] } }
+      { name: "Resgates", data: monthly_data.map { |m| [m[:month], m[:redemptions]] } }
     ]
   end
 

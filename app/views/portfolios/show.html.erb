@@ -98,7 +98,16 @@
             <%= form_with url: run_calculations_portfolio_path(@portfolio),
                           method: :post,
                           local: true,
-                          class: "w-full" do |form|
+                          class: "w-full",
+                          data: {
+                            controller: "calculation-progress",
+                            action: "submit->calculation-progress#submit",
+                            "calculation-progress-poll-url-value":
+                              calculation_progress_portfolio_path(
+                                @portfolio,
+                                month: @reference_date.strftime("%Y-%m")
+                              )
+                          } do |form|
             %>
               <%= hidden_field_tag :month, @reference_date.strftime("%Y-%m") %>
               <%= button_tag type: :submit,
@@ -322,7 +331,7 @@
                "Alocação",
                "Movimentação",
                "Cota mais recente",
-               "Valor Final",
+               "Valor Atual",
                "Rendimento",
                "Rent."
              ],

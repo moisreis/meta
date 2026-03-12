@@ -24,7 +24,7 @@
 #         using +Devise+ or +ActionController+ so they are highlighted in RDoc.
 
 # =============================================================
-#                        Core Controller
+#                        CORE CONTROLLER
 # =============================================================
 # This class serves as the parent for all controllers in the app,
 # providing a shared space for security settings and behavior
@@ -50,7 +50,7 @@ class ApplicationController < ActionController::Base
   protected
 
   # =============================================================
-  #                       Private Helpers
+  #                       PRIVATE HELPERS
   # =============================================================
 
   # == configure_permitted_parameters

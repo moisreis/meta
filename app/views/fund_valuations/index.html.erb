@@ -42,14 +42,6 @@
     %>
       <%= normalize_currency(@statistics[:average_quota_value]) %>
     <% end %>
-    <div class="flex flex-col justify-center items-center gap-1.5 px-6">
-      <%= link_to data_health_fund_valuations_path, class: "button w-full button-outline" do %>
-        <%= content_tag :span, "Saúde dos Dados" %>
-      <% end %>
-      <%= button_to trigger_import_fund_valuations_path, method: :post, class: "button w-full button-primary" do %>
-        <%= content_tag :span, "Importar Agora" %>
-      <% end %>
-    </div>
   <% end %>
 
   <%= render partial: "partials/blocks/data-table", locals: {

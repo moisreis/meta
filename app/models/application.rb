@@ -148,8 +148,10 @@ class Application < ApplicationRecord
   end
 
   def sync_dates
-    self.request_date = cotization_date if cotization_date.present?
-    self.liquidation_date = cotization_date if cotization_date.present?
+    return unless cotization_date.present?
+
+    self.request_date    ||= cotization_date
+    self.liquidation_date ||= cotization_date
   end
 
   private

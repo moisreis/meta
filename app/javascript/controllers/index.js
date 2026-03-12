@@ -31,6 +31,13 @@ import BankAccountMaskController from "controllers/bank_account_mask_controller"
 
 application.register("bank-account-mask", BankAccountMaskController)
 
+// This statement registers the calculation progress tracker.
+// It manages the real-time feedback and progress bar display
+// during long-running performance calculation tasks.
+import CalculationProgressController from "controllers/calculation_progress_controller"
+
+application.register("calculation-progress", CalculationProgressController)
+
 // This statement registers the enhanced selection logic.
 // It replaces standard dropdown menus with searchable,
 // stylized components to improve the user selection process.
