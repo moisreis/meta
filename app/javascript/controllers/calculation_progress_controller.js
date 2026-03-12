@@ -39,7 +39,7 @@ export default class extends Controller {
 
         try {
             const response = await fetch(form.action, {
-                method: form.method || "POST",
+                method: (form.getAttribute("method") || "POST").toUpperCase(),
                 headers: { "X-CSRF-Token": this._csrf(), "Accept": "text/html" },
                 body:    new FormData(form)
             })
