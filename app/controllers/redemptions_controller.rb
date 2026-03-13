@@ -135,6 +135,7 @@ class RedemptionsController < ApplicationController
 
     authorize! :manage, fund_investment.portfolio
 
+    # Após calcular redeemed_quotas:
     if @redemption.cotization_date.present? && @redemption.redeemed_liquid_value.present?
       quota_value = fund_investment.investment_fund.quota_value_on(@redemption.cotization_date)
 
@@ -143,7 +144,16 @@ class RedemptionsController < ApplicationController
         return render :new, status: :unprocessable_entity
       end
 
-      @redemption.redeemed_quotas = BigDecimal(@redemption.redeemed_liquid_value.to_s) / quota_value
+      calculated_quotas = BigDecimal(@redemption.redeemed_liquid_value.to_s) / quota_value
+
+      # Para resgates totais, usa directamente as cotas disponíveis
+      # evitando erro de arredondamento quando o valor de mercado
+      # divide para ligeiramente mais cotas do que as detidas.
+      @redemption.redeemed_quotas = if @redemption.redemption_type == "total"
+                                      fund_investment.total_quotas_held
+                                    else
+                                      calculated_quotas
+                                    end
     end
 
     if (@redemption.redeemed_quotas || 0) > (fund_investment.total_quotas_held || 0)
@@ -295,20 +305,20 @@ class RedemptionsController < ApplicationController
   # Restores quotas to their source applications when a redemption is deleted
   # to maintain accurate historical and current balance records.
   def revert_quotas_on_destroy(fund_investment)
-    allocations   = @redemption.redemption_allocations.includes(:application)
+    allocations = @redemption.redemption_allocations.includes(:application)
     reverted_value = allocations.sum { |a| a.quotas_used * a.application.quota_value_at_application }
 
     allocations.each do |allocation|
       app = allocation.application
       app.update!(
         number_of_quotas: app.number_of_quotas + allocation.quotas_used,
-        financial_value:  app.financial_value  + (allocation.quotas_used * app.quota_value_at_application)
+        financial_value: app.financial_value + (allocation.quotas_used * app.quota_value_at_application)
       )
     end
 
     fund_investment.update_balances!(
       quotas_delta: allocations.sum(:quotas_used),
-      value_delta:  reverted_value
+      value_delta: reverted_value
     )
   end
 

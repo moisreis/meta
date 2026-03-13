@@ -431,7 +431,7 @@
                see_all_path: applications_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
                title_proc: ->(app) { app.fund_investment.investment_fund.fund_name },
                value_proc: ->(app) { normalize_currency(app.financial_value) },
-               sub_value_proc: ->(app) { "#{app.number_of_quotas} cotas" } %>
+               sub_value_proc: ->(app) { normalize_number(app.number_of_quotas) } %>
 
     <%# This list displays the five most recent withdrawals from the funds.
       # It applies a danger theme to separate redemptions from deposits,
@@ -456,7 +456,7 @@
                see_all_path: redemptions_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
                title_proc: ->(red) { red.fund_investment.investment_fund.fund_name },
                value_proc: ->(red) { normalize_currency(red.redeemed_liquid_value) },
-               sub_value_proc: ->(red) { "#{red.redeemed_quotas} cotas" } %>
+               sub_value_proc: ->(red) { normalize_number(red.redeemed_quotas) } %>
 
   <% end %>
 
