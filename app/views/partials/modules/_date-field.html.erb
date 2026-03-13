@@ -25,7 +25,7 @@
 <% is_inactive ||= nil %>
 <% field_type ||= :text_field %>
 <% value ||= nil %>
-<% data  ||= {} %>
+<% data ||= {} %>
 
 <%# [Variable] Defines the CSS classes for the input label.
   #            Controls spacing, font style, and disabled appearance.
@@ -85,11 +85,10 @@
   %>
   <div class="relative <%= is_half_width ? '!w-1/2' : '' %>">
     <% placeholder ||= nil %>
-<%# depois: um único f.send %>
     <%= f.send(
           field_type || :date_field,
           name,
-          placeholder: "Dia/Mês/Ano",
+          placeholder: "Escolha uma data",
           class: "#{input_classes} #{input_classes_on_hover} #{input_classes_on_focus}",
           data: { controller: "datepicker" },
           aria: { describedby: "#{name}-desc" },

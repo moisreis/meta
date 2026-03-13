@@ -240,7 +240,7 @@ class RedemptionsController < ApplicationController
       PortfolioAllocationCalculator.recalculate!(fund_investment.portfolio)
     end
 
-    redirect_to fund_investment_path(fund_investment), notice: "Resgate criado com sucesso."
+    redirect_to portfolio_path(fund_investment.portfolio), notice: "Resgate criado com sucesso."
 
   rescue ActiveRecord::RecordInvalid => e
 

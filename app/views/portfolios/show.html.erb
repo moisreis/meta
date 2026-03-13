@@ -5,35 +5,25 @@
   # Package: Meta
   #
   # Description: Displays the detailed dashboard view for a single investment portfolio.
-  #              It consolidates summary statistics, performance charts, a list of
-  #              allocated funds, recent transaction history, and sharing permissions.
+  # This template organizes financial KPIs, performance charts, and asset lists
+  # into a cohesive analytical interface for the user.
   #
   # Locals:
-  # @param [Portfolio] @portfolio - The specific portfolio record being displayed.
-  # @param [Array] @monthly_earnings_history - Dataset for the monthly earnings line chart.
-  # @param [Array] @equity_evolution - Dataset representing total value over time.
-  # @param [Array] @monthly_flows - Data for transaction and movement bar/line charts.
-  # @param [Array] @institution_distribution - Data for the institution pie chart.
-  # @param [Array] @allocation_data - Data for the fund allocation distribution chart.
-  # @param [Array] @recent_performance - List of recent performance metrics for individual funds.
-  # @param [Date] @reference_date - The specific date used to filter and calculate values.
+  # @param [Portfolio]          @portfolio               - The portfolio instance being displayed.
+  # @param [Date]               @reference_date          - The specific date chosen for data filtering.
+  # @param [Date]               @reference_period        - The end-of-month date for the selected period.
+  # @param [BigDecimal]         @total_market_value      - Calculated market value at the reference date.
+  # @param [BigDecimal]         @total_earnings          - Monthly earnings from active funds.
+  # @param [BigDecimal]         @portfolio_return        - The weighted monthly return percentage.
+  # @param [BigDecimal]         @portfolio_12m_return    - Return percentage over the last twelve months.
+  # @param [BigDecimal]         @portfolio_yearly_return - Accumulated return percentage for the current year.
+  # @param [Hash]               @performance_by_fund     - Performance history mapped by fund investment ID.
+  # @param [ActiveRecord::Rel]  @recent_performance      - Collection of recent performance records.
   #
-  # Usage: - What: Renders the comprehensive detail page for a specific user's investment portfolio.
-  #                It allows the owner to monitor and manage their allocated funds and performance.
-  #        - How: This partial is rendered from the **PortfoliosController#show** action, receiving
-  #               the **@portfolio** instance variable.
-  #        - Why: Provides a single, centralized view for performance tracking, auditing allocations,
-  #               and initiating new investment or redemption transactions.
-  %>
-
-<%# =============================================================
-  # Page Wrapper & Header
-  # ============================================================= %>
-
-<%# This layout wrapper organizes the entire page content into a clean
-  # dashboard structure. It sets the main title and owner description
-  # so the user always knows which portfolio is being viewed.
-  %>
+  # Notes:
+  # Uses the +Portfolio+ model and relies on +PerformanceHistory+ for analytical data.
+  # Includes interactive forms that connect to +ReferenceDateController+ for filtering.
+%>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: @portfolio.name,
            page_desc: "Carteira de #{@portfolio.user.full_name}",
@@ -43,89 +33,108 @@
 <%# =============================================================
   # Reference Date Filter + Actions
   # ============================================================= %>
+
   <%= render "partials/route/dashboard/section",
              section_title: "Período de Referência",
              columns: 1 do
   %>
-    <div class="flex flex-row justify-start gap-3">
-      <%= form_with url: portfolio_path(@portfolio),
+    <div class="flex flex-row justify-start gap-3 items-end"
+         data-controller="reference-date">
+
+      <%# Provides a visual date picker input that serves as the primary
+          trigger for updating the dashboard reference timeframe. %>
+      <%= form_with url: "#",
                     method: :get,
                     local: true,
-                    id: "reference-date-form",
-                    class: "flex flex-row items-center gap-2 w-fit" do |f|
+                    id: "reference-date-dummy-form",
+                    class: "w-[280px]" do |f|
       %>
-        <div class="relative [&>div>div]:!w-[350px]">
-          <%= render "partials/modules/select",
+        <div data-reference-date-target="inputWrapper">
+          <%= render "partials/modules/date-field",
                      f: f,
                      name: :reference_date,
-                     label: nil,
+                     label: "Data de referência",
                      desc: nil,
                      is_half_width: false,
-                     is_small: true,
-                     options_collection: @portfolio.performance_histories
-                                                   .order(period: :desc)
-                                                   .pluck(:period)
-                                                   .map { |d| [l(d, format: :long), d] },
-                     selected: @reference_date,
-                     is_inactive: false
+                     icon_name: "calendar",
+                     value: @reference_date
           %>
         </div>
       <% end %>
 
-      <%= button_tag type: "button",
-                     class: "button button-primary button-small",
-                     data: {
-                       controller: "tippy",
-                       tippy_type_value: "menu",
-                       tippy_target: "#reference-date-actions"
-                     } do %>
-        <%= content_tag :span, "Ações" %>
-        <%= inline_svg_tag "icons/chevron-down.svg" %>
+      <%# Handles the GET request to refresh the dashboard view based
+          on the selected reference date provided by the user. %>
+      <%= form_with url: portfolio_path(@portfolio),
+                    method: :get,
+                    local: true,
+                    id: "form-view-period",
+                    data: { reference_date_target: "viewForm" },
+                    class: "hidden" do |f|
+      %>
+        <%= hidden_field_tag :reference_date,
+                             @reference_date,
+                             data: { reference_date_target: "viewDate" } %>
       <% end %>
 
-      <div id="reference-date-actions" style="display: none;">
-        <div class="flex flex-col gap-1.5 w-full justify-start items-start">
+      <% if @portfolio.present? && @portfolio.persisted? %>
+        <%# Triggers a background calculation job to process performance
+            metrics for the specific month selected in the interface. %>
+        <%= form_with url: run_calculations_portfolio_path(@portfolio),
+                      method: :post,
+                      local: true,
+                      id: "form-calculate",
+                      data: { reference_date_target: "calcForm" },
+                      class: "hidden" do |f|
+        %>
+          <%= hidden_field_tag :month,
+                               @reference_date.strftime("%Y-%m"),
+                               data: { reference_date_target: "calcMonth" } %>
+        <% end %>
 
-          <%= button_tag type: "submit",
-                         form: "reference-date-form",
-                         class: "button button-ghost button-small w-full justify-start" do %>
-            <%= inline_svg_tag "icons/calendar.svg" %>
-            <%= content_tag :span, "Aplicar" %>
-          <% end %>
+        <%# Submits a request to generate a downloadable monthly report
+            based on the currently active reference date parameters. %>
+        <%= form_with url: monthly_report_portfolio_path(@portfolio),
+                      method: :get,
+                      local: true,
+                      data: { turbo: false, reference_date_target: "reportForm" },
+                      id: "form-report",
+                      class: "hidden" do |f|
+        %>
+          <%= hidden_field_tag :day, @reference_date.day, data: { reference_date_target: "reportDay" } %>
+          <%= hidden_field_tag :month, @reference_date.month, data: { reference_date_target: "reportMonth" } %>
+          <%= hidden_field_tag :year, @reference_date.year, data: { reference_date_target: "reportYear" } %>
+        <% end %>
+      <% end %>
 
-          <% if @portfolio.present? && @portfolio.persisted? %>
+      <%# Executes the view update action through the Stimulus controller
+          to reload the page data for the chosen date. %>
+      <%= button_tag type: "button",
+                     class: "button button-outline",
+                     data: { action: "reference-date#view" } do %>
+        <%= inline_svg_tag "icons/calendar.svg" %>
+        <%= content_tag :span, "Visualizar" %>
+      <% end %>
 
-            <%= form_with url: run_calculations_portfolio_path(@portfolio),
-                          method: :post,
-                          local: true,
-                          class: "w-full" do |form|
-            %>
-              <%= hidden_field_tag :month, @reference_date.strftime("%Y-%m") %>
-              <%= button_tag type: :submit,
-                             class: "button button-ghost button-small w-full justify-start" do %>
-                <%= inline_svg_tag "icons/refresh-cw.svg" %>
-                <%= content_tag :span, "Calcular Performance" %>
-              <% end %>
-            <% end %>
+      <% if @portfolio.present? && @portfolio.persisted? %>
+        <%# Initiates the performance recalculation logic for the
+            selected portfolio and specific reference month. %>
+        <%= button_tag type: "button",
+                       class: "button button-accent",
+                       data: { action: "reference-date#calculate" } do %>
+          <%= inline_svg_tag "icons/refresh-cw.svg" %>
+          <%= content_tag :span, "Calcular Performance" %>
+        <% end %>
 
-            <%= form_with url: monthly_report_portfolio_path(@portfolio),
-                          method: :get,
-                          local: true,
-                          data: { turbo: false },
-                          class: "w-full" do |f|
-            %>
-              <%= hidden_field_tag :month, @reference_date.month %>
-              <%= hidden_field_tag :year, @reference_date.year %>
-              <%= f.button type: "submit",
-                           class: "button button-secondary button-small w-full justify-start" do %>
-                <%= inline_svg_tag "icons/file-attachment.svg" %>
-                <%= content_tag :span, "Gerar relatório" %>
-              <% end %>
-            <% end %>
+        <%# Requests the system to compile and export a PDF report
+            containing the portfolio's financial status and history. %>
+        <%= button_tag type: "button",
+                       class: "button button-secondary",
+                       data: { action: "reference-date#report" } do %>
+          <%= inline_svg_tag "icons/file-attachment.svg" %>
+          <%= content_tag :span, "Gerar Relatório" %>
+        <% end %>
+      <% end %>
 
-          <% end %>
-        </div>
-      </div>
     </div>
   <% end %>
 
@@ -133,23 +142,24 @@
     # Key Performance Indicators (KPIs)
     # ============================================================= %>
 
-  <%# This grid displays high-level financial metrics such as total gains,
-    # total market value, and percentage returns. It provides an immediate
-    # pulse check on the portfolio's health and growth.
-    %>
   <%= render "partials/route/dashboard/section",
              section_title: "KPIs",
              columns: 4 do
   %>
+
+    <%# Displays the total reconstructed market value for the portfolio
+        as it existed on the specific reference date. %>
     <%= render(
           "partials/route/dashboard/card",
           card_title: "Total da Carteira",
           card_icon: "banknote"
         ) do
     %>
-      <%= normalize_currency(@portfolio.total_current_market_value) %>
+      <%= normalize_currency(@total_market_value) %>
     <% end %>
 
+    <%# Shows the total financial earnings accumulated since the
+        beginning of the current calendar year. %>
     <%= render(
           "partials/route/dashboard/card",
           card_title: "Rendimento Acumulado do Ano",
@@ -160,6 +170,8 @@
       <%= normalize_trend(@portfolio.yearly_earnings) %>
     <% end %>
 
+    <%# Presents the estimated financial earnings for the month
+        associated with the current reference date. %>
     <%= render(
           "partials/route/dashboard/card",
           card_title: "Rendimento do Mês",
@@ -169,9 +181,11 @@
       <%= normalize_trend(@portfolio.estimated_current_month_earnings) %>
     <% end %>
 
+    <%# Displays the percentage return achieved by the portfolio
+        across the current calendar year. %>
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Rendimento Acumulada do Ano",
+          card_title: "Rentabilidade Acumulada do Ano",
           card_icon: "calendar",
           card_data: normalize_card_text("Ano Atual"),
           status: card_status_trend_for(@portfolio_yearly_return)
@@ -180,15 +194,19 @@
       <%= normalize_trend(@portfolio_yearly_return, format: :percentage) %>
     <% end %>
 
+    <%# Shows the percentage return specific to the month of the
+        currently selected reference date. %>
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Rentabilidade dos Mês Atual",
-          card_icon: "trending-up",
+          card_title: "Rentabilidade do Mês Atual",
+          card_icon: "trending-up"
         ) do
     %>
       <%= normalize_trend(@portfolio.portfolio_return_percentage, format: :percentage) %>
     <% end %>
 
+    <%# Provides the trailing twelve-month percentage return for the
+        portfolio, indicating long-term performance. %>
     <%= render(
           "partials/route/dashboard/card",
           card_title: "Rentabilidade dos Últimos 12 meses",
@@ -199,37 +217,27 @@
     %>
       <%= normalize_percentage(@portfolio_12m_return) %>
     <% end %>
+
   <% end %>
 
   <%# =============================================================
     # Analytical Charts & Visualizations
     # ============================================================= %>
 
-  <%# This section presents visual data for monthly earnings, asset evolution,
-    # cash flows, and institutional distribution. It helps users identify
-    # patterns and trends in their investment behavior over time.
-    %>
   <%= render "partials/route/dashboard/section",
              section_title: "Análise Detalhada",
              columns: 2 do
   %>
 
+    <%# Visualizes historical monthly earnings using a color-coded
+        column chart to highlight gains and losses. %>
     <%= render "partials/groups/chart-list",
                chart_type: :column_chart,
                data_source: @monthly_earnings_history,
                chart_title: "Rendimento Mensal",
                chart_options: {
-                 prefix: "R$ ",
-                 thousands: ".",
-                 decimal: ",",
-                 library: {
-                   plugins: {
-                     colorschemes: false
-                   },
-                   elements: {
-                     bar: { borderWidth: 0 }
-                   }
-                 },
+                 prefix: "R$ ", thousands: ".", decimal: ",",
+                 library: { plugins: { colorschemes: false }, elements: { bar: { borderWidth: 0 } } },
                  dataset: {
                    borderWidth: 0,
                    backgroundColor: @monthly_earnings_history.map { |_, v|
@@ -239,81 +247,69 @@
                }
     %>
 
+    <%# Displays the growth of total portfolio equity over time,
+        allowing the user to track wealth accumulation. %>
     <%= render "partials/groups/chart-list",
                chart_type: :column_chart,
                data_source: @equity_evolution,
                chart_title: "Evolução do Patrimônio",
-               chart_options: {
-                 prefix: "R$ ",
-                 thousands: ".",
-                 decimal: ",",
-                 dataset: { borderWidth: 0 }
-               }
+               chart_options: { prefix: "R$ ", thousands: ".", decimal: ",", dataset: { borderWidth: 0 } }
     %>
 
+    <%# Illustrates inflows and outflows within the portfolio,
+        differentiating between applications and redemptions. %>
     <%= render "partials/groups/chart-list",
                chart_type: :column_chart,
                data_source: @monthly_flows,
                chart_title: "Movimentações",
                chart_options: {
-                 stacked: false,
-                 prefix: "R$ ",
-                 thousands: ".",
-                 decimal: ",",
+                 stacked: false, prefix: "R$ ", thousands: ".", decimal: ",",
                  colors: ["rgba(34, 197, 94, 0.8)", "rgba(239, 68, 68, 0.8)"],
                  dataset: { borderWidth: 0 }
                }
     %>
+
   <% end %>
 
   <%# =============================================================
     # Asset Allocation & Transaction Visuals
     # ============================================================= %>
 
-  <%# These charts specifically illustrate how the portfolio's assets are
-    # divided among different funds and the history of transactions.
-    # It provides clarity on diversification and liquidity changes.
-    %>
   <%= render "partials/route/dashboard/section",
              section_title: "Visualizações",
              columns: 2 do
   %>
 
+    <%# Breaks down the portfolio by individual funds to show
+        the percentage of capital allocated to each. %>
     <%= render "partials/groups/chart-list",
                chart_type: :pie_chart,
                data_source: @allocation_data,
                chart_title: "Fundos alocados",
-               chart_options: {
-                 suffix: "%",
-                 donut: true,
-                 legend: "right"
-               }
+               chart_options: { suffix: "%", donut: true, legend: "right" }
     %>
 
+    <%# Shows the distribution of assets across different financial
+        institutions to monitor diversification levels. %>
     <%= render "partials/groups/chart-list",
                chart_type: :pie_chart,
                data_source: @institution_distribution,
                chart_title: "Distribuição por Instituição",
-               chart_options: {
-                 donut: true,
-                 legend: "bottom",
-                 suffix: "%"
-               }
+               chart_options: { donut: true, legend: "bottom", suffix: "%" }
     %>
+
   <% end %>
 
   <%# =============================================================
     # Fund Investment & Performance Tables
     # ============================================================= %>
 
-  <%# This table lists all active fund investments, showing detailed values
-    # for applications, redemptions, and current market values. It acts
-    # as the primary ledger for individual fund performance.
-    %>
+  <%# Displays a comprehensive list of all funds within the portfolio,
+      including current valuation and periodic performance metrics. %>
   <%= render "partials/groups/table-list",
              section_title: "Lista de fundos alocados",
              section_desc: "Dados de #{l(@reference_date, format: :long)}",
-             th_descs: Array.new(3, nil) + Array.new(4, "Até #{l(@reference_date, format: :default)}"),
+             th_descs: Array.new(3, nil) + Array.new(4, "Ref. #{l(@reference_date, format: :default)}"),
              collection: @portfolio.fund_investments.includes(:investment_fund, :applications, :redemptions),
              action_path: new_fund_investment_path(portfolio_id: @portfolio.id),
              action_name: "Nova alocação",
@@ -332,16 +328,15 @@
                ->(fi) { normalize_percentage([fi.percentage_allocation, 0].max) },
                ->(fi) { normalize_trend(fi.net_movement) },
                ->(fi) { normalize_currency(fi.investment_fund.quota_value_on(@reference_date)) },
-               ->(fi) { normalize_currency(fi.current_market_value(@reference_date)) },
-               ->(fi) { normalize_currency(fi.total_gain(@reference_date)) },
-               ->(fi) { normalize_percentage(fi.period_return_percentage(@reference_date), precision: 4) }
+               ->(fi) { normalize_currency(fi.current_market_value_on(@reference_date)) },
+               ->(fi) { normalize_currency(@performance_by_fund[fi.id]&.earnings) },
+               ->(fi) { normalize_percentage(@performance_by_fund[fi.id]&.monthly_return, precision: 4) }
              ] %>
 
-  <%# This secondary table highlights the most recent monthly performance
-    # of the funds, focusing on earnings and percentage returns to help
-    # identify the best-performing assets in the current period.
-    %>
   <% if @recent_performance.any? %>
+
+    <%# Renders a secondary table focusing on the performance results
+        recorded for each fund during the selected period. %>
     <%= render(
           "partials/groups/table-list",
           section_title: "Performance dos Fundos",
@@ -352,15 +347,9 @@
           headers: ["Fundo", "Rentabilidade", "Rendimento"],
           column_icons: ["trending-up", "percent", "banknote"],
           body_procs: [
-            ->(ph) do
-              normalize_title(ph.fund_investment.investment_fund.fund_name)
-            end,
-            ->(ph) do
-              normalize_trend(ph.monthly_return, format: :percentage)
-            end,
-            ->(ph) do
-              normalize_currency(ph.earnings)
-            end,
+            ->(ph) { normalize_title(ph.fund_investment.investment_fund.fund_name) },
+            ->(ph) { normalize_trend(ph.monthly_return, format: :percentage) },
+            ->(ph) { normalize_currency(ph.earnings) },
           ]
         ) %>
   <% end %>
@@ -369,11 +358,9 @@
     # Cash Management (Checking Accounts)
     # ============================================================= %>
 
-  <%# This section lists bank accounts associated with the portfolio.
-    # It allows the user to track liquid cash balances alongside
-    # their invested assets for a complete financial overview.
-    %>
   <% if @portfolio.checking_accounts.exists? %>
+    <%# Lists the liquid cash positions in checking accounts linked
+        to the portfolio, including balances and institutions. %>
     <%= render "partials/groups/table-list",
                section_title: "Contas Correntes",
                collection: @portfolio.checking_accounts.order(reference_date: :desc),
@@ -395,16 +382,14 @@
     %>
   <% end %>
 
+  <%# Renders the modal used to create and associate new checking
+      accounts with the current portfolio instance. %>
   <%= render "partials/route/dashboard/create_checkingaccount" %>
 
   <%# =============================================================
     # Recent Activity (Applications & Redemptions)
     # ============================================================= %>
 
-  <%# This section tracks the most recent movements within the portfolio.
-    # It shows the latest deposits (applications) and withdrawals
-    # (redemptions) to keep the user informed of recent liquidity changes.
-    %>
   <%= render "partials/route/dashboard/section",
              columns: 2,
              section_title: "APR",
@@ -412,6 +397,8 @@
              has_action: false do
   %>
 
+    <%# Lists the five most recent investment applications made within
+        the current year to provide a quick operational summary. %>
     <%= render "partials/groups/recent_activity",
                section_title: "Aplicações",
                section_columns: 1,
@@ -433,10 +420,8 @@
                value_proc: ->(app) { normalize_currency(app.financial_value) },
                sub_value_proc: ->(app) { normalize_number(app.number_of_quotas) } %>
 
-    <%# This list displays the five most recent withdrawals from the funds.
-      # It applies a danger theme to separate redemptions from deposits,
-      # helping the user track their liquidity and cash outflows.
-      %>
+    <%# Displays the five most recent redemption requests to track
+        the liquidation history of assets during the year. %>
     <%= render "partials/groups/recent_activity",
                section_title: "Resgates",
                section_columns: 1,
@@ -464,9 +449,9 @@
     # Transaction Modals
     # ============================================================= %>
 
-  <%# These partials provide the hidden modal forms used to create new
-    # applications and redemptions directly from the dashboard view.
-    %>
+  <%# Injects the hidden modals required to record new application
+      and redemption transactions directly from the dashboard. %>
   <%= render "partials/route/dashboard/create_application" %>
   <%= render "partials/route/dashboard/create_redemption" %>
+
 <% end %>

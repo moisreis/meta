@@ -58,3 +58,11 @@ application.register("datepicker", DatepickerController)
 import TippyController from "controllers/tippy_controller"
 
 application.register("tippy", TippyController)
+
+// This statement registers the reference date synchronization logic.
+// It synchronizes the selected date across the three portfolio action
+// forms (view period, calculate performance, generate report) before
+// each respective form is submitted.
+import ReferenceDateController from "controllers/reference_date_controller"
+
+application.register("reference-date", ReferenceDateController)

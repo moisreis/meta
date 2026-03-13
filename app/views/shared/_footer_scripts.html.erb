@@ -51,7 +51,7 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', setupEventListeners);
+    document.addEventListener('turbo:load', setupEventListeners);
 </script>
 
 <!-- [Script] portfolioDropdown -->
@@ -113,7 +113,7 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', setupApplicationSidebarListeners);
+    document.addEventListener('turbo:load', setupApplicationSidebarListeners);
 </script>
 
 <!-- [Script] sidebarRedemption -->
@@ -157,7 +157,7 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', setupRedemptionSidebarListeners);
+    document.addEventListener('turbo:load', setupRedemptionSidebarListeners);
 </script>
 
 <!-- [Script] sidebarCheckingAccount -->
@@ -181,11 +181,11 @@
     }
 
     function setupCheckingAccountSidebarListeners() {
-        checkingAccountSidebar    = document.getElementById('sidebarCheckingAccount');
-        openCheckingAccountBtn    = document.getElementById('openCheckingAccountBtn');
-        closeCheckingAccountBtn   = document.getElementById('closeCheckingAccountBtn');
-        cancelCheckingAccountBtn  = document.getElementById('cancelCheckingAccountBtn');
-        checkingAccountOverlay    = document.getElementById('checkingAccountOverlay');
+        checkingAccountSidebar = document.getElementById('sidebarCheckingAccount');
+        openCheckingAccountBtn = document.getElementById('openCheckingAccountBtn');
+        closeCheckingAccountBtn = document.getElementById('closeCheckingAccountBtn');
+        cancelCheckingAccountBtn = document.getElementById('cancelCheckingAccountBtn');
+        checkingAccountOverlay = document.getElementById('checkingAccountOverlay');
 
         if (checkingAccountSidebar && openCheckingAccountBtn && closeCheckingAccountBtn) {
             openCheckingAccountBtn.addEventListener('click', openCheckingAccountSidebar);
@@ -193,7 +193,7 @@
             cancelCheckingAccountBtn.addEventListener('click', closeCheckingAccountSidebar);
             checkingAccountOverlay.addEventListener('click', closeCheckingAccountSidebar);
 
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') closeCheckingAccountSidebar();
             });
         } else {
@@ -201,7 +201,7 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', setupCheckingAccountSidebarListeners);
+    document.addEventListener('turbo:load', setupCheckingAccountSidebarListeners);
 </script>
 
 <!-- [Script] portfolioDropdownSync -->

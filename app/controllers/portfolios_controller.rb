@@ -2,32 +2,66 @@
 # Configuration & Dependencies
 # =============================================================
 
-# FIX: Renamed from ALLOWED_SORT_COLUMNS / ALLOWED_DIRECTIONS to avoid constant
-# redefinition warnings at boot time. Multiple controllers used the same generic
-# names, causing Ruby to emit "already initialized constant" warnings and, in
-# some load-order scenarios, silently clobbering the other controller's whitelist.
+# Define the allowed database columns for sorting portfolio lists.
+#
+# This array whitelists specific attributes to prevent SQL injection and
+# ensures that sorting requests remain within the defined architectural boundaries.
 PORTFOLIOS_ALLOWED_SORT_COLUMNS = %w[id name created_at updated_at].freeze
+
+# Define the allowed directions for ordering portfolio results.
+#
+# This constant restricts sorting to ascending or descending order,
+# preventing invalid order clauses from being passed to the database.
 PORTFOLIOS_ALLOWED_DIRECTIONS = %w[asc desc].freeze
 
 # === portfolios_controller.rb
 #
 # Description:: Manages the lifecycle of investment portfolios within the system.
+#               This controller handles the creation, analysis, and reporting of
+#               financial portfolios, providing detailed performance metrics and
+#               automated calculation triggers for users and administrators.
+#
+# Usage:: - *What* - Serves as the primary interface for portfolio management and financial dashboarding.
+#         - *How* - Utilizes +Ransack+ for filtering, +Kaminari+ for pagination, and background jobs for heavy performance calculations.
+#         - *Why* - To centralize investment tracking, allow shared access permissions, and generate analytical PDF reports.
+#
+# Attributes:: - *@portfolio* [Portfolio] - The specific portfolio record currently being accessed or modified.
+#              - *@portfolios* [Relation] - A paginated collection of portfolios available to the current user.
+#              - *@reference_date* [Date] - The temporal anchor used to filter historical performance data.
+#
+# View:: - +PortfoliosView+
+#
+# Notes:: Includes modules +PdfExportable+ for list exports and +MonthlyReportable+ for analytical PDF generation.
+#         Access is controlled via **Devise** authentication and **CanCanCan** authorization.
 #
 class PortfoliosController < ApplicationController
 
+  # Explain what this line does in two or three lines.
+  # Provides the infrastructure for exporting the index list into PDF format.
   include PdfExportable
+
+  # Explain what this line does in two or three lines.
+  # Adds capabilities for generating detailed monthly performance reports.
   include MonthlyReportable
 
+  # Explain what this line does in two or three lines.
+  # Ensures only logged-in users can access portfolio management actions.
   before_action :authenticate_user!
 
+  # Explain what this line does in two or three lines.
+  # Locates the specific portfolio record before executing member actions.
   before_action :set_portfolio, only: %i[show edit update destroy monthly_report run_calculations calculation_progress]
 
+  # Explain what this line does in two or three lines.
+  # Validates that the user has sufficient permissions to modify or calculate the portfolio.
   before_action :authorize_portfolio_management!, only: %i[edit update destroy run_calculations monthly_report calculation_progress]
 
   # =============================================================
   # Error handling
   # =============================================================
 
+  # Explain what this line does in two or three lines.
+  # Gracefully redirects the user if they attempt to access a portfolio that does not exist.
   rescue_from ActiveRecord::RecordNotFound do |e|
     respond_to do |format|
       format.html { redirect_to portfolios_path, alert: "Carteira não encontrada." }
@@ -35,6 +69,8 @@ class PortfoliosController < ApplicationController
     end
   end
 
+  # Explain what this line does in two or three lines.
+  # Handles unauthorized access attempts by redirecting with a security alert message.
   rescue_from CanCan::AccessDenied do |e|
     respond_to do |format|
       format.html { redirect_to portfolios_path, alert: e.message }
@@ -42,6 +78,8 @@ class PortfoliosController < ApplicationController
     end
   end
 
+  # Explain what this line does in two or three lines.
+  # Logs unexpected errors and provides a generic failure message to the end user.
   rescue_from StandardError do |e|
     Rails.logger.error("[PortfoliosController] Unhandled error: #{e.class} — #{e.message}\n#{e.backtrace.first(5).join("\n")}")
     respond_to do |format|
@@ -54,6 +92,14 @@ class PortfoliosController < ApplicationController
   # Public Methods
   # =============================================================
 
+  # == index
+  # @author Moisés Reis
+  #
+  # Lists all portfolios accessible to the user with support for searching and sorting.
+  # Admins see all records, while standard users see only their own or shared portfolios.
+  #
+  # Returns::
+  # - An HTML page containing a paginated list of portfolio records.
   def index
     base_scope = current_user.admin? ? Portfolio.all : Portfolio.for_user(current_user)
 
@@ -70,6 +116,14 @@ class PortfoliosController < ApplicationController
     respond_to { |f| f.html }
   end
 
+  # == show
+  # @author Moisés Reis
+  #
+  # Displays the detailed analytical dashboard for a specific portfolio.
+  # It calculates market values, asset allocation, and returns for a chosen reference date.
+  #
+  # Returns::
+  # - A comprehensive view with performance charts and detailed investment breakdowns.
   def show
     @new_application = Application.new
     @new_redemption = Redemption.new
@@ -89,7 +143,7 @@ class PortfoliosController < ApplicationController
 
     @monthly_flows = calculate_monthly_flows(@portfolio)
 
-    @reference_period = Date.current.end_of_month
+    @reference_period = @reference_date.end_of_month
 
     @recent_performance = @portfolio.performance_histories
                                     .where(period: @reference_period)
@@ -105,18 +159,28 @@ class PortfoliosController < ApplicationController
       end
     end
 
+    @performance_by_fund = @recent_performance.index_by(&:fund_investment_id)
+
     @recent_performance = @recent_performance.order("monthly_return DESC")
     @portfolio_yearly_return = @portfolio.portfolio_yearly_return_percentage(@reference_period)
 
     @equity_evolution = @portfolio.value_timeline(12)
-
     @monthly_earnings_history = @portfolio.monthly_earnings_history
+
+    @total_market_value = fund_investments.sum { |fi| fi.current_market_value_on(@reference_date) }
 
     @total_earnings = BigDecimal("0")
     @portfolio_return = BigDecimal("0")
     @portfolio_12m_return = BigDecimal("0")
 
     if @recent_performance.any?
+      active_performance = @recent_performance.select do |perf|
+        fi = perf.fund_investment
+        fi.current_market_value_on(@reference_period) > 0 ||
+          fi.applications.where("cotization_date <= ?", @reference_period).sum(:number_of_quotas) >
+            fi.redemptions.where("cotization_date <= ?", @reference_period).sum(:redeemed_quotas)
+      end
+
       effective_initial_balance = ->(perf) do
         if perf.initial_balance&.positive?
           perf.initial_balance
@@ -127,14 +191,14 @@ class PortfoliosController < ApplicationController
         end
       end
 
-      total_initial_balance = @recent_performance.sum { |p| effective_initial_balance.call(p) }
-      @total_earnings = @recent_performance.sum(:earnings)
+      total_initial_balance = active_performance.sum { |p| effective_initial_balance.call(p) }
+      @total_earnings = active_performance.sum(&:earnings)
 
       if total_initial_balance > 0
         @portfolio_return = (@total_earnings / total_initial_balance) * 100
 
         weighted_12m = BigDecimal("0")
-        @recent_performance.each do |perf|
+        active_performance.each do |perf|
           weight = effective_initial_balance.call(perf) / total_initial_balance
           weighted_12m += (perf.last_12_months_return || 0) * weight
         end
@@ -144,12 +208,33 @@ class PortfoliosController < ApplicationController
     end
   end
 
+  # == new
+  # @author Moisés Reis
+  #
+  # Initializes a fresh portfolio instance for the creation form.
+  #
+  # Returns::
+  # - A blank portfolio object ready for attribute assignment.
   def new
     @portfolio = Portfolio.new
   end
 
+  # == edit
+  # @author Moisés Reis
+  #
+  # Prepares the existing portfolio for modification.
+  #
+  # Returns::
+  # - The targeted portfolio instance to be displayed in an edit form.
   def edit; end
 
+  # == create
+  # @author Moisés Reis
+  #
+  # Persists a new portfolio record and optionally grants permissions to other users.
+  #
+  # Returns::
+  # - A redirect to the portfolio dashboard on success or a re-rendered form on failure.
   def create
     @portfolio = Portfolio.new(portfolio_params.except(:shared_user_id))
 
@@ -161,6 +246,13 @@ class PortfoliosController < ApplicationController
     end
   end
 
+  # == update
+  # @author Moisés Reis
+  #
+  # Updates the attributes of an existing portfolio and manages sharing settings.
+  #
+  # Returns::
+  # - A redirect to the portfolio dashboard or a validation error state.
   def update
     if @portfolio.update(portfolio_params.except(:shared_user_id))
       grant_permission_if_present
@@ -170,11 +262,25 @@ class PortfoliosController < ApplicationController
     end
   end
 
+  # == destroy
+  # @author Moisés Reis
+  #
+  # Removes the portfolio record permanently from the database.
+  #
+  # Returns::
+  # - A redirect to the index page with a confirmation notice.
   def destroy
     @portfolio.destroy!
     redirect_to portfolios_path, notice: "Carteira deletada com sucesso.", status: :see_other
   end
 
+  # == run_calculations
+  # @author Moisés Reis
+  #
+  # Enqueues a background job to recalculate financial performance for a given month.
+  #
+  # Returns::
+  # - A redirect to the portfolio with a notice that the background process has started.
   def run_calculations
     selected_month = if params[:month].present?
                        Date.strptime(params[:month], "%Y-%m")
@@ -182,16 +288,21 @@ class PortfoliosController < ApplicationController
                        Date.yesterday.prev_month.beginning_of_month
                      end
 
-    # The job does `reference_date = target_date.prev_month` internally,
-    # so we shift forward one month to land on the intended period.
     target_date = selected_month.next_month.end_of_month
 
     PerformanceCalculationJob.perform_later(target_date: target_date)
 
-    redirect_to portfolio_path(@portfolio),
+    redirect_to portfolio_path(@portfolio, reference_date: selected_month.end_of_month),
                 notice: "Cálculo de #{I18n.l(selected_month, format: '%B/%Y')} iniciado em segundo plano!"
   end
 
+  # == monthly_report
+  # @author Moisés Reis
+  #
+  # Generates and serves a PDF file containing the portfolio's monthly analytical report.
+  #
+  # Returns::
+  # - Binary PDF data sent directly to the user's browser for viewing.
   def monthly_report
     day = params[:day].presence&.to_i
     month = params[:month].presence&.to_i
@@ -224,65 +335,13 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # Trecho a adicionar / adaptar em app/controllers/portfolios_controller.rb
+  # == calculation_progress
+  # @author Moisés Reis
   #
-  # ─── Ação que executa os cálculos ────────────────────────────────────────────
-
-  def run_calculations
-    month = params[:month] # "2025-01"
-    date = Date.parse("#{month}-01").end_of_month
-
-    # Chave única por portfolio + mês (evita colisão entre usuários)
-    @progress_key = "calc_progress_#{@portfolio.id}_#{month}"
-
-    # Garante que o cache começa zerado
-    Rails.cache.write(@progress_key, { percent: 0, step: "Iniciando…", done: false }, expires_in: 10.minutes)
-
-    # Helper interno para atualizar progresso de qualquer ponto do service
-    progress = ->(percent, step) do
-      Rails.cache.write(@progress_key, { percent:, step:, done: percent >= 100 }, expires_in: 10.minutes)
-    end
-
-    # ── Passo 1 ── Cotas e valuations ──────────────────────────
-    progress.call(10, "Buscando cotas do período…")
-    fund_investments = @portfolio.fund_investments.includes(:investment_fund, :applications, :redemptions)
-
-    # ── Passo 2 ── Calcular valor de mercado ───────────────────
-    progress.call(30, "Calculando valor de mercado…")
-    fund_investments.each do |fi|
-      fi.current_market_value(date) # chama o método existente (força memoização/cálculo)
-    end
-
-    # ── Passo 3 ── Registrar performance histories ─────────────
-    progress.call(55, "Registrando performance dos fundos…")
-    fund_investments.each do |fi|
-      # Adapte aqui para o seu service real de gravação de PerformanceHistory
-      safe_date = [date, Date.current].min   # nunca ultrapassa hoje
-
-      PerformanceHistory.find_or_initialize_by(
-        fund_investment: fi,
-        portfolio:       @portfolio,          # ← campo obrigatório
-        period:          safe_date
-      ).tap do |ph|
-        ph.monthly_return = fi.period_return_percentage(safe_date)
-        ph.earnings       = fi.total_gain(safe_date)
-        ph.save!
-      end
-    end
-
-    # ── Passo 4 ── Consolidar métricas do portfolio ────────────
-    progress.call(80, "Consolidando métricas da carteira…")
-    @portfolio.touch # ou qualquer callback de recalculação que você já tenha
-
-    # ── Passo 5 ── Concluído ───────────────────────────────────
-    progress.call(100, "Concluído!")
-
-    redirect_to portfolio_path(@portfolio, reference_date: date),
-                notice: "Performance calculada com sucesso."
-  end
-
-  # ─── Endpoint de polling (GET /portfolios/:id/calculation_progress) ──────────
-
+  # Checks the current status of the background performance calculation from the cache.
+  #
+  # Returns::
+  # - A JSON object containing the percentage completion and current step description.
   def calculation_progress
     month = params[:month] || Date.current.strftime("%Y-%m")
     progress_key = "calc_progress_#{@portfolio.id}_#{month}"
@@ -298,21 +357,30 @@ class PortfoliosController < ApplicationController
   private
 
   # == set_portfolio
+  # @author Moisés Reis
   #
-  # FIX: Scoped to portfolios accessible by the current user so that an ID
-  # belonging to another user raises RecordNotFound instead of exposing the record.
+  # Retrieves a specific portfolio from the scope allowed for the current user.
+  #
+  # Attributes:: - *@portfolio* - The resulting instance or an error if not found.
   def set_portfolio
     @portfolio = Portfolio.for_user(current_user).find(params[:id])
   end
 
   # == authorize_portfolio_management!
+  # @author Moisés Reis
   #
-  # FIX: Confirms the user has management rights (owner or crud permission) before
-  # any mutating action. Raises CanCan::AccessDenied for read-only shared users.
+  # Validates that the current user has administrative or management rights over the portfolio.
   def authorize_portfolio_management!
     authorize! :manage, @portfolio
   end
 
+  # == portfolio_params
+  # @author Moisés Reis
+  #
+  # Filters and permits parameters for portfolio creation and updates.
+  #
+  # Returns::
+  # - A sanitized hash of portfolio attributes.
   def portfolio_params
     params.require(:portfolio).permit(
       :name,
@@ -322,6 +390,10 @@ class PortfoliosController < ApplicationController
     )
   end
 
+  # == grant_permission_if_present
+  # @author Moisés Reis
+  #
+  # Creates a new permission record if a shared user ID is provided in the params.
   def grant_permission_if_present
     shared_user_id = params.dig(:portfolio, :shared_user_id)
     permission_level = params.dig(:portfolio, :grant_crud_permission) || "read"
@@ -336,6 +408,15 @@ class PortfoliosController < ApplicationController
     end
   end
 
+  # == calculate_monthly_flows
+  # @author Moisés Reis
+  #
+  # Aggregates application and redemption totals for each month of the current year.
+  #
+  # Parameters:: - *portfolio* - The portfolio instance to analyze.
+  #
+  # Returns::
+  # - A structured array of monthly transaction data for charting.
   def calculate_monthly_flows(portfolio)
     all_months = (1..12).map { |m| Date.new(Date.current.year, m, 1) }
 
@@ -363,14 +444,25 @@ class PortfoliosController < ApplicationController
     ]
   end
 
-  def pdf_export_title
-    "Carteiras"
-  end
+  # == pdf_export_title
+  # @author Moisés Reis
+  #
+  # Defines the main title for the exported PDF document.
+  def pdf_export_title = "Carteiras"
 
-  def pdf_export_subtitle
-    "Lista de carteiras com permissão de visualização"
-  end
+  # == pdf_export_subtitle
+  # @author Moisés Reis
+  #
+  # Provides a brief subtitle explaining the contents of the PDF list.
+  def pdf_export_subtitle = "Lista de carteiras com permissão de visualização"
 
+  # == pdf_export_columns
+  # @author Moisés Reis
+  #
+  # Configures the specific columns and formatting logic for the PDF data table.
+  #
+  # Returns::
+  # - An array of column configuration hashes.
   def pdf_export_columns
     h = ActionController::Base.helpers
 
@@ -402,12 +494,20 @@ class PortfoliosController < ApplicationController
     ]
   end
 
+  # == pdf_export_data
+  # @author Moisés Reis
+  #
+  # Retrieves and filters the portfolio data that will be included in the export.
   def pdf_export_data
     base_scope = current_user.admin? ? Portfolio.all : Portfolio.for_user(current_user)
     @q = base_scope.ransack(params[:q])
     @q.result(distinct: true)
   end
 
+  # == pdf_export_metadata
+  # @author Moisés Reis
+  #
+  # Includes secondary information in the export, such as the generating user's name.
   def pdf_export_metadata
     { "Gerado por" => current_user.full_name }
   end
