@@ -134,11 +134,8 @@
     # descriptive title. It uses a monospace font to maintain a
     # professional, data-centric aesthetic for the dashboard.
     %>
-  <div class="flex flex-row justify-start gap-1.5 items-center w-full h-9 px-3 py-1.5 border-b border-border bg-input">
-    <div class="p-1">
-      <%= inline_svg_tag "icons/#{card_icon}.svg", class: "size-3.5" %>
-    </div>
-    <%= content_tag :h3, card_title, class: "font-mono text-body uppercase !leading-0 tracking-0 font-normal text-sm" %>
+  <div class="flex flex-row justify-start gap-1.5 items-center w-full h-9 px-3 py-1.5 border-b rounded-br-none rounded-bl-none rounded-base border-border bg-neutral-50">
+    <%= content_tag :h3, card_title, class: "font-mono text-body uppercase !leading-0 tracking-[0] font-medium text-sm" %>
   </div>
 
   <%# =============================================================

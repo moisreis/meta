@@ -68,6 +68,113 @@ class Portfolio < ApplicationRecord
     fund_investments.sum(:total_invested_value) || BigDecimal("0")
   end
 
+  # == total_earnings_on
+  #
+  # @author Moisés Reis
+  #
+  # Aggregates the total financial earnings recorded for all funds in the portfolio.
+  # This method retrieves the sum of earnings from performance history records for a specific period.
+  #
+  # Parameters::
+  # - *date* - The reference date used to identify the specific performance period.
+  #
+  # Returns::
+  # - The total sum of earnings as a BigDecimal.
+
+  def total_earnings_on(date)
+    target_period = date.to_date.end_of_month
+
+    performance_histories.where(period: target_period).sum(:earnings)
+  end
+
+  # == compounded_yearly_return_on
+  #
+  # @author Moisés Reis
+  #
+  # Calculates the compounded year-to-date return for the portfolio.
+  # It chains the monthly returns together geometrically to ensure the
+  # result matches professional financial reporting standards.
+  #
+  # Parameters::
+  # - *date* - The reference date defining the year and the final month.
+  #
+  # Returns::
+  # - The compounded return as a percentage (e.g., 2.42) or 0.0 if no data exists.
+  def compounded_yearly_return_on(date)
+    records = performance_histories.where(
+      period: date.beginning_of_year..date.end_of_month
+    ).order(:period)
+
+    return 0.0 if records.empty?
+
+    # Group by period → compute a single portfolio monthly return per month,
+    # then compound those monthly portfolio returns geometrically.
+    total_factor = records.group_by(&:period).sort.reduce(1.0) do |factor, (_period, month_records)|
+      total_earnings = month_records.sum { |r| r.earnings.to_f }
+      total_initial  = month_records.sum { |r| r.initial_balance.to_f }
+
+      next factor if total_initial.zero?
+
+      monthly_portfolio_return = total_earnings / total_initial  # already a ratio, e.g. 0.01305
+      factor * (1 + monthly_portfolio_return)
+    end
+
+    ((total_factor - 1) * 100).round(2)
+  end
+
+  # == total_balance_on
+  #
+  # @author Moisés Reis
+  #
+  # Reconstructs the total financial value of the portfolio for a specific date.
+  # It iterates through each fund investment, calculates the net quotas held
+  # on that date, and multiplies them by the closest available quota value.
+  #
+  # Parameters::
+  # - *date* - The specific date for which to calculate the total balance.
+  #
+  # Returns::
+  # - The total balance as a BigDecimal.
+
+  def total_balance_on(date)
+    fund_investments.sum do |fi|
+      quotas = reconstruct_quotas_at(fi, date)
+
+      price = closest_quota_value(fi.investment_fund.cnpj, date)
+
+      quotas * (price || 0)
+    end
+  end
+
+  # == yearly_profitability_on
+  #
+  # @author Moisés Reis
+  #
+  # Calculates the percentage return for the current year. It ensures that
+  # the starting balance is strictly the opening value of January 1st
+  # to avoid interference from late-December transactions.
+  #
+  # Parameters::
+  # - *date* - The current reference date for the dashboard.
+  #
+  # Returns::
+  # - The percentage return as a rounded Float.
+
+  def yearly_profitability_on(date)
+    # Ensure we are looking at the start of the current calendar year
+    start_of_year = date.beginning_of_year
+
+    # The 'Opening Balance' of the year is the state of the portfolio
+    # at the very end of the previous year.
+    val_jan_1 = total_balance_on(start_of_year - 1.day)
+    val_now = total_balance_on(date)
+
+    return 0.0 if val_jan_1 <= 0
+
+    # Calculation: ((Current / Start) - 1) * 100
+    (((val_now / val_jan_1) - 1) * 100).to_f.round(2)
+  end
+
   # == total_quotas_held
   #
   # @author Moisés Reis

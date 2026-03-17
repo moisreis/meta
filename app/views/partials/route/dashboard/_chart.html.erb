@@ -35,8 +35,8 @@
   <%# =============================================================
       Chart Header — Title
       ============================================================= %>
-  <div class="w-full flex flex-row justify-between items-center h-9 px-3 py-1.5 bg-input border-b border-border">
-    <%= content_tag :h3, chart_title, class: "font-mono text-body uppercase !leading-0 font-normal text-sm" %>
+  <div class="w-full flex flex-row justify-between items-center h-9 px-3 py-1.5 border-b rounded-br-none rounded-bl-none rounded-base border-border bg-neutral-50">
+    <%= content_tag :h3, chart_title, class: "font-mono text-body uppercase !leading-0 tracking-[0] font-medium text-sm" %>
   </div>
 
   <%# =============================================================
@@ -50,7 +50,7 @@
     <% if data_source.any? %>
       <%= yield %>
     <% else %>
-      <%= content_tag :p, "Sem dados", class: "badge badge-accent" %>
+      <%= content_tag :p, "Ainda não há dados.", class: "font-body text-muted text-sm" %>
     <% end %>
 
   </div>

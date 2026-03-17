@@ -1,13 +1,26 @@
-<% flash_classes = {
-  "notice"  => "bg-inchworm-50 border-inchworm-100 text-inchworm-800",
-  "success" => "bg-success-50 border-success-100 text-success-800",
-  "alert"   => "bg-danger-50  border-danger-100  text-danger-800",
-  "error"   => "bg-danger-50  border-danger-100  text-danger-800",
-  "destroy" => "bg-danger-50  border-danger-100  text-danger-800"
-}.freeze %>
+<%# =============================================================
+  # Partial: _flash_messages.html.erb
+  # Description: Renders flash messages as animated toast notifications
+  #              via the ToastController Stimulus controller. Icons are
+  #              pre-rendered server-side using inline_svg and cloned
+  #              by the controller at runtime based on the flash type.
+  # ============================================================= %>
 
-<% flash.each do |type, message| %>
-  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 border rounded-base p-3 shadow-xs text-sm z-[99999] <%= flash_classes.fetch(type, 'bg-inchworm-50 border-inchworm-100 text-inchworm-800') %>">
-    <%= message %>
-  </div>
-<% end %>
+<%# Pre-renders SVG icons into a hidden sprite map so the Stimulus
+    controller can clone them by flash type without additional requests. %>
+<div id="toast-icons" class="hidden" aria-hidden="true">
+  <span data-icon="notice">  <%= inline_svg_tag "icons/circle-check.svg",  class: "size-4" %></span>
+  <span data-icon="success"> <%= inline_svg_tag "icons/circle-check.svg",  class: "size-4" %></span>
+  <span data-icon="alert">   <%= inline_svg_tag "icons/circle-alert.svg",  class: "size-4" %></span>
+  <span data-icon="error">   <%= inline_svg_tag "icons/x.svg",             class: "size-4" %></span>
+  <span data-icon="warning"> <%= inline_svg_tag "icons/circle-alert.svg",  class: "size-4" %></span>
+  <span data-icon="info">    <%= inline_svg_tag "icons/info.svg",          class: "size-4" %></span>
+</div>
+
+<%# Passes the collected flash messages as a JSON array to the
+    Stimulus controller, which renders each one as a toast overlay. %>
+<div
+  data-controller="toast"
+  data-toast-messages-value="<%= flash.map { |type, text| { type: type, text: text } }.to_json %>"
+  data-toast-duration-value="4000"
+></div>

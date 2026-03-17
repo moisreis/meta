@@ -301,15 +301,29 @@ class FundInvestment < ApplicationRecord
     BigDecimal(applications.where("cotization_date > ?", initial_date).sum(:financial_value).to_s)
   end
 
-  # == net_movement
+  # == net_movement_on
+  #
   # @author Moisés Reis
   #
-  # Computes the net cash flow after the initial day of investment.
+  # Calculates the net financial flow of an investment during a specific month.
+  # It subtracts the total value of redemptions from the total value of applications for the period.
+  #
+  # Parameters::
+  # - *date* - The reference date that determines the target month for the calculation.
   #
   # Returns::
-  # - The difference between subsequent applications and total redemptions.
-  def net_movement
-    period_applications - total_redemptions
+  # - The net financial movement as a BigDecimal.
+
+  def net_movement_on(date)
+    start_date = date.to_date.beginning_of_month
+
+    end_date   = date.to_date.end_of_month
+
+    apps = applications.where(request_date: start_date..end_date).sum(:financial_value)
+
+    reds = redemptions.where(request_date: start_date..end_date).sum(:redeemed_liquid_value)
+
+    BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
   end
 
   # == dietz_weighted_cash_flow

@@ -30,114 +30,6 @@
            current_view: "show" do
 %>
 
-<%# =============================================================
-  # Reference Date Filter + Actions
-  # ============================================================= %>
-
-  <%= render "partials/route/dashboard/section",
-             section_title: "Período de Referência",
-             columns: 1 do
-  %>
-    <div class="flex flex-row justify-start gap-3 items-end"
-         data-controller="reference-date">
-
-      <%# Provides a visual date picker input that serves as the primary
-          trigger for updating the dashboard reference timeframe. %>
-      <%= form_with url: "#",
-                    method: :get,
-                    local: true,
-                    id: "reference-date-dummy-form",
-                    class: "w-[280px]" do |f|
-      %>
-        <div data-reference-date-target="inputWrapper">
-          <%= render "partials/modules/date-field",
-                     f: f,
-                     name: :reference_date,
-                     label: "Data de referência",
-                     desc: nil,
-                     is_half_width: false,
-                     icon_name: "calendar",
-                     value: @reference_date
-          %>
-        </div>
-      <% end %>
-
-      <%# Handles the GET request to refresh the dashboard view based
-          on the selected reference date provided by the user. %>
-      <%= form_with url: portfolio_path(@portfolio),
-                    method: :get,
-                    local: true,
-                    id: "form-view-period",
-                    data: { reference_date_target: "viewForm" },
-                    class: "hidden" do |f|
-      %>
-        <%= hidden_field_tag :reference_date,
-                             @reference_date,
-                             data: { reference_date_target: "viewDate" } %>
-      <% end %>
-
-      <% if @portfolio.present? && @portfolio.persisted? %>
-        <%# Triggers a background calculation job to process performance
-            metrics for the specific month selected in the interface. %>
-        <%= form_with url: run_calculations_portfolio_path(@portfolio),
-                      method: :post,
-                      local: true,
-                      id: "form-calculate",
-                      data: { reference_date_target: "calcForm" },
-                      class: "hidden" do |f|
-        %>
-          <%= hidden_field_tag :month,
-                               @reference_date.strftime("%Y-%m"),
-                               data: { reference_date_target: "calcMonth" } %>
-        <% end %>
-
-        <%# Submits a request to generate a downloadable monthly report
-            based on the currently active reference date parameters. %>
-        <%= form_with url: monthly_report_portfolio_path(@portfolio),
-                      method: :get,
-                      local: true,
-                      data: { turbo: false, reference_date_target: "reportForm" },
-                      id: "form-report",
-                      class: "hidden" do |f|
-        %>
-          <%= hidden_field_tag :day, @reference_date.day, data: { reference_date_target: "reportDay" } %>
-          <%= hidden_field_tag :month, @reference_date.month, data: { reference_date_target: "reportMonth" } %>
-          <%= hidden_field_tag :year, @reference_date.year, data: { reference_date_target: "reportYear" } %>
-        <% end %>
-      <% end %>
-
-      <%# Executes the view update action through the Stimulus controller
-          to reload the page data for the chosen date. %>
-      <%= button_tag type: "button",
-                     class: "button button-outline",
-                     data: { action: "reference-date#view" } do %>
-        <%= inline_svg_tag "icons/calendar.svg" %>
-        <%= content_tag :span, "Visualizar" %>
-      <% end %>
-
-      <% if @portfolio.present? && @portfolio.persisted? %>
-        <%# Initiates the performance recalculation logic for the
-            selected portfolio and specific reference month. %>
-        <%= button_tag type: "button",
-                       class: "button button-accent",
-                       data: { action: "reference-date#calculate" } do %>
-          <%= inline_svg_tag "icons/refresh-cw.svg" %>
-          <%= content_tag :span, "Calcular Performance" %>
-        <% end %>
-
-        <%# Requests the system to compile and export a PDF report
-            containing the portfolio's financial status and history. %>
-        <%= button_tag type: "button",
-                       class: "button button-secondary",
-                       data: { action: "reference-date#report" } do %>
-          <%= inline_svg_tag "icons/file-attachment.svg" %>
-          <%= content_tag :span, "Gerar Relatório" %>
-        <% end %>
-      <% end %>
-
-    </div>
-  <% end %>
-
   <%# =============================================================
     # Key Performance Indicators (KPIs)
     # ============================================================= %>
@@ -170,15 +62,15 @@
       <%= normalize_trend(@portfolio.yearly_earnings) %>
     <% end %>
 
-    <%# Presents the estimated financial earnings for the month
-        associated with the current reference date. %>
+<%# Presents the actual financial earnings for the month
+    associated with the current reference date. %>
     <%= render(
           "partials/route/dashboard/card",
           card_title: "Rendimento do Mês",
           card_icon: "wallet",
-          status: card_status_trend_for(@portfolio.estimated_current_month_earnings)
+          status: card_status_trend_for(@portfolio.total_earnings_on(@reference_date))
         ) do %>
-      <%= normalize_trend(@portfolio.estimated_current_month_earnings) %>
+      <%= normalize_trend(@portfolio.total_earnings_on(@reference_date)) %>
     <% end %>
 
     <%# Displays the percentage return achieved by the portfolio
@@ -191,7 +83,7 @@
           status: card_status_trend_for(@portfolio_yearly_return)
         ) do
     %>
-      <%= normalize_trend(@portfolio_yearly_return, format: :percentage) %>
+      <%= normalize_trend(@portfolio.compounded_yearly_return_on(@reference_date), format: :percentage) %>
     <% end %>
 
     <%# Shows the percentage return specific to the month of the
@@ -215,7 +107,7 @@
           status: card_status_trend_for(@portfolio_12m_return)
         ) do
     %>
-      <%= normalize_percentage(@portfolio_12m_return) %>
+      <%= normalize_trend(@portfolio_12m_return, format: :percentage) %>
     <% end %>
 
   <% end %>
@@ -253,7 +145,16 @@
                chart_type: :column_chart,
                data_source: @equity_evolution,
                chart_title: "Evolução do Patrimônio",
-               chart_options: { prefix: "R$ ", thousands: ".", decimal: ",", dataset: { borderWidth: 0 } }
+               chart_options: {
+                 prefix: "R$ ", thousands: ".", decimal: ",",
+                 library: { plugins: { colorschemes: false }, elements: { bar: { borderWidth: 0 } } },
+                 dataset: {
+                   borderWidth: 0,
+                   backgroundColor: @equity_evolution.map { |_, v|
+                     v.to_f >= 0 ? "rgba(34, 197, 94, 0.8)" : "rgba(239, 68, 68, 0.8)"
+                   }
+                 }
+               }
     %>
 
     <%# Illustrates inflows and outflows within the portfolio,
@@ -264,7 +165,7 @@
                chart_title: "Movimentações",
                chart_options: {
                  stacked: false, prefix: "R$ ", thousands: ".", decimal: ",",
-                 colors: ["rgba(34, 197, 94, 0.8)", "rgba(239, 68, 68, 0.8)"],
+                 colors: ["rgba(34, 197, 94, 0.8)", "rgba(249, 115, 22, 0.8)"],
                  dataset: { borderWidth: 0 }
                }
     %>
@@ -274,19 +175,35 @@
   <%# =============================================================
     # Asset Allocation & Transaction Visuals
     # ============================================================= %>
-
   <%= render "partials/route/dashboard/section",
              section_title: "Visualizações",
-             columns: 2 do
+             columns: 1 do
   %>
-
     <%# Breaks down the portfolio by individual funds to show
         the percentage of capital allocated to each. %>
     <%= render "partials/groups/chart-list",
                chart_type: :pie_chart,
                data_source: @allocation_data,
                chart_title: "Fundos alocados",
-               chart_options: { suffix: "%", donut: true, legend: "right" }
+               chart_options: { suffix: "%", donut: true, legend: "left" }
+    %>
+  <% end %>
+  <%= render "partials/route/dashboard/section",
+             section_title: "Visualizações",
+             columns: 2 do
+  %>
+
+    <%# Breaks down the portfolio by benchmark indices to show
+    the percentage of capital allocated to each economic driver. %>
+    <%= render "partials/groups/chart-list",
+               chart_type: :pie_chart,
+               data_source: @indices_data,
+               chart_title: "Distribuição por Índice",
+               chart_options: {
+                 suffix: "%",
+                 donut: true,
+                 legend: "left"
+               }
     %>
 
     <%# Shows the distribution of assets across different financial
@@ -295,9 +212,8 @@
                chart_type: :pie_chart,
                data_source: @institution_distribution,
                chart_title: "Distribuição por Instituição",
-               chart_options: { donut: true, legend: "bottom", suffix: "%" }
+               chart_options: { donut: true, legend: "left", suffix: "%" }
     %>
-
   <% end %>
 
   <%# =============================================================
@@ -326,11 +242,11 @@
              body_procs: [
                ->(fi) { normalize_title(fi.investment_fund.fund_name) },
                ->(fi) { normalize_percentage([fi.percentage_allocation, 0].max) },
-               ->(fi) { normalize_trend(fi.net_movement) },
+               ->(fi) { normalize_trend(fi.net_movement_on(@reference_date)) },
                ->(fi) { normalize_currency(fi.investment_fund.quota_value_on(@reference_date)) },
                ->(fi) { normalize_currency(fi.current_market_value_on(@reference_date)) },
-               ->(fi) { normalize_currency(@performance_by_fund[fi.id]&.earnings) },
-               ->(fi) { normalize_percentage(@performance_by_fund[fi.id]&.monthly_return, precision: 4) }
+               ->(fi) { normalize_trend(@performance_by_fund[fi.id]&.earnings, format: :currency) },
+               ->(fi) { normalize_trend(@performance_by_fund[fi.id]&.monthly_return, format: :percentage) }
              ] %>
 
   <% if @recent_performance.any? %>
@@ -358,7 +274,6 @@
     # Cash Management (Checking Accounts)
     # ============================================================= %>
 
-  <% if @portfolio.checking_accounts.exists? %>
     <%# Lists the liquid cash positions in checking accounts linked
         to the portfolio, including balances and institutions. %>
     <%= render "partials/groups/table-list",
@@ -380,7 +295,6 @@
                  ->(ca) { l(ca.reference_date, format: :long) }
                ]
     %>
-  <% end %>
 
   <%# Renders the modal used to create and associate new checking
       accounts with the current portfolio instance. %>
@@ -418,8 +332,10 @@
                see_all_path: applications_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
                title_proc: ->(app) { app.fund_investment.investment_fund.fund_name },
                value_proc: ->(app) { normalize_currency(app.financial_value) },
-               sub_value_proc: ->(app) { normalize_number(app.number_of_quotas) } %>
-
+               sub_value_proc: ->(app) {
+                 safe_join([normalize_number(app.number_of_quotas), " cotas"])
+               }
+    %>
     <%# Displays the five most recent redemption requests to track
         the liquidation history of assets during the year. %>
     <%= render "partials/groups/recent_activity",
@@ -441,8 +357,10 @@
                see_all_path: redemptions_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
                title_proc: ->(red) { red.fund_investment.investment_fund.fund_name },
                value_proc: ->(red) { normalize_currency(red.redeemed_liquid_value) },
-               sub_value_proc: ->(red) { normalize_number(red.redeemed_quotas) } %>
-
+               sub_value_proc: ->(red) {
+                 safe_join([normalize_number(red.redeemed_quotas), " cotas"])
+               }
+    %>
   <% end %>
 
   <%# =============================================================

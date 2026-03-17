@@ -23,7 +23,7 @@
 <%# This container groups the portfolio dropdown and the direct link
     to view details. It allows the user to quickly navigate between
     different investment sets managed within their account. %>
-<div class="h-16 px-8 flex flex-row justify-between gap-6">
+<div class="h-16 px-16 flex flex-row justify-between gap-6">
 
   <div class="flex flex-row items-center gap-3">
     <%= form_with url: "#",
@@ -78,6 +78,108 @@
           <%= content_tag :span, "Importar Cotações" %>
         <% end %>
       <% end %>
+    </div>
+  <% end %>
+
+  <% if controller_name == "portfolios" && action_name == "show" %>
+    <div class="flex flex-row justify-start gap-3 items-center"
+         data-controller="reference-date">
+
+      <%# Provides a visual date picker input that serves as the primary
+          trigger for updating the dashboard reference timeframe. %>
+      <%= form_with url: "#",
+                    method: :get,
+                    local: true,
+                    id: "reference-date-dummy-form",
+                    class: "w-fit" do |f|
+      %>
+        <div data-reference-date-target="inputWrapper">
+          <%= render "partials/modules/date-field",
+                     f: f,
+                     name: :reference_date,
+                     label: nil,
+                     desc: nil,
+                     is_small: true,
+                     is_half_width: false,
+                     icon_name: "calendar",
+                     value: @reference_date
+          %>
+        </div>
+      <% end %>
+
+      <%# Handles the GET request to refresh the dashboard view based
+          on the selected reference date provided by the user. %>
+      <%= form_with url: portfolio_path(@portfolio),
+                    method: :get,
+                    local: true,
+                    id: "form-view-period",
+                    data: { reference_date_target: "viewForm" },
+                    class: "hidden" do |f|
+      %>
+        <%= hidden_field_tag :reference_date,
+                             @reference_date,
+                             data: { reference_date_target: "viewDate" } %>
+      <% end %>
+
+      <% if @portfolio.present? && @portfolio.persisted? %>
+        <%# Triggers a background calculation job to process performance
+            metrics for the specific month selected in the interface. %>
+        <%= form_with url: run_calculations_portfolio_path(@portfolio),
+                      method: :post,
+                      local: true,
+                      id: "form-calculate",
+                      data: { reference_date_target: "calcForm" },
+                      class: "hidden" do |f|
+        %>
+          <%= hidden_field_tag :month,
+                               @reference_date.strftime("%Y-%m"),
+                               data: { reference_date_target: "calcMonth" } %>
+        <% end %>
+
+        <%# Submits a request to generate a downloadable monthly report
+            based on the currently active reference date parameters. %>
+        <%= form_with url: monthly_report_portfolio_path(@portfolio),
+                      method: :get,
+                      local: true,
+                      data: { turbo: false, reference_date_target: "reportForm" },
+                      id: "form-report",
+                      class: "hidden" do |f|
+        %>
+          <%= hidden_field_tag :day, @reference_date.day, data: { reference_date_target: "reportDay" } %>
+          <%= hidden_field_tag :month, @reference_date.month, data: { reference_date_target: "reportMonth" } %>
+          <%= hidden_field_tag :year, @reference_date.year, data: { reference_date_target: "reportYear" } %>
+        <% end %>
+      <% end %>
+
+      <%# Executes the view update action through the Stimulus controller
+          to reload the page data for the chosen date. %>
+      <%= button_tag type: "button",
+                     class: "button button-outline button-small",
+                     data: { action: "reference-date#view" } do %>
+        <%= inline_svg_tag "icons/calendar.svg" %>
+        <%= content_tag :span, "Visualizar" %>
+      <% end %>
+
+      <% if @portfolio.present? && @portfolio.persisted? %>
+        <%# Initiates the performance recalculation logic for the
+            selected portfolio and specific reference month. %>
+        <%= button_tag type: "button",
+                       class: "button button-secondary button-small",
+                       data: { action: "reference-date#calculate" } do %>
+          <%= inline_svg_tag "icons/refresh-cw.svg" %>
+          <%= content_tag :span, "Calcular Performance" %>
+        <% end %>
+
+        <%# Requests the system to compile and export a PDF report
+            containing the portfolio's financial status and history. %>
+        <%= button_tag type: "button",
+                       class: "button button-accent button-small",
+                       data: { action: "reference-date#report" } do %>
+          <%= inline_svg_tag "icons/file-attachment.svg" %>
+          <%= content_tag :span, "Gerar Relatório" %>
+        <% end %>
+      <% end %>
+
     </div>
   <% end %>
 </div>

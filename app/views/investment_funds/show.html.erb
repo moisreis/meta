@@ -204,7 +204,7 @@
       %>
     <%= render "partials/groups/chart-list",
                chart_type: :line_chart,
-               data_source: @investment_fund.fund_valuation
+               data_source: @investment_fund.fund_valuations
                                             .where("date >= ?", 30.days.ago)
                                             .order(date: :asc)
                                             .pluck(:date, :quota_value)
@@ -301,7 +301,7 @@
     %>
   <%= render "partials/groups/table-list",
              section_title: "Histórico de Cotações",
-             collection: @investment_fund.fund_valuation.order(date: :desc).limit(10),
+             collection: @investment_fund.fund_valuations.order(date: :desc).limit(10),
              action_path: nil,
              action_name: nil,
              headers: ["Data", "Valor da Cota", "Variação", "Atualizado em"],
@@ -314,7 +314,7 @@
                  normalize_currency(val.quota_value)
                end,
                ->(val) do
-                 previous_val = @investment_fund.fund_valuation.where("date < ?", val.date).order(date: :desc).first
+                 previous_val = @investment_fund.fund_valuations.where("date < ?", val.date).order(date: :desc).first
 
                  return normalize_no_data unless previous_val&.quota_value
 

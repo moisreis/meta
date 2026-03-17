@@ -48,7 +48,7 @@
         <% end %>
         <div class="h-4 w-[1px] bg-border"></div>
         <%= link_to defined?(new_path) ? new_path : new_polymorphic_path(models.klass),
-                    class: "button button-accent button-small",
+                    class: "button button-secondary button-small",
                     data: { turbo_frame: "_top" } do %>
           <%= inline_svg_tag "icons/plus.svg" %>
           <%= content_tag :span, "Adicionar item" %>

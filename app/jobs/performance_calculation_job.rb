@@ -1,20 +1,32 @@
 # === performance_calculation_job.rb
 #
 # Description:: Calculates and persists monthly financial performance snapshots.
-#               Uses the Modified Dietz method to accurately account for cash
-#               flows occurring within the month.
 #
-# Formula:: Return = (PF - PI - FCL) / (PI + FCL_Weighted)
+# Formula — monthly_return::
+#   (quota_end - quota_start) / quota_start
+#   Tracks the fund's own unit price variation, independent of the investor's
+#   cash-flow timing. Matches the "Rentabilidade do Fundo" figure reported by
+#   fund managers and used in official statements.
+#
+# Formula — yearly_return / last_12_months_return::
+#   Geometric compounding of monthly_return values already stored in
+#   performance_histories. This avoids distortion caused by large mid-period
+#   cash flows that would skew a simple balance-over-balance ratio.
 #
 # FIX (resilience): Each calculate_snapshot! call is now wrapped in its own
 # begin/rescue block. A missing quota valuation or any unexpected error for
 # one fund will be logged and skipped rather than aborting the entire job,
 # leaving the other funds' snapshots unprocessed.
 #
-# FIX (yearly_return accuracy): The year-start base balance lookup previously
-# silently fell back to the current month's initial balance when no January
-# snapshot existed, producing a misleading YTD figure for funds started mid-year.
-# The fallback is now explicit and annotated.
+# FIX (monthly_return): Replaced Modified Dietz with direct quota variation.
+# Modified Dietz measured investor-level return (affected by application timing);
+# quota variation measures the fund's intrinsic performance, aligning with
+# the figures published by the fund manager.
+#
+# FIX (yearly_return / last_12_months_return): Replaced balance-over-balance
+# ratio with geometric compounding of stored monthly_return values. The old
+# approach produced extreme distortions (e.g. 2969%) when a fund received a
+# large application relative to its opening balance.
 #
 class PerformanceCalculationJob < ApplicationJob
 
@@ -38,7 +50,7 @@ class PerformanceCalculationJob < ApplicationJob
       rescue StandardError => e
         Rails.logger.error(
           "[PerformanceCalculationJob] Skipping FundInvestment##{fund_investment.id} " \
-          "(#{fund_investment.investment_fund&.cnpj}): #{e.class} — #{e.message}"
+            "(#{fund_investment.investment_fund&.cnpj}): #{e.class} — #{e.message}"
         )
       end
     end
@@ -57,66 +69,48 @@ class PerformanceCalculationJob < ApplicationJob
   # Computes the performance metrics for a single investment fund during a specific month
   # and upserts the result into performance_histories.
   def calculate_snapshot!(fund_investment, reference_date)
-    fund      = fund_investment.investment_fund
+    fund = fund_investment.investment_fund
     portfolio = fund_investment.portfolio
 
     period_start = reference_date.beginning_of_month
-    period_end   = reference_date.end_of_month
+    period_end = reference_date.end_of_month
 
     quota_start = find_quota_value(fund.cnpj, period_start)
-    quota_end   = find_quota_value(fund.cnpj, period_end)
+    quota_end = find_quota_value(fund.cnpj, period_end)
 
     return unless quota_start && quota_end
 
     quotas_at_start = reconstruct_quotas_at(fund_investment, period_start - 1.day)
-    quotas_at_end   = reconstruct_quotas_at(fund_investment, period_end)
+    quotas_at_end = reconstruct_quotas_at(fund_investment, period_end)
 
     return if quotas_at_start <= 0 && quotas_at_end <= 0
 
     initial_balance = quotas_at_start * quota_start
-    final_balance   = quotas_at_end   * quota_end
-
-    calendar_days = (period_end - period_start).to_i + 1
+    final_balance = quotas_at_end * quota_end
 
     period_applications = fund_investment.applications
                                          .where(cotization_date: period_start..period_end)
-    period_redemptions  = fund_investment.redemptions
-                                         .where(cotization_date: period_start..period_end)
+    period_redemptions = fund_investment.redemptions
+                                        .where(cotization_date: period_start..period_end)
 
-    net_cash_flow      = period_applications.sum(:financial_value) -
-                         period_redemptions.sum(:redeemed_liquid_value)
-    weighted_cash_flow = BigDecimal("0")
+    net_cash_flow = period_applications.sum(:financial_value) -
+                    period_redemptions.sum(:redeemed_liquid_value)
 
-    period_applications.each do |app|
-      next unless app.cotization_date && app.financial_value
-      days_remaining     = (period_end - app.cotization_date).to_i
-      weight             = BigDecimal(days_remaining.to_s) / BigDecimal(calendar_days.to_s)
-      weighted_cash_flow += app.financial_value * weight
-    end
-
-    period_redemptions.each do |red|
-      next unless red.cotization_date && red.redeemed_liquid_value
-      days_remaining     = (period_end - red.cotization_date).to_i
-      weight             = BigDecimal(days_remaining.to_s) / BigDecimal(calendar_days.to_s)
-      weighted_cash_flow -= red.redeemed_liquid_value * weight
-    end
-
-    earnings        = final_balance - initial_balance - net_cash_flow
-    denominator     = initial_balance + weighted_cash_flow
-    monthly_return  = percentage(earnings, denominator)
+    earnings = final_balance - initial_balance - net_cash_flow
+    monthly_return = percentage(quota_end - quota_start, quota_start)
 
     performance = PerformanceHistory.find_or_initialize_by(
-      portfolio_id:      portfolio.id,
+      portfolio_id: portfolio.id,
       fund_investment_id: fund_investment.id,
-      period:            period_end
+      period: period_end
     )
 
     performance.update!(
-      initial_balance:       initial_balance,
-      earnings:              earnings,
-      monthly_return:        monthly_return,
-      yearly_return:         calculate_yearly_return(performance, final_balance, initial_balance),
-      last_12_months_return: calculate_last_12_months_return(performance, final_balance)
+      initial_balance: initial_balance,
+      earnings: earnings,
+      monthly_return: monthly_return,
+      yearly_return: calculate_yearly_return(performance, monthly_return),
+      last_12_months_return: calculate_last_12_months_return(performance, monthly_return)
     )
   end
 
@@ -141,7 +135,7 @@ class PerformanceCalculationJob < ApplicationJob
     totals.each do |portfolio_id, total_balance|
       Rails.logger.info(
         "[PerformanceCalculationJob] Portfolio ##{portfolio_id} — " \
-        "Checking accounts total for #{period_end}: R$ #{total_balance}"
+          "Checking accounts total for #{period_end}: R$ #{total_balance}"
       )
     end
   rescue StandardError => e
@@ -170,58 +164,68 @@ class PerformanceCalculationJob < ApplicationJob
   #
   # @author Moisés Reis
   #
-  # Determines the investment return since the beginning of the current calendar year.
+  # Compounds all stored monthly_return values for the current calendar year,
+  # including the current month being persisted.
   #
-  # FIX: When no snapshot exists before the current period within the same year
-  # (e.g. a fund that started in March), the method now uses current_initial_balance
-  # as the YTD base and logs a notice rather than silently producing a misleading figure.
+  # Using geometric compounding rather than balance-over-balance avoids extreme
+  # distortions when large applications occur relative to the opening balance
+  # (e.g. a fund that started the year with R$17k and received R$500k in January).
   #
-  # Returns:: - The percentage return from year-to-date, or nil if undeterminable.
-  def calculate_yearly_return(performance, current_final_balance, current_initial_balance)
-    year_start_snapshot = PerformanceHistory
-                            .where(fund_investment_id: performance.fund_investment_id)
-                            .where(
-                              "period >= ? AND period < ?",
-                              performance.period.beginning_of_year,
-                              performance.period
-                            )
-                            .order(:period)
-                            .first
+  # Returns:: - The YTD percentage return as a BigDecimal, or nil if no monthly
+  #             returns are available for the current year.
+  def calculate_yearly_return(performance, current_monthly_return)
+    return nil if current_monthly_return.nil?
 
-    if year_start_snapshot&.initial_balance&.positive?
-      base_balance = year_start_snapshot.initial_balance
-    elsif current_initial_balance&.positive?
-      # No prior snapshot this year: fund started mid-year or this is the first run.
-      # Use the current month's opening balance as YTD base (partial-year return).
-      Rails.logger.info(
-        "[PerformanceCalculationJob] No year-start snapshot for FundInvestment##{performance.fund_investment_id}; " \
-        "using current initial_balance as YTD base."
-      )
-      base_balance = current_initial_balance
-    else
-      return nil
+    prior_returns = PerformanceHistory
+                      .where(fund_investment_id: performance.fund_investment_id)
+                      .where(
+                        "period >= ? AND period < ?",
+                        performance.period.beginning_of_year,
+                        performance.period
+                      )
+                      .where.not(monthly_return: nil)
+                      .order(:period)
+                      .pluck(:monthly_return)
+
+    compounded = prior_returns.reduce(BigDecimal("1")) do |acc, r|
+      acc * (1 + r / 100)
     end
 
-    percentage(current_final_balance - base_balance, base_balance)
+    compounded *= (1 + current_monthly_return / 100)
+
+    (compounded - 1) * 100
   end
 
   # == calculate_last_12_months_return
   #
   # @author Moisés Reis
   #
-  # Computes the return over the trailing 12-month period.
+  # Compounds the stored monthly_return values for the trailing 12-month window,
+  # including the current month being persisted.
   #
-  # Returns:: - The percentage return for the last 12 months.
-  def calculate_last_12_months_return(performance, current_final_balance)
-    snapshot_12m = PerformanceHistory
-                     .where(fund_investment_id: performance.fund_investment_id)
-                     .where("period <= ?", performance.period - 12.months)
-                     .order(period: :desc)
-                     .first
+  # Returns:: - The trailing-12-month percentage return as a BigDecimal, or nil
+  #             if fewer than 12 months of data are available.
+  def calculate_last_12_months_return(performance, current_monthly_return)
+    return nil if current_monthly_return.nil?
 
-    return unless snapshot_12m&.initial_balance&.positive?
+    window_start = performance.period - 12.months + 1.day
 
-    percentage(current_final_balance - snapshot_12m.initial_balance, snapshot_12m.initial_balance)
+    prior_returns = PerformanceHistory
+                      .where(fund_investment_id: performance.fund_investment_id)
+                      .where("period >= ? AND period < ?", window_start, performance.period)
+                      .where.not(monthly_return: nil)
+                      .order(:period)
+                      .pluck(:monthly_return)
+
+    return nil if prior_returns.size < 11
+
+    compounded = prior_returns.reduce(BigDecimal("1")) do |acc, r|
+      acc * (1 + r / 100)
+    end
+
+    compounded *= (1 + current_monthly_return / 100)
+
+    (compounded - 1) * 100
   end
 
   # == find_quota_value
@@ -249,6 +253,6 @@ class PerformanceCalculationJob < ApplicationJob
   # Returns:: - The resulting percentage value as a BigDecimal.
   def percentage(delta, base)
     return nil if base.nil? || base.zero?
-    (delta / base) * 100
+    (BigDecimal(delta.to_s) / BigDecimal(base.to_s)) * 100
   end
 end

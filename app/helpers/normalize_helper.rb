@@ -169,7 +169,9 @@ module NormalizeHelper
     # Explanation:: This line formats the number with a percent sign.
     #               It uses a comma as the decimal separator and ensures
     #               the value follows the local mathematical notation.
-    formatted_percentage = number_to_percentage(value, precision: precision, separator: ",", delimiter: ".")
+    truncated_value = value.to_d.truncate(precision)
+
+    formatted_percentage = number_to_percentage(truncated_value, precision: precision, separator: ",", delimiter: ".")
 
     # Explanation:: This line produces the final HTML tag for the view.
     #               It wraps the formatted percentage in a span that

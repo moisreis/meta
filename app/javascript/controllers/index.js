@@ -66,3 +66,10 @@ application.register("tippy", TippyController)
 import ReferenceDateController from "controllers/reference_date_controller"
 
 application.register("reference-date", ReferenceDateController)
+
+// This statement registers the toast notification logic.
+// It reads flash messages passed from Rails and displays
+// them as animated, auto-dismissing overlay notifications.
+import ToastController from "controllers/toast_controller"
+
+application.register("toast", ToastController)

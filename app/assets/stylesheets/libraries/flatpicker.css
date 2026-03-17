@@ -64,7 +64,7 @@
  * and rounds the bottom corners to close out the calendar container.
  */
 .flatpickr-days {
-    border-top: 1px solid var(--color-border);
+    border-top: 0px solid var(--color-border);
     border-bottom-left-radius: var(--radius-base) !important;
     border-bottom-right-radius: var(--radius-base) !important;
 }
@@ -89,6 +89,9 @@
     align-items: center;
 }
 
+.flatpickr-current-month span.cur-month:hover {
+    background: transparent !important;
+}
 
 /* --- 2b. Month & Year Text ------------------------------------------------ */
 
@@ -100,7 +103,9 @@
 .cur-month,
 .cur-year {
     font-size: var(--text-base) !important;
-    font-weight: 500 !important;
+    font-weight: 400 !important;
+    font-family: var(--font-body);
+    letter-spacing: 0;
     color: var(--color-muted) !important;
 }
 
@@ -146,6 +151,8 @@
 .flatpickr-months .flatpickr-next-month:hover svg {
     stroke: var(--color-body);
     fill: transparent !important;
+    background-color: var(--color-accent);
+    border-radius: var(--radius-base);
 }
 
 
@@ -220,7 +227,8 @@
 
 .flatpickr-weekday {
     font-size: var(--text-xs) !important;
-    font-weight: 600 !important;
+    font-weight: 500 !important;
+    letter-spacing: 0;
     font-family: var(--font-mono) !important;
     text-transform: uppercase;
     color: var(--color-muted) !important;
@@ -240,7 +248,7 @@
  */
 .dayContainer {
     padding: calc(var(--spacing) * 3);
-    background-color: var(--color-input) !important;
+    background-color: var(--color-white) !important;
     border-radius: var(--radius-base) !important;
 }
 
@@ -255,8 +263,9 @@
 .flatpickr-day {
     border-radius: var(--radius-base) !important;
     color: var(--color-muted);
+    letter-spacing: 0;
     font-family: var(--font-mono) !important;
-    font-size: var(--text-sm) !important;
+    font-size: var(--text-xs) !important;
 }
 
 
@@ -268,7 +277,7 @@
  */
 .flatpickr-day:hover {
     background-color: var(--color-accent);
-    border-color: var(--color-border);
+    border-color: transparent;
 }
 
 
@@ -276,13 +285,13 @@
 
 /**
  * .flatpickr-day.today
- * Highlights today's date with the lightest primary tint as background
- * and a subtle primary border. Clearly distinct from hover and selected states.
+ * Highlights today's date with the lightest indigo tint as background
+ * and a subtle indigo border. Clearly distinct from hover and selected states.
  */
 .flatpickr-day.today {
-    background-color: var(--color-primary-950);
+    background-color: var(--color-indigo-900);
     border-radius: var(--radius-base) !important;
-    color: var(--color-primary-50);
+    color: var(--color-indigo-50);
     border-color: transparent;
 }
 
@@ -291,11 +300,11 @@
 
 /**
  * .flatpickr-day.selected
- * The user-chosen date. Full primary-900 background with inverted text
+ * The user-chosen date. Full indigo-900 background with inverted text
  * for maximum contrast and clear differentiation from hover and today.
  */
 .flatpickr-day.selected {
-    background-color: var(--color-primary-900) !important;
-    color: var(--color-primary-50);
+    background-color: var(--color-indigo-900) !important;
+    color: var(--color-indigo-50);
     border-color: transparent;
 }

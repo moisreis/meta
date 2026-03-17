@@ -141,6 +141,21 @@ class PortfoliosController < ApplicationController
                                   .group_by { |fi| fi.investment_fund.administrator_name }
                                   .map { |admin, investments| [admin, investments.sum { |fi| fi.percentage_allocation || 0 }] }
 
+    # Aggregates allocation percentages grouped by the investment fund's benchmark index.
+    @indices_data = @portfolio.fund_investments
+                                 .joins(:investment_fund)
+                                 .group("investment_funds.benchmark_index")
+                                 .sum(:percentage_allocation)
+                                 .transform_keys { |key| key.presence || "Outros" }
+
+    # Joins fund investments to normative articles through the join table
+    # to aggregate allocation percentages by the article number.
+    @normative_data = @portfolio.fund_investments
+                                .joins(investment_fund: :normative_articles)
+                                .group("normative_articles.article_number")
+                                .sum(:percentage_allocation)
+                                .transform_keys { |key| key.presence || "Não enquadrado" }
+
     @monthly_flows = calculate_monthly_flows(@portfolio)
 
     @reference_period = @reference_date.end_of_month
