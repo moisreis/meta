@@ -91,35 +91,28 @@ class Portfolio < ApplicationRecord
   #
   # @author Moisés Reis
   #
-  # Calculates the compounded year-to-date return for the portfolio.
-  # It chains the monthly returns together geometrically to ensure the
-  # result matches professional financial reporting standards.
+  # Calculates the compounded year-to-date return by chaining the monthly
+  # returns geometrically. Delegates to portfolio_return_percentage for each
+  # month to guarantee consistency between the monthly card and the YTD card.
   #
-  # Parameters::
-  # - *date* - The reference date defining the year and the final month.
+  # Parameters:: - *date* - The reference date defining the year and the final month.
   #
-  # Returns::
-  # - The compounded return as a percentage (e.g., 2.42) or 0.0 if no data exists.
+  # Returns:: - The compounded return as a percentage (e.g., 2.42) or 0.0 if no data exists.
   def compounded_yearly_return_on(date)
-    records = performance_histories.where(
-      period: date.beginning_of_year..date.end_of_month
-    ).order(:period)
+    periods = performance_histories
+                .where(period: date.beginning_of_year..date.end_of_month)
+                .pluck(:period)
+                .uniq
+                .sort
 
-    return 0.0 if records.empty?
+    return 0.0 if periods.empty?
 
-    # Group by period → compute a single portfolio monthly return per month,
-    # then compound those monthly portfolio returns geometrically.
-    total_factor = records.group_by(&:period).sort.reduce(1.0) do |factor, (_period, month_records)|
-      total_earnings = month_records.sum { |r| r.earnings.to_f }
-      total_initial  = month_records.sum { |r| r.initial_balance.to_f }
-
-      next factor if total_initial.zero?
-
-      monthly_portfolio_return = total_earnings / total_initial  # already a ratio, e.g. 0.01305
-      factor * (1 + monthly_portfolio_return)
+    total_factor = periods.reduce(BigDecimal("1")) do |factor, period|
+      monthly = portfolio_return_percentage(period)
+      factor * (1 + monthly / 100)
     end
 
-    ((total_factor - 1) * 100).round(2)
+    ((total_factor - 1) * 100).round(2).to_f
   end
 
   # == total_balance_on
@@ -292,24 +285,53 @@ class Portfolio < ApplicationRecord
   #
   # @author Moisés Reis
   #
-  # Calculates the weighted average return for the portfolio based on the latest performance snapshot.
+  # Calculates the portfolio monthly return using Modified Dietz (W=1).
+  # The denominator is always the sum of initial_balance of continuing funds,
+  # which equals IV + CF (opening balance plus net cash flows). Redeemed funds
+  # had their capital leave the portfolio, so their initial_balance is excluded
+  # from the denominator. For the most recent period (no next month exists),
+  # all funds are treated as continuing and the full initial_balance is used.
   #
   # Parameters:: - *reference_date* - The period date for which to calculate the return.
   #
-  # Returns:: - The calculated weighted return percentage.
+  # Returns:: - The calculated return percentage as a BigDecimal.
   def portfolio_return_percentage(reference_date = nil)
-    perfs = performance_histories
-              .where(period: reference_date || performance_histories.maximum(:period))
-              .includes(:fund_investment)
+    target = reference_date&.to_date&.end_of_month ||
+             performance_histories.maximum(:period)
+    return BigDecimal("0") unless target
 
+    perfs = performance_histories.where(period: target)
     return BigDecimal("0") if perfs.empty?
 
-    total_alloc = perfs.sum { |p| p.fund_investment.percentage_allocation.to_d }
-    return BigDecimal("0") if total_alloc.zero?
+    total_earnings = perfs.sum(:earnings).to_d
 
-    weighted = perfs.sum { |p| p.monthly_return.to_d * p.fund_investment.percentage_allocation.to_d }
-    weighted / total_alloc
+    next_period     = target.next_month.end_of_month
+    next_initial_sum = performance_histories
+                         .where(period: next_period)
+                         .sum(:initial_balance)
+                         .to_d
+
+    denominator = if next_initial_sum > 0
+                    # Modified Dietz W=1: IV + CF = total_final − earnings
+                    # total_final = next month's Σ(initial_balance) which is the
+                    # true closing value after all applications and redemptions.
+                    next_initial_sum - total_earnings
+                  else
+                    # Most recent period: no next month yet.
+                    # Use Σ(mr × weight) directly to avoid cash-flow distortion.
+                    total_initial = perfs.sum(:initial_balance).to_d
+                    return BigDecimal("0") if total_initial.zero?
+
+                    return perfs.sum { |r|
+                      (r.initial_balance.to_d / total_initial) * r.monthly_return.to_d
+                    }
+                  end
+
+    return BigDecimal("0") if denominator.zero?
+
+    (total_earnings / denominator) * 100
   end
+
 
   # == portfolio_yearly_return_percentage
   #

@@ -59,7 +59,7 @@
           status: card_status_trend_for(@portfolio.yearly_earnings)
         ) do
     %>
-      <%= normalize_trend(@portfolio.yearly_earnings) %>
+      <%= normalize_currency(@portfolio.yearly_earnings) %>
     <% end %>
 
 <%# Presents the actual financial earnings for the month
@@ -68,6 +68,7 @@
           "partials/route/dashboard/card",
           card_title: "Rendimento do Mês",
           card_icon: "wallet",
+          card_data: "Ref. #{l(@reference_date, format: :default)}",
           status: card_status_trend_for(@portfolio.total_earnings_on(@reference_date))
         ) do %>
       <%= normalize_trend(@portfolio.total_earnings_on(@reference_date)) %>
@@ -79,7 +80,7 @@
           "partials/route/dashboard/card",
           card_title: "Rentabilidade Acumulada do Ano",
           card_icon: "calendar",
-          card_data: normalize_card_text("Ano Atual"),
+          card_data: "Ref. #{l(@reference_date, format: :default)}",
           status: card_status_trend_for(@portfolio_yearly_return)
         ) do
     %>
@@ -91,10 +92,11 @@
     <%= render(
           "partials/route/dashboard/card",
           card_title: "Rentabilidade do Mês Atual",
-          card_icon: "trending-up"
+          card_icon: "trending-up",
+          card_data: "Ref. #{l(@reference_date, format: :default)}",
         ) do
     %>
-      <%= normalize_trend(@portfolio.portfolio_return_percentage, format: :percentage) %>
+      <%= normalize_trend(@portfolio.portfolio_return_percentage(@reference_date), format: :percentage) %>
     <% end %>
 
     <%# Provides the trailing twelve-month percentage return for the
@@ -274,27 +276,27 @@
     # Cash Management (Checking Accounts)
     # ============================================================= %>
 
-    <%# Lists the liquid cash positions in checking accounts linked
+  <%# Lists the liquid cash positions in checking accounts linked
         to the portfolio, including balances and institutions. %>
-    <%= render "partials/groups/table-list",
-               section_title: "Contas Correntes",
-               collection: @portfolio.checking_accounts.order(reference_date: :desc),
-               th_descs: [nil, nil, nil, nil, nil, "Por conta"],
-               action_path: "javascript:void(0)",
-               action_name: "Nova Conta",
-               button_id: "openCheckingAccountBtn",
-               action_icon: "plus",
-               headers: ["Nome", "Instituição", "Conta", "Moeda", "Saldo", "Referência"],
-               column_icons: ["tag", "building", "hash", "dollar", "banknote", "calendar"],
-               body_procs: [
-                 ->(ca) { normalize_title(ca.name) },
-                 ->(ca) { ca.institution.presence || "—" },
-                 ->(ca) { ca.account_number.presence || "—" },
-                 ->(ca) { ca.currency },
-                 ->(ca) { normalize_currency(ca.balance) },
-                 ->(ca) { l(ca.reference_date, format: :long) }
-               ]
-    %>
+  <%= render "partials/groups/table-list",
+             section_title: "Contas Correntes",
+             collection: @portfolio.checking_accounts.order(reference_date: :desc),
+             th_descs: [nil, nil, nil, nil, nil, "Por conta"],
+             action_path: "javascript:void(0)",
+             action_name: "Nova Conta",
+             button_id: "openCheckingAccountBtn",
+             action_icon: "plus",
+             headers: ["Nome", "Instituição", "Conta", "Moeda", "Saldo", "Referência"],
+             column_icons: ["tag", "building", "hash", "dollar", "banknote", "calendar"],
+             body_procs: [
+               ->(ca) { normalize_title(ca.name) },
+               ->(ca) { ca.institution.presence || "—" },
+               ->(ca) { ca.account_number.presence || "—" },
+               ->(ca) { ca.currency },
+               ->(ca) { normalize_currency(ca.balance) },
+               ->(ca) { l(ca.reference_date, format: :long) }
+             ]
+  %>
 
   <%# Renders the modal used to create and associate new checking
       accounts with the current portfolio instance. %>
@@ -333,7 +335,11 @@
                title_proc: ->(app) { app.fund_investment.investment_fund.fund_name },
                value_proc: ->(app) { normalize_currency(app.financial_value) },
                sub_value_proc: ->(app) {
-                 safe_join([normalize_number(app.number_of_quotas), " cotas"])
+                 content_tag(
+                   :span,
+                   "#{strip_tags(normalize_number(app.number_of_quotas))} cotas",
+                   style: "white-space: nowrap;"
+                 )
                }
     %>
     <%# Displays the five most recent redemption requests to track
@@ -358,7 +364,10 @@
                title_proc: ->(red) { red.fund_investment.investment_fund.fund_name },
                value_proc: ->(red) { normalize_currency(red.redeemed_liquid_value) },
                sub_value_proc: ->(red) {
-                 safe_join([normalize_number(red.redeemed_quotas), " cotas"])
+                 content_tag(:span,
+                             "#{strip_tags(normalize_number(red.redeemed_quotas))} cotas",
+                             style: "white-space: nowrap;"
+                 )
                }
     %>
   <% end %>

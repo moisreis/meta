@@ -157,7 +157,7 @@
       # when extra information is not necessary for a particular metric.
       %>
     <% if card_data.present? %>
-      <div class="<%= badge_classes %> !shadow-none">
+      <div class="font-mono uppercase text-xs text-muted tracking-[0]">
 
         <%# This small icon within the badge is typically used for trend
           # indicators, such as upward or downward arrows, to give
@@ -170,6 +170,5 @@
         <%= content_tag :p, card_data %>
       </div>
     <% end %>
-
   </div>
 </div>
