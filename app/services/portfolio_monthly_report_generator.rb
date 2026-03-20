@@ -1772,47 +1772,45 @@ class PortfolioMonthlyReportGenerator
         ]
         styled_table(acc_rows, col_widths: [160, 170, 185])
       end
-
-      pdf.start_new_page
-
-      draw_section(title: 'Índices por Mês', border: true, spacing: 0) do
-        rows = [['Ano', 'Mês', 'Meta', 'CDI', 'IPCA', 'Ibovespa', 'IMA-GERAL']]
-
-        factors = { meta: 1.0, cdi: 1.0, ipca: 1.0, ibov: 1.0, ima: 1.0 }
-
-        (1..12).each do |month|
-          date = Date.new(@reference_date.year, month, 1)
-          period_key = date.beginning_of_month
-
-          if month <= @reference_date.month
-            meta_m = meta_monthly_series[period_key][:meta].to_f
-            cdi_m = eco['CDI']&.dig(period_key).to_f || 0.0
-            ipca_m = eco['IPCA']&.dig(period_key).to_f || 0.0
-            ibov_m = eco['IBOVESPA']&.dig(period_key).to_f || 0.0
-            ima_m = eco['IMAGERAL']&.dig(period_key).to_f || 0.0
-
-            factors[:meta] *= (1 + meta_m / 100.0)
-            factors[:cdi] *= (1 + cdi_m / 100.0)
-            factors[:ipca] *= (1 + ipca_m / 100.0)
-            factors[:ibov] *= (1 + ibov_m / 100.0)
-            factors[:ima] *= (1 + ima_m / 100.0)
-
-            rows << [
-              date.year,
-              I18n.l(date, format: '%B'),
-              fmt_pct((factors[:meta] - 1) * 100),
-              fmt_pct((factors[:cdi] - 1) * 100),
-              fmt_pct((factors[:ipca] - 1) * 100),
-              fmt_pct((factors[:ibov] - 1) * 100),
-              fmt_pct((factors[:ima] - 1) * 100)
-            ]
-          else
-            rows << [date.year, I18n.l(date, format: '%B'), '-', '-', '-', '-', '-']
-          end
-        end
-
-        styled_table(rows, col_widths: [35, 75, 65, 65, 65, 75, 75])
-      end
+      
+      # draw_section(title: 'Índices por Mês', border: true, spacing: 0) do
+      #   rows = [['Ano', 'Mês', 'Meta', 'CDI', 'IPCA', 'Ibovespa', 'IMA-GERAL']]
+      #
+      #   factors = { meta: 1.0, cdi: 1.0, ipca: 1.0, ibov: 1.0, ima: 1.0 }
+      #
+      #   (1..12).each do |month|
+      #     date = Date.new(@reference_date.year, month, 1)
+      #     period_key = date.beginning_of_month
+      #
+      #     if month <= @reference_date.month
+      #       meta_m = meta_monthly_series[period_key][:meta].to_f
+      #       cdi_m = eco['CDI']&.dig(period_key).to_f || 0.0
+      #       ipca_m = eco['IPCA']&.dig(period_key).to_f || 0.0
+      #       ibov_m = eco['IBOVESPA']&.dig(period_key).to_f || 0.0
+      #       ima_m = eco['IMAGERAL']&.dig(period_key).to_f || 0.0
+      #
+      #       factors[:meta] *= (1 + meta_m / 100.0)
+      #       factors[:cdi] *= (1 + cdi_m / 100.0)
+      #       factors[:ipca] *= (1 + ipca_m / 100.0)
+      #       factors[:ibov] *= (1 + ibov_m / 100.0)
+      #       factors[:ima] *= (1 + ima_m / 100.0)
+      #
+      #       rows << [
+      #         date.year,
+      #         I18n.l(date, format: '%B'),
+      #         fmt_pct((factors[:meta] - 1) * 100),
+      #         fmt_pct((factors[:cdi] - 1) * 100),
+      #         fmt_pct((factors[:ipca] - 1) * 100),
+      #         fmt_pct((factors[:ibov] - 1) * 100),
+      #         fmt_pct((factors[:ima] - 1) * 100)
+      #       ]
+      #     else
+      #       rows << [date.year, I18n.l(date, format: '%B'), '-', '-', '-', '-', '-']
+      #     end
+      #   end
+      #
+      #   styled_table(rows, col_widths: [35, 75, 65, 65, 65, 75, 75])
+      # end
     end
   end
 
