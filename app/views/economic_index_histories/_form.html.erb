@@ -52,6 +52,7 @@
     <%= render "partials/modules/select",
                f: form,
                name: :month_ref,
+               is_half_width: true,
                desc: "Escolha um mês para registrar o histórico",
                options_collection: options_for_select(
                  [
