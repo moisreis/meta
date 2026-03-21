@@ -168,9 +168,6 @@ class FundValuationsController < ApplicationController
   # This manually triggers the background job that imports fund valuations
   # from external sources, useful for testing or recovering from failed imports.
   def trigger_import
-    job_key = "fund_valuation_import_progress"
-    Rails.cache.write(job_key, { percent: 0, step: "Enfileirando importação…", done: false }, expires_in: 30.minutes)
-
     FundValuationImportJob.perform_later
     redirect_to fund_valuations_path, notice: "Importação iniciada."
   end

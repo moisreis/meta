@@ -1772,7 +1772,7 @@ class PortfolioMonthlyReportGenerator
         ]
         styled_table(acc_rows, col_widths: [160, 170, 185])
       end
-      
+
       # draw_section(title: 'Índices por Mês', border: true, spacing: 0) do
       #   rows = [['Ano', 'Mês', 'Meta', 'CDI', 'IPCA', 'Ibovespa', 'IMA-GERAL']]
       #
