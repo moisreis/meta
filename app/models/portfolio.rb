@@ -294,7 +294,7 @@ class Portfolio < ApplicationRecord
   #
   # Parameters:: - *reference_date* - The period date for which to calculate the return.
   #
-  # Returns:: - The calculated return percentage as a BigDecimal.
+  # Returns:: - The calculated return percentage as a BigDecimal
   def portfolio_return_percentage(reference_date = nil)
     target = reference_date&.to_date&.end_of_month ||
              performance_histories.maximum(:period)
@@ -305,7 +305,7 @@ class Portfolio < ApplicationRecord
 
     total_earnings = perfs.sum(:earnings).to_d
 
-    next_period      = target.next_month.end_of_month
+    next_period = target.next_month.end_of_month
     next_initial_sum = performance_histories
                          .where(period: next_period)
                          .sum(:initial_balance)
@@ -322,20 +322,20 @@ class Portfolio < ApplicationRecord
                     # replicando o comportamento do Branch A sem depender de dados futuros.
                     total_emv = perfs.sum do |r|
                       fi = r.fund_investment
-                      apps  = fi.applications.where("cotization_date <= ?", target).sum(:financial_value)
-                      reds  = fi.redemptions.where("cotization_date <= ?", target).sum(:redeemed_liquid_value)
-                      emv   = r.initial_balance.to_d + BigDecimal(apps.to_s) - BigDecimal(reds.to_s) + r.earnings.to_d
+                      apps = fi.applications.where("cotization_date <= ?", target).sum(:financial_value)
+                      reds = fi.redemptions.where("cotization_date <= ?", target).sum(:redeemed_liquid_value)
+                      emv = r.initial_balance.to_d + BigDecimal(apps.to_s) - BigDecimal(reds.to_s) + r.earnings.to_d
                       [emv, BigDecimal("0")].max
                     end
 
                     return BigDecimal("0") if total_emv.zero?
 
                     return perfs.sum do |r|
-                      fi  = r.fund_investment
+                      fi = r.fund_investment
                       apps = fi.applications.where("cotization_date <= ?", target).sum(:financial_value)
                       reds = fi.redemptions.where("cotization_date <= ?", target).sum(:redeemed_liquid_value)
-                      emv  = r.initial_balance.to_d + BigDecimal(apps.to_s) - BigDecimal(reds.to_s) + r.earnings.to_d
-                      emv  = [emv, BigDecimal("0")].max
+                      emv = r.initial_balance.to_d + BigDecimal(apps.to_s) - BigDecimal(reds.to_s) + r.earnings.to_d
+                      emv = [emv, BigDecimal("0")].max
 
                       next BigDecimal("0") if emv.zero?
 
@@ -347,7 +347,6 @@ class Portfolio < ApplicationRecord
 
     (total_earnings / denominator) * 100
   end
-
 
   # == portfolio_yearly_return_percentage
   #
