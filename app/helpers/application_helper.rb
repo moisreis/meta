@@ -342,3 +342,41 @@ module ApplicationHelper
     content_tag(:span, formatted_number, class: "font-mono")
   end
 end
+
+INFO_CARD_COLORS = {
+  "primary" => {
+    bg: "bg-primary-50",
+    icon_bg: "bg-primary-600",
+    border: "border-primary-200",
+    text: "text-primary-600",
+    stroke: "stroke-primary-600"
+  },
+  "success" => {
+    bg: "bg-success-50",
+    icon_bg: "bg-success-600",
+    border: "border-success-200",
+    text: "text-success-600",
+    stroke: "stroke-success-600"
+  },
+  "secondary" => {
+    bg: "bg-secondary-50",
+    icon_bg: "bg-secondary-600",
+    border: "border-secondary-200",
+    text: "text-secondary-600",
+    stroke: "stroke-secondary-600"
+  },
+  "quaternary" => {
+    bg: "bg-quaternary-50",
+    icon_bg: "bg-quaternary-600",
+    border: "border-quaternary-200",
+    text: "text-quaternary-600",
+    stroke: "stroke-quaternary-600"
+  },
+  "danger" => {
+    bg: "bg-danger-50",
+    icon_bg: "bg-danger-600",
+    border: "border-danger-200",
+    text: "text-danger-600",
+    stroke: "stroke-danger-600"
+  }
+}.freeze
