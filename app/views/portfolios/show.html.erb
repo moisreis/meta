@@ -78,25 +78,23 @@
         across the current calendar year. %>
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Rentabilidade Acumulada do Ano",
-          card_icon: "calendar",
-          card_data: "Ref. #{l(@reference_date, format: :default)}",
-          status: card_status_trend_for(@portfolio_yearly_return)
-        ) do
-    %>
-      <%= normalize_trend(@portfolio.compounded_yearly_return_on(@reference_date), format: :percentage) %>
+          card_title: "Rendimento Acumulado do Ano",
+          card_icon: "wallet",
+          status: card_status_trend_for(@portfolio_yearly_twr)
+        ) do %>
+      <%= normalize_trend(@portfolio_yearly_twr, format: :percentage) %>
     <% end %>
 
     <%# Shows the percentage return specific to the month of the
         currently selected reference date. %>
     <%= render(
           "partials/route/dashboard/card",
-          card_title: "Rentabilidade do Mês Atual",
-          card_icon: "trending-up",
+          card_title: "Rendimento do Mês",
+          card_icon: "wallet",
           card_data: "Ref. #{l(@reference_date, format: :default)}",
-        ) do
-    %>
-      <%= normalize_trend(@portfolio.portfolio_return_percentage(@reference_date), format: :percentage) %>
+          status: card_status_trend_for(@portfolio_monthly_twr)
+        ) do %>
+      <%= normalize_trend(@portfolio_monthly_twr, format: :percentage) %>
     <% end %>
 
     <%# Provides the trailing twelve-month percentage return for the

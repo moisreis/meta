@@ -164,6 +164,15 @@ class PortfoliosController < ApplicationController
                                     .where(period: @reference_period)
                                     .includes(fund_investment: :investment_fund)
 
+    @portfolio_monthly_twr = @portfolio.portfolio_twr_return_on(
+      @reference_date.beginning_of_month - 1.day,
+      @reference_date
+    )
+    @portfolio_yearly_twr = @portfolio.portfolio_twr_return_on(
+      @reference_date.beginning_of_year - 1.day,
+      @reference_date
+    )
+
     if @recent_performance.empty?
       latest_period = @portfolio.performance_histories.maximum(:period)
       if latest_period
