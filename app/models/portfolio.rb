@@ -281,58 +281,44 @@ class Portfolio < ApplicationRecord
     fund_investments.sum(:percentage_allocation) <= BigDecimal("100")
   end
 
-  # == portfolio_return_percentage
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the portfolio monthly return using Modified Dietz (W=1).
-  # The denominator is always the sum of initial_balance of continuing funds,
-  # which equals IV + CF (opening balance plus net cash flows). Redeemed funds
-  # had their capital leave the portfolio, so their initial_balance is excluded
-  # from the denominator. For the most recent period (no next month exists),
-  # all funds are treated as continuing and the full initial_balance is used.
-  #
-  # Parameters:: - *reference_date* - The period date for which to calculate the return.
-  #
-  # Returns:: - The calculated return percentage as a BigDecimal.
-  # portfolio.rb — método portfolio_return_percentage
-
   def portfolio_return_percentage(reference_date = nil)
     target = reference_date&.to_date&.end_of_month ||
              performance_histories.maximum(:period)
     return BigDecimal("0") unless target
 
-    perfs = performance_histories.where(period: target).includes(:fund_investment)
+    perfs = performance_histories.where(period: target).includes(
+      fund_investment: [:applications, :redemptions]
+    )
     return BigDecimal("0") if perfs.empty?
 
-    total_earnings = perfs.sum(:earnings).to_d
+    total_days = BigDecimal(target.day.to_s)
+    total_earnings = BigDecimal("0")
+    total_denominator = BigDecimal("0")
 
-    next_period      = target.next_month.end_of_month
-    next_initial_sum = performance_histories
-                         .where(period: next_period)
-                         .sum(:initial_balance)
-                         .to_d
+    perfs.each do |perf|
+      fi = perf.fund_investment
+      period_start = target.beginning_of_month
+      period_end   = target
 
-    denominator = if next_initial_sum > 0
-                    next_initial_sum - total_earnings
-                  else
-                    # Período mais recente: excluir fundos com resgate total
-                    # (cotas líquidas zeradas), assim como o ramo anterior faz
-                    # naturalmente por não os encontrar no mês seguinte.
-                    active_perfs = perfs.select { |r| r.fund_investment.total_quotas_held.to_d > 0 }
-                    return BigDecimal("0") if active_perfs.empty?
+      initial = perf.initial_balance.to_d
 
-                    total_initial = active_perfs.sum { |r| r.initial_balance.to_d }
-                    return BigDecimal("0") if total_initial.zero?
+      # Fluxos dentro do mês, ponderados pelo tempo restante (Modified Dietz W=1)
+      apps = fi.applications.where(cotization_date: period_start..period_end)
+      reds = fi.redemptions.where(cotization_date: period_start..period_end)
 
-                    return active_perfs.sum { |r|
-                      (r.initial_balance.to_d / total_initial) * r.monthly_return.to_d
-                    }
-                  end
+      weighted_cf = apps.sum { |a| a.financial_value.to_d * (total_days - a.cotization_date.day) / total_days } -
+                    reds.sum { |r| r.redeemed_liquid_value.to_d * (total_days - r.cotization_date.day) / total_days }
 
-    return BigDecimal("0") if denominator.zero?
+      denominator = initial + weighted_cf
+      next if denominator <= 0
 
-    (total_earnings / denominator) * 100
+      total_earnings   += perf.earnings.to_d
+      total_denominator += denominator
+    end
+
+    return BigDecimal("0") if total_denominator.zero?
+
+    (total_earnings / total_denominator) * 100
   end
 
 
