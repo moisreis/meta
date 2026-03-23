@@ -294,7 +294,7 @@ class Portfolio < ApplicationRecord
   #
   # Parameters:: - *reference_date* - The period date for which to calculate the return.
   #
-  # Returns:: - The calculated return percentage as a BigDecimal
+  # Returns:: - The calculated return percentage as a BigDecimal.
   def portfolio_return_percentage(reference_date = nil)
     target = reference_date&.to_date&.end_of_month ||
              performance_histories.maximum(:period)
@@ -305,48 +305,33 @@ class Portfolio < ApplicationRecord
 
     total_earnings = perfs.sum(:earnings).to_d
 
-    next_period = target.next_month.end_of_month
+    next_period     = target.next_month.end_of_month
     next_initial_sum = performance_histories
                          .where(period: next_period)
                          .sum(:initial_balance)
                          .to_d
 
     denominator = if next_initial_sum > 0
-                    # Branch A: há dados do mês seguinte.
-                    # Fundos resgatados somem automaticamente (EMV=0 → sem initial_balance em next_period).
+                    # Modified Dietz W=1: IV + CF = total_final − earnings
+                    # total_final = next month's Σ(initial_balance) which is the
+                    # true closing value after all applications and redemptions.
                     next_initial_sum - total_earnings
                   else
-                    # Branch B: período mais recente, sem next_month ainda.
-                    # Pondera por EMV (Ending Market Value) de cada fundo.
-                    # Fundos com resgate total têm EMV=0 e ficam de fora naturalmente,
-                    # replicando o comportamento do Branch A sem depender de dados futuros.
-                    total_emv = perfs.sum do |r|
-                      fi = r.fund_investment
-                      apps = fi.applications.where("cotization_date <= ?", target).sum(:financial_value)
-                      reds = fi.redemptions.where("cotization_date <= ?", target).sum(:redeemed_liquid_value)
-                      emv = r.initial_balance.to_d + BigDecimal(apps.to_s) - BigDecimal(reds.to_s) + r.earnings.to_d
-                      [emv, BigDecimal("0")].max
-                    end
+                    # Most recent period: no next month yet.
+                    # Use Σ(mr × weight) directly to avoid cash-flow distortion.
+                    total_initial = perfs.sum(:initial_balance).to_d
+                    return BigDecimal("0") if total_initial.zero?
 
-                    return BigDecimal("0") if total_emv.zero?
-
-                    return perfs.sum do |r|
-                      fi = r.fund_investment
-                      apps = fi.applications.where("cotization_date <= ?", target).sum(:financial_value)
-                      reds = fi.redemptions.where("cotization_date <= ?", target).sum(:redeemed_liquid_value)
-                      emv = r.initial_balance.to_d + BigDecimal(apps.to_s) - BigDecimal(reds.to_s) + r.earnings.to_d
-                      emv = [emv, BigDecimal("0")].max
-
-                      next BigDecimal("0") if emv.zero?
-
-                      (emv / total_emv) * r.monthly_return.to_d
-                    end
+                    return perfs.sum { |r|
+                      (r.initial_balance.to_d / total_initial) * r.monthly_return.to_d
+                    }
                   end
 
     return BigDecimal("0") if denominator.zero?
 
     (total_earnings / denominator) * 100
   end
+
 
   # == portfolio_yearly_return_percentage
   #
