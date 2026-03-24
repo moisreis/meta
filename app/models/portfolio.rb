@@ -68,6 +68,15 @@ class Portfolio < ApplicationRecord
     fund_investments.sum(:total_invested_value) || BigDecimal("0")
   end
 
+  def earnings_between(start_date, end_date)
+    start_val = total_balance_on(start_date - 1.day)
+    end_val   = total_balance_on(end_date)
+
+    flows = net_cashflow_between(start_date, end_date)
+
+    end_val - start_val - flows
+  end
+
   # == total_earnings_on
   #
   # @author Moisés Reis
@@ -82,9 +91,8 @@ class Portfolio < ApplicationRecord
   # - The total sum of earnings as a BigDecimal.
 
   def total_earnings_on(date)
-    target_period = date.to_date.end_of_month
-
-    performance_histories.where(period: target_period).sum(:earnings)
+    start = date.beginning_of_month
+    earnings_between(start, date)
   end
 
   # == compounded_yearly_return_on
@@ -154,18 +162,7 @@ class Portfolio < ApplicationRecord
   # - The percentage return as a rounded Float.
 
   def yearly_profitability_on(date)
-    # Ensure we are looking at the start of the current calendar year
-    start_of_year = date.beginning_of_year
-
-    # The 'Opening Balance' of the year is the state of the portfolio
-    # at the very end of the previous year.
-    val_jan_1 = total_balance_on(start_of_year - 1.day)
-    val_now = total_balance_on(date)
-
-    return 0.0 if val_jan_1 <= 0
-
-    # Calculation: ((Current / Start) - 1) * 100
-    (((val_now / val_jan_1) - 1) * 100).to_f.round(2)
+    portfolio_twr_return_on(date.beginning_of_year, date).to_f.round(2)
   end
 
   # == total_quotas_held
@@ -376,43 +373,8 @@ class Portfolio < ApplicationRecord
   end
 
   def portfolio_return_percentage(reference_date = nil)
-    target = reference_date&.to_date&.end_of_month ||
-             performance_histories.maximum(:period)
-    return BigDecimal("0") unless target
-
-    perfs = performance_histories.where(period: target).includes(
-      fund_investment: [:applications, :redemptions]
-    )
-    return BigDecimal("0") if perfs.empty?
-
-    total_days = BigDecimal(target.day.to_s)
-    total_earnings = BigDecimal("0")
-    total_denominator = BigDecimal("0")
-
-    perfs.each do |perf|
-      fi = perf.fund_investment
-      period_start = target.beginning_of_month
-      period_end   = target
-
-      initial = perf.initial_balance.to_d
-
-      # Fluxos dentro do mês, ponderados pelo tempo restante (Modified Dietz W=1)
-      apps = fi.applications.where(cotization_date: period_start..period_end)
-      reds = fi.redemptions.where(cotization_date: period_start..period_end)
-
-      weighted_cf = apps.sum { |a| a.financial_value.to_d * (total_days - a.cotization_date.day) / total_days } -
-                    reds.sum { |r| r.redeemed_liquid_value.to_d * (total_days - r.cotization_date.day) / total_days }
-
-      denominator = initial + weighted_cf
-      next if denominator <= 0
-
-      total_earnings   += perf.earnings.to_d
-      total_denominator += denominator
-    end
-
-    return BigDecimal("0") if total_denominator.zero?
-
-    (total_earnings / total_denominator) * 100
+    start = reference_date.beginning_of_month
+    portfolio_twr_return_on(start, reference_date)
   end
 
 
@@ -426,27 +388,8 @@ class Portfolio < ApplicationRecord
   #
   # Returns:: - The weighted year-to-date return percentage.
   def portfolio_yearly_return_percentage(reference_date = nil)
-    period = reference_date || performance_histories.maximum(:period)
-    return BigDecimal("0") unless period
-
-    perfs = performance_histories
-              .where(period: period.beginning_of_year..period)
-              .includes(:fund_investment)
-
-    return BigDecimal("0") if perfs.empty?
-
-    weighted = BigDecimal("0")
-    total_alloc = BigDecimal("0")
-
-    perfs.group_by(&:fund_investment_id).each do |_, fund_perfs|
-      fi = fund_perfs.first.fund_investment
-      alloc = fi.percentage_allocation.to_d
-      accumulated = fund_perfs.sum { |p| p.monthly_return.to_d }
-      weighted += accumulated * alloc
-      total_alloc += alloc
-    end
-
-    total_alloc > 0 ? weighted / total_alloc : BigDecimal("0")
+    start_date = reference_date.beginning_of_year
+    portfolio_twr_return_on(start_date, reference_date)
   end
 
   # == value_timeline
@@ -545,13 +488,24 @@ class Portfolio < ApplicationRecord
   #
   # Returns:: - The sum of earnings as a Float, or 0.0 if no records are found.
   def yearly_earnings(reference_date = Date.current)
-    beginning = reference_date.beginning_of_year
-    ending = reference_date.end_of_month
+    start = reference_date.beginning_of_year
+    earnings_between(start, reference_date)
+  end
 
-    performance_histories
-      .where(period: beginning..ending)
-      .sum(:earnings)
-      .to_f
+  def net_cashflow_between(start_date, end_date)
+    apps = Application
+             .joins(:fund_investment)
+             .where(fund_investments: { portfolio_id: id })
+             .where(cotization_date: start_date..end_date)
+             .sum(:financial_value)
+
+    reds = Redemption
+             .joins(:fund_investment)
+             .where(fund_investments: { portfolio_id: id })
+             .where(cotization_date: start_date..end_date)
+             .sum(:redeemed_liquid_value)
+
+    BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
   end
 
   # == monthly_earnings_history
@@ -595,10 +549,8 @@ class Portfolio < ApplicationRecord
   #
   # Returns:: - The sum of earnings as a Float, or 0.0 if no records are found.
   def monthly_earnings(reference_date = Date.current)
-    performance_histories
-      .where(period: reference_date.beginning_of_month..reference_date.end_of_month)
-      .sum(:earnings)
-      .to_f
+    start = reference_date.beginning_of_month
+    earnings_between(start, reference_date)
   end
 
   private
