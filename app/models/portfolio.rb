@@ -91,16 +91,28 @@ class Portfolio < ApplicationRecord
   #
   # @author Moisés Reis
   #
-  # Returns the compounded portfolio TWR from the beginning of the year
-  # to the given date.
+  # Calculates the compounded year-to-date return by chaining the monthly
+  # returns geometrically. Delegates to portfolio_return_percentage for each
+  # month to guarantee consistency between the monthly card and the YTD card.
   #
-  # Parameters::
-  # - *date* - The reference date defining the year window.
+  # Parameters:: - *date* - The reference date defining the year and the final month.
   #
-  # Returns::
-  # - The year-to-date TWR as a BigDecimal.
+  # Returns:: - The compounded return as a percentage (e.g., 2.42) or 0.0 if no data exists.
   def compounded_yearly_return_on(date)
-    twr_return_on(date.beginning_of_year, date)
+    periods = performance_histories
+                .where(period: date.beginning_of_year..date.end_of_month)
+                .pluck(:period)
+                .uniq
+                .sort
+
+    return 0.0 if periods.empty?
+
+    total_factor = periods.reduce(BigDecimal("1")) do |factor, period|
+      monthly = portfolio_return_percentage(period)
+      factor * (1 + monthly / 100)
+    end
+
+    ((total_factor - 1) * 100).round(2).to_f
   end
 
   # == total_balance_on
@@ -127,20 +139,33 @@ class Portfolio < ApplicationRecord
     end
   end
 
-
   # == yearly_profitability_on
   #
   # @author Moisés Reis
   #
-  # Returns the portfolio TWR from the beginning of the year to the given date.
+  # Calculates the percentage return for the current year. It ensures that
+  # the starting balance is strictly the opening value of January 1st
+  # to avoid interference from late-December transactions.
   #
   # Parameters::
-  # - *date* - The current reference date.
+  # - *date* - The current reference date for the dashboard.
   #
   # Returns::
-  # - The year-to-date TWR as a BigDecimal.
+  # - The percentage return as a rounded Float.
+
   def yearly_profitability_on(date)
-    twr_return_on(date.beginning_of_year, date)
+    # Ensure we are looking at the start of the current calendar year
+    start_of_year = date.beginning_of_year
+
+    # The 'Opening Balance' of the year is the state of the portfolio
+    # at the very end of the previous year.
+    val_jan_1 = total_balance_on(start_of_year - 1.day)
+    val_now = total_balance_on(date)
+
+    return 0.0 if val_jan_1 <= 0
+
+    # Calculation: ((Current / Start) - 1) * 100
+    (((val_now / val_jan_1) - 1) * 100).to_f.round(2)
   end
 
   # == total_quotas_held
@@ -162,28 +187,24 @@ class Portfolio < ApplicationRecord
   # that joins fund_valuations to avoid N+1 queries per fund.
   #
   # Returns:: - The current market value as a BigDecimal.
-  def total_current_market_value(reference_date = Date.current)
-    fund_investments.includes(:investment_fund).sum do |fi|
-      quotas = fi.total_quotas_held
-      next BigDecimal("0") if quotas <= 0
+  def total_current_market_value
+    result = fund_investments
+               .joins(investment_fund: :fund_valuations)
+               .where(
+                 "public.fund_valuations.date = (
+                   SELECT MAX(fv2.date)
+                   FROM public.fund_valuations fv2
+                   WHERE fv2.fund_cnpj = public.investment_funds.cnpj
+                     AND EXTRACT(DOW FROM fv2.date) NOT IN (0, 6)
+                     AND fv2.date <= ?
+                 )", Date.current
+               )
+               .sum("public.fund_investments.total_quotas_held * public.fund_valuations.quota_value")
 
-      price = closest_quota_value(fi.investment_fund.cnpj, reference_date)
-      next BigDecimal("0") unless price
-
-      quotas * price
-    end
-  end
-
-  # == portfolio_twr_return_on
-  #
-  # Calculates portfolio-level TWR for a given period using
-  # weighted fund returns.
-  #
-  # Returns::
-  # - BigDecimal (percentage)
-  #
-  def portfolio_twr_return_on(start_date, end_date)
-    twr_return_on(start_date, end_date)
+    BigDecimal(result.to_s)
+  rescue StandardError => e
+    Rails.logger.warn("[Portfolio#total_current_market_value] SQL optimisation failed, falling back: #{e.message}")
+    fund_investments.includes(:investment_fund).sum(&:current_market_value)
   end
 
   # == estimated_current_month_earnings
@@ -260,25 +281,9 @@ class Portfolio < ApplicationRecord
     fund_investments.sum(:percentage_allocation) <= BigDecimal("100")
   end
 
-  # == twr_return_on
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the Time-Weighted Return (TWR) between two dates.
-  # This implementation treats TWR as the portfolio's canonical return method
-  # and can be reused by monthly, yearly, and year-to-date calculations.
-  #
-  # Parameters::
-  # - *start_date* - The beginning of the measurement interval.
-  # - *end_date*   - The end of the measurement interval.
-  #
-  # Returns::
-  # - The compounded return percentage as a BigDecimal.
-  def twr_return_on(start_date, end_date)
+  def portfolio_twr_return_on(start_date, end_date)
     start_date = start_date.to_date
     end_date   = end_date.to_date
-
-    return BigDecimal("0") if end_date <= start_date
 
     fis = fund_investments.includes(:investment_fund).to_a
     return BigDecimal("0") if fis.empty?
@@ -286,30 +291,25 @@ class Portfolio < ApplicationRecord
     fi_ids   = fis.map(&:id)
     fi_cnpjs = fis.map { |fi| fi.investment_fund.cnpj }.uniq
 
+    # ── 1 query: todas as applications relevantes, indexadas por fi_id e data ──
     apps_by_fi_date = Application
                         .where(fund_investment_id: fi_ids)
                         .where("cotization_date <= ?", end_date)
                         .pluck(:fund_investment_id, :cotization_date, :number_of_quotas, :financial_value)
                         .each_with_object(Hash.new { |h, k| h[k] = [] }) do |(fi_id, date, quotas, value), h|
-      h[fi_id] << {
-        date: date,
-        quotas: BigDecimal(quotas.to_s),
-        value: BigDecimal(value.to_s)
-      }
+      h[fi_id] << { date: date, quotas: BigDecimal(quotas.to_s), value: BigDecimal(value.to_s) }
     end
 
+    # ── 1 query: todas as redemptions relevantes, indexadas por fi_id e data ──
     reds_by_fi_date = Redemption
                         .where(fund_investment_id: fi_ids)
                         .where("cotization_date <= ?", end_date)
                         .pluck(:fund_investment_id, :cotization_date, :redeemed_quotas, :redeemed_liquid_value)
                         .each_with_object(Hash.new { |h, k| h[k] = [] }) do |(fi_id, date, quotas, value), h|
-      h[fi_id] << {
-        date: date,
-        quotas: BigDecimal(quotas.to_s),
-        value: BigDecimal(value.to_s)
-      }
+      h[fi_id] << { date: date, quotas: BigDecimal(quotas.to_s), value: BigDecimal(value.to_s) }
     end
 
+    # ── 1 query: todos os fund_valuations do período, indexados por cnpj e data ──
     valuations_by_cnpj_date = FundValuation
                                 .where(fund_cnpj: fi_cnpjs)
                                 .where("date <= ? AND EXTRACT(DOW FROM date) NOT IN (0, 6)", end_date)
@@ -318,85 +318,101 @@ class Portfolio < ApplicationRecord
       h[cnpj][date] = BigDecimal(value.to_s)
     end
 
-    quota_at = lambda do |fi_id, date|
+    # Helpers em memória (substituem reconstruct_quotas_at e closest_quota_value)
+    quota_at = ->(fi_id, date) {
       apps = (apps_by_fi_date[fi_id] || []).select { |a| a[:date] <= date }.sum { |a| a[:quotas] }
       reds = (reds_by_fi_date[fi_id] || []).select { |r| r[:date] <= date }.sum { |r| r[:quotas] }
-
       BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
-    end
+    }
 
-    price_at = lambda do |cnpj, date|
+    price_at = ->(cnpj, date) {
       dates = valuations_by_cnpj_date[cnpj]
-      next nil if dates.blank?
+      return nil if dates.nil? || dates.empty?
+      closest = dates.keys.select { |d| d <= date }.max
+      closest ? dates[closest] : nil
+    }
 
-      closest_date = dates.keys.select { |d| d <= date }.max
-      closest_date ? dates[closest_date] : nil
-    end
-
-    portfolio_value_on = lambda do |date|
+    patrimonio_on = ->(date) {
       fis.sum do |fi|
-        quotas = quota_at.call(fi.id, date)
+        quotas = quota_at.(fi.id, date)
         next BigDecimal("0") if quotas <= 0
-
-        price = price_at.call(fi.investment_fund.cnpj, date)
+        price = price_at.(fi.investment_fund.cnpj, date)
         next BigDecimal("0") unless price
-
         quotas * price
       end
-    end
+    }
 
-    net_cash_flow_on = lambda do |date|
-      fis.sum do |fi|
-        inflows = (apps_by_fi_date[fi.id] || [])
-                    .select { |a| a[:date] == date }
-                    .sum { |a| a[:value] }
-
-        outflows = (reds_by_fi_date[fi.id] || [])
-                     .select { |r| r[:date] == date }
-                     .sum { |r| r[:value] }
-
-        inflows - outflows
-      end
-    end
-
-    previous_value = portfolio_value_on.call(start_date)
-
-    return BigDecimal("0") if previous_value <= 0
+    # ── Loop TWR em memória: zero queries ──
+    prev_close = patrimonio_on.(start_date)
+    return BigDecimal("0") if prev_close <= 0
 
     compounded_factor = BigDecimal("1")
 
     (start_date + 1).upto(end_date) do |date|
       next if date.saturday? || date.sunday?
 
-      current_value = portfolio_value_on.call(date)
-      next if current_value <= 0
+      day_close = patrimonio_on.(date)
+      next if day_close <= 0
 
-      daily_cash_flow = net_cash_flow_on.call(date)
+      # Cashflow cotizado neste dia (em memória)
+      day_cashflow = fis.sum do |fi|
+        apps_in = (apps_by_fi_date[fi.id] || [])
+                    .select { |a| a[:date] == date }
+                    .sum { |a| a[:value] }
+        reds_out = (reds_by_fi_date[fi.id] || [])
+                     .select { |r| r[:date] == date }
+                     .sum { |r| r[:value] }
+        apps_in - reds_out
+      end
 
-      # TWR daily factor:
-      # (ending value - external cash flow) / beginning value
-      daily_factor = (current_value - daily_cash_flow) / previous_value
-      compounded_factor *= daily_factor
-      previous_value = current_value
+      day_open = day_close - day_cashflow
+      next if day_open <= 0
+
+      compounded_factor *= (day_open / prev_close)
+      prev_close = day_close
     end
 
-    ((compounded_factor - 1) * 100).round(2)
+    (compounded_factor - 1) * 100
   end
 
-  # == portfolio_return_percentage
-  #
-  # @author Moisés Reis
-  #
-  # Returns the portfolio TWR for the month of the given reference date.
-  #
-  # Parameters::
-  # - *reference_date* - The date used to define the monthly window.
-  #
-  # Returns::
-  # - The monthly TWR as a BigDecimal.
   def portfolio_return_percentage(reference_date = nil)
-    reference_date ||= Date.current
-    twr_return_on(reference_date.beginning_of_month, reference_date.end_of_month)
+    target = reference_date&.to_date&.end_of_month ||
+             performance_histories.maximum(:period)
+    return BigDecimal("0") unless target
+
+    perfs = performance_histories.where(period: target).includes(
+      fund_investment: [:applications, :redemptions]
+    )
+    return BigDecimal("0") if perfs.empty?
+
+    total_days = BigDecimal(target.day.to_s)
+    total_earnings = BigDecimal("0")
+    total_denominator = BigDecimal("0")
+
+    perfs.each do |perf|
+      fi = perf.fund_investment
+      period_start = target.beginning_of_month
+      period_end   = target
+
+      initial = perf.initial_balance.to_d
+
+      # Fluxos dentro do mês, ponderados pelo tempo restante (Modified Dietz W=1)
+      apps = fi.applications.where(cotization_date: period_start..period_end)
+      reds = fi.redemptions.where(cotization_date: period_start..period_end)
+
+      weighted_cf = apps.sum { |a| a.financial_value.to_d * (total_days - a.cotization_date.day) / total_days } -
+                    reds.sum { |r| r.redeemed_liquid_value.to_d * (total_days - r.cotization_date.day) / total_days }
+
+      denominator = initial + weighted_cf
+      next if denominator <= 0
+
+      total_earnings   += perf.earnings.to_d
+      total_denominator += denominator
+    end
+
+    return BigDecimal("0") if total_denominator.zero?
+
+    (total_earnings / total_denominator) * 100
   end
 
 
@@ -404,16 +420,33 @@ class Portfolio < ApplicationRecord
   #
   # @author Moisés Reis
   #
-  # Returns the portfolio TWR from the beginning of the year to the given date.
+  # Calculates the cumulative year-to-date performance, weighted by individual fund allocations.
   #
-  # Parameters::
-  # - *reference_date* - The reference date used to define the year window.
+  # Parameters:: - *reference_date* - The period date used to define the year-to-date range.
   #
-  # Returns::
-  # - The annual TWR as a BigDecimal.
+  # Returns:: - The weighted year-to-date return percentage.
   def portfolio_yearly_return_percentage(reference_date = nil)
-    reference_date ||= Date.current
-    twr_return_on(reference_date.beginning_of_year, reference_date)
+    period = reference_date || performance_histories.maximum(:period)
+    return BigDecimal("0") unless period
+
+    perfs = performance_histories
+              .where(period: period.beginning_of_year..period)
+              .includes(:fund_investment)
+
+    return BigDecimal("0") if perfs.empty?
+
+    weighted = BigDecimal("0")
+    total_alloc = BigDecimal("0")
+
+    perfs.group_by(&:fund_investment_id).each do |_, fund_perfs|
+      fi = fund_perfs.first.fund_investment
+      alloc = fi.percentage_allocation.to_d
+      accumulated = fund_perfs.sum { |p| p.monthly_return.to_d }
+      weighted += accumulated * alloc
+      total_alloc += alloc
+    end
+
+    total_alloc > 0 ? weighted / total_alloc : BigDecimal("0")
   end
 
   # == value_timeline

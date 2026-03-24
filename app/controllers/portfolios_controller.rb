@@ -165,12 +165,11 @@ class PortfoliosController < ApplicationController
                                     .includes(fund_investment: :investment_fund)
 
     @portfolio_monthly_twr = @portfolio.portfolio_twr_return_on(
-      @reference_date.beginning_of_month,
+      @reference_date.beginning_of_month - 1.day,
       @reference_date
     )
-
     @portfolio_yearly_twr = @portfolio.portfolio_twr_return_on(
-      @reference_date.beginning_of_year,
+      @reference_date.beginning_of_year - 1.day,
       @reference_date
     )
 
