@@ -23,7 +23,8 @@
   # Notes:
   # Uses the +Portfolio+ model and relies on +PerformanceHistory+ for analytical data.
   # Includes interactive forms that connect to +ReferenceDateController+ for filtering.
-%>
+  %>
+
 <%= render 'partials/route/dashboard/wrapper',
            page_title: @portfolio.name,
            page_desc: "Carteira de #{@portfolio.user.full_name}",

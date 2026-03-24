@@ -204,9 +204,12 @@ class PerformanceHistory < ApplicationRecord
   #
   def market_value
     return BigDecimal('0') unless initial_balance && earnings
+    # Se o fundo não tem cotas ao fim do período, o valor de mercado é zero.
+    # O earnings registrado representa o lucro/prejuízo realizado no resgate.
+    return BigDecimal('0') if fund_investment&.total_quotas_held.to_d.zero?
     initial_balance + earnings
   end
-
+  
   # == invested_value
   #
   # @author Moisés Reis
