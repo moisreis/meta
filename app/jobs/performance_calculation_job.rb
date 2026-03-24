@@ -60,6 +60,30 @@ class PerformanceCalculationJob < ApplicationJob
     Rails.logger.info("[PerformanceCalculationJob] Finished successfully")
   end
 
+  def net_cash_flow_on(fi, date)
+    apps = fi.applications.where(cotization_date: date).sum(:financial_value)
+    reds = fi.redemptions.where(cotization_date: date).sum(:redeemed_liquid_value)
+
+    BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
+  end
+
+  def fund_twr_return(fund, start_date, end_date)
+    dates = (start_date..end_date).reject { |d| d.saturday? || d.sunday? }
+
+    factor = BigDecimal("1")
+
+    dates.each_cons(2) do |prev_date, curr_date|
+      q_prev = find_quota_value(fund.cnpj, prev_date)
+      q_curr = find_quota_value(fund.cnpj, curr_date)
+
+      next unless q_prev && q_curr && q_prev > 0
+
+      factor *= (q_curr / q_prev)
+    end
+
+    (factor - 1) * 100
+  end
+
   private
 
   # == calculate_snapshot!
@@ -96,8 +120,14 @@ class PerformanceCalculationJob < ApplicationJob
     net_cash_flow = period_applications.sum(:financial_value) -
                     period_redemptions.sum(:redeemed_liquid_value)
 
-    earnings = final_balance - initial_balance - net_cash_flow
-    monthly_return = percentage(quota_end - quota_start, quota_start)
+    total_apps = period_applications.sum(:financial_value)
+    total_reds = period_redemptions.sum(:redeemed_liquid_value)
+
+    earnings =
+      (final_balance + total_reds) -
+      (initial_balance + total_apps)
+
+    monthly_return = fund_twr_return(fund, period_start, period_end)
 
     performance = PerformanceHistory.find_or_initialize_by(
       portfolio_id: portfolio.id,
@@ -112,6 +142,16 @@ class PerformanceCalculationJob < ApplicationJob
       yearly_return: calculate_yearly_return(performance, monthly_return),
       last_12_months_return: calculate_last_12_months_return(performance, monthly_return)
     )
+  end
+
+  def fund_value_on(fi, date)
+    quotas = reconstruct_quotas_at(fi, date)
+    return BigDecimal("0") if quotas <= 0
+
+    quota = find_quota_value(fi.investment_fund.cnpj, date)
+    return BigDecimal("0") unless quota
+
+    quotas * quota
   end
 
   # == consolidate_checking_accounts!

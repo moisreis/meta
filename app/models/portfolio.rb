@@ -162,24 +162,28 @@ class Portfolio < ApplicationRecord
   # that joins fund_valuations to avoid N+1 queries per fund.
   #
   # Returns:: - The current market value as a BigDecimal.
-  def total_current_market_value
-    result = fund_investments
-               .joins(investment_fund: :fund_valuations)
-               .where(
-                 "public.fund_valuations.date = (
-                   SELECT MAX(fv2.date)
-                   FROM public.fund_valuations fv2
-                   WHERE fv2.fund_cnpj = public.investment_funds.cnpj
-                     AND EXTRACT(DOW FROM fv2.date) NOT IN (0, 6)
-                     AND fv2.date <= ?
-                 )", Date.current
-               )
-               .sum("public.fund_investments.total_quotas_held * public.fund_valuations.quota_value")
+  def total_current_market_value(reference_date = Date.current)
+    fund_investments.includes(:investment_fund).sum do |fi|
+      quotas = fi.total_quotas_held
+      next BigDecimal("0") if quotas <= 0
 
-    BigDecimal(result.to_s)
-  rescue StandardError => e
-    Rails.logger.warn("[Portfolio#total_current_market_value] SQL optimisation failed, falling back: #{e.message}")
-    fund_investments.includes(:investment_fund).sum(&:current_market_value)
+      price = closest_quota_value(fi.investment_fund.cnpj, reference_date)
+      next BigDecimal("0") unless price
+
+      quotas * price
+    end
+  end
+
+  # == portfolio_twr_return_on
+  #
+  # Calculates portfolio-level TWR for a given period using
+  # weighted fund returns.
+  #
+  # Returns::
+  # - BigDecimal (percentage)
+  #
+  def portfolio_twr_return_on(start_date, end_date)
+    twr_return_on(start_date, end_date)
   end
 
   # == estimated_current_month_earnings
@@ -356,6 +360,7 @@ class Portfolio < ApplicationRecord
     end
 
     previous_value = portfolio_value_on.call(start_date)
+
     return BigDecimal("0") if previous_value <= 0
 
     compounded_factor = BigDecimal("1")
@@ -377,101 +382,6 @@ class Portfolio < ApplicationRecord
 
     ((compounded_factor - 1) * 100).round(2)
   end
-
-  def portfolio_twr_return_on(start_date, end_date)
-    start_date = start_date.to_date
-    end_date   = end_date.to_date
-
-    fis = fund_investments.includes(:investment_fund).to_a
-    return BigDecimal("0") if fis.empty?
-
-    fi_ids   = fis.map(&:id)
-    fi_cnpjs = fis.map { |fi| fi.investment_fund.cnpj }.uniq
-
-    # ── 1 query: todas as applications relevantes, indexadas por fi_id e data ──
-    apps_by_fi_date = Application
-                        .where(fund_investment_id: fi_ids)
-                        .where("cotization_date <= ?", end_date)
-                        .pluck(:fund_investment_id, :cotization_date, :number_of_quotas, :financial_value)
-                        .each_with_object(Hash.new { |h, k| h[k] = [] }) do |(fi_id, date, quotas, value), h|
-      h[fi_id] << { date: date, quotas: BigDecimal(quotas.to_s), value: BigDecimal(value.to_s) }
-    end
-
-    # ── 1 query: todas as redemptions relevantes, indexadas por fi_id e data ──
-    reds_by_fi_date = Redemption
-                        .where(fund_investment_id: fi_ids)
-                        .where("cotization_date <= ?", end_date)
-                        .pluck(:fund_investment_id, :cotization_date, :redeemed_quotas, :redeemed_liquid_value)
-                        .each_with_object(Hash.new { |h, k| h[k] = [] }) do |(fi_id, date, quotas, value), h|
-      h[fi_id] << { date: date, quotas: BigDecimal(quotas.to_s), value: BigDecimal(value.to_s) }
-    end
-
-    # ── 1 query: todos os fund_valuations do período, indexados por cnpj e data ──
-    valuations_by_cnpj_date = FundValuation
-                                .where(fund_cnpj: fi_cnpjs)
-                                .where("date <= ? AND EXTRACT(DOW FROM date) NOT IN (0, 6)", end_date)
-                                .pluck(:fund_cnpj, :date, :quota_value)
-                                .each_with_object(Hash.new { |h, k| h[k] = {} }) do |(cnpj, date, value), h|
-      h[cnpj][date] = BigDecimal(value.to_s)
-    end
-
-    # Helpers em memória (substituem reconstruct_quotas_at e closest_quota_value)
-    quota_at = ->(fi_id, date) {
-      apps = (apps_by_fi_date[fi_id] || []).select { |a| a[:date] <= date }.sum { |a| a[:quotas] }
-      reds = (reds_by_fi_date[fi_id] || []).select { |r| r[:date] <= date }.sum { |r| r[:quotas] }
-      BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
-    }
-
-    price_at = ->(cnpj, date) {
-      dates = valuations_by_cnpj_date[cnpj]
-      return nil if dates.nil? || dates.empty?
-      closest = dates.keys.select { |d| d <= date }.max
-      closest ? dates[closest] : nil
-    }
-
-    patrimonio_on = ->(date) {
-      fis.sum do |fi|
-        quotas = quota_at.(fi.id, date)
-        next BigDecimal("0") if quotas <= 0
-        price = price_at.(fi.investment_fund.cnpj, date)
-        next BigDecimal("0") unless price
-        quotas * price
-      end
-    }
-
-    # ── Loop TWR em memória: zero queries ──
-    prev_close = patrimonio_on.(start_date)
-    return BigDecimal("0") if prev_close <= 0
-
-    compounded_factor = BigDecimal("1")
-
-    (start_date + 1).upto(end_date) do |date|
-      next if date.saturday? || date.sunday?
-
-      day_close = patrimonio_on.(date)
-      next if day_close <= 0
-
-      # Cashflow cotizado neste dia (em memória)
-      day_cashflow = fis.sum do |fi|
-        apps_in = (apps_by_fi_date[fi.id] || [])
-                    .select { |a| a[:date] == date }
-                    .sum { |a| a[:value] }
-        reds_out = (reds_by_fi_date[fi.id] || [])
-                     .select { |r| r[:date] == date }
-                     .sum { |r| r[:value] }
-        apps_in - reds_out
-      end
-
-      day_open = day_close - day_cashflow
-      next if day_open <= 0
-
-      compounded_factor *= (day_open / prev_close)
-      prev_close = day_close
-    end
-
-    (compounded_factor - 1) * 100
-  end
-
 
   # == portfolio_return_percentage
   #

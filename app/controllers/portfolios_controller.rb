@@ -143,10 +143,10 @@ class PortfoliosController < ApplicationController
 
     # Aggregates allocation percentages grouped by the investment fund's benchmark index.
     @indices_data = @portfolio.fund_investments
-                                 .joins(:investment_fund)
-                                 .group("investment_funds.benchmark_index")
-                                 .sum(:percentage_allocation)
-                                 .transform_keys { |key| key.presence || "Outros" }
+                              .joins(:investment_fund)
+                              .group("investment_funds.benchmark_index")
+                              .sum(:percentage_allocation)
+                              .transform_keys { |key| key.presence || "Outros" }
 
     # Joins fund investments to normative articles through the join table
     # to aggregate allocation percentages by the article number.
@@ -165,11 +165,12 @@ class PortfoliosController < ApplicationController
                                     .includes(fund_investment: :investment_fund)
 
     @portfolio_monthly_twr = @portfolio.portfolio_twr_return_on(
-      @reference_date.beginning_of_month - 1.day,
+      @reference_date.beginning_of_month,
       @reference_date
     )
+
     @portfolio_yearly_twr = @portfolio.portfolio_twr_return_on(
-      @reference_date.beginning_of_year - 1.day,
+      @reference_date.beginning_of_year,
       @reference_date
     )
 

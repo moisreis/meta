@@ -154,7 +154,7 @@ module NormalizeHelper
     content_tag(:span, value, class: classes, scope: "row")
   end
 
-  def normalize_percentage(value, precision: 2)
+  def normalize_percentage(value, precision: 4)
 
     # Explanation:: This line checks if the percentage value is available.
     #               If the input is empty, it displays the standard message
