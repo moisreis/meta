@@ -65,10 +65,17 @@
   <div class="flex flex-row items-center justify-between">
 
     <% if section_title.present? %>
-      <div class="flex flex-col justify-start items-start gap-1.5">
+      <div class="flex flex-col justify-start items-start gap-1.5 w-full">
 
-        <div class="flex flex-row justify-start items-center gap-1">
-          <%= content_tag :h2, section_title, class: "text-3xl font-heading capitalize text-body font-medium" %>
+        <div class="relative flex h-12 flex-row justify-between items-center gap-1 after:w-full after:border after:border-dashed after:border-border after:z-10 after:h-[2px] after:absolute after:left-0 after:top-1/2 after:-translate-y-1/2 w-full ">
+          <%= content_tag :h2, section_title, class: "relative z-20 pr-4 text-xl bg-white font-mono uppercase text-body font-medium" %>
+
+          <% if has_action %>
+            <%= link_to button_route, id: button_id, class: "relative z-30 button button-small button-outline before:h-full before:w-4 before:bg-white before:absolute before:z-20 before:-left-[17.1] before:top-1/2 before:-translate-y-1/2" do %>
+              <%= inline_svg_tag "icons/#{button_icon}.svg" %>
+              <%= content_tag :span, button_name %>
+            <% end %>
+          <% end %>
         </div>
 
         <% if section_desc.present? %>
@@ -83,13 +90,6 @@
       <div class="section-desc" id="<%= section_title.parameterize %>-desc" style="display: none;">
         <%= content_tag :h2, section_desc, class: "text-sm text-muted text-left" %>
       </div>
-    <% end %>
-
-    <% if has_action %>
-      <%= link_to button_route, id: button_id, class: "button button-small button-outline" do %>
-        <%= inline_svg_tag "icons/#{button_icon}.svg" %>
-        <%= content_tag :span, button_name %>
-      <% end %>
     <% end %>
 
   </div>

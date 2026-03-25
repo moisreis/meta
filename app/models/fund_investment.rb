@@ -317,7 +317,7 @@ class FundInvestment < ApplicationRecord
   def net_movement_on(date)
     start_date = date.to_date.beginning_of_month
 
-    end_date   = date.to_date.end_of_month
+    end_date = date.to_date.end_of_month
 
     apps = applications.where(request_date: start_date..end_date).sum(:financial_value)
 
