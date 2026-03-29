@@ -25,9 +25,17 @@ class Portfolio < ApplicationRecord
   has_many :authorized_users, through: :user_portfolio_permissions, source: :user
   has_many :performance_histories, dependent: :destroy
 
+  # Add alongside the existing has_many declarations:
+  has_many :portfolio_normative_articles, dependent: :destroy
+  has_many :normative_articles, through: :portfolio_normative_articles
+
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :annual_interest_rate, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :user_id, presence: true
+
+  accepts_nested_attributes_for :portfolio_normative_articles,
+                                 allow_destroy: true,
+                                 reject_if: :all_blank
 
   # =============================================================
   # Scopes

@@ -56,6 +56,66 @@
     %>
   <% end %>
 
+  <%= render "partials/blocks/fieldset",
+             fieldset_title: "Artigos Normativos",
+             fieldset_desc: "Selecione os artigos normativos aplicáveis e defina as metas de comparação para cada um." do %>
+
+    <%# Explanation:: This root element is the Stimulus controller boundary. Every
+                 #               data-action and data-target directive inside it is scoped to the
+                 #               nested-normative-articles controller exclusively.
+                 %>
+    <div data-controller="nested-normative-articles"
+         class="flex flex-col gap-6">
+
+      <%# Explanation:: This container holds all rendered entries — both the ones that already
+                   #               exist on the record and any new ones the user appends at runtime.
+                   #               The Stimulus controller inserts cloned rows into this element.
+                   %>
+      <div data-nested-normative-articles-target="container"
+           class="flex flex-col gap-4">
+
+        <%# Explanation:: This block iterates over existing PortfolioNormativeArticle records
+                     #               attached to the portfolio and renders one entry row per record.
+                     #               On a new portfolio this block produces no output.
+                     %>
+        <%= form.fields_for :portfolio_normative_articles do |pna_form| %>
+          <%= render "normative_article_entry",
+                     f: pna_form,
+                     normative_articles: normative_articles
+          %>
+        <% end %>
+
+      </div>
+
+      <%# Explanation:: This native <template> element holds a pre-rendered blank entry row
+                   #               with a NEW_RECORD placeholder in place of every array index Rails
+                   #               would normally generate. The Stimulus controller clones its innerHTML,
+                   #               replaces the placeholder with a timestamp, and inserts the result into
+                   #               the container above — giving each new row a unique, collision-free index.
+                   %>
+      <template data-nested-normative-articles-target="template" class="flex flex-col gap-4">
+        <% blank_pna = PortfolioNormativeArticle.new %>
+        <%= form.fields_for :portfolio_normative_articles, blank_pna, child_index: "NEW_RECORD" do |pna_form| %>
+          <%= render "normative_article_entry",
+                     f: pna_form,
+                     normative_articles: normative_articles
+          %>
+        <% end %>
+      </template>
+
+      <%# Explanation:: This button appends a blank entry row when clicked. It does not submit
+                   #               the form; it only triggers the addEntry action on the Stimulus controller.
+                   %>
+      <button type="button"
+              data-action="click->nested-normative-articles#addEntry"
+              class="button button-secondary button-small button-outline w-fit flex items-center gap-2">
+        <%= inline_svg_tag "icons/plus.svg" %>
+        <span>Adicionar Artigo</span>
+      </button>
+
+    </div>
+  <% end %>
+
   <%# Explanation:: This hidden field automatically assigns the current user
     #               as the primary owner; it is used to ensure data integrity
     #               and works by sending the user's ID without requiring an input box.

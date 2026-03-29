@@ -249,6 +249,36 @@
                ->(fi) { normalize_trend(@performance_by_fund[fi.id]&.monthly_return, format: :percentage) }
              ] %>
 
+  <%= render "partials/groups/table-list",
+             section_title: "Artigos Normativos",
+             section_desc: "Metas da carteira comparadas aos limites de cada artigo.",
+             collection: @portfolio.portfolio_normative_articles.includes(:normative_article),
+             action_path: nil,
+             action_name: nil,
+             headers: [
+               "Artigo",
+               "Categoria",
+               "Benchmark (Artigo)",
+               "Benchmark (Carteira)",
+               "Desvio",
+               "Mín. (Artigo)",
+               "Mín. (Carteira)",
+               "Máx. (Artigo)",
+               "Máx. (Carteira)"
+             ],
+             column_icons: ["file-text", "tag", "target", "target", "activity", "trending-down", "trending-down", "trending-up", "trending-up"],
+             body_procs: [
+               ->(pna) { pna.normative_article.display_name },
+               ->(pna) { pna.normative_article.category.presence || "—" },
+               ->(pna) { normalize_percentage(pna.normative_article.benchmark_target) },
+               ->(pna) { normalize_percentage(pna.benchmark_target) },
+               ->(pna) { normalize_trend(pna.benchmark_deviation, format: :percentage) },
+               ->(pna) { normalize_percentage(pna.normative_article.minimum_target) },
+               ->(pna) { normalize_percentage(pna.minimum_target) },
+               ->(pna) { normalize_percentage(pna.normative_article.maximum_target) },
+               ->(pna) { normalize_percentage(pna.maximum_target) }
+             ] %>
+
   <% if @recent_performance.any? %>
 
     <%# Renders a secondary table focusing on the performance results

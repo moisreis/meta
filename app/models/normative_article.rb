@@ -28,6 +28,9 @@ class NormativeArticle < ApplicationRecord
   #               It allows access to all investment funds linked to this article.
   has_many :investment_funds, through: :investment_fund_articles
 
+  has_many :portfolio_normative_articles, dependent: :destroy
+  has_many :portfolios, through: :portfolio_normative_articles
+
   # Explanation:: This line sets a maximum allowed length for the article_name attribute.
   #               It prevents values longer than 200 characters from being saved.
   #               Blank values are permitted.

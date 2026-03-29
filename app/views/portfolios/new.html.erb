@@ -30,9 +30,9 @@
     #               portfolio details from the user; it is used to initialize a record
     #               and works by passing the model and a customized addition button.
     %>
-  <%= render "form",
-             portfolio: @portfolio,
-             button_name: "Adicionar",
-             icon_name: "plus"
-  %>
+    <%= render "form",
+               portfolio: @portfolio,
+               button_name: "Criar",
+               icon_name: "plus",
+               normative_articles: @normative_articles %>
 <% end %>

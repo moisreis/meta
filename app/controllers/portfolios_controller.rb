@@ -241,6 +241,7 @@ class PortfoliosController < ApplicationController
   # - A blank portfolio object ready for attribute assignment.
   def new
     @portfolio = Portfolio.new
+    @normative_articles = NormativeArticle.all.map { |a| [a.display_name, a.id] }
   end
 
   # == edit
@@ -410,7 +411,15 @@ class PortfoliosController < ApplicationController
       :name,
       :user_id,
       :annual_interest_rate,
-      :shared_user_id
+      :shared_user_id,
+      portfolio_normative_articles_attributes: [
+        :id,
+        :normative_article_id,
+        :benchmark_target,
+        :minimum_target,
+        :maximum_target,
+        :_destroy
+      ]
     )
   end
 

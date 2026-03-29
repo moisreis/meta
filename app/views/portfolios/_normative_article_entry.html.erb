@@ -1,0 +1,136 @@
+<%#
+  # Partial: _normative_article_entry.html.erb
+  # Date: 03/26/2026
+  # Author: Moisés Reis
+  # Package: Meta
+  #
+  # Description: Renders a single PortfolioNormativeArticle row inside the portfolio form.
+  #              Shows a dropdown for choosing an article and, once a selection is made,
+  #              reveals three numeric inputs for the portfolio-side benchmark, minimum,
+  #              and maximum targets that will be compared against the article's own values.
+  #
+  # Usage:: - What: One self-contained row representing a PortfolioNormativeArticle join record.
+  #         - How:  The entry div listens for bubbled change events from its child select so the
+  #                 Stimulus controller can reveal the target inputs without needing to modify
+  #                 the _select partial. A hidden _destroy field lets Rails soft-delete the
+  #                 record when the user removes the row without a full page reload.
+  #         - Why:  Keeping the row in its own partial allows the <template> in
+  #                 _normative_articles_fieldset to pre-render a blank version server-side,
+  #                 which the Stimulus controller clones for new additions at runtime.
+  #
+  # Locals:: - f                   [ActionView::Helpers::FormBuilder]
+  #               The nested fields_for builder scoped to PortfolioNormativeArticle.
+  #          - normative_articles  [Array<Array>]
+  #               Collection of [display_name, id] pairs for the select options.
+  %>
+
+<%# Explanation:: This wrapper div is the boundary of a single article entry. The
+  #               data-target marks it so the controller can traverse up to it from
+  #               any child element. The delegated data-action on this div catches
+  #               change events that bubble up from the nested _select partial, which
+  #               means the _select partial itself does not need to be modified.
+  %>
+<div class="flex flex-col gap-6 p-6 border border-border rounded-base bg-white w-full"
+     data-nested-normative-articles-target="entry"
+     data-action="change->nested-normative-articles#onSelectChange">
+
+  <div class="flex flex-row justify-start items-center">
+
+    <%# Explanation:: This button marks the row for removal. For persisted records it sets
+      #               the hidden _destroy field to "1" and hides the row so Rails destroys
+      #               the join record on the next save. For brand-new rows it removes the
+      #               DOM node entirely because no database record exists yet.
+      %>
+    <button type="button"
+            class="button button-icon button-small button-danger"
+            data-action="click->nested-normative-articles#removeEntry"
+            title="Remover artigo">
+      <%= inline_svg_tag "icons/x.svg" %>
+    </button>
+  </div>
+
+  <%# Explanation:: This row holds the article selector and the remove button side by side.
+    #               The selector is flex-grow so it occupies all available horizontal space
+    #               while the remove button stays fixed at its intrinsic width.
+    %>
+  <div class="flex flex-row items-start justify-between gap-4">
+
+    <%# Explanation:: This select renders the dropdown of all existing NormativeArticle records.
+      #               It uses the standard _select partial to inherit tom-select behaviour,
+      #               consistent label styling, and built-in error display. The native change
+      #               event fired by tom-select bubbles up to the entry div above.
+      %>
+    <div class="w-full">
+      <%= render "partials/modules/select",
+                 f: f,
+                 name: :normative_article_id,
+                 label: "Artigo Normativo",
+                 desc: "Selecione o artigo a ser aplicado a esta carteira.",
+                 options_collection: [["Escolha um artigo normativo", ""]] + normative_articles,
+                 selected: f.object.normative_article_id
+      %>
+    </div>
+  </div>
+
+  <%# Explanation:: These three inputs are hidden until the user selects an article. The
+    #               conditional CSS class checks the persisted normative_article_id so that
+    #               on edit the inputs are immediately visible for already-linked articles.
+    #               The Stimulus controller toggles the hidden class when the select changes.
+    %>
+  <div class="<%= f.object.normative_article_id.present? ? '' : 'hidden' %> grid grid-cols-1 gap-6 sm:grid-cols-3"
+       data-nested-normative-articles-target="targets">
+
+    <%# Explanation:: This field captures the portfolio-side benchmark to compare against
+      #               the article's own benchmark_target value in compliance reporting.
+      %>
+    <%= render "partials/modules/input-field",
+               f: f,
+               name: :benchmark_target,
+               label: "Benchmark Target",
+               placeholder: "0.00",
+               desc: "Meta de benchmark desta carteira.",
+               field_type: :number_field,
+               icon_name: "target",
+               step: :any
+    %>
+
+    <%# Explanation:: This field records the minimum allocation or return threshold the
+      #               portfolio must meet relative to this article's minimum_target.
+      %>
+    <%= render "partials/modules/input-field",
+               f: f,
+               name: :minimum_target,
+               label: "Meta Mínima",
+               placeholder: "0.00",
+               desc: "Percentual mínimo permitido.",
+               field_type: :number_field,
+               icon_name: "trending-down",
+               step: :any
+    %>
+
+    <%# Explanation:: This field stores the upper bound the portfolio must not exceed,
+      #               mirroring the article's own maximum_target for the comparison.
+      %>
+    <%= render "partials/modules/input-field",
+               f: f,
+               name: :maximum_target,
+               label: "Meta Máxima",
+               placeholder: "100.00",
+               desc: "Percentual máximo permitido.",
+               field_type: :number_field,
+               icon_name: "trending-up",
+               step: :any
+    %>
+  </div>
+
+  <%# Explanation:: This hidden field is the Rails convention for nested-form deletion.
+    #               When the controller sets its value to "1" the record is destroyed on save,
+    #               provided the parent model has allow_destroy: true in its
+    #               accepts_nested_attributes_for declaration.
+    %>
+  <%= f.hidden_field :_destroy,
+                     value: "0",
+                     data: { "nested-normative-articles-target": "destroy" }
+  %>
+
+</div>

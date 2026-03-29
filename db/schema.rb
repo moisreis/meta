@@ -10,17 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_25_195441) do
-  # create_schema "extensions"
-  # execute "CREATE SCHEMA IF NOT EXISTS extensions"
+ActiveRecord::Schema[8.1].define(version: 2026_03_29_120902) do
+  create_schema "extensions"
 
   # These are extensions that must be enabled in order to support this database
-  # enable_extension "extensions.pg_stat_statements"
-  # enable_extension "extensions.pgcrypto"
-  # enable_extension "extensions.uuid-ossp"
-  # enable_extension "graphql.pg_graphql"
-  # enable_extension "pg_catalog.plpgsql"
-  # enable_extension "vault.supabase_vault"
+  enable_extension "extensions.pg_stat_statements"
+  enable_extension "extensions.pgcrypto"
+  enable_extension "extensions.uuid-ossp"
+  enable_extension "graphql.pg_graphql"
+  enable_extension "pg_catalog.plpgsql"
+  enable_extension "vault.supabase_vault"
 
   create_table "public.applications", force: :cascade do |t|
     t.date "cotization_date"
@@ -144,6 +143,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_195441) do
     t.index ["portfolio_id"], name: "index_performance_histories_on_portfolio_id"
   end
 
+  create_table "public.portfolio_normative_articles", force: :cascade do |t|
+    t.decimal "benchmark_target", precision: 8, scale: 4
+    t.datetime "created_at", null: false
+    t.decimal "maximum_target", precision: 8, scale: 4
+    t.decimal "minimum_target", precision: 8, scale: 4
+    t.bigint "normative_article_id", null: false
+    t.bigint "portfolio_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["normative_article_id"], name: "index_portfolio_normative_articles_on_normative_article_id"
+    t.index ["portfolio_id", "normative_article_id"], name: "index_portfolio_normative_articles_uniqueness", unique: true
+    t.index ["portfolio_id"], name: "index_portfolio_normative_articles_on_portfolio_id"
+  end
+
   create_table "public.portfolios", force: :cascade do |t|
     t.decimal "annual_interest_rate", precision: 8, scale: 4, default: "0.0", null: false
     t.datetime "created_at", null: false
@@ -217,6 +229,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_195441) do
   add_foreign_key "public.investment_fund_articles", "public.normative_articles"
   add_foreign_key "public.performance_histories", "public.fund_investments"
   add_foreign_key "public.performance_histories", "public.portfolios"
+  add_foreign_key "public.portfolio_normative_articles", "public.normative_articles"
+  add_foreign_key "public.portfolio_normative_articles", "public.portfolios"
   add_foreign_key "public.portfolios", "public.users"
   add_foreign_key "public.redemption_allocations", "public.applications"
   add_foreign_key "public.redemption_allocations", "public.redemptions"
