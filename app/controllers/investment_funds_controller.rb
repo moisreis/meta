@@ -142,7 +142,13 @@ class InvestmentFundsController < ApplicationController
   #
   # Saves changes to an existing investment fund record.
   def update
-    if @investment_fund.update(investment_fund_params)
+    if @investment_fund.update(investment_fund_params.except(:normative_article_ids))
+      raw_ids = params.dig(:investment_fund, :normative_article_ids)
+      article_ids = Array(raw_ids).map(&:to_s).reject(&:blank?)
+      @investment_fund.investment_fund_articles.where.not(normative_article_id: article_ids).destroy_all
+      article_ids.each do |article_id|
+        @investment_fund.investment_fund_articles.find_or_create_by(normative_article_id: article_id)
+      end
       redirect_to @investment_fund, notice: "O credenciamento de fundo de investimento foi atualizado com sucesso"
     else
       render :edit, status: :unprocessable_entity

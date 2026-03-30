@@ -57,7 +57,7 @@
   <% end %>
 
   <%= render "partials/blocks/fieldset",
-             fieldset_title: "Artigos Normativos",
+             fieldset_title: "Política de Investimento",
              fieldset_desc: "Selecione os artigos normativos aplicáveis e defina as metas de comparação para cada um." do %>
 
     <%# Explanation:: This root element is the Stimulus controller boundary. Every
@@ -65,7 +65,7 @@
                  #               nested-normative-articles controller exclusively.
                  %>
     <div data-controller="nested-normative-articles"
-         class="flex flex-col gap-6">
+         class="flex flex-col gap-1.5">
 
       <%# Explanation:: This container holds all rendered entries — both the ones that already
                    #               exist on the record and any new ones the user appends at runtime.
@@ -81,7 +81,7 @@
         <%= form.fields_for :portfolio_normative_articles do |pna_form| %>
           <%= render "normative_article_entry",
                      f: pna_form,
-                     normative_articles: normative_articles
+                     normative_articles: @normative_articles
           %>
         <% end %>
 
@@ -98,7 +98,7 @@
         <%= form.fields_for :portfolio_normative_articles, blank_pna, child_index: "NEW_RECORD" do |pna_form| %>
           <%= render "normative_article_entry",
                      f: pna_form,
-                     normative_articles: normative_articles
+                     normative_articles: @normative_articles
           %>
         <% end %>
       </template>

@@ -251,7 +251,9 @@ class PortfoliosController < ApplicationController
   #
   # Returns::
   # - The targeted portfolio instance to be displayed in an edit form.
-  def edit; end
+  def edit
+    @normative_articles = NormativeArticle.all.map { |a| [a.display_name, a.id] }
+  end
 
   # == create
   # @author Moisés Reis
