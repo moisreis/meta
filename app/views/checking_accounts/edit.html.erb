@@ -36,27 +36,4 @@
              icon_name: "refresh-cw"
   %>
 
-  <%# Explanation:: Esta seção de zona de perigo isola a ação destrutiva de exclusão
-    #               do formulário de edição, exigindo confirmação explícita do usuário
-    #               antes de remover permanentemente o registro e seus dados.
-    %>
-  <%= render "partials/blocks/fieldset",
-             fieldset_title: "Zona de Perigo",
-             fieldset_desc: "A exclusão da conta é permanente e não pode ser desfeita." do
-  %>
-
-    <%= button_to portfolio_checking_account_path(@portfolio, @checking_account),
-                  method: :delete,
-                  class: "button button-danger w-fit flex items-center gap-2",
-                  data: {
-                    turbo_confirm: "Tem certeza que deseja excluir \"#{@checking_account.name}\"? "\
-                      "Esta ação é irreversível."
-                  } do
-    %>
-      <%= inline_svg_tag "icons/trash-2.svg" %>
-      <span>Excluir conta corrente</span>
-    <% end %>
-
-  <% end %>
-
 <% end %>

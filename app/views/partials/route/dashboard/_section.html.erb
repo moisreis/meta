@@ -1,64 +1,31 @@
 <%#
   Partial : _section.html.erb
-  Date    : 11/14/2025
+  Date    : 2025-11-14
   Author  : Moisés Reis
   Package : Meta
-
-  Description:
-    Generic section wrapper used to group related content blocks across
-    dashboard pages. Renders an optional title, subtitle, and action button
-    above a responsive CSS grid that yields the caller's content.
-
-  ============================================================
-  Locals
-  ============================================================
-
-  @param  section_title  [String]   Section heading rendered as an H2. Optional.
-  @param  section_desc   [String]   Supporting subtitle below the heading. Optional.
-  @param  columns        [Integer]  Number of grid columns (1–6). Defaults to 2.
-  @param  has_action     [Boolean]  Renders the action button when true. Defaults to false.
-  @param  button_route   [String]   URL or path the action button links to. Required if has_action is true.
-  @param  button_name    [String]   Label text for the action button. Required if has_action is true.
-  @param  button_icon    [String]   Icon filename (without extension) from the icons directory. Required if has_action is true.
-
-  ============================================================
-  Notes
-  ============================================================
-
-  - section_title and section_desc must both be present for the description
-    to render; the desc tag is skipped when section_title is absent.
-  - A hidden .section-desc container is always rendered alongside the visible
-    description. It is toggled by an external JS interaction on the info button.
-  - columns 5 and 6 intentionally resolve to the same 4-column breakpoint —
-    the grid does not grow beyond xl:grid-cols-4 on current layouts.
-  - Any columns value outside 1–6 falls back to "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3".
-
-  @yield  [content]  Card or content elements rendered inside the responsive grid.
 %>
 
-<%# Note: Defaults applied before use — locals are not guaranteed to be passed by every caller. %>
-<% columns ||= 2 %>
-<% has_action ||= false %>
+<% columns     ||= 2 %>
+<% has_action  ||= false %>
 <% button_route ||= nil %>
-<% button_name ||= nil %>
-<% button_icon ||= nil %>
-<% button_id ||= nil %>
+<% button_name  ||= nil %>
+<% button_icon  ||= nil %>
+<% button_id    ||= nil %>
 <% section_title ||= nil %>
-<% section_desc ||= nil %>
+<% section_desc  ||= nil %>
 
-<%# Note: Maps the columns integer to its responsive Tailwind class string.
-          Falls back to a sensible 3-column layout for any unmapped value. %>
 <% grid_classes = {
-                    1 => "grid-cols-1",
-                    2 => "grid-cols-1 md:grid-cols-2",
-                    3 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-                    4 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4",
-                    5 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4",
-                    6 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4"
-                  }[columns] || "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" %>
+  1 => "grid-cols-1",
+  2 => "grid-cols-1 md:grid-cols-2",
+  3 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+  4 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4",
+  5 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4",
+  6 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4"
+}[columns] || "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" %>
 
-<section class="flex flex-col gap-6 justify-start">
+<section class="flex flex-col gap-4">
 
+<<<<<<< HEAD
   <%# =============================================================
       Section Header — Title, Description & Action Button
       ============================================================= %>
@@ -77,13 +44,22 @@
             <% end %>
           <% end %>
         </div>
+=======
+  <%# Header %>
+  <% if section_title.present? %>
+    <div class="flex items-center justify-between gap-4">
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
 
+      <div class="flex flex-col gap-1">
+      <p class="font-mono text-body uppercase text-xs tracking-widest font-medium">
+      <%= section_title %>
+        </p>
         <% if section_desc.present? %>
-          <%= content_tag :h2, section_desc, class: "text-sm font-body text-muted font-normal" %>
+          <p class="font-body text-muted text-sm font-normal"><%= section_desc %></p>
         <% end %>
-
       </div>
 
+<<<<<<< HEAD
       <%# Note: Hidden container toggled by the info button interaction.
                 Always rendered when a title is present so JS can target it
                 without checking for existence first. %>
@@ -93,11 +69,20 @@
     <% end %>
 
   </div>
+=======
+      <% if has_action %>
+        <%= link_to button_route, id: button_id, class: "button button-small button-outline flex-shrink-0" do %>
+          <%= inline_svg_tag "icons/#{button_icon}.svg" if button_icon.present? %>
+          <%= content_tag :span, button_name %>
+        <% end %>
+      <% end %>
 
-  <%# =============================================================
-      Content Grid
-      ============================================================= %>
-  <div class="grid <%= grid_classes %> gap-6">
+    </div>
+  <% end %>
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
+
+  <%# Grid %>
+  <div class="grid <%= grid_classes %> gap-3">
     <%= yield %>
   </div>
 

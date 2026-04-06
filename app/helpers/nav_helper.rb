@@ -31,8 +31,8 @@ module NavHelper
       safe_join([
                   content_tag(:div, class: "flex flex-row justify-center items-center w-full") do
                     safe_join([
-                                content_tag(:span, plural, class: "px-3 text-2xs font-mono font-semibold uppercase text-primary-50"),
-                                content_tag(:div, nil, class: "h-[2px] bg-primary-900 w-full")
+                                content_tag(:span, plural, class: "px-3 text-3xs font-mono tracking-widest font-semibold uppercase text-neutral-50 opacity-30"),
+                                content_tag(:div, nil, class: "h-[2px] bg-neutral-800 w-full opacity-30")
                               ])
                   end,
                   content_tag(:div, id: nav_id, class: "flex flex-col gap-1 px-1.5 w-full") do
@@ -48,7 +48,7 @@ module NavHelper
     classes = [
       "relative", "button", "button-small", "w-full", "flex flex-row justify-start",
       ("button-sidebar" unless active),
-      ("button-honeysuckle" if active)
+      ("button-primary" if active)
     ].compact.join(" ")
 
     link_to item[:path], class: classes do

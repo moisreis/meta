@@ -58,7 +58,7 @@
           card_icon: "calendar"
         ) do
     %>
-      <%= l(@checking_account.reference_date, format: :month_year) %>
+      <%= normalize_date(@checking_account.reference_date) %>
     <% end %>
 
     <%# Explanation:: Card de moeda da conta, útil para portfólios que eventualmente
@@ -70,7 +70,7 @@
           card_icon: "circle-dollar-sign"
         ) do
     %>
-      <%= @checking_account.currency %>
+      <%= normalize_title(@checking_account.currency) %>
     <% end %>
 
   <% end %>
@@ -98,7 +98,7 @@
           card_icon: "landmark"
         ) do
     %>
-      <%= normalize_badge(@checking_account.institution_label) %>
+      <%= normalize_title(@checking_account.institution_label) %>
     <% end %>
 
     <%= render(
@@ -107,7 +107,7 @@
           card_icon: "hash"
         ) do
     %>
-      <%= @checking_account.account_number.presence || normalize_muted("Não informado") %>
+      <%= normalize_title(@checking_account.account_number.presence) || normalize_title("Não informado") %>
     <% end %>
 
     <%= render(
@@ -116,9 +116,7 @@
           card_icon: "wallet"
         ) do
     %>
-      <%= link_to normalize_title(@portfolio.name),
-                  portfolio_path(@portfolio),
-                  class: "link" %>
+    <%= normalize_title(@portfolio.name) %>
     <% end %>
 
   <% end %>
@@ -133,33 +131,6 @@
     %>
       <p class="text-sm text-muted"><%= @checking_account.notes %></p>
     <% end %>
-  <% end %>
-
-  <%# Explanation:: Ações de edição e exclusão disponíveis apenas para usuários
-    #               com permissão de escrita sobre o portfólio, dispostas no
-    #               padrão de rodapé de ação do dashboard.
-    %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Ações",
-             columns: 2 do
-  %>
-
-    <%= link_to edit_portfolio_checking_account_path(@portfolio, @checking_account),
-                class: "button button-secondary w-fit flex items-center gap-2" do
-    %>
-      <%= inline_svg_tag "icons/pencil.svg" %>
-      <span>Editar conta</span>
-    <% end %>
-
-    <%= button_to portfolio_checking_account_path(@portfolio, @checking_account),
-                  method: :delete,
-                  class: "button button-danger w-fit flex items-center gap-2",
-                  data: { turbo_confirm: "Tem certeza que deseja remover \"#{@checking_account.name}\"? Esta ação não pode ser desfeita." } do
-    %>
-      <%= inline_svg_tag "icons/trash-2.svg" %>
-      <span>Excluir conta</span>
-    <% end %>
-
   <% end %>
 
 <% end %>

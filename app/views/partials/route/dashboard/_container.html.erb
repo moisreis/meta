@@ -29,9 +29,9 @@
     #               It contains the large page heading and the primary
     #               content provided by the specific view being rendered.
     %>
-  <div class="flex flex-col [&>form]:flex [&>form]:!gap-6 [&>form]:p-6 no-scrollbar bg-white">
+  <div class="flex flex-col [&>form]:flex [&>form]:!gap-6 [&>form]:p-6 no-scrollbar bg-background">
 
-    <div class="h-24 px-16 grid grid-cols-2 mb-6">
+    <div class="h-24 px-16 grid grid-cols-2 mb-12">
       <div class="flex flex-row justify-start gap-3 items-end">
         <%= content_tag :h1,
                         page_title,

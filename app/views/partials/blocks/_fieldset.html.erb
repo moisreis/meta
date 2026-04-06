@@ -14,11 +14,11 @@
   #         - Why: This keeps the user interface organized and makes
   #               complex forms much easier for users to navigate.
   %>
-<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-6 p-6 rounded-base bg-white border border-border">
   <div class="flex flex-row items-center justify-start gap-3">
     <div class="flex flex-col gap-1">
-      <%= content_tag :h2, fieldset_title, class: "text-lg font-mono uppercase text-body font-medium" %>
-      <%= content_tag :h2, fieldset_desc, class: "text-sm font-body text-muted font-normal" %>
+      <%= content_tag :h2, fieldset_title, class: "font-mono text-body uppercase text-xs tracking-widest font-medium" %>
+      <%= content_tag :h2, fieldset_desc, class: "font-body text-muted text-sm font-normal" %>
     </div>
   </div>
   <div class="grid grid-cols-1 gap-6">

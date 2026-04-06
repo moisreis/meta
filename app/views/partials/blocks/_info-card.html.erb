@@ -1,43 +1,30 @@
-<%#
-  # Partial: _info-card.html.erb
-  # Date: 11/30/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Renders a comprehensive information card component with dynamic color coding.
-  #              It displays two main data points (title/subtitle and main_value/sub_value) and an icon.
-  #
-  # Usage: - What: This component is ideal for presenting a metric or validation result, offering both descriptive context and a key value.
-  #                Its color changes instantly based on the `main_color` variable (e.g., 'success' or 'danger').
-  #        - How: Render the partial passing local variables `title`, `subtitle`, `main_value`, `sub_value`, `icon_name`, and `main_color`.
-  #        - Why: Provides a visually rich, self-contained component for presenting important data with immediate color-coded status.
-  %>
-
-<%# [Variable] Sets the main color for the card.
-  #            This variable controls the card's theme (e.g., border, text, and background colors).
-  #            It defaults to "primary" if not explicitly set when rendering the partial.
-  %>
 <% main_color ||= "primary" %>
-
-<%# [Hash] Defines a constant hash containing color class mappings.
-  #        It provides sets of Tailwind CSS classes for background, border, text, and stroke, indexed by color status names.
-  #        The hash uses `.freeze` for immutability, optimizing performance.
-  %>
 <% c = INFO_CARD_COLORS.fetch(main_color, INFO_CARD_COLORS["primary"]) %>
 
+<div class="grid grid-cols-2 items-center gap-4 px-4 py-3.5 bg-white border border-border rounded-base">
 
-<div class="grid grid-cols-2 p-3 rounded-base bg-accent">
-  <div class="flex flex-row justify-start gap-3 items-center">
-    <div class="p-1.5">
-      <%= inline_svg_tag("icons/#{icon_name}.svg", class: "#{c[:stroke]} size-4") %>
+  <%# Left — icon + title/subtitle %>
+  <div class="flex items-center gap-3 min-w-0">
+
+    <div class="size-7 rounded-full flex-shrink-0 flex items-center justify-center <%= c[:bg] %>">
+      <%= inline_svg_tag "icons/#{icon_name}.svg", class: "#{c[:stroke]} !size-3.5" %>
     </div>
-    <div class="flex flex-col gap-1.5 justify-center items-start">
-      <%= content_tag :span, title, class: "font-medium text-body text-sm" %>
-      <%= content_tag :span, subtitle, class: "text-xs text-muted font-mono" %>
+
+    <div class="flex flex-col gap-0.5 min-w-0">
+      <%= content_tag :span, title,
+            class: "text-sm font-medium text-body truncate" %>
+      <%= content_tag :span, subtitle,
+            class: "font-mono text-muted uppercase text-3xs tracking-wide" %>
     </div>
+
   </div>
-  <div class="flex flex-col justify-center items-end gap-1.5">
-    <%= content_tag :span, main_value, class: "text-xl font-extrabold font-mono text-body" %>
-    <%= content_tag :span, sub_value, class: "text-xs text-muted" %>
+
+  <%# Right — main value + sub value %>
+  <div class="flex flex-col items-end gap-0.5">
+    <%= content_tag :span, main_value,
+          class: "font-heading text-xl font-normal tracking-tight #{c[:text]}" %>
+    <%= content_tag :span, sub_value,
+          class: "font-mono text-muted uppercase text-3xs tracking-wide" %>
   </div>
+
 </div>

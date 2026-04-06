@@ -47,10 +47,9 @@
  * 1. TAILWIND IMPORTS
  * ============================================================================= */
 
-@import 'tailwindcss';
+@import "tailwindcss";
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
-
 
 /* =============================================================================
  * 2. CUSTOM VARIANTS
@@ -63,7 +62,6 @@
  */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-
 /* =============================================================================
  * 3. THEME TOKENS
  * ============================================================================= */
@@ -74,295 +72,294 @@
  * Never hardcode values — always reference a token.
  */
 @theme {
-
-    /**
+	/**
      * Resets all color and radius tokens to their initial (empty) values.
      * Prevents Tailwind defaults from leaking into the custom palette.
      */
-    --color-*: initial;
-    --radius-*: initial;
+	--color-*: initial;
+	--radius-*: initial;
 
-    /* --- 3a. Spacing ------------------------------------------------------- */
-    /**
+	/* --- 3a. Spacing ------------------------------------------------------- */
+	/**
      * --spacing
      * Base unit for all margin, padding, and gap calculations.
      * Every spacing value in the app is a multiple of 4px.
      */
-    --spacing: 4px;
+	--spacing: 4px;
 
-
-    /* --- 3b. Typography — Families & Sizes --------------------------------- */
-    /**
+	/* --- 3b. Typography — Families & Sizes --------------------------------- */
+	/**
      * Font families.
      * --font-body     → Default text for all UI content.
      * --font-heading  → Display and heading elements.
      * --font-mono     → Code, keys, labels, and button text.
      */
+<<<<<<< HEAD
     --font-body: 'Plus Jakarta Sans', sans-serif;
     --font-heading: 'Inter', serif;
     --font-mono: 'Geist Mono', monospace;
+=======
+	--font-body: "Inter", sans-serif;
+	--font-heading: "Source Serif 4", serif;
+	--font-mono: "Geist Mono", monospace;
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
 
-    /**
+	/**
      * Extended text sizes below Tailwind's default `xs` (0.75rem).
      * --text-3xs → 10px. Reserved for the tightest labels or legal fine print.
      * --text-2xs → 11.6px. Used for badge text, table meta, and captions.
      */
-    --text-3xs: 0.625rem;
-    --text-2xs: 0.725rem;
+	--text-3xs: 0.625rem;
+	--text-2xs: 0.725rem;
 
-
-    /* --- 3c. Colors -------------------------------------------------------- */
-    /* Primary
+	/* --- 3c. Colors -------------------------------------------------------- */
+	/* Primary
      * The main brand color driving CTAs, links, and interactive states.
      * Scale: 50 (lightest tint) → 950 (deepest shade).
      * Use 600 for default, 50 for backgrounds, 900/950 for text on light. */
-    --color-primary-50: oklch(98.4% 0.0087 185.262);
-    --color-primary-100: oklch(95.57% 0.0309 185.391);
-    --color-primary-200: oklch(91.3% 0.0582 183.18);
-    --color-primary-300: oklch(85.76% 0.0841 183.818);
-    --color-primary-400: oklch(76.53% 0.0944 185.057);
-    --color-primary-500: oklch(67.91% 0.0878 185.786);
-    --color-primary-600: oklch(57.12% 0.074 185.786);
-    --color-primary-700: oklch(48.8% 0.0614 189.57);
-    --color-primary-800: oklch(41.03% 0.0503 189.757);
-    --color-primary-900: oklch(35.69% 0.0414 191.74);
-    --color-primary-950: oklch(25.37% 0.0313 194.658);
+	--color-primary-50: oklch(98.4% 0.0087 185.262);
+	--color-primary-100: oklch(95.57% 0.0309 185.391);
+	--color-primary-200: oklch(91.3% 0.0582 183.18);
+	--color-primary-300: oklch(85.76% 0.0841 183.818);
+	--color-primary-400: oklch(76.53% 0.0944 185.057);
+	--color-primary-500: oklch(67.91% 0.0878 185.786);
+	--color-primary-600: oklch(57.12% 0.074 185.786);
+	--color-primary-700: oklch(48.8% 0.0614 189.57);
+	--color-primary-800: oklch(41.03% 0.0503 189.757);
+	--color-primary-900: oklch(35.69% 0.0414 191.74);
+	--color-primary-950: oklch(25.37% 0.0313 194.658);
 
-    /* Text Colors
+	/* Text Colors
      * Semantic tokens for typographic hierarchy.
      * --color-heading  → Darkest. Page and section titles.
      * --color-body     → Default running text.
      * --color-muted    → Supporting text, hints, placeholders. */
-    --color-heading: oklch(14.5% 0 0);
-    --color-body: oklch(26.9% 0 0);
-    --color-muted: oklch(63.3% 0 0);
+	--color-heading: oklch(14.5% 0 0);
+	--color-body: oklch(26.9% 0 0);
+	--color-muted: oklch(63.3% 0 0);
 
-    /* Neutral
+	/* Neutral
      * Structural colors for surfaces, borders, and backgrounds.
      * Scale: 50 (near-white) → 950 (near-black). */
-    --color-neutral-50: oklch(98.5% 0 0);
-    --color-neutral-100: oklch(97% 0 0);
-    --color-neutral-200: oklch(92.2% 0 0);
-    --color-neutral-300: oklch(87% 0 0);
-    --color-neutral-400: oklch(70.8% 0 0);
-    --color-neutral-500: oklch(55.6% 0 0);
-    --color-neutral-600: oklch(43.9% 0 0);
-    --color-neutral-700: oklch(37.1% 0 0);
-    --color-neutral-800: oklch(26.9% 0 0);
-    --color-neutral-900: oklch(20.5% 0 0);
-    --color-neutral-950: oklch(14.5% 0 0);
+	--color-neutral-50: oklch(98.5% 0 0);
+	--color-neutral-100: oklch(97% 0 0);
+	--color-neutral-200: oklch(92.2% 0 0);
+	--color-neutral-300: oklch(87% 0 0);
+	--color-neutral-400: oklch(70.8% 0 0);
+	--color-neutral-500: oklch(55.6% 0 0);
+	--color-neutral-600: oklch(43.9% 0 0);
+	--color-neutral-700: oklch(37.1% 0 0);
+	--color-neutral-800: oklch(26.9% 0 0);
+	--color-neutral-900: oklch(20.5% 0 0);
+	--color-neutral-950: oklch(14.5% 0 0);
 
-    /* Surface & Structural
+	/* Surface & Structural
      * Single-purpose tokens for layout and component backgrounds.
      * --color-white       → Pure white surfaces.
      * --color-transparent → Fully transparent layer.
      * --color-border      → Default border color for cards, inputs, dividers.
      * --color-input       → Input field background tint.
      * --color-accent      → Subtle hover/active surface highlight. */
-    --color-white: oklch(100% 0 0);
-    --color-transparent: transparent;
-    --color-border: oklch(95% 0 0);
-    --color-input: #fcfcfe;
-    --color-accent: oklch(97% 0 0);
+	--color-white: oklch(100% 0 0);
+	--color-background: #f8f8f7;
+	--color-transparent: transparent;
+	--color-border: oklch(95% 0 0);
+	--color-input: #fcfcfe;
+	--color-accent: oklch(97% 0 0);
 
-    /* Success
+	/* Success
      * Positive feedback, confirmation states, healthy indicators.
      * Use 50–100 for backgrounds, 600–700 for text and icons. */
-    --color-success-50: oklch(98.2% 0.0143 156.201);
-    --color-success-100: oklch(96.2% 0.0348 157.118);
-    --color-success-200: oklch(92.5% 0.0665 156.37);
-    --color-success-300: oklch(87.1% 0.1188 154.824);
-    --color-success-400: oklch(77.24% 0.1677 149.954);
-    --color-success-500: oklch(72.3% 0.1734 149.954);
-    --color-success-600: oklch(62.7% 0.1536 149.589);
-    --color-success-700: oklch(52.7% 0.1219 150.444);
-    --color-success-800: oklch(44.8% 0.0942 151.703);
-    --color-success-900: oklch(39.3% 0.0752 152.91);
-    --color-success-950: oklch(26.6% 0.0515 153.309);
+	--color-success-50: oklch(98.2% 0.0143 156.201);
+	--color-success-100: oklch(96.2% 0.0348 157.118);
+	--color-success-200: oklch(92.5% 0.0665 156.37);
+	--color-success-300: oklch(87.1% 0.1188 154.824);
+	--color-success-400: oklch(77.24% 0.1677 149.954);
+	--color-success-500: oklch(72.3% 0.1734 149.954);
+	--color-success-600: oklch(62.7% 0.1536 149.589);
+	--color-success-700: oklch(52.7% 0.1219 150.444);
+	--color-success-800: oklch(44.8% 0.0942 151.703);
+	--color-success-900: oklch(39.3% 0.0752 152.91);
+	--color-success-950: oklch(26.6% 0.0515 153.309);
 
-    /* Alert
+	/* Alert
      * Warnings and cautionary information requiring user review.
      * Use 50–100 for soft banners, 600–700 for icons and labels. */
-    --color-alert-50: oklch(98.7% 0.0219 101.388);
-    --color-alert-100: oklch(97.29% 0.0598 102.363);
-    --color-alert-200: oklch(94.48% 0.1088 100.727);
-    --color-alert-300: oklch(90.48% 0.1535 97.291);
-    --color-alert-400: oklch(84.17% 0.1657 85.139);
-    --color-alert-500: oklch(79.48% 0.1553 85.139);
-    --color-alert-600: oklch(68.09% 0.1369 74.912);
-    --color-alert-700: oklch(55.4% 0.1142 65.52);
-    --color-alert-800: oklch(47.6% 0.0964 61.002);
-    --color-alert-900: oklch(42.09% 0.0803 56.839);
-    --color-alert-950: oklch(28.59% 0.0558 52.978);
+	--color-alert-50: oklch(98.7% 0.0219 101.388);
+	--color-alert-100: oklch(97.29% 0.0598 102.363);
+	--color-alert-200: oklch(94.48% 0.1088 100.727);
+	--color-alert-300: oklch(90.48% 0.1535 97.291);
+	--color-alert-400: oklch(84.17% 0.1657 85.139);
+	--color-alert-500: oklch(79.48% 0.1553 85.139);
+	--color-alert-600: oklch(68.09% 0.1369 74.912);
+	--color-alert-700: oklch(55.4% 0.1142 65.52);
+	--color-alert-800: oklch(47.6% 0.0964 61.002);
+	--color-alert-900: oklch(42.09% 0.0803 56.839);
+	--color-alert-950: oklch(28.59% 0.0558 52.978);
 
-    /* Danger
+	/* Danger
      * Destructive actions, critical errors, irreversible states.
      * High contrast by design — use 50–100 for backgrounds only. */
-    --color-danger-50: oklch(96.94% 0.0131 14.252);
-    --color-danger-100: oklch(93.99% 0.0273 14.449);
-    --color-danger-200: oklch(89.05% 0.0529 12.573);
-    --color-danger-300: oklch(80.96% 0.1045 14.122);
-    --color-danger-400: oklch(71.19% 0.1726 19.134);
-    --color-danger-500: oklch(64.32% 0.2192 19.134);
-    --color-danger-600: oklch(58.4% 0.2257 20.467);
-    --color-danger-700: oklch(51.2% 0.1977 20.002);
-    --color-danger-800: oklch(45.26% 0.1667 17.34);
-    --color-danger-900: oklch(40.69% 0.1393 14.41);
-    --color-danger-950: oklch(26.81% 0.0918 15.901);
+	--color-danger-50: oklch(96.94% 0.0131 14.252);
+	--color-danger-100: oklch(93.99% 0.0273 14.449);
+	--color-danger-200: oklch(89.05% 0.0529 12.573);
+	--color-danger-300: oklch(80.96% 0.1045 14.122);
+	--color-danger-400: oklch(71.19% 0.1726 19.134);
+	--color-danger-500: oklch(64.32% 0.2192 19.134);
+	--color-danger-600: oklch(58.4% 0.2257 20.467);
+	--color-danger-700: oklch(51.2% 0.1977 20.002);
+	--color-danger-800: oklch(45.26% 0.1667 17.34);
+	--color-danger-900: oklch(40.69% 0.1393 14.41);
+	--color-danger-950: oklch(26.81% 0.0918 15.901);
 
-    /* Secondary — Cool slate-blue supporting palette. */
-    --color-secondary-50: oklch(97.77% 0.0068 236.232);
-    --color-secondary-100: oklch(95.28% 0.0136 236.418);
-    --color-secondary-200: oklch(90.39% 0.0301 231.737);
-    --color-secondary-300: oklch(83.23% 0.0574 230.968);
-    --color-secondary-400: oklch(75.37% 0.0798 237.703);
-    --color-secondary-500: oklch(67.11% 0.0882 237.703);
-    --color-secondary-600: oklch(57.3% 0.0825 241.886);
-    --color-secondary-700: oklch(48.65% 0.0704 242.569);
-    --color-secondary-800: oklch(42.56% 0.058 241.003);
-    --color-secondary-900: oklch(37.17% 0.048 241.732);
-    --color-secondary-950: oklch(27.57% 0.0358 243.643);
+	/* Secondary — Cool slate-blue supporting palette. */
+	--color-secondary-50: oklch(97.77% 0.0068 236.232);
+	--color-secondary-100: oklch(95.28% 0.0136 236.418);
+	--color-secondary-200: oklch(90.39% 0.0301 231.737);
+	--color-secondary-300: oklch(83.23% 0.0574 230.968);
+	--color-secondary-400: oklch(75.37% 0.0798 237.703);
+	--color-secondary-500: oklch(67.11% 0.0882 237.703);
+	--color-secondary-600: oklch(57.3% 0.0825 241.886);
+	--color-secondary-700: oklch(48.65% 0.0704 242.569);
+	--color-secondary-800: oklch(42.56% 0.058 241.003);
+	--color-secondary-900: oklch(37.17% 0.048 241.732);
+	--color-secondary-950: oklch(27.57% 0.0358 243.643);
 
-    /* Tertiary — Cyan-leaning accent for data visualization or highlights. */
-    --color-tertiary-50: oklch(98.4% 0.0149 194.196);
-    --color-tertiary-100: oklch(95.54% 0.038 196.259);
-    --color-tertiary-200: oklch(91.57% 0.0685 197.535);
-    --color-tertiary-300: oklch(86.31% 0.1065 199.314);
-    --color-tertiary-400: oklch(78.68% 0.1268 203.095);
-    --color-tertiary-500: oklch(67.84% 0.1127 206.21);
-    --color-tertiary-600: oklch(60.73% 0.1027 211.913);
-    --color-tertiary-700: oklch(51.83% 0.0853 213.37);
-    --color-tertiary-800: oklch(44.76% 0.0691 214.65);
-    --color-tertiary-900: oklch(39.58% 0.0567 217.218);
-    --color-tertiary-950: oklch(29.74% 0.0447 219.856);
+	/* Tertiary — Cyan-leaning accent for data visualization or highlights. */
+	--color-tertiary-50: oklch(98.4% 0.0149 194.196);
+	--color-tertiary-100: oklch(95.54% 0.038 196.259);
+	--color-tertiary-200: oklch(91.57% 0.0685 197.535);
+	--color-tertiary-300: oklch(86.31% 0.1065 199.314);
+	--color-tertiary-400: oklch(78.68% 0.1268 203.095);
+	--color-tertiary-500: oklch(67.84% 0.1127 206.21);
+	--color-tertiary-600: oklch(60.73% 0.1027 211.913);
+	--color-tertiary-700: oklch(51.83% 0.0853 213.37);
+	--color-tertiary-800: oklch(44.76% 0.0691 214.65);
+	--color-tertiary-900: oklch(39.58% 0.0567 217.218);
+	--color-tertiary-950: oklch(29.74% 0.0447 219.856);
 
-    /* Container — Responsive configuration for bigger screens. */
-    --container-3xl: 1530px;
+	/* Container — Responsive configuration for bigger screens. */
+	--container-3xl: 1530px;
 
-    /* Quaternary — Deep violet for charts, tags, and decorative elements. */
-    --color-quaternary-50: oklch(96.32% 0.0129 277.337);
-    --color-quaternary-100: oklch(93.22% 0.0242 277.871);
-    --color-quaternary-200: oklch(87.4% 0.0465 278.695);
-    --color-quaternary-300: oklch(78.93% 0.0836 279.304);
-    --color-quaternary-400: oklch(67.78% 0.1332 281.15);
-    --color-quaternary-500: oklch(58.85% 0.1724 281.164);
-    --color-quaternary-600: oklch(54.45% 0.1855 281.164);
-    --color-quaternary-700: oklch(46.27% 0.1791 281.063);
-    --color-quaternary-800: oklch(40.37% 0.1471 281.379);
-    --color-quaternary-900: oklch(36.25% 0.1108 282.652);
-    --color-quaternary-950: oklch(26.13% 0.072 284.367);
+	/* Quaternary — Deep violet for charts, tags, and decorative elements. */
+	--color-quaternary-50: oklch(96.32% 0.0129 277.337);
+	--color-quaternary-100: oklch(93.22% 0.0242 277.871);
+	--color-quaternary-200: oklch(87.4% 0.0465 278.695);
+	--color-quaternary-300: oklch(78.93% 0.0836 279.304);
+	--color-quaternary-400: oklch(67.78% 0.1332 281.15);
+	--color-quaternary-500: oklch(58.85% 0.1724 281.164);
+	--color-quaternary-600: oklch(54.45% 0.1855 281.164);
+	--color-quaternary-700: oklch(46.27% 0.1791 281.063);
+	--color-quaternary-800: oklch(40.37% 0.1471 281.379);
+	--color-quaternary-900: oklch(36.25% 0.1108 282.652);
+	--color-quaternary-950: oklch(26.13% 0.072 284.367);
 
-    /* Indigo — Rich purple-blue. Used for nav highlights and focus rings. */
-    --color-indigo-50: oklch(96.2% 0.018 272.314);
-    --color-indigo-100: oklch(93% 0.034 272.788);
-    --color-indigo-200: oklch(87% 0.065 274.039);
-    --color-indigo-300: oklch(78.5% 0.115 274.713);
-    --color-indigo-400: oklch(67.3% 0.182 276.935);
-    --color-indigo-500: oklch(58.5% 0.233 277.117);
-    --color-indigo-600: oklch(51.1% 0.262 276.966);
-    --color-indigo-700: oklch(45.7% 0.24 277.023);
-    --color-indigo-800: oklch(39.8% 0.195 277.366);
-    --color-indigo-900: oklch(35.9% 0.144 278.697);
-    --color-indigo-950: oklch(25.7% 0.09 281.288);
+	/* Indigo — Rich purple-blue. Used for nav highlights and focus rings. */
+	--color-indigo-50: oklch(96.2% 0.018 272.314);
+	--color-indigo-100: oklch(93% 0.034 272.788);
+	--color-indigo-200: oklch(87% 0.065 274.039);
+	--color-indigo-300: oklch(78.5% 0.115 274.713);
+	--color-indigo-400: oklch(67.3% 0.182 276.935);
+	--color-indigo-500: oklch(58.5% 0.233 277.117);
+	--color-indigo-600: oklch(51.1% 0.262 276.966);
+	--color-indigo-700: oklch(45.7% 0.24 277.023);
+	--color-indigo-800: oklch(39.8% 0.195 277.366);
+	--color-indigo-900: oklch(35.9% 0.144 278.697);
+	--color-indigo-950: oklch(25.7% 0.09 281.288);
 
-    /* Inchworm — Vivid yellow-green. Used for growth indicators and charts. */
-    --color-inchworm-50: oklch(98.6% 0.0342 117.618);
-    --color-inchworm-100: oklch(96.71% 0.0743 119.178);
-    --color-inchworm-200: oklch(93.81% 0.1407 121.103);
-    --color-inchworm-300: oklch(89.71% 0.2167 123.34);
-    --color-inchworm-400: oklch(84.23% 0.2503 125.939);
-    --color-inchworm-500: oklch(77.02% 0.2367 128.354);
-    --color-inchworm-600: oklch(65.02% 0.2021 129.122);
-    --color-inchworm-700: oklch(53.32% 0.1639 128.373);
-    --color-inchworm-800: oklch(45.35% 0.1365 126.909);
-    --color-inchworm-900: oklch(40.53% 0.1117 126.904);
-    --color-inchworm-950: oklch(27.42% 0.0796 127.858);
+	/* Inchworm — Vivid yellow-green. Used for growth indicators and charts. */
+	--color-inchworm-50: oklch(98.6% 0.0342 117.618);
+	--color-inchworm-100: oklch(96.71% 0.0743 119.178);
+	--color-inchworm-200: oklch(93.81% 0.1407 121.103);
+	--color-inchworm-300: oklch(89.71% 0.2167 123.34);
+	--color-inchworm-400: oklch(84.23% 0.2503 125.939);
+	--color-inchworm-500: oklch(77.02% 0.2367 128.354);
+	--color-inchworm-600: oklch(65.02% 0.2021 129.122);
+	--color-inchworm-700: oklch(53.32% 0.1639 128.373);
+	--color-inchworm-800: oklch(45.35% 0.1365 126.909);
+	--color-inchworm-900: oklch(40.53% 0.1117 126.904);
+	--color-inchworm-950: oklch(27.42% 0.0796 127.858);
 
-    /* Teal — Balanced blue-green. Used for tags, data, and secondary charts. */
-    --color-teal-50: oklch(98.4% 0.014 180.72);
-    --color-teal-100: oklch(95.3% 0.051 180.801);
-    --color-teal-200: oklch(91% 0.096 180.426);
-    --color-teal-300: oklch(85.5% 0.138 181.071);
-    --color-teal-400: oklch(77.7% 0.152 181.912);
-    --color-teal-500: oklch(70.4% 0.14 182.503);
-    --color-teal-600: oklch(60% 0.118 184.704);
-    --color-teal-700: oklch(51.1% 0.096 186.391);
-    --color-teal-800: oklch(43.7% 0.078 188.216);
-    --color-teal-900: oklch(38.6% 0.063 188.416);
-    --color-teal-950: oklch(27.7% 0.046 192.524);
+	/* Teal — Balanced blue-green. Used for tags, data, and secondary charts. */
+	--color-teal-50: oklch(98.4% 0.014 180.72);
+	--color-teal-100: oklch(95.3% 0.051 180.801);
+	--color-teal-200: oklch(91% 0.096 180.426);
+	--color-teal-300: oklch(85.5% 0.138 181.071);
+	--color-teal-400: oklch(77.7% 0.152 181.912);
+	--color-teal-500: oklch(70.4% 0.14 182.503);
+	--color-teal-600: oklch(60% 0.118 184.704);
+	--color-teal-700: oklch(51.1% 0.096 186.391);
+	--color-teal-800: oklch(43.7% 0.078 188.216);
+	--color-teal-900: oklch(38.6% 0.063 188.416);
+	--color-teal-950: oklch(27.7% 0.046 192.524);
 
-    /* Honeysuckle — Warm yellow. Used for highlights, earnings, and callouts. */
-    --color-honeysuckle-50: oklch(98.56% 0.0609 111.587);
-    --color-honeysuckle-100: oklch(96.69% 0.1538 112.884);
-    --color-honeysuckle-200: oklch(94.23% 0.2467 114.169);
-    --color-honeysuckle-300: oklch(90.99% 0.2377 113.942);
-    --color-honeysuckle-400: oklch(85.7% 0.219 111.079);
-    --color-honeysuckle-500: oklch(78.91% 0.1985 108.774);
-    --color-honeysuckle-600: oklch(66.96% 0.1616 100.626);
-    --color-honeysuckle-700: oklch(54.79% 0.1295 92.161);
-    --color-honeysuckle-800: oklch(46.79% 0.1104 88.751);
-    --color-honeysuckle-900: oklch(41.64% 0.0982 88.155);
-    --color-honeysuckle-950: oklch(28.22% 0.0667 84.996);
+	/* Honeysuckle — Warm yellow. Used for highlights, earnings, and callouts. */
+	--color-honeysuckle-50: oklch(98.56% 0.0609 111.587);
+	--color-honeysuckle-100: oklch(96.69% 0.1538 112.884);
+	--color-honeysuckle-200: oklch(94.23% 0.2467 114.169);
+	--color-honeysuckle-300: oklch(90.99% 0.2377 113.942);
+	--color-honeysuckle-400: oklch(85.7% 0.219 111.079);
+	--color-honeysuckle-500: oklch(78.91% 0.1985 108.774);
+	--color-honeysuckle-600: oklch(66.96% 0.1616 100.626);
+	--color-honeysuckle-700: oklch(54.79% 0.1295 92.161);
+	--color-honeysuckle-800: oklch(46.79% 0.1104 88.751);
+	--color-honeysuckle-900: oklch(41.64% 0.0982 88.155);
+	--color-honeysuckle-950: oklch(28.22% 0.0667 84.996);
 
-
-    /* --- 3d. Radius -------------------------------------------------------- */
-    /**
+	/* --- 3d. Radius -------------------------------------------------------- */
+	/**
      * --radius-base → 4px. Default for buttons, inputs, cards.
      * --radius-full → 999px. Fully rounded pills, avatar rings, badges.
      */
-    --radius-base: 8px;
-    --radius-full: 999px;
+	--radius-base: 4px;
+	--radius-full: 999px;
 }
-
 
 /* =============================================================================
  * 4. BASE STYLES
  * ============================================================================= */
 
 @layer base {
-
-    /* --- 4a. Body ---------------------------------------------------------- */
-    /**
+	/* --- 4a. Body ---------------------------------------------------------- */
+	/**
      * body
      * Global defaults for the document surface.
      * White background + body font applied universally to every layout.
      */
-    body {
-        @apply bg-white font-body font-normal
-    }
+	body {
+		@apply bg-background font-body font-normal;
+	}
 
-    /* --- 4b. Form ---------------------------------------------------------- */
-    /**
+	/* --- 4b. Form ---------------------------------------------------------- */
+	/**
      * form
      * Default form layout: vertical flex column with consistent gap.
      * Ensures all forms are full-width and uniformly spaced without extra markup.
      */
-    form {
-        @apply flex flex-col gap-6 w-full
-    }
+	form {
+		@apply flex flex-col gap-6 w-full;
+	}
 
-    /* --- 4c. Number Input -------------------------------------------------- */
-    /**
+	/* --- 4c. Number Input -------------------------------------------------- */
+	/**
      * input (number) — spinner removal
      * Strips WebKit's native increment/decrement arrows from number inputs.
      * Keeps inputs visually clean and consistent with custom UI controls.
      */
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
 }
-
 
 /* =============================================================================
  * 5. COMPONENTS
  * ============================================================================= */
 
 @layer components {
-
-    /* --- 5a. Buttons ------------------------------------------------------- */
-    /**
+	/* --- 5a. Buttons ------------------------------------------------------- */
+	/**
      * .button  (also: button, input[type=submit])
      * Base button. Always required — variants stack on top of this class.
      * Sets height, typography, spacing, color, and all interactive states
@@ -385,99 +382,98 @@
      *   <button class="button button-secondary button-small">Cancel</button>
      *   <button class="button button-danger">Delete</button>
      */
-    input[type=submit],
-    button,
-    .button {
-        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-xs text-indigo-50 font-mono uppercase !font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-indigo-100 focus:outline-indigo-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-indigo-100 focus-visible:outline-offset-2 focus-visible:outline-indigo-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-indigo-600 hover:bg-indigo-600/90 active:bg-indigo-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-indigo-50 [&>svg]:!size-3.5 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer
-    }
+	input[type="submit"],
+	button,
+	.button {
+		@apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-xs text-secondary-50 font-mono uppercase !font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-secondary-100 focus:outline-secondary-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-secondary-100 focus-visible:outline-offset-2 focus-visible:outline-secondary-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-secondary-600 hover:bg-secondary-600/90 active:bg-secondary-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-secondary-50 [&>svg]:!size-3.5 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer select-none;
+	}
 
-    /**
+	/**
      * .button-small
      * Compact size modifier. Reduces height to h-7 and tightens padding.
      * Use inside tables, toolbars, or any space-constrained UI.
      */
-    .button-small {
-        @apply !h-7 !px-2.5 !py-0.75
-    }
+	.button-small {
+		@apply !h-7 !px-2.5 !py-0.75;
+	}
 
-    /**
+	/**
      * .button-icon
      * Square icon-only button. Enforces equal width and height (h-9 × w-9).
      * Enlarges the inner SVG slightly to fill the compact space.
      */
-    .button-icon {
-        @apply [&>svg]:!size-4 !h-9 !w-9 !p-2
-    }
+	.button-icon {
+		@apply [&>svg]:!size-4 !h-9 !w-9 !p-2;
+	}
 
-    /**
+	/**
      * .button-secondary
      * Subtle filled variant using the lightest primary tint as background.
      * For supporting or secondary actions alongside a primary CTA.
      */
-    .button-secondary {
-        @apply text-indigo-900 bg-indigo-50 hover:!bg-indigo-50/90 [&>svg]:!stroke-indigo-900
-    }
+	.button-secondary {
+		@apply text-secondary-900 border border-secondary-100 bg-secondary-50 hover:!bg-secondary-50/90 [&>svg]:!stroke-secondary-900;
+	}
 
-    /**
+	/**
      * .button-danger
      * Destructive action variant. Light red background with muted red text.
      * Reserved for delete, revoke, or other irreversible operations.
      */
-    .button-danger {
-        @apply text-danger-700 bg-danger-50 hover:!bg-danger-50/90 !shadow-none [&>svg]:!stroke-danger-700
-    }
+	.button-danger {
+		@apply text-danger-700 bg-danger-50 border border-danger-100 hover:!bg-danger-50/90 !shadow-none [&>svg]:!stroke-danger-700;
+	}
 
-    /**
+	/**
      * .button-honeysuckle
      * Warm yellow variant for highlighted or financially positive actions.
      * Uses body-colored text for readability against the bright background.
      */
-    .button-honeysuckle {
-        @apply text-body bg-honeysuckle-200 hover:!bg-honeysuckle-200/90 !shadow-none [&>svg]:!stroke-body
-    }
+	.button-honeysuckle {
+		@apply text-body bg-honeysuckle-200 hover:!bg-honeysuckle-200/90 !shadow-none [&>svg]:!stroke-body;
+	}
 
-    /**
+	/**
      * .button-sidebar
      * Compact button variant designed for use inside sidebar navigation areas.
      * Uses the primary dark background with light text to maintain contrast
      * and visual consistency with the sidebar layout.
      */
-    .button-sidebar {
-        @apply !h-7 !px-2.5 !py-0.75 text-primary-50 bg-primary-950 hover:!bg-primary-900 !shadow-none [&>svg]:!stroke-primary-50
-    }
+	.button-sidebar {
+		@apply !h-7 !px-2.5 !py-0.75 text-neutral-50 bg-neutral-900 hover:!bg-neutral-800 !shadow-none [&>svg]:!stroke-neutral-50;
+	}
 
-    /**
+	/**
      * .button-outline
      * Bordered button with a white background.
      * For low-emphasis secondary actions that need clear boundary definition.
      */
-    .button-outline {
-        @apply border border-border text-body bg-white hover:!bg-accent/90 [&>svg]:!stroke-body
-    }
+	.button-outline {
+		@apply border border-border text-body bg-white hover:!bg-accent/90 [&>svg]:!stroke-body;
+	}
 
-    /**
+	/**
      * .button-ghost
      * Borderless, transparent button.
      * Minimal visual weight — for tertiary actions, nav items, or icon buttons.
      * Reveals a subtle border and background on hover to confirm interactivity.
      */
-    .button-ghost {
-        @apply bg-transparent border border-transparent shadow-none text-body hover:!bg-neutral-100 hover:!border-border [&>svg]:!stroke-body
-    }
+	.button-ghost {
+		@apply bg-transparent border border-transparent shadow-none text-body hover:!bg-neutral-100 hover:!border-border [&>svg]:!stroke-body;
+	}
 
-    /**
+	/**
      * .button-link
      * Transparent button styled like an inline link.
      * No shadow or border by default; shows an accent background on hover.
      * Use for in-context navigation or soft inline actions.
      */
-    .button-link {
-        @apply bg-transparent border !border-transparent shadow-none text-body hover:!bg-accent hover:!border-accent [&>svg]:!stroke-body
-    }
+	.button-link {
+		@apply bg-transparent border !border-transparent shadow-none text-body hover:!bg-accent hover:!border-accent [&>svg]:!stroke-body;
+	}
 
-
-    /* --- 5b. Badges -------------------------------------------------------- */
-    /**
+	/* --- 5b. Badges -------------------------------------------------------- */
+	/**
      * .badge
      * Base badge/tag component. Always required — color variants stack on top.
      * Renders as a small inline pill with monospaced uppercase text.
@@ -500,92 +496,101 @@
      *   <span class="badge badge-success">Completed</span>
      *   <span class="badge badge-danger">Failed</span>
      */
-    .badge {
-        @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-2xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-primary-50 text-primary-700 h-fit w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3 border
-    }
+	.badge {
+		@apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-2xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-primary-50 text-primary-700 h-fit w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3 border;
+	}
 
-    .badge-outline {
-        @apply bg-white !border border-border text-body [&>svg]:stroke-body;
-    }
+	.badge-outline {
+		@apply bg-white !border border-border text-body [&>svg]:stroke-body;
+	}
 
-    .badge-primary {
-        @apply bg-primary-50 border-primary-100 text-primary-600 [&>svg]:stroke-primary-600;
-    }
+	.badge-primary {
+		@apply bg-primary-50 border-primary-100 text-primary-600 [&>svg]:stroke-primary-600;
+	}
 
-    .badge-accent {
-        @apply bg-accent border border-border text-body [&>svg]:stroke-body;
-    }
+	.badge-accent {
+		@apply bg-accent border border-border text-body [&>svg]:stroke-body;
+	}
 
-    .badge-secondary {
-        @apply bg-secondary-50 border-secondary-100 text-secondary-600 [&>svg]:stroke-secondary-600;
-    }
+	.badge-secondary {
+		@apply bg-secondary-50 border-secondary-100 text-secondary-600 [&>svg]:stroke-secondary-600;
+	}
 
-    .badge-teal {
-        @apply bg-teal-50 border-teal-100 text-teal-600 [&>svg]:stroke-teal-600;
-    }
+	.badge-teal {
+		@apply bg-teal-50 border-teal-100 text-teal-600 [&>svg]:stroke-teal-600;
+	}
 
-    .badge-honeysuckle {
-        @apply bg-honeysuckle-50 border-honeysuckle-100 text-honeysuckle-600 [&>svg]:stroke-honeysuckle-600;
-    }
+	.badge-honeysuckle {
+		@apply bg-honeysuckle-50 border-honeysuckle-100 text-honeysuckle-600 [&>svg]:stroke-honeysuckle-600;
+	}
 
-    .badge-indigo {
-        @apply bg-indigo-50 border-indigo-100 text-indigo-600 [&>svg]:stroke-indigo-600;
-    }
+	.badge-indigo {
+		@apply bg-indigo-50 border-indigo-100 text-indigo-600 [&>svg]:stroke-indigo-600;
+	}
 
-    .badge-danger {
-        @apply bg-danger-50 border-danger-100 text-danger-600 [&>svg]:stroke-danger-600;
-    }
+	.badge-danger {
+		@apply bg-danger-50 border-danger-100 text-danger-600 [&>svg]:stroke-danger-600;
+	}
 
-    .badge-alert {
-        @apply bg-alert-50 border-alert-100 text-alert-600 [&>svg]:stroke-alert-600;
-    }
+	.badge-alert {
+		@apply bg-alert-50 border-alert-100 text-alert-600 [&>svg]:stroke-alert-600;
+	}
 
-    .badge-success {
-        @apply bg-success-50 border-success-100 text-success-600 [&>svg]:stroke-success-600;
-    }
+	.badge-success {
+		@apply bg-success-50 border-success-100 text-success-600 [&>svg]:stroke-success-600;
+	}
 
-    .badge-inchworm {
-        @apply bg-inchworm-50 border-inchworm-100 text-inchworm-600 [&>svg]:stroke-inchworm-600;
-    }
+	.badge-inchworm {
+		@apply bg-inchworm-50 border-inchworm-100 text-inchworm-600 [&>svg]:stroke-inchworm-600;
+	}
 }
-
 
 /* =============================================================================
  * 6. UTILITIES
  * ============================================================================= */
 
 @layer utilities {
-
-    /* --- 6a. Scrollbar ----------------------------------------------------- */
-    /**
+	/* --- 6a. Scrollbar ----------------------------------------------------- */
+	/**
      * .no-scrollbar
      * Hides the scrollbar visually while keeping the element scrollable.
      * Use on overflow containers where scrollbar chrome is undesirable.
      */
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
 
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+	.no-scrollbar {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
 
-    /**
+	/**
      * Global custom scrollbar styling.
      * Applies to all scrollable elements except those using .no-scrollbar.
      * Thin 4px track, indigo-300 thumb, base border-radius.
      */
-    /*::-webkit-scrollbar {*/
-    /*    height: calc(var(--spacing) * 1);*/
-    /*    width: calc(var(--spacing) * 1);*/
-    /*}*/
-    /*::-webkit-scrollbar-track {*/
-    /*    box-shadow: none;*/
-    /*    border-radius: 0;*/
-    /*}*/
-    /*::-webkit-scrollbar-thumb {*/
-    /*    background: var(--color-indigo-300);*/
-    /*    border-radius: var(--radius-base);*/
-    /*}*/
+	/*::-webkit-scrollbar {*/
+	/*    height: calc(var(--spacing) * 1);*/
+	/*    width: calc(var(--spacing) * 1);*/
+	/*}*/
+	/*::-webkit-scrollbar-track {*/
+	/*    box-shadow: none;*/
+	/*    border-radius: 0;*/
+	/*}*/
+	/*::-webkit-scrollbar-thumb {*/
+	/*    background: var(--color-indigo-300);*/
+	/*    border-radius: var(--radius-base);*/
+	/*}*/
+
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	/* Firefox */
+	input[type="number"] {
+		-moz-appearance: textfield;
+	}
 }

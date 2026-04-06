@@ -16,7 +16,7 @@
   #        - Why: It keeps the main interface clean by hiding complex
   #               search options inside a reusable sidebar.
   %>
-<div id="sidebarFilters" class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-white border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
+<div id="sidebarFilters" class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-background border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
 
   <%# Explanation:: This block creates the actual search form structure.
     #               It captures the user's choices and sends them to the
@@ -28,13 +28,13 @@
                       html: { id: "filter_form", class: "flex flex-col h-full" },
                       data: { turbo_frame: turbo_frame_id } do |f| %>
 
-    <div class="h-16 flex flex-row justify-between items-center px-16">
+    <div class="h-20 flex flex-row justify-between items-center px-16 !bg-white border-b border-border">
 
-      <h3 class="font-body font-medium text-2xl">Filtros</h3>
+      <h3 class="font-heading capitalize font-medium text-3xl line-clamp-2">Filtros</h3>
 
       <%= button_tag id: "closeFiltersBtn",
                      type: "button",
-                     class: "button button-ghost button-icon button-small" do
+                     class: "button button-danger button-icon button-small" do
       %>
         <%= inline_svg_tag "icons/x.svg" %>
       <% end %>

@@ -25,150 +25,51 @@
   # @yield [content] The primary metric or value to be displayed prominently in the card body.
   %>
 
-<%# =============================================================
-  # Configuration & Defaults
-  # ============================================================= %>
+  <% status ||= :default %>
+  <% card_title ||= nil %>
+  <% card_icon ||= nil %>
+  <% card_data ||= nil %>
+  <% card_data_icon ||= nil %>
 
-<%# This block initializes the local variables with default values to ensure
-  # the partial does not fail if specific attributes are omitted by the caller.
-  %>
-<% status ||= :default %>
-<% is_outline ||= true %>
-<% card_title ||= nil %>
-<% card_icon ||= nil %>
-<% card_data ||= nil %>
-<% card_data_icon ||= nil %>
+  <% dot_color = {
+    success:     "bg-success-500",
+    danger:      "bg-danger-500",
+    alert:       "bg-alert-500",
+    primary:     "bg-primary-500",
+    teal:        "bg-teal-500",
+    honeysuckle: "bg-honeysuckle-500",
+    indigo:      "bg-indigo-500",
+    secondary:   "bg-secondary-500",
+    default:     "bg-neutral-300"
+  }[status.to_sym] || "bg-neutral-300" %>
 
-<%# This hash maps status symbols to specific Tailwind CSS utility classes.
-  # It defines the background, border, and badge styles for the card based
-  # on the context of the data, such as positive or negative trends.
-  %>
-<% theme = {
-             success: {
-               bg: "bg-success-300",
-               border: "border-success-300",
-               card_bg: "bg-success-100",
-               stroke: "stroke-success-50",
-               text: "text-body",
-               badge: "badge-success"
-             },
-             danger: {
-               bg: "bg-danger-300",
-               border: "border-danger-300",
-               card_bg: "bg-danger-100",
-               stroke: "stroke-danger-50",
-               text: "text-body",
-               badge: "badge-danger"
-             },
-             alert: {
-               bg: "bg-alert-300",
-               border: "border-alert-300",
-               card_bg: "bg-alert-100",
-               stroke: "stroke-alert-50",
-               text: "text-body",
-               badge: "badge-alert"
-             },
-             secondary: {
-               bg: "bg-secondary-300",
-               border: "border-secondary-300",
-               card_bg: "bg-secondary-100",
-               stroke: "stroke-secondary-50",
-               text: "text-body",
-               badge: "badge-secondary"
-             },
-             primary: {
-               bg: "bg-primary-300",
-               border: "border-primary-300",
-               card_bg: "bg-primary-100",
-               stroke: "stroke-primary-50",
-               text: "text-body",
-               badge: "badge-primary"
-             },
-             teal: {
-               bg: "bg-teal-300",
-               border: "border-teal-300",
-               card_bg: "bg-teal-100",
-               stroke: "stroke-teal-50",
-               text: "text-body",
-               badge: "badge-teal"
-             },
-             honeysuckle: {
-               bg: "bg-honeysuckle-300",
-               border: "border-honeysuckle-300",
-               card_bg: "bg-honeysuckle-100",
-               stroke: "stroke-honeysuckle-50",
-               text: "text-body",
-               badge: "badge-honeysuckle"
-             },
-             indigo: {
-               bg: "bg-indigo-300",
-               border: "border-indigo-300",
-               card_bg: "bg-indigo-100",
-               stroke: "stroke-indigo-50",
-               text: "text-body",
-               badge: "badge-indigo"
-             },
-             default: {
-               bg: "bg-neutral-200",
-               border: "border-border",
-               card_bg: "bg-accent",
-               stroke: "stroke-body",
-               text: "text-body",
-               badge: "badge-accent"
-             }
-           }[status.to_sym] || theme[:default] %>
+  <div class="rounded-base border border-border bg-white flex flex-col gap-5 px-5 pt-5 pb-4">
 
-<%# This helper logic assembles the final class string for the badge.
-  # It combines the base theme with an optional outline modifier to
-  # create a polished look for secondary data indicators.
-  %>
-<% badge_classes = ["badge", theme[:badge], ("badge-accent" if is_outline)].compact.join(" ") %>
+    <%# Header %>
+    <div class="flex items-center gap-3">
+      <span class="relative -top-[1px] size-[5px] rounded-full flex-shrink-0 <%= dot_color %>"></span>
+      <%= content_tag :p, card_title, class: "font-mono text-muted uppercase text-xs tracking-widest font-medium" %>
+    </div>
 
-<div class="rounded-base h-56 flex flex-col justify-between items-start border border-border shadow-xs bg-white pb-0">
-
-  <%# =============================================================
-    # Card Header
-    # ============================================================= %>
-
-  <%# The header provides visual context through a small icon and a
-    # descriptive title. It uses a monospace font to maintain a
-    # professional, data-centric aesthetic for the dashboard.
-    %>
-  <div class="flex flex-row justify-start gap-1.5 items-center w-full h-9 px-3 py-1.5 border-b rounded-br-none rounded-bl-none rounded-base border-border bg-neutral-50">
-    <%= content_tag :h3, card_title, class: "font-mono text-body uppercase !leading-0 tracking-[0] font-medium text-sm" %>
-  </div>
-
-  <%# =============================================================
-    # Card Body & Content
-    # ============================================================= %>
-
-  <%# The body contains the primary metric, rendered at a large size for
-    # maximum visibility. Below the main value, an optional badge can
-    # display additional details or trend icons when available.
-    %>
-  <div class="flex flex-col justify-between items-start gap-3 px-4 py-6 h-full w-full rounded-base">
-
-    <div class="text-3xl font-normal !tracking-tight line-clamp-1 text-body">
+    <%# Primary value %>
+    <div class="[&>div>span]:!font-heading [&>div>svg]:!w-6 [&>div>svg]:!h-6 [&>span]:!font-heading [&>div>span]:!text-4xl [&>span]:!text-4xl [&>div>span]:font-bold [&>div>span]:font-bold [&>div>span]:tracking-tight [&>div>span]:text-heading line-clamp-1">
       <%= yield %>
     </div>
 
-    <%# This conditional block renders the supplementary badge only if
-      # secondary data is provided. It ensures the layout remains clean
-      # when extra information is not necessary for a particular metric.
-      %>
-    <% if card_data.present? %>
-      <div class="font-mono uppercase text-xs text-muted tracking-[0]">
+    <%# Divider + footer %>
+    <div class="border-t border-border pt-3">
+      <% if card_data.present? %>
+        <div class="badge badge-accent">
+          <% if card_data_icon.present? %>
+            <span class="[&>svg]:size-3 [&>svg]:stroke-muted">
+              <%= inline_svg_tag "icons/#{card_data_icon}.svg" %>
+            </span>
+          <% end %>
+          <p class="font-mono text-muted uppercase text-3xs tracking-wide"><%= card_data %></p>
+        </div>
+      <% else %>
+        <div class="h-3.5"></div>
+      <% end %>
+    </div>
 
-        <%# This small icon within the badge is typically used for trend
-          # indicators, such as upward or downward arrows, to give
-          # immediate visual feedback on the data's direction.
-          %>
-        <% if card_data_icon.present? %>
-          <%= inline_svg_tag "icons/#{card_data_icon}.svg" %>
-        <% end %>
-
-        <%= content_tag :p, card_data %>
-      </div>
-    <% end %>
   </div>
-</div>

@@ -94,7 +94,7 @@ class NormativeArticle < ApplicationRecord
     # Explanation:: This line checks if both article_number and article_name exist.
     #               If they do, it returns a combined string joining them with a colon.
     if article_number.present? && article_name.present?
-      "#{article_number}: #{article_name}"
+      "#{article_number} - #{article_name}"
     elsif article_name.present?
       article_name
     elsif article_number.present?

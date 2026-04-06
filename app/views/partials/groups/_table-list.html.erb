@@ -73,14 +73,17 @@
       #               by calling the **table** module. It loops through the items
       #               using provided lambdas to map data into a reusable UI component.
       %>
-    <%= render partial: "partials/modules/table",
-               locals: {
-                 columns_header: headers,
-                 columns_icons: columns_icons,
-                 columns_body: body_procs,
-                 th_descs: th_descs,
-                 models: collection
-               } %>
+      <%= render partial: "partials/modules/table",
+                 locals: {
+                   columns_header: headers,
+                   columns_icons: columns_icons,
+                   columns_body: body_procs,
+                   th_descs: th_descs,
+                   models: collection,
+                   edit_path: defined?(edit_path) ? edit_path : nil,
+                   show_path: defined?(show_path) ? show_path : nil,
+                   destroy_path: defined?(destroy_path) ? destroy_path : nil
+                 } %>
 
   <% else %>
 
@@ -88,6 +91,6 @@
       #               are found. It uses a `content_tag` to maintain a clean interface
       #               and avoid awkward empty spaces when the user has no data yet.
       %>
-    <%= content_tag :p, "Ainda não há dados.", class: "font-body text-muted text-sm" %>
+    <%= content_tag :p, "Ainda não há dados.", class: "badge badge-alert" %>
   <% end %>
 <% end %>

@@ -128,14 +128,15 @@
                desc: "Saldo da conta no encerramento do mês de referência.",
                field_type: :number_field,
                icon_name: "banknote",
-               step: :any
+               step: :any,
+               currency_mask: true
     %>
 
     <%# Explanation:: Campo de data de referência. Qualquer dia do mês pode ser
       #               informado — o controller normaliza automaticamente para o
       #               último dia do mês ao salvar o registro.
       %>
-    <%= render "partials/modules/input-field",
+    <%= render "partials/modules/date-field",
                f: form,
                name: :reference_date,
                label: "Data de Referência",

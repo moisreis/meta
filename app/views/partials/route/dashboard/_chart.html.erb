@@ -1,58 +1,36 @@
 <%#
   Partial : _chart.html.erb
-  Date    : 11/30/2025
+  Date    : 2025-11-30
   Author  : Moisés Reis
   Package : Meta
-
-  Description:
-    Reusable frame for rendering data charts consistently across the dashboard.
-    Wraps any chart implementation in a titled header and a white content area,
-    and renders an empty state badge when the data source has no records.
-
-  ============================================================
-  Locals
-  ============================================================
-
-  @param  chart_title  [String]   Label displayed in the card header. Required.
-  @param  chart_id     [String]   Value written to data-chart-id on the root element. Optional.
-  @param  data_source  [Array]    Collection checked for presence before yielding. Required.
-
-  ============================================================
-  Notes
-  ============================================================
-
-  - chart_title and data_source are expected to be passed but have no ||= default.
-    Callers must provide both or the template will raise a NameError.
-
-  @yield  [content]  The chart markup rendered inside the white content area
-                     when data_source is non-empty.
 %>
 
-<% chart_id ||= nil %>
+<% chart_id    ||= nil %>
+<% chart_meta  ||= nil %>  <%# ex: "2026", "Últ. 3 meses" — texto secundário no header %>
 
-<div class="bg-neutral-50 border border-border rounded-base flex flex-col" data-chart-id="<%= chart_id %>">
+<div class="bg-white border border-border rounded-base flex flex-col overflow-hidden"
+     data-chart-id="<%= chart_id %>">
 
-  <%# =============================================================
-      Chart Header — Title
-      ============================================================= %>
-  <div class="w-full flex flex-row justify-between items-center h-9 px-3 py-1.5 border-b rounded-br-none rounded-bl-none rounded-base border-border bg-neutral-50">
-    <%= content_tag :h3, chart_title, class: "font-mono text-body uppercase !leading-0 tracking-[0] font-medium text-sm" %>
+  <%# Header %>
+  <div class="flex items-center justify-between px-6 py-3 flex-shrink-0">
+    <div class="flex items-center gap-3">
+      <span class="size-[5px] rounded-full bg-neutral-300 flex-shrink-0"></span>
+      <%= content_tag :h3, chart_title, class: "font-mono text-muted uppercase text-xs tracking-widest font-medium" %>
+    </div>
+    <% if chart_meta.present? %>
+      <span class="font-mono text-muted uppercase text-3xs tracking-wide"><%= chart_meta %></span>
+    <% end %>
   </div>
 
-  <%# =============================================================
-      Chart Body — Content or Empty State
-      ============================================================= %>
-  <div class="p-6 flex items-center justify-center bg-white rounded-base h-full">
-
-    <%# Note: Renders the empty state badge instead of yielding when data_source
-              has no records, preventing charting libraries from receiving an empty
-              dataset and potentially throwing a JavaScript error. %>
+  <%# Body %>
+  <div class="flex items-center justify-center h-full p-5">
     <% if data_source.any? %>
       <%= yield %>
     <% else %>
-      <%= content_tag :p, "Ainda não há dados.", class: "font-body text-muted text-sm" %>
+      <p class="font-mono text-muted uppercase text-3xs tracking-widest py-16">
+        Nenhum dado disponível
+      </p>
     <% end %>
-
   </div>
 
 </div>

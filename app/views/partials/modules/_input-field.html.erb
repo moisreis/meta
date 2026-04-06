@@ -43,12 +43,13 @@
     "flex",
     "items-center",
     "gap-1.5",
-    "text-xs",
+    "text-muted",
+    "text-2xs",
     "font-mono",
     "uppercase",
-    "tracking-tight",
+    "tracking-widest",
     "leading-none",
-    "font-semibold",
+    "font-medium",
     "select-none",
     "group-data-[disabled=true]:pointer-events-none",
     "group-data-[disabled=true]:opacity-50",
@@ -214,7 +215,7 @@
           data-action="input->currency-mask#format"
           aria-describedby="<%= (desc.present? || has_error) ? "#{name}-desc" : nil %>"
           aria-invalid="<%= has_error %>"
-          />
+>
         <%= f.hidden_field name, data: { "currency-mask-target": "hidden" } %>
       </div>
 
@@ -231,7 +232,7 @@
           data-action="input->cnpj-mask#format"
           aria-describedby="<%= (desc.present? || has_error) ? "#{name}-desc" : nil %>"
           aria-invalid="<%= has_error %>"
-          />
+>
         <%= f.hidden_field name, data: { "cnpj-mask-target": "hidden" } %>
       </div>
 
@@ -248,7 +249,7 @@
           data-action="input->bank-account-mask#format"
           aria-describedby="<%= (desc.present? || has_error) ? "#{name}-desc" : nil %>"
           aria-invalid="<%= has_error %>"
-          />
+>
         <%= f.hidden_field name, data: { "bank-account-mask-target": "hidden" } %>
       </div>
 
@@ -270,7 +271,7 @@
     <% end %>
 
     <% if icon_name.present? %>
-      <div class="absolute right-0 top-1/2 -translate-y-1/2 w-9 rounded-tr-base rounded-tb-base bg-neutral-100 h-full flex items-center justify-center border-l border-border">
+      <div class="absolute right-0 top-1/2 -translate-y-1/2 w-9 rounded-tr-base rounded-tb-base bg-input h-full flex items-center justify-center border border-border border-l-0">
         <%= inline_svg_tag "icons/#{icon_name}.svg",
                            class: "size-4 stroke-muted"
         %>

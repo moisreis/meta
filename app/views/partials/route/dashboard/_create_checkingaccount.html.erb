@@ -15,21 +15,23 @@
   %>
 
 <div id="sidebarCheckingAccount"
-     class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-white border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
+     class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-background border-l border-border overflow-y-scroll z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
+
+     <div class="!h-20 flex flex-row justify-between items-center px-16 mb-3 !bg-white border-b border-border">
+       <h3 class="font-heading capitalize font-medium text-3xl line-clamp-2">Nova Conta Corrente</h3>
+
+     <%= button_tag id: "closeCheckingAccountBtn",
+                    type: "button",
+                    class: "button button-danger button-icon button-small" do %>
+       <%= inline_svg_tag "icons/x.svg" %>
+     <% end %>
+   </div>
 
   <%= form_with model: [@portfolio, CheckingAccount.new],
                 class: "flex flex-col h-full" do |form| %>
 
     <%# ── Header ──────────────────────────────────────────────────────────── %>
-    <div class="h-16 flex flex-row justify-between items-center px-16">
-      <h3 class="font-body font-medium text-2xl">Nova Conta Corrente</h3>
 
-      <%= button_tag id: "closeCheckingAccountBtn",
-                     type: "button",
-                     class: "button button-ghost button-icon button-small" do %>
-        <%= inline_svg_tag "icons/x.svg" %>
-      <% end %>
-    </div>
 
     <%# ── Scrollable body ─────────────────────────────────────────────────── %>
     <div class="flex-grow px-16 space-y-8 overflow-y-auto w-full">

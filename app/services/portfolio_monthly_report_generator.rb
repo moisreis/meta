@@ -803,30 +803,54 @@ class PortfolioMonthlyReportGenerator
   #   * +:maximo+          [Float]   maximum allocation (%)
   #   * +:compliant+       [Boolean]
   def collect_investment_policy_data
+<<<<<<< HEAD
     active_fi_ids = (@performance_data[:performances] || [])
                       .select { |p| p.earnings.to_f != 0 || p.initial_balance.to_f > 0 }
                       .map(&:fund_investment_id)
                       .to_set
+=======
+    # Use initial_balance from performance records as the basis —
+    # percentage_allocation reflects end-of-period state and will be
+    # zero for fully-redeemed funds that were active during the period.
+    perf_by_fi = (@performance_data[:performances] || [])
+                   .each_with_object({}) { |p, h| h[p.fund_investment_id] = p }
+
+    total_initial = perf_by_fi.values.sum { |p| p.initial_balance.to_f }
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
 
     alloc_by_article = Hash.new(0.0)
     @portfolio.fund_investments
               .includes(investment_fund: { investment_fund_articles: :normative_article })
               .select { |fi| active_fi_ids.include?(fi.id) }
               .each do |fi|
+      perf = perf_by_fi[fi.id]
+      next unless perf && perf.initial_balance.to_f > 0
+
+      # Derive allocation from initial_balance proportion
+      weight = total_initial > 0 ? (perf.initial_balance.to_f / total_initial * 100) : 0.0
+
       fi.investment_fund.investment_fund_articles.each do |ifa|
         next unless ifa.normative_article
-        alloc_by_article[ifa.normative_article.id] += fi.percentage_allocation.to_f
+        alloc_by_article[ifa.normative_article.id] += weight / fi.investment_fund.investment_fund_articles.size
       end
     end
 
-    article_ids = alloc_by_article.keys
-    return [] if article_ids.empty?
+    @portfolio.portfolio_normative_articles
+              .includes(:normative_article)
+              .map do |pna|
+      art = pna.normative_article
+      next unless art
 
-    NormativeArticle.where(id: article_ids).map do |art|
       carteira_atual = alloc_by_article[art.id].round(4)
+<<<<<<< HEAD
       alvo           = art.benchmark_target.to_f
       minimo         = art.try(:minimum_target).to_f
       maximo         = art.try(:maximum_target).to_f
+=======
+      alvo           = pna.benchmark_target.to_f
+      minimo         = pna.minimum_target.to_f
+      maximo         = pna.maximum_target.to_f
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
 
       compliant = if maximo > 0 || minimo > 0
                     carteira_atual >= minimo && (maximo.zero? || carteira_atual <= maximo)
@@ -845,9 +869,8 @@ class PortfolioMonthlyReportGenerator
         maximo:         maximo,
         compliant:      compliant
       }
-    end
+    end.compact
   end
-
   # Retrieves checking account records for the portfolio within the month of
   # +@requested_reference_date+.
   #
@@ -900,8 +923,8 @@ class PortfolioMonthlyReportGenerator
   # @return [void]
   def stamp_global_footer
     total = pdf.page_count
-
     pdf.repeat(:all, dynamic: true) do
+<<<<<<< HEAD
       footer_y = -MARGIN_B + 10
 
       pdf.font('Plus Jakarta Sans', size: 6) do
@@ -909,15 +932,31 @@ class PortfolioMonthlyReportGenerator
         pdf.draw_text "#{COMPANY}", at: [0, footer_y + 14]
       end
 
+=======
+      footer_y = -MARGIN_B + 18
+      pdf.font('Plus Jakarta Sans', size: 6) do
+        pdf.fill_color C[:muted]
+        company_text = COMPANY
+        company_w = pdf.width_of(company_text)
+        pdf.draw_text company_text, at: [(CONTENT_W - company_w) / 2.0, footer_y + 16]
+      end
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
       pdf.font('Geist Pixel Square', size: 6) do
         pdf.fill_color C[:gray_light]
-
         contact_text = "#{PHONE}  ·  #{EMAIL}  ·  #{SITE}  ·  #{CNPJ}"
+<<<<<<< HEAD
         pdf.draw_text contact_text, at: [0, footer_y + 4]
 
         page_text  = "#{pdf.page_number} de #{total}"
         text_width = pdf.width_of(page_text)
         pdf.draw_text page_text, at: [CONTENT_W - text_width, footer_y + 4]
+=======
+        contact_w = pdf.width_of(contact_text)
+        pdf.draw_text contact_text, at: [(CONTENT_W - contact_w) / 2.0, footer_y + 6]
+        page_text  = "#{pdf.page_number} de #{total}"
+        page_w     = pdf.width_of(page_text)
+        pdf.draw_text page_text, at: [(CONTENT_W - page_w) / 2.0, footer_y - 8]
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
       end
     end
   end
@@ -1764,6 +1803,7 @@ class PortfolioMonthlyReportGenerator
     return if pna_data.empty?
 
     draw_page(title: @portfolio.name) do
+<<<<<<< HEAD
       draw_section(title: 'Metas da Carteira vs. Artigos Normativos',
                    info: month_year_label,
                    border: true,
@@ -1792,7 +1832,95 @@ class PortfolioMonthlyReportGenerator
           ]
         end
         styled_table([header] + body, col_widths: [120, 45, 50, 44, 40, 44, 40, 44])
+=======
+    draw_section(title: 'METAS DA CARTEIRA VS. ARTIGOS NORMATIVOS',
+                 info: month_year_label,
+                 border: true,
+                 spacing: 20) do
+
+      policy = data[:investment_policy]
+      next if policy.nil? || policy.empty?
+
+      header = [
+        'Política de Investimentos',
+        'Carteira Atual',
+        'Alvo',
+        'Máximo',
+        'Mínimo',
+        'Em conformidade'
+      ]
+
+      body = policy.map do |r|
+        [
+          r[:label],
+          "#{fmt_num(r[:carteira_atual], 2)}%",
+          r[:alvo]   > 0 ? "#{fmt_num(r[:alvo],   2)}%" : '—',
+          r[:maximo] > 0 ? "#{fmt_num(r[:maximo], 2)}%" : '—',
+          r[:minimo] > 0 ? "#{fmt_num(r[:minimo], 2)}%" : '—',
+          r[:compliant] ? 'Sim' : 'Não'
+        ]
       end
+
+      table_data = [header] + body
+      sanitized  = table_data.map do |row|
+        row.map { |c| c.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?') }
+      end
+
+      col_widths = [220, 70, 70, 70, 70, 35]
+
+      pdf.table(sanitized,
+                header: true,
+                width: CONTENT_W,
+                column_widths: col_widths) do |t|
+
+        # Header row
+        t.row(0).tap do |r|
+          r.background_color = C[:primary]
+          r.text_color       = C[:white]
+          r.font             = 'Plus Jakarta Sans'
+          r.size             = 8
+          r.padding          = [6, 8]
+          r.borders          = %i[top bottom]
+          r.border_color     = C[:border]
+        end
+
+        # Body rows
+        (1...sanitized.size).each do |ri|
+          row = pna_data[ri - 1]
+
+          t.row(ri).tap do |r|
+            r.background_color = C[:white]
+            r.font             = 'Plus Jakarta Sans'
+            r.size             = 8
+            r.padding          = [6, 8]
+            r.borders          = %i[top bottom]
+            r.border_color     = C[:border]
+            r.text_color       = C[:body]
+          end
+
+          # "Carteira Atual" cell — Geist Mono, neutral muted color
+          t.cells[ri, 1].font       = 'Geist Mono'
+          t.cells[ri, 1].text_color = C[:muted]
+
+          # Numeric columns — Geist Mono
+          [2, 3, 4].each do |ci|
+            t.cells[ri, ci].font       = 'Geist Mono'
+            t.cells[ri, ci].text_color = C[:muted]
+          end
+
+          # "Em conformidade" cell — colored badge-like
+          status_cell                  = t.cells[ri, 5]
+          status_cell.font             = 'Plus Jakarta Sans'
+          status_cell.size             = 7
+          status_cell.text_color       = C[:white]
+          status_cell.background_color = row[:compliant] ? C[:success] : C[:danger]
+          status_cell.align            = :center
+        end
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
+      end
+    rescue Prawn::Errors::CannotFit
+      styled_table([header] + body)
+    end
     end
   end
 
@@ -2964,13 +3092,17 @@ class PortfolioMonthlyReportGenerator
   def draw_policy_legend(policy, article_colors, default_colors)
     legend_items = policy.map.with_index do |art, idx|
       color = article_colors[art[:article_number]] || default_colors[idx % default_colors.size]
+<<<<<<< HEAD
       { color: color, label: normalize_category(art[:category]) }
+=======
+      { color: color, label: art[:label] }
+>>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
     end
     ly = pdf.cursor
     x  = 0
     pdf.fill_color C[:muted]
     pdf.font('Plus Jakarta Sans', size: 6.5) do
-      pdf.draw_text 'Tipo de Ativo', at: [x, ly]
+    pdf.draw_text 'Artigo', at: [x, ly]
       x += pdf.width_of('Tipo de Ativo') + 10
     end
     legend_items.each do |item|
