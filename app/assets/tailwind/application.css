@@ -94,15 +94,9 @@
      * --font-heading  → Display and heading elements.
      * --font-mono     → Code, keys, labels, and button text.
      */
-<<<<<<< HEAD
-    --font-body: 'Plus Jakarta Sans', sans-serif;
-    --font-heading: 'Inter', serif;
-    --font-mono: 'Geist Mono', monospace;
-=======
 	--font-body: "Inter", sans-serif;
 	--font-heading: "Source Serif 4", serif;
 	--font-mono: "Geist Mono", monospace;
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
 
 	/**
      * Extended text sizes below Tailwind's default `xs` (0.75rem).
