@@ -803,12 +803,10 @@ class PortfolioMonthlyReportGenerator
   #   * +:maximo+          [Float]   maximum allocation (%)
   #   * +:compliant+       [Boolean]
   def collect_investment_policy_data
-<<<<<<< HEAD
     active_fi_ids = (@performance_data[:performances] || [])
                       .select { |p| p.earnings.to_f != 0 || p.initial_balance.to_f > 0 }
                       .map(&:fund_investment_id)
                       .to_set
-=======
     # Use initial_balance from performance records as the basis —
     # percentage_allocation reflects end-of-period state and will be
     # zero for fully-redeemed funds that were active during the period.
@@ -816,7 +814,6 @@ class PortfolioMonthlyReportGenerator
                    .each_with_object({}) { |p, h| h[p.fund_investment_id] = p }
 
     total_initial = perf_by_fi.values.sum { |p| p.initial_balance.to_f }
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
 
     alloc_by_article = Hash.new(0.0)
     @portfolio.fund_investments
@@ -842,15 +839,12 @@ class PortfolioMonthlyReportGenerator
       next unless art
 
       carteira_atual = alloc_by_article[art.id].round(4)
-<<<<<<< HEAD
       alvo           = art.benchmark_target.to_f
       minimo         = art.try(:minimum_target).to_f
       maximo         = art.try(:maximum_target).to_f
-=======
       alvo           = pna.benchmark_target.to_f
       minimo         = pna.minimum_target.to_f
       maximo         = pna.maximum_target.to_f
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
 
       compliant = if maximo > 0 || minimo > 0
                     carteira_atual >= minimo && (maximo.zero? || carteira_atual <= maximo)
@@ -924,15 +918,12 @@ class PortfolioMonthlyReportGenerator
   def stamp_global_footer
     total = pdf.page_count
     pdf.repeat(:all, dynamic: true) do
-<<<<<<< HEAD
       footer_y = -MARGIN_B + 10
 
       pdf.font('Plus Jakarta Sans', size: 6) do
         pdf.fill_color C[:muted]
         pdf.draw_text "#{COMPANY}", at: [0, footer_y + 14]
       end
-
-=======
       footer_y = -MARGIN_B + 18
       pdf.font('Plus Jakarta Sans', size: 6) do
         pdf.fill_color C[:muted]
@@ -940,23 +931,19 @@ class PortfolioMonthlyReportGenerator
         company_w = pdf.width_of(company_text)
         pdf.draw_text company_text, at: [(CONTENT_W - company_w) / 2.0, footer_y + 16]
       end
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
       pdf.font('Geist Pixel Square', size: 6) do
         pdf.fill_color C[:gray_light]
         contact_text = "#{PHONE}  ·  #{EMAIL}  ·  #{SITE}  ·  #{CNPJ}"
-<<<<<<< HEAD
         pdf.draw_text contact_text, at: [0, footer_y + 4]
 
         page_text  = "#{pdf.page_number} de #{total}"
         text_width = pdf.width_of(page_text)
         pdf.draw_text page_text, at: [CONTENT_W - text_width, footer_y + 4]
-=======
         contact_w = pdf.width_of(contact_text)
         pdf.draw_text contact_text, at: [(CONTENT_W - contact_w) / 2.0, footer_y + 6]
         page_text  = "#{pdf.page_number} de #{total}"
         page_w     = pdf.width_of(page_text)
         pdf.draw_text page_text, at: [(CONTENT_W - page_w) / 2.0, footer_y - 8]
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
       end
     end
   end
@@ -1803,7 +1790,6 @@ class PortfolioMonthlyReportGenerator
     return if pna_data.empty?
 
     draw_page(title: @portfolio.name) do
-<<<<<<< HEAD
       draw_section(title: 'Metas da Carteira vs. Artigos Normativos',
                    info: month_year_label,
                    border: true,
@@ -1832,7 +1818,6 @@ class PortfolioMonthlyReportGenerator
           ]
         end
         styled_table([header] + body, col_widths: [120, 45, 50, 44, 40, 44, 40, 44])
-=======
     draw_section(title: 'METAS DA CARTEIRA VS. ARTIGOS NORMATIVOS',
                  info: month_year_label,
                  border: true,
@@ -1916,7 +1901,6 @@ class PortfolioMonthlyReportGenerator
           status_cell.background_color = row[:compliant] ? C[:success] : C[:danger]
           status_cell.align            = :center
         end
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
       end
     rescue Prawn::Errors::CannotFit
       styled_table([header] + body)
@@ -3092,11 +3076,8 @@ class PortfolioMonthlyReportGenerator
   def draw_policy_legend(policy, article_colors, default_colors)
     legend_items = policy.map.with_index do |art, idx|
       color = article_colors[art[:article_number]] || default_colors[idx % default_colors.size]
-<<<<<<< HEAD
       { color: color, label: normalize_category(art[:category]) }
-=======
       { color: color, label: art[:label] }
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
     end
     ly = pdf.cursor
     x  = 0
