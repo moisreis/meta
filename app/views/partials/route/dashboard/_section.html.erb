@@ -25,61 +25,38 @@
 
 <section class="flex flex-col gap-4">
 
-<<<<<<< HEAD
   <%# =============================================================
       Section Header — Title, Description & Action Button
       ============================================================= %>
   <div class="flex flex-row items-center justify-between">
 
-    <% if section_title.present? %>
-      <div class="flex flex-col justify-start items-start gap-1.5 w-full">
-
-        <div class="relative flex h-12 flex-row justify-between items-center gap-1 w-full ">
-          <%= content_tag :h2, section_title, class: "relative z-20 pr-4 text-xl bg-white font-mono uppercase text-body font-medium" %>
-
-          <% if has_action %>
-            <%= link_to button_route, id: button_id, class: "relative z-30 button button-small button-outline before:h-full before:w-4 before:bg-white before:absolute before:z-20 before:-left-[17.1] before:top-1/2 before:-translate-y-1/2" do %>
-              <%= inline_svg_tag "icons/#{button_icon}.svg" %>
-              <%= content_tag :span, button_name %>
-            <% end %>
-          <% end %>
-        </div>
-=======
   <%# Header %>
   <% if section_title.present? %>
-    <div class="flex items-center justify-between gap-4">
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
-
-      <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1">
       <p class="font-mono text-body uppercase text-xs tracking-widest font-medium">
-      <%= section_title %>
-        </p>
-        <% if section_desc.present? %>
-          <p class="font-body text-muted text-sm font-normal"><%= section_desc %></p>
-        <% end %>
-      </div>
-
-<<<<<<< HEAD
-      <%# Note: Hidden container toggled by the info button interaction.
-                Always rendered when a title is present so JS can target it
-                without checking for existence first. %>
-      <div class="section-desc" id="<%= section_title.parameterize %>-desc" style="display: none;">
-        <%= content_tag :h2, section_desc, class: "text-sm text-muted text-left" %>
-      </div>
-    <% end %>
-
-  </div>
-=======
-      <% if has_action %>
-        <%= link_to button_route, id: button_id, class: "button button-small button-outline flex-shrink-0" do %>
-          <%= inline_svg_tag "icons/#{button_icon}.svg" if button_icon.present? %>
-          <%= content_tag :span, button_name %>
-        <% end %>
+        <%= section_title %>
+      </p>
+      <% if section_desc.present? %>
+        <p class="font-body text-muted text-sm font-normal"><%= section_desc %></p>
       <% end %>
+    </div>
 
+    <%# Note: Hidden container toggled by the info button interaction.
+              Always rendered when a title is present so JS can target it
+              without checking for existence first. %>
+    <div class="section-desc" id="<%= section_title.parameterize %>-desc" style="display: none;">
+      <%= content_tag :h2, section_desc, class: "text-sm text-muted text-left" %>
     </div>
   <% end %>
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
+
+  <%# Action Button %>
+  <% if has_action %>
+    <%= link_to button_route, id: button_id, class: "button button-small button-outline flex-shrink-0" do %>
+      <%= inline_svg_tag "icons/#{button_icon}.svg" if button_icon.present? %>
+      <%= content_tag :span, button_name %>
+    <% end %>
+  <% end %>
+  </div>
 
   <%# Grid %>
   <div class="grid <%= grid_classes %> gap-3">

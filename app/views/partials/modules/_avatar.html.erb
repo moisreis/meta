@@ -14,13 +14,8 @@
   #                Accepts a dynamic image source and alt text for accessibility.
   #        - Why:  Ensures consistent and accessible avatar rendering across different modules.
   %>
-<<<<<<< HEAD
 <span data-slot="avatar" class="relative flex justify-center items-center h-8 w-8 shrink-0 overflow-hidden rounded-full bg-inchworm-300">
-  <div class="flex flex-row items-center justify-center gap-0 [&>span]:uppercase [&>span]:font-mono [&>span]:font-semibold [&>span]:text-2xs [&>span]:text-body">
-=======
-<span data-slot="avatar" class="relative flex justify-center items-center h-8 w-8 shrink-0 overflow-hidden rounded-full bg-accent border border-border">
   <div class="flex flex-row items-center justify-center gap-0 [&>span]:uppercase [&>span]:font-body [&>span]:font-semibold [&>span]:text-3xs [&>span]:text-body">
->>>>>>> d053dcf (fix: incorrect info in portfolio PDF and UI overhaul)
     <%= content_tag :span, "#{current_user.first_name.first}#{current_user.last_name.first}" %>
   </div>
 </span>
