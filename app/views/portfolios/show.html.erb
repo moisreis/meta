@@ -123,52 +123,52 @@
 
     <%# Visualizes historical monthly earnings using a color-coded
         column chart to highlight gains and losses. %>
-        <%= render "partials/groups/chart-list",
-                   chart_type: :column_chart,
-                   data_source: @monthly_earnings_history,
-                   chart_title: "Rendimento Mensal",
-                   chart_options: {
-                     prefix: "R$ ", thousands: ".", decimal: ",",
-                     library: { plugins: { colorschemes: false }, elements: { bar: { borderWidth: 0 } } },
-                     dataset: {
-                       borderWidth: 0,
-                       backgroundColor: @monthly_earnings_history.map { |_, v|
-                         v.to_f >= 0 ? "rgba(34, 120, 87, 0.85)" : "rgba(185, 28, 28, 0.85)"
-                       }
-                     }
+    <%= render "partials/groups/chart-list",
+               chart_type: :column_chart,
+               data_source: @monthly_earnings_history,
+               chart_title: "Rendimento Mensal",
+               chart_options: {
+                 prefix: "R$ ", thousands: ".", decimal: ",",
+                 library: { plugins: { colorschemes: false }, elements: { bar: { borderWidth: 0 } } },
+                 dataset: {
+                   borderWidth: 0,
+                   backgroundColor: @monthly_earnings_history.map { |_, v|
+                     v.to_f >= 0 ? "rgba(34, 120, 87, 0.85)" : "rgba(185, 28, 28, 0.85)"
                    }
-        %>
+                 }
+               }
+    %>
 
     <%# Displays the growth of total portfolio equity over time,
         allowing the user to track wealth accumulation. %>
-        <%= render "partials/groups/chart-list",
-                   chart_type: :column_chart,
-                   data_source: @equity_evolution,
-                   chart_title: "Evolução do Patrimônio",
-                   chart_options: {
-                     prefix: "R$ ", thousands: ".", decimal: ",",
-                     library: { plugins: { colorschemes: false }, elements: { bar: { borderWidth: 0 } } },
-                     dataset: {
-                       borderWidth: 0,
-                       backgroundColor: @equity_evolution.map { |_, v|
-                         v.to_f >= 0 ? "rgba(34, 120, 87, 0.85)" : "rgba(185, 28, 28, 0.85)"
-                       }
-                     }
+    <%= render "partials/groups/chart-list",
+               chart_type: :column_chart,
+               data_source: @equity_evolution,
+               chart_title: "Evolução do Patrimônio",
+               chart_options: {
+                 prefix: "R$ ", thousands: ".", decimal: ",",
+                 library: { plugins: { colorschemes: false }, elements: { bar: { borderWidth: 0 } } },
+                 dataset: {
+                   borderWidth: 0,
+                   backgroundColor: @equity_evolution.map { |_, v|
+                     v.to_f >= 0 ? "rgba(34, 120, 87, 0.85)" : "rgba(185, 28, 28, 0.85)"
                    }
-        %>
+                 }
+               }
+    %>
 
     <%# Illustrates inflows and outflows within the portfolio,
         differentiating between applications and redemptions. %>
-        <%= render "partials/groups/chart-list",
-                   chart_type: :column_chart,
-                   data_source: @monthly_flows,
-                   chart_title: "Movimentações",
-                   chart_options: {
-                     stacked: false, prefix: "R$ ", thousands: ".", decimal: ",",
-                     colors: ["rgba(34, 120, 87, 0.85)", "rgba(185, 28, 28, 0.85)"],
-                     dataset: { borderWidth: 0 }
-                   }
-        %>
+    <%= render "partials/groups/chart-list",
+               chart_type: :column_chart,
+               data_source: @monthly_flows,
+               chart_title: "Movimentações",
+               chart_options: {
+                 stacked: false, prefix: "R$ ", thousands: ".", decimal: ",",
+                 colors: ["rgba(34, 120, 87, 0.85)", "rgba(185, 28, 28, 0.85)"],
+                 dataset: { borderWidth: 0 }
+               }
+    %>
 
   <% end %>
 
@@ -306,7 +306,7 @@
 
   <%# Lists the liquid cash positions in checking accounts linked
         to the portfolio, including balances and institutions. %>
-        <%= render "partials/groups/table-list",
+  <%= render "partials/groups/table-list",
              section_title: "Contas Correntes",
              collection: @portfolio.checking_accounts.order(reference_date: :desc),
              th_descs: [nil, nil, nil, nil, nil, "Por conta"],
@@ -327,7 +327,7 @@
              edit_path: ->(ca) { edit_portfolio_checking_account_path(@portfolio, ca) },
              show_path: ->(ca) { portfolio_checking_account_path(@portfolio, ca) },
              destroy_path: ->(ca) { portfolio_checking_account_path(@portfolio, ca) }
-        %>
+  %>
 
   <%# Renders the modal used to create and associate new checking
       accounts with the current portfolio instance. %>

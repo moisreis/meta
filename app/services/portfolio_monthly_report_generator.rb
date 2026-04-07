@@ -314,8 +314,14 @@ class PortfolioMonthlyReportGenerator
                                .includes(fund_investment: :investment_fund)
     end
 
-    monthly_return = @portfolio.portfolio_return_percentage(@reference_date)
-    yearly_return  = @portfolio.compounded_yearly_return_on(@reference_date)
+    monthly_return = @portfolio.portfolio_twr_return_on(
+      @reference_date.beginning_of_month - 1.day,
+      @reference_date
+    )
+    yearly_return = @portfolio.portfolio_twr_return_on(
+      @reference_date.beginning_of_year - 1.day,
+      @reference_date
+    )
     total_earnings = @portfolio.total_earnings_on(@reference_date)
     yearly_earnings = @portfolio.yearly_earnings(@reference_date)
 
