@@ -1,46 +1,59 @@
-# === application_helper
+# frozen_string_literal: true
+
+# == ApplicationHelper
 #
 # @author Moisés Reis
+# @project Meta Investimentos
 # @added 11/25/2025
-# @package *Meta*
-# @description This file contains utility methods that assist **Views** and other components
-#              in presenting data consistently and managing global application logic.
-#              The explanations are in the present simple tense.
-# @category *Helper*
+# @package Meta
+# @category Helper
 #
-# Usage:: - *[What]* This code block stores small, reusable functions that simplify the HTML templates,
-#           such as formatting numbers or generating UI elements.
-#         - *[How]* It defines methods that take data as input, process it
-#           (e.g., format a date, calculate a class name), and return the final output for the view.
-#         - *[Why]* It keeps the **Views** clean by preventing repeated logic and
-#           ensuring a consistent user experience across the entire application.
+# @description
+#   Provides utility methods that assist views and other components in presenting
+#   data consistently and managing global application logic. This module contains
+#   reusable functions for formatting numbers, generating UI elements, handling
+#   flash messages, and creating sortable table columns.
+#
+# @example Basic usage in a view
+#   <%= full_title("Dashboard") %>
+#   # => "Dashboard | Financial Portfolio Manager"
+#
+#   <%= currency_format(1234.56) %>
+#   # => "R$1.234,56"
+#
+#   <%= colored_percentage(15.5) %>
+#   # => <span class="... text-body">15,5%</span>
+#
+# @see INFO_CARD_COLORS for the color palette used across info card components
 #
 module ApplicationHelper
-
   # == full_title
   #
   # @author Moisés Reis
-  # @category *Read*
+  # @project Meta Investimentos
+  # @category View Helper
   #
-  # Read:: This method constructs the full page title for the browser tab.
-  #        It combines a specific page title with the base application name.
+  # @description
+  #   Constructs the full page title for the browser tab by combining a specific
+  #   page title with the base application name.
   #
-  # Attributes:: - *page_title* @string - The specific title of the current page (e.g., "User Profile").
+  # @param page_title [String] The specific title of the current page
+  # @return [String] The complete page title, or just the base title if page_title is blank
+  #
+  # @example With a page title
+  #   full_title("User Profile")
+  #   # => "User Profile | Financial Portfolio Manager"
+  #
+  # @example With a blank title
+  #   full_title("")
+  #   # => "Financial Portfolio Manager"
   #
   def full_title(page_title)
-
-    # Explanation:: This defines the base name of the application, used if no specific
-    #               page title is provided.
     base_title = "Financial Portfolio Manager"
 
-    # Explanation:: This checks if the `page_title` argument is empty. If it is,
-    #               it returns only the base title.
     if page_title.blank?
       base_title
     else
-
-      # Explanation:: If a page title is provided, it combines the specific title
-      #               with the base title, separated by a pipe character `|`.
       "#{page_title} | #{base_title}"
     end
   end
@@ -48,17 +61,25 @@ module ApplicationHelper
   # == currency_format
   #
   # @author Moisés Reis
-  # @category *Read*
+  # @project Meta Investimentos
+  # @category Formatting
   #
-  # Read:: This method formats numerical data into a standard Brazilian currency string (R$).
-  #        It improves readability by adding the currency symbol, comma, and two decimal places.
+  # @description
+  #   Formats a numerical value into a Brazilian currency string (R$) with proper
+  #   decimal separator (comma) and thousands delimiter (period).
   #
-  # Attributes:: - *amount* @numeric - The number value to be formatted (e.g., 1234.56).
+  # @param amount [Numeric] The number to format as currency
+  # @return [String] The formatted currency string (e.g., "R$1.234,56")
+  #
+  # @example Format a monetary value
+  #   currency_format(1234.56)
+  #   # => "R$1.234,56"
+  #
+  # @example Format zero
+  #   currency_format(0)
+  #   # => "R$0,00"
   #
   def currency_format(amount)
-
-    # Explanation:: This uses the built-in Rails number formatting utility to convert
-    #               the raw number into a currency string formatted for the Brazilian locale.
     number_to_currency(
       amount,
       unit: "R$",
@@ -71,16 +92,31 @@ module ApplicationHelper
   # == flash_class_for
   #
   # @author Moisés Reis
-  # @category *Read*
+  # @project Meta Investimentos
+  # @category UI Helper
   #
-  # Read:: This method maps Rails flash message types (like `notice` or `alert`) to corresponding CSS classes.
-  #        It ensures that success messages look green, error messages look red, and so on.
+  # @description
+  #   Maps Rails flash message types to corresponding CSS badge classes for
+  #   consistent visual styling. Success messages appear green, errors appear red,
+  #   warnings appear yellow, and info messages appear blue.
   #
-  # Attributes:: - *flash_type* @symbol - The type of flash message (e.g., `:notice`, `:alert`, `:error`).
+  # @param flash_type [Symbol, String] The type of flash message
+  #   (e.g., :notice, :alert, :error, :success, :warning, :info)
+  # @return [String] The CSS class name for styling the flash message badge
+  #
+  # @example Success notice
+  #   flash_class_for(:notice)
+  #   # => "badge-success"
+  #
+  # @example Error alert
+  #   flash_class_for(:error)
+  #   # => "badge-danger"
+  #
+  # @example Unknown type
+  #   flash_class_for(:custom)
+  #   # => "custom"
   #
   def flash_class_for(flash_type)
-    # Explanation:: This converts the symbol type into a string key and uses a `case`
-    #               statement to return the appropriate Bootstrap-compatible CSS class name.
     case flash_type.to_s
     when "success", "notice"
       "badge-success"
@@ -91,8 +127,6 @@ module ApplicationHelper
     when "info"
       "badge-info"
     else
-      # Explanation:: This provides a default class for any message types that are not
-      #               specifically mapped above.
       flash_type.to_s
     end
   end
@@ -100,30 +134,29 @@ module ApplicationHelper
   # == sortable
   #
   # @author Moisés Reis
-  # @category *Read*
+  # @project Meta Investimentos
+  # @category Table Helper
   #
-  # Read:: This method generates an HTML link that makes a table column sortable using **Ransack** parameters.
-  #        It automatically switches the sort direction (ascending/descending) and updates the visual icon.
+  # @description
+  #   Generates an HTML link that makes a table column sortable using Ransack
+  #   parameters. Automatically toggles sort direction (ascending/descending)
+  #   and displays the appropriate arrow icon based on the current sort state.
   #
-  # Attributes:: - *name* @string - The display name for the column header (e.g., "Fund Name").
-  #             - *column* @symbol - The database column name to sort by (e.g., `:fund_name`).
-  #             - *custom_icon* @string - The filename of the SVG icon to display next to the name.
+  # @param name [String] The display name for the column header
+  # @param column [Symbol, String] The database column name to sort by
+  # @param custom_icon [String] The filename of the SVG icon to display (without extension)
+  # @return [String] HTML link element with sort functionality and arrow icon
+  #
+  # @example Create a sortable column header
+  #   sortable("Fund Name", :fund_name, "sort")
+  #   # => <a href="?q[s]=fund_name asc"><div class="flex flex-row gap-1 items-center">Fund Name <svg>...</svg></div></a>
+  #
+  # @see params[:q][:s] Ransack sort parameter format
   #
   def sortable(name, column, custom_icon)
+    current_sort_key = params.dig(:q, :s)
+    current_column, current_direction = current_sort_key&.split || [ nil, "asc" ]
 
-    # Explanation:: This retrieves the current sort key from the web address parameters,
-    #               specifically looking for the **Ransack** sort parameter, which is often under `params[:q][:s]`.
-    current_sort_key = params.dig(
-      :q,
-      :s
-    )
-
-    # Explanation:: This separates the current sort key (e.g., "cnpj desc") into the column
-    #               name (`current_column`) and the direction (`current_direction`), defaulting to "asc" if no sort is active.
-    current_column, current_direction = current_sort_key&.split || [nil, "asc"]
-
-    # Explanation:: This determines the next sort direction. If the user clicks the currently
-    #               sorted column, the direction flips; otherwise, it defaults to ascending ("asc").
     direction =
       if current_column == column.to_s
         current_direction == "asc" ? "desc" : "asc"
@@ -131,12 +164,8 @@ module ApplicationHelper
         "asc"
       end
 
-    # Explanation:: This constructs the new **Ransack** sort string (e.g., "fund_name desc")
-    #               that will be placed in the web address when the link is clicked.
     new_sort = "#{column} #{direction}"
 
-    # Explanation:: This determines which arrow icon to display based on the current sort state:
-    #               an upward arrow for ascending, a downward arrow for descending, or a default arrow if the column is not sorted.
     icon =
       if current_column != column.to_s
         "arrow-down"
@@ -146,8 +175,6 @@ module ApplicationHelper
         "arrow-down"
       end
 
-    # Explanation:: This generates the final HTML link, merging the new sort parameter into the
-    #               existing web address parameters and wrapping the custom icon, column name, and arrow icon inside it.
     link_to params.permit!.merge(q: (params[:q] || {}).merge(s: new_sort)) do
       content_tag(:div, class: "flex flex-row gap-1 items-center") do
         safe_join([
@@ -158,58 +185,136 @@ module ApplicationHelper
     end
   end
 
-  # Explanation:: Defines a fixed list of numeric shade levels used to
-  #               determine how strong the color intensity should be.
-  #               Freezing prevents accidental modifications.
-  SHADE_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].freeze
+  # Available shade levels for proportional color intensity calculations.
+  # Used by {#shade_for_value} to map numeric values to Tailwind shade classes.
+  #
+  # @return [Array<Integer>] Fixed array of shade values from 50 to 900
+  SHADE_STEPS = [ 50, 100, 200, 300, 400, 500, 600, 700, 800, 900 ].freeze
 
   # == shade_for_value
   #
   # @author Moisés Reis
-  # @category *Read*
+  # @project Meta Investimentos
+  # @category Color Helper
   #
-  # Read:: Calculates a shade level based on how large the value is.
-  #        Converts the number into a proportional color intensity
-  #        that becomes stronger with higher values.
+  # @description
+  #   Calculates a Tailwind shade level based on the proportional size of a value
+  #   relative to a maximum. Higher values receive stronger color intensity.
+  #   Useful for creating heat maps or proportional color coding in tables.
+  #
+  # @param value [Numeric] The value to calculate the shade for
+  # @param max_value [Numeric] The maximum value used as the upper bound (default: 100,000)
+  # @return [Integer] The shade level (50, 100, 200, ..., 900)
+  #
+  # @example Calculate shade for a moderate value
+  #   shade_for_value(50_000, max_value: 100_000)
+  #   # => 500
+  #
+  # @example Calculate shade for zero or negative
+  #   shade_for_value(0)
+  #   # => 50
+  #
+  # @example Calculate shade exceeding maximum
+  #   shade_for_value(200_000, max_value: 100_000)
+  #   # => 900
   #
   def shade_for_value(value, max_value: 100_000)
-
-    # Explanation:: Returns the lowest shade when the value is zero or
-    #               negative to avoid unnecessary calculations.
     return 50 if value.to_f <= 0
 
-    # Explanation:: Ensures the value does not exceed the allowed limit.
-    #               This keeps the ratio calculation within safe bounds.
-    v = [value.to_f, max_value].min
-
-    # Explanation:: Converts the capped value into a 0–1 scale so it can
-    #               be mapped proportionally to the shade list.
+    v = [ value.to_f, max_value ].min
     ratio = v / max_value
-
-    # Explanation:: Calculates which shade index best represents the ratio.
-    #               Rounds to the nearest available shade step.
     index = (ratio * (SHADE_STEPS.size - 1)).round
 
-    # Explanation:: Returns the chosen shade based on the computed index.
-    #               This shade is later used to build the CSS class.
     SHADE_STEPS[index]
   end
 
   # == Shared helpers ==========================================================
 
-  # Explanation:: Validates that the value is present, numeric, and non-zero.
+  # == valid_nonzero_number?
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Validates that a value is present, responds to numeric conversion, and
+  #   is not equal to zero. Used as a guard clause before rendering colored
+  #   numerical displays.
+  #
+  # @param value [Object] The value to validate
+  # @return [Boolean] true if the value is present, numeric, and non-zero
+  #
+  # @example Valid number
+  #   valid_nonzero_number?(15.5)
+  #   # => true
+  #
+  # @example Zero value
+  #   valid_nonzero_number?(0)
+  #   # => false
+  #
+  # @example Nil value
+  #   valid_nonzero_number?(nil)
+  #   # => false
+  #
   def valid_nonzero_number?(value)
     value.present? && value.respond_to?(:to_f) && value.to_f != 0
   end
 
-  # Explanation:: Resolves semantic color based on value sign.
+  # == sign_color_class
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Color Helper
+  #
+  # @description
+  #   Returns a Tailwind CSS text color class based on the sign of a numeric value.
+  #   Negative values appear in red, zero in alert orange, and positive in the
+  #   default body color.
+  #
+  # @param numeric_value [Numeric] The number to evaluate
+  # @return [String] CSS class name for text coloring
+  #
+  # @example Positive value
+  #   sign_color_class(100)
+  #   # => "text-body"
+  #
+  # @example Negative value
+  #   sign_color_class(-50)
+  #   # => "text-danger-600"
+  #
+  # @example Zero value
+  #   sign_color_class(0)
+  #   # => "text-alert-600"
+  #
   def sign_color_class(numeric_value)
     return "text-danger-600"  if numeric_value.negative?
     return "text-alert-600" if numeric_value == 0
-    return "text-body" if numeric_value.positive?
+    "text-body" if numeric_value.positive?
   end
 
-  # Explanation:: Base CSS classes used by all colored helpers.
+  # == colored_base_classes
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Returns the base CSS classes used by all colored display helpers
+  #   ({#colored_currency}, {#colored_numerical}, {#colored_percentage}).
+  #   Provides consistent styling with flexbox layout, monospace font, and
+  #   rounded badge appearance.
+  #
+  # @param additional_class [String] Extra CSS classes to append (default: "")
+  # @return [String] Combined CSS class string
+  #
+  # @example Base classes only
+  #   colored_base_classes
+  #   # => "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium"
+  #
+  # @example With additional class
+  #   colored_base_classes("ml-2")
+  #   # => "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium ml-2"
+  #
   def colored_base_classes(additional_class = "")
     [
       "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-sm font-medium",
@@ -217,8 +322,38 @@ module ApplicationHelper
     ].join(" ")
   end
 
-  # == colored_currency ========================================================
-
+  # == colored_currency
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Formatting
+  #
+  # @description
+  #   Renders a currency amount in a colored badge with semantic coloring based
+  #   on the value's sign. Returns "Sem dados" (No data) for zero, nil, or
+  #   invalid values. Positive values use the default text color, negative values
+  #   appear in red.
+  #
+  # @param value [Numeric] The amount to format and display
+  # @param additional_class [String] Extra CSS classes to append (default: "")
+  # @return [String] HTML span element with formatted currency and color class
+  #
+  # @example Positive amount
+  #   colored_currency(1500.50)
+  #   # => <span class="... text-body">R$ 1.500,50</span>
+  #
+  # @example Negative amount
+  #   colored_currency(-200)
+  #   # => <span class="... text-danger-600">R$ -200,00</span>
+  #
+  # @example Zero or nil
+  #   colored_currency(0)
+  #   # => <span class="badge badge-alert">Sem dados</span>
+  #
+  # @see #valid_nonzero_number?
+  # @see #sign_color_class
+  # @see #colored_base_classes
+  #
   def colored_currency(value, additional_class = "")
     return content_tag(:span, "Sem dados", class: "badge badge-alert") unless valid_nonzero_number?(value)
 
@@ -234,8 +369,33 @@ module ApplicationHelper
     )
   end
 
-  # == colored_numerical =======================================================
-
+  # == colored_numerical
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Formatting
+  #
+  # @description
+  #   Renders a numerical value with one decimal place in a colored badge with
+  #   semantic coloring based on the value's sign. Returns "Sem dados" (No data)
+  #   for zero, nil, or invalid values.
+  #
+  # @param value [Numeric] The number to format and display
+  # @param additional_class [String] Extra CSS classes to append (default: "")
+  # @return [String] HTML span element with formatted number and color class
+  #
+  # @example Display a quantity
+  #   colored_numerical(42.7)
+  #   # => <span class="... text-body">42,7</span>
+  #
+  # @example Negative value
+  #   colored_numerical(-5.3)
+  #   # => <span class="... text-danger-600">-5,3</span>
+  #
+  # @see #valid_nonzero_number?
+  # @see #sign_color_class
+  # @see #colored_base_classes
+  #
   def colored_numerical(value, additional_class = "")
     return content_tag(:span, "Sem dados", class: "badge badge-alert") unless valid_nonzero_number?(value)
 
@@ -252,8 +412,33 @@ module ApplicationHelper
     )
   end
 
-  # == colored_percentage ======================================================
-
+  # == colored_percentage
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Formatting
+  #
+  # @description
+  #   Renders a percentage value with one decimal place in a colored badge with
+  #   semantic coloring based on the value's sign. Returns "Sem dados" (No data)
+  #   for zero, nil, or invalid values. Appends a "%" symbol to the formatted number.
+  #
+  # @param value [Numeric] The percentage value to format (e.g., 15.5 for 15.5%)
+  # @param additional_class [String] Extra CSS classes to append (default: "")
+  # @return [String] HTML span element with formatted percentage and color class
+  #
+  # @example Positive percentage
+  #   colored_percentage(15.5)
+  #   # => <span class="... text-body">15,5%</span>
+  #
+  # @example Negative percentage
+  #   colored_percentage(-3.2)
+  #   # => <span class="... text-danger-600">-3,2%</span>
+  #
+  # @see #valid_nonzero_number?
+  # @see #sign_color_class
+  # @see #colored_base_classes
+  #
   def colored_percentage(value, additional_class = "")
     return content_tag(:span, "Sem dados", class: "badge badge-alert") unless valid_nonzero_number?(value)
 
@@ -270,42 +455,63 @@ module ApplicationHelper
     )
   end
 
-
-
   # == formatted_timestamp
   #
   # @author Moisés Reis
-  # @category *Read*
+  # @project Meta Investimentos
+  # @category Formatting
   #
-  # Read:: Formats a date and time into a readable string and wraps it
-  #        in a styled HTML element. Presents timestamps consistently
-  #        across the interface for better readability.
+  # @description
+  #   Formats a date/time object into a readable string and wraps it in a styled
+  #   HTML span element. Uses Brazilian date format (DD/MM/YYYY) by default but
+  #   accepts a custom formatter lambda for alternative formats.
+  #
+  # @param datetime [DateTime, Time, Date] The date/time object to format
+  # @param formatter [Proc] Custom formatting lambda (default: strftime "%d/%m/%Y")
+  # @return [String] HTML span with formatted date, or "Sem dados" if datetime is nil
+  #
+  # @example Default formatting
+  #   formatted_timestamp(Date.new(2025, 1, 15))
+  #   # => <span class="font-mono">15/01/2025</span>
+  #
+  # @example Custom formatter
+  #   formatted_timestamp(Time.now, formatter: ->(t) { t.strftime("%B %Y") })
+  #   # => <span class="font-mono">January 2025</span>
+  #
+  # @example Nil value
+  #   formatted_timestamp(nil)
+  #   # => <span class="badge badge-alert">Sem dados</span>
   #
   def formatted_timestamp(datetime, formatter: ->(t) { t.strftime("%d/%m/%Y") })
-
-    # Explanation:: Returns a placeholder when the datetime value is missing.
-    #               Prevents errors and keeps the visual layout stable.
     return content_tag(:span, "Sem dados", class: "badge badge-alert") unless datetime.present?
 
-    # Explanation:: Uses the formatter to turn the datetime into a formatted
-    #               string. Allows injecting alternative formatting logic.
     formatted = formatter.call(datetime)
 
-    # Explanation:: Builds a span containing the formatted date string and
-    #               applies a consistent monospaced style for alignment.
     content_tag(:span, formatted, class: "font-mono")
   end
 
   # == standard_currency
   #
   # @author Moisés Reis
-  # @category *Read*
+  # @project Meta Investimentos
+  # @category Formatting
   #
-  # Read:: Displays a currency amount with a standard pattern.
+  # @description
+  #   Displays a currency amount with standard Brazilian formatting in a
+  #   monospaced font span. Unlike {#colored_currency}, this method does not
+  #   apply semantic coloring based on the value's sign.
+  #
+  # @param value [Numeric] The amount to format
+  # @param additional_class [String] Extra CSS classes to append (default: "")
+  # @return [String] HTML span with formatted currency value
+  #
+  # @example Format an amount
+  #   standard_currency(2500.75)
+  #   # => <span class="font-mono ">R$ 2.500,75</span>
+  #
+  # @see #currency_format for a simpler string-only version
   #
   def standard_currency(value, additional_class = "")
-
-    # Explanation:: Builds the HTML span showing the formatted currency.
     content_tag(
       :span,
       number_to_currency(value, unit: "R$ ", separator: ",", delimiter: "."),
@@ -313,23 +519,31 @@ module ApplicationHelper
     )
   end
 
-
-
   # == precision_format
   #
   # @author Moisés Reis
-  # @category *Read*
+  # @project Meta Investimentos
+  # @category Formatting
   #
-  # Read:: This method formats a number to a specific amount of decimal places.
-  #        It ensures that numerical data looks uniform and is easy to align.
+  # @description
+  #   Formats a number to a specific number of decimal places and wraps it in a
+  #   monospaced font span for consistent alignment in tables and data displays.
+  #   Uses Brazilian number formatting (comma as decimal separator, period as
+  #   thousands delimiter).
   #
-  # Attributes:: - *number* @numeric - The raw value to be formatted.
-  #             - *precision* @integer - The number of decimal places to show.
+  # @param number [Numeric] The value to format
+  # @param precision [Integer] Number of decimal places to display (default: 2)
+  # @return [String] HTML span with formatted number
+  #
+  # @example Default precision (2 decimals)
+  #   precision_format(1234.5)
+  #   # => <span class="font-mono">1.234,50</span>
+  #
+  # @example Custom precision
+  #   precision_format(99.999, precision: 3)
+  #   # => <span class="font-mono">99,999</span>
   #
   def precision_format(number, precision: 2)
-
-    # Explanation:: This uses the standard Rails utility to round the number and
-    #               convert it to a string with the exact number of decimal points.
     formatted_number = number_with_precision(
       number,
       precision: precision,
@@ -337,12 +551,38 @@ module ApplicationHelper
       delimiter: "."
     )
 
-    # Explanation:: This wraps the formatted string in a span tag with a monospaced
-    #               font class to ensure numbers align perfectly in tables.
     content_tag(:span, formatted_number, class: "font-mono")
   end
 end
 
+# == INFO_CARD_COLORS
+#
+# @author Moisés Reis
+# @project Meta Investimentos
+# @category Constants
+#
+# @description
+#   Color palette configuration for info card components. Defines Tailwind CSS
+#   classes for different semantic color variants used across the application.
+#   Each variant includes background, icon background, border, text, and SVG
+#   stroke colors.
+#
+# @return [Hash<String, Hash<Symbol, String>>] Nested hash mapping color names
+#   to their CSS class configurations
+#
+# @example Access primary color classes
+#   INFO_CARD_COLORS["primary"][:bg]
+#   # => "bg-primary-50"
+#
+#   INFO_CARD_COLORS["success"][:text]
+#   # => "text-success-600"
+#
+# @example Available color variants
+#   INFO_CARD_COLORS.keys
+#   # => ["primary", "success", "secondary", "quaternary", "danger"]
+#
+# @note This constant is frozen to prevent accidental modifications at runtime.
+#
 INFO_CARD_COLORS = {
   "primary" => {
     bg: "bg-primary-50",

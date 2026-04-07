@@ -1818,6 +1818,7 @@ class PortfolioMonthlyReportGenerator
           ]
         end
         styled_table([header] + body, col_widths: [120, 45, 50, 44, 40, 44, 40, 44])
+                   end
     draw_section(title: 'METAS DA CARTEIRA VS. ARTIGOS NORMATIVOS',
                  info: month_year_label,
                  border: true,
