@@ -1,18 +1,59 @@
 # frozen_string_literal: true
 
+# == ApplicationsHelper
+#
+# @author Moisés Reis
+# @project Meta Investimentos
+# @added 06/04/2026
+# @package Meta
+# @category Helpers
+#
+# @description
+#   Provides calculation and validation logic for Application records. This helper
+#   manages quota allocations, processing time metrics, and financial consistency
+#   checks for investment applications.
+#
+# @example Basic usage in views
+#   application_metrics(@application)
+#   # => { allocated_quotas: 150.0, allocation_percentage: 15.0, ... }
+#
 module ApplicationsHelper
-  # Calculates the total quotas allocated from this application to redemptions
+  # == application_allocated_quotas
   #
-  # @param application [Application] the application record
-  # @return [Numeric] total quotas used in redemption allocations
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the total quotas allocated from a specific application to redemptions.
+  #
+  # @param application [Application] The application record
+  # @return [Numeric] Total quotas used in redemption allocations
+  #
+  # @example
+  #   application_allocated_quotas(app)
+  #   # => 500.25
+  #
   def application_allocated_quotas(application)
     application.redemption_allocations.sum(:quotas_used) || 0
   end
 
-  # Calculates the percentage of quotas that have been allocated to redemptions
+  # == application_allocation_percentage
   #
-  # @param application [Application] the application record
-  # @return [Numeric] percentage of allocated quotas (0-100)
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the percentage of quotas that have been allocated to redemptions.
+  #
+  # @param application [Application] The application record
+  # @return [Numeric] Percentage of allocated quotas (0-100)
+  #
+  # @example
+  #   application_allocation_percentage(app)
+  #   # => 75.5
+  #
   def application_allocation_percentage(application)
     allocated = application_allocated_quotas(application)
     total = application.number_of_quotas
@@ -22,21 +63,37 @@ module ApplicationsHelper
     (allocated / total * 100).round(2)
   end
 
-  # Calculates the number of days between request and liquidation
+  # == application_processing_days
   #
-  # @param application [Application] the application record
-  # @return [Integer, nil] number of processing days or nil if dates are missing
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the number of days elapsed between the request and liquidation dates.
+  #
+  # @param application [Application] The application record
+  # @return [Integer, nil] Number of processing days or nil if dates are missing
+  #
   def application_processing_days(application)
     return nil unless application.request_date && application.liquidation_date
 
     (application.liquidation_date - application.request_date).to_i
   end
 
-  # Checks if the calculated quota value matches the stored value
+  # == application_quota_consistent?
   #
-  # @param application [Application] the application record
-  # @param tolerance [Numeric] acceptable difference threshold (default: 0.01)
-  # @return [Boolean] true if values are consistent within tolerance
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Checks if the calculated quota value matches the stored value within a specific tolerance.
+  #
+  # @param application [Application] The application record
+  # @param tolerance [Numeric] Acceptable difference threshold (default: 0.01)
+  # @return [Boolean] True if values are consistent within tolerance
+  #
   def application_quota_consistent?(application, tolerance: 0.01)
     calculated = application.calculated_quota_value
     stored = application.quota_value_at_application
@@ -46,30 +103,54 @@ module ApplicationsHelper
     (calculated - stored).abs <= tolerance
   end
 
-  # Validates that cotization date is after or equal to request date
+  # == application_cotization_valid?
   #
-  # @param application [Application] the application record
-  # @return [Boolean] true if dates are in valid chronological order
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Validates that the cotization date is chronologically after or equal to the request date.
+  #
+  # @param application [Application] The application record
+  # @return [Boolean] True if dates are in valid chronological order
+  #
   def application_cotization_valid?(application)
     return true unless application.cotization_date && application.request_date
 
     application.cotization_date >= application.request_date
   end
 
-  # Validates that liquidation date is after or equal to cotization date
+  # == application_liquidation_valid?
   #
-  # @param application [Application] the application record
-  # @return [Boolean] true if dates are in valid chronological order
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Validates that the liquidation date is chronologically after or equal to the cotization date.
+  #
+  # @param application [Application] The application record
+  # @return [Boolean] True if dates are in valid chronological order
+  #
   def application_liquidation_valid?(application)
     return true unless application.liquidation_date && application.cotization_date
 
     application.liquidation_date >= application.cotization_date
   end
 
-  # Checks if all financial values are positive
+  # == application_positive_values?
   #
-  # @param application [Application] the application record
-  # @return [Boolean] true if all values are greater than zero
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Checks if the financial value and number of quotas are greater than zero.
+  #
+  # @param application [Application] The application record
+  # @return [Boolean] True if all values are greater than zero
+  #
   def application_positive_values?(application)
     financial_valid = application.financial_value && application.financial_value > 0
     quotas_valid = !application.number_of_quotas || application.number_of_quotas > 0
@@ -77,10 +158,23 @@ module ApplicationsHelper
     financial_valid && quotas_valid
   end
 
-  # Returns a hash with all validation states for the application
+  # == application_validations
   #
-  # @param application [Application] the application record
-  # @return [Hash] validation results with descriptive keys
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Returns a hash containing all validation states for the specific application.
+  #
+  # @param application [Application] The application record
+  # @return [Hash] Validation results with descriptive keys
+  #
+  # @see #application_cotization_valid?
+  # @see #application_liquidation_valid?
+  # @see #application_quota_consistent?
+  # @see #application_positive_values?
+  #
   def application_validations(application)
     {
       cotization_valid: application_cotization_valid?(application),
@@ -90,10 +184,22 @@ module ApplicationsHelper
     }
   end
 
-  # Returns a hash with all calculated metrics for the application
+  # == application_metrics
   #
-  # @param application [Application] the application record
-  # @return [Hash] calculated metrics with descriptive keys
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Returns a hash with all calculated metrics for the application, including quotas and days.
+  #
+  # @param application [Application] The application record
+  # @return [Hash] Calculated metrics with descriptive keys
+  #
+  # @see #application_allocated_quotas
+  # @see #application_allocation_percentage
+  # @see #application_processing_days
+  #
   def application_metrics(application)
     {
       allocated_quotas: application_allocated_quotas(application),
@@ -102,10 +208,18 @@ module ApplicationsHelper
     }
   end
 
-  # Returns formatted text for application status
+  # == application_status_text
   #
-  # @param application [Application] the application record
-  # @return [Hash] status information with text and boolean state
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Returns localized formatted text and status flags for the application's current state.
+  #
+  # @param application [Application] The application record
+  # @return [Hash] Status information including completed boolean and display text
+  #
   def application_status_text(application)
     {
       completed: application.completed?,
@@ -114,10 +228,18 @@ module ApplicationsHelper
     }
   end
 
-  # Returns quota availability summary
+  # == application_quota_availability
   #
-  # @param application [Application] the application record
-  # @return [Hash] quota availability information
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Summarizes quota availability, calculating remaining balance based on allocations.
+  #
+  # @param application [Application] The application record
+  # @return [Hash] Quota availability information (total, allocated, available, percentage)
+  #
   def application_quota_availability(application)
     metrics = application_metrics(application)
     total = application.number_of_quotas || 0

@@ -41,7 +41,6 @@
  * © 2025 Meta. All rights reserved.
  * ============================================================================= */
 
-
 /* =============================================================================
  * 1. CALENDAR CONTAINER
  * ============================================================================= */
@@ -52,10 +51,12 @@
  * the design system and unify the datepicker with the rest of the UI.
  */
 .flatpickr-calendar {
-    border: 1px solid var(--color-border);
-    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-    font-family: var(--font-body);
-    border-radius: var(--radius-base) !important;
+	border: 1px solid var(--color-border);
+	box-shadow:
+		var(--tw-inset-shadow), var(--tw-inset-ring-shadow),
+		var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+	font-family: var(--font-body);
+	border-radius: var(--radius-base) !important;
 }
 
 /**
@@ -64,11 +65,10 @@
  * and rounds the bottom corners to close out the calendar container.
  */
 .flatpickr-days {
-    border-top: 0px solid var(--color-border);
-    border-bottom-left-radius: var(--radius-base) !important;
-    border-bottom-right-radius: var(--radius-base) !important;
+	border-top: 0px solid var(--color-border);
+	border-bottom-left-radius: var(--radius-base) !important;
+	border-bottom-right-radius: var(--radius-base) !important;
 }
-
 
 /* =============================================================================
  * 2. MONTH HEADER & NAVIGATION
@@ -82,15 +82,15 @@
  * Fixed height with flex centering ensures consistent vertical alignment.
  */
 .flatpickr-months {
-    height: calc(var(--spacing) * 12) !important;
-    padding: calc(var(--spacing) * 3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+	height: calc(var(--spacing) * 12) !important;
+	padding: calc(var(--spacing) * 3);
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .flatpickr-current-month span.cur-month:hover {
-    background: transparent !important;
+	background: transparent !important;
 }
 
 /* --- 2b. Month & Year Text ------------------------------------------------ */
@@ -102,13 +102,12 @@
  */
 .cur-month,
 .cur-year {
-    font-size: var(--text-base) !important;
-    font-weight: 400 !important;
-    font-family: var(--font-body);
-    letter-spacing: 0;
-    color: var(--color-muted) !important;
+	font-size: var(--text-base) !important;
+	font-weight: 400 !important;
+	font-family: var(--font-body);
+	letter-spacing: 0;
+	color: var(--color-muted) !important;
 }
-
 
 /* --- 2c. Navigation Arrows ------------------------------------------------ */
 
@@ -119,18 +118,18 @@
  */
 .flatpickr-prev-month,
 .flatpickr-next-month {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(var(--spacing) * 12) !important;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: calc(var(--spacing) * 12) !important;
 }
 
 .flatpickr-prev-month {
-    margin-left: calc(var(--spacing) * 3) !important;
+	margin-left: calc(var(--spacing) * 3) !important;
 }
 
 .flatpickr-next-month {
-    margin-right: calc(var(--spacing) * 3) !important;
+	margin-right: calc(var(--spacing) * 3) !important;
 }
 
 /**
@@ -139,7 +138,7 @@
  */
 .flatpickr-prev-month svg,
 .flatpickr-next-month svg {
-    stroke: var(--color-muted);
+	stroke: var(--color-muted);
 }
 
 /**
@@ -149,12 +148,11 @@
  */
 .flatpickr-months .flatpickr-prev-month:hover svg,
 .flatpickr-months .flatpickr-next-month:hover svg {
-    stroke: var(--color-body);
-    fill: transparent !important;
-    background-color: var(--color-accent);
-    border-radius: var(--radius-base);
+	stroke: var(--color-body);
+	fill: transparent !important;
+	background-color: var(--color-accent);
+	border-radius: var(--radius-base);
 }
-
 
 /* --- 2d. Year Number Input ------------------------------------------------ */
 
@@ -164,10 +162,10 @@
  * the accent input surface used elsewhere in the app.
  */
 .flatpickr-current-month .numInputWrapper {
-    background-color: var(--color-input) !important;
-    border: 1px solid var(--color-border) !important;
-    border-radius: var(--radius-base) !important;
-    margin-left: calc(var(--spacing) * 1.5) !important;
+	background-color: var(--color-input) !important;
+	border: 1px solid var(--color-border) !important;
+	border-radius: var(--radius-base) !important;
+	margin-left: calc(var(--spacing) * 1.5) !important;
 }
 
 /**
@@ -177,7 +175,7 @@
 .numInputWrapper span,
 .arrowUp span,
 .arrowDown span {
-    border-color: transparent !important;
+	border-color: transparent !important;
 }
 
 /**
@@ -186,17 +184,17 @@
  * Replaces Flatpickr's default border-based arrows with clean, consistent icons.
  */
 .numInputWrapper span.arrowDown:after {
-    content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
-    border: none;
-    top: -15% !important;
-    right: 10% !important;
+	content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+	border: none;
+	top: -15% !important;
+	right: 10% !important;
 }
 
 .numInputWrapper span.arrowUp:after {
-    content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m18 15-6-6-6 6'/></svg>");
-    border: none;
-    top: -15% !important;
-    right: 10% !important;
+	content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m18 15-6-6-6 6'/></svg>");
+	border: none;
+	top: -15% !important;
+	right: 10% !important;
 }
 
 /**
@@ -208,9 +206,8 @@
 .arrowDown:hover,
 .arrowUp:active,
 .arrowDown:active {
-    background-color: transparent !important;
+	background-color: transparent !important;
 }
-
 
 /* =============================================================================
  * 3. WEEKDAY HEADERS
@@ -222,18 +219,17 @@
  * to visually separate them from the interactive day numbers below.
  */
 .flatpickr-weekdays {
-    padding: calc(var(--spacing) * 3);
+	padding: calc(var(--spacing) * 3);
 }
 
 .flatpickr-weekday {
-    font-size: var(--text-xs) !important;
-    font-weight: 500 !important;
-    letter-spacing: 0;
-    font-family: var(--font-mono) !important;
-    text-transform: uppercase;
-    color: var(--color-muted) !important;
+	font-size: var(--text-xs) !important;
+	font-weight: 500 !important;
+	letter-spacing: 0;
+	font-family: var(--font-mono) !important;
+	text-transform: uppercase;
+	color: var(--color-muted) !important;
 }
-
 
 /* =============================================================================
  * 4. DAY GRID
@@ -247,11 +243,10 @@
  * to visually frame the interactive area of the calendar.
  */
 .dayContainer {
-    padding: calc(var(--spacing) * 3);
-    background-color: var(--color-white) !important;
-    border-radius: var(--radius-base) !important;
+	padding: calc(var(--spacing) * 3);
+	background-color: var(--color-white) !important;
+	border-radius: var(--radius-base) !important;
 }
-
 
 /* --- 4b. Day — Base ------------------------------------------------------- */
 
@@ -261,13 +256,12 @@
  * muted color for days that aren't today or selected.
  */
 .flatpickr-day {
-    border-radius: var(--radius-base) !important;
-    color: var(--color-muted);
-    letter-spacing: 0;
-    font-family: var(--font-mono) !important;
-    font-size: var(--text-xs) !important;
+	border-radius: var(--radius-base) !important;
+	color: var(--color-muted);
+	letter-spacing: 0;
+	font-family: var(--font-mono) !important;
+	font-size: var(--text-xs) !important;
 }
-
 
 /* --- 4c. Day — Hover ------------------------------------------------------ */
 
@@ -276,10 +270,9 @@
  * Accent surface and border on hover to confirm the cell is interactive.
  */
 .flatpickr-day:hover {
-    background-color: var(--color-accent);
-    border-color: transparent;
+	background-color: var(--color-accent);
+	border-color: transparent;
 }
-
 
 /* --- 4d. Day — Today ------------------------------------------------------ */
 
@@ -289,12 +282,11 @@
  * and a subtle indigo border. Clearly distinct from hover and selected states.
  */
 .flatpickr-day.today {
-    background-color: var(--color-indigo-900);
-    border-radius: var(--radius-base) !important;
-    color: var(--color-indigo-50);
-    border-color: transparent;
+	background-color: var(--color-indigo-900);
+	border-radius: var(--radius-base) !important;
+	color: var(--color-indigo-50);
+	border-color: transparent;
 }
-
 
 /* --- 4e. Day — Selected --------------------------------------------------- */
 
@@ -304,7 +296,7 @@
  * for maximum contrast and clear differentiation from hover and today.
  */
 .flatpickr-day.selected {
-    background-color: var(--color-indigo-900) !important;
-    color: var(--color-indigo-50);
-    border-color: transparent;
+	background-color: var(--color-indigo-900) !important;
+	color: var(--color-indigo-50);
+	border-color: transparent;
 }

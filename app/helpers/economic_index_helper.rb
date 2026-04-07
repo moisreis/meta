@@ -1,42 +1,104 @@
 # frozen_string_literal: true
 
+# == EconomicIndexHelper
+#
+# @author Moisés Reis
+# @project Meta Investimentos
+# @added 06/04/2026
+# @package Meta
+# @category Helpers
+#
+# @description
+#   Provides utility methods for processing and displaying economic index data.
+#   It handles historical record retrieval, statistical calculations, and
+#   formatting data for charts and visualizations.
+#
+# @example Usage in a view
+#   economic_index_latest_value(@index)
+#   # => 12.75
+#
 module EconomicIndexHelper
-  # Returns the most recent value for the economic index
+  # == economic_index_latest_value
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Numeric, nil] latest value or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Retrieves the most recent value stored for a specific economic index.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Numeric, nil] The latest value or nil if none exists
+  #
   def economic_index_latest_value(economic_index)
     economic_index.latest_value
   end
 
-  # Returns the first historical record
+  # == economic_index_first_record
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [EconomicIndexHistory, nil] first record or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Retrieves the oldest historical record available for the index based on date.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [EconomicIndexHistory, nil] The first history record or nil
+  #
   def economic_index_first_record(economic_index)
     economic_index.economic_index_histories.order(date: :asc).first
   end
 
-  # Returns the most recent historical record
+  # == economic_index_last_record
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [EconomicIndexHistory, nil] last record or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Retrieves the most recent historical record available for the index.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [EconomicIndexHistory, nil] The last history record or nil
+  #
   def economic_index_last_record(economic_index)
     economic_index.economic_index_histories.order(date: :desc).first
   end
 
-  # Returns count of historical records
+  # == economic_index_records_count
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Integer] count of history records
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Returns the total number of historical data points available for the index.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Integer] The count of history records
+  #
   def economic_index_records_count(economic_index)
     economic_index.economic_index_histories.count
   end
 
-  # Builds twelve month history data for charts
+  # == economic_index_twelve_month_history
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Hash] hash mapping formatted dates to values
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Builds a dataset of index values from the last twelve months, formatted
+  #   specifically for chart labels (Month/Year).
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Hash] A hash mapping "Mon/YY" strings to their respective values
+  #
+  # @example
+  #   economic_index_twelve_month_history(index)
+  #   # => { "Jan/24" => 10.5, "Feb/24" => 10.7 }
+  #
   def economic_index_twelve_month_history(economic_index)
     economic_index.economic_index_histories
                   .where("date >= ?", 12.months.ago)
@@ -46,10 +108,19 @@ module EconomicIndexHelper
                   .to_h
   end
 
-  # Builds thirty day history data for charts
+  # == economic_index_thirty_day_history
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Hash] hash mapping formatted dates to values
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Builds a dataset of index values from the last thirty days, formatted
+  #   for daily chart visualizations.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Hash] A hash mapping "DD/MM" strings to their respective values
+  #
   def economic_index_thirty_day_history(economic_index)
     economic_index.economic_index_histories
                   .where("date >= ?", 30.days.ago)
@@ -59,50 +130,92 @@ module EconomicIndexHelper
                   .to_h
   end
 
-  # Calculates historical average value
+  # == economic_index_avg_value
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Numeric, nil] average value or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the arithmetic mean of all historical values for the index.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Numeric, nil] The average value or nil if no records exist
+  #
   def economic_index_avg_value(economic_index)
     all_values = economic_index.economic_index_histories.pluck(:value)
-    return nil unless all_values.present?
+    return nil if all_values.empty?
 
     all_values.sum / all_values.size
   end
 
-  # Returns minimum historical value
+  # == economic_index_min_value
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Numeric, nil] minimum value or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Identifies the lowest historical value ever recorded for the index.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Numeric, nil] The minimum value or nil
+  #
   def economic_index_min_value(economic_index)
     economic_index.economic_index_histories.pluck(:value).min
   end
 
-  # Returns maximum historical value
+  # == economic_index_max_value
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Numeric, nil] maximum value or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Identifies the highest historical value ever recorded for the index.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Numeric, nil] The maximum value or nil
+  #
   def economic_index_max_value(economic_index)
     economic_index.economic_index_histories.pluck(:value).max
   end
 
-  # Calculates average for last 12 months
+  # == economic_index_avg_12_months
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Numeric, nil] 12-month average or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the arithmetic mean of index values specifically within the
+  #   last twelve months.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Numeric, nil] The 12-month average or nil
+  #
   def economic_index_avg_12_months(economic_index)
     last_12_months = economic_index.economic_index_histories
                                    .where("date >= ?", 12.months.ago)
                                    .pluck(:value)
-    return nil unless last_12_months.present?
+    return nil if last_12_months.empty?
 
     last_12_months.sum / last_12_months.size
   end
 
-  # Finds normative articles that reference this index
+  # == economic_index_related_articles
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [ActiveRecord::Relation] articles mentioning the index
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Finds normative articles that reference the economic index by searching
+  #   for its abbreviation in descriptions and bodies.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [ActiveRecord::Relation] Articles mentioning the index abbreviation
+  #
   def economic_index_related_articles(economic_index)
     NormativeArticle.where(
       "description ILIKE ? OR article_body ILIKE ?",
@@ -111,19 +224,38 @@ module EconomicIndexHelper
     )
   end
 
-  # Returns recent historical values
+  # == economic_index_recent_values
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @param limit [Integer] number of records to return (default: 15)
-  # @return [ActiveRecord::Relation] recent history records
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Retrieves a collection of the most recent historical values for list displays.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @param limit [Integer] Number of records to return (default: 15)
+  # @return [ActiveRecord::Relation] Collection of recent history records
+  #
   def economic_index_recent_values(economic_index, limit: 15)
     economic_index.economic_index_histories.order(date: :desc).limit(limit)
   end
 
-  # Returns all statistical metrics
+  # == economic_index_statistics
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Hash] hash with all statistical metrics
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Aggregates all statistical metrics for the index into a single hash object.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Hash] Contains latest, average, min, max, and 12-month average values
+  #
+  # @see #economic_index_latest_value
+  # @see #economic_index_avg_value
+  #
   def economic_index_statistics(economic_index)
     {
       latest_value: economic_index_latest_value(economic_index),
@@ -134,10 +266,21 @@ module EconomicIndexHelper
     }
   end
 
-  # Returns chart data for visualizations
+  # == economic_index_chart_data
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Hash] hash with chart datasets
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Consolidates various historical datasets optimized for chart rendering components.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Hash] Contains 12-month and 30-day history datasets
+  #
+  # @see #economic_index_twelve_month_history
+  # @see #economic_index_thirty_day_history
+  #
   def economic_index_chart_data(economic_index)
     {
       twelve_months: economic_index_twelve_month_history(economic_index),
@@ -145,10 +288,18 @@ module EconomicIndexHelper
     }
   end
 
-  # Returns metadata about the index
+  # == economic_index_metadata
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @return [Hash] hash with metadata
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Collects general metadata and audit dates for the index and its history.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @return [Hash] Contains counts, boundary dates, and creation timestamp
+  #
   def economic_index_metadata(economic_index)
     first = economic_index_first_record(economic_index)
     last = economic_index_last_record(economic_index)
@@ -161,11 +312,24 @@ module EconomicIndexHelper
     }
   end
 
-  # Calculates percentage change for a history value
+  # == economic_index_value_change
   #
-  # @param economic_index [EconomicIndex] the economic index record
-  # @param value [EconomicIndexHistory] the history record
-  # @return [Numeric, nil] percentage change or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the percentage variation between a given history record and
+  #   the record immediately preceding it in time.
+  #
+  # @param economic_index [EconomicIndex] The economic index record
+  # @param value [EconomicIndexHistory] The specific history record to evaluate
+  # @return [Numeric, nil] The percentage variation or nil if no previous record exists
+  #
+  # @example
+  #   economic_index_value_change(index, history_record)
+  #   # => 2.5 (represents 2.5% increase)
+  #
   def economic_index_value_change(economic_index, value)
     previous = economic_index.economic_index_histories
                              .where("date < ?", value.date)

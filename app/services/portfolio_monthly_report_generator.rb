@@ -917,32 +917,29 @@ class PortfolioMonthlyReportGenerator
   # @return [void]
   def stamp_global_footer
     total = pdf.page_count
-    pdf.repeat(:all, dynamic: true) do
-      footer_y = -MARGIN_B + 10
 
-      pdf.font('Plus Jakarta Sans', size: 6) do
-        pdf.fill_color C[:muted]
-        pdf.draw_text "#{COMPANY}", at: [0, footer_y + 14]
-      end
+    pdf.repeat(:all, dynamic: true) do
       footer_y = -MARGIN_B + 18
+
+      # 1. Nome da Empresa (Centralizado)
       pdf.font('Plus Jakarta Sans', size: 6) do
         pdf.fill_color C[:muted]
-        company_text = COMPANY
-        company_w = pdf.width_of(company_text)
-        pdf.draw_text company_text, at: [(CONTENT_W - company_w) / 2.0, footer_y + 16]
+        company_w = pdf.width_of(COMPANY)
+        pdf.draw_text COMPANY, at: [(CONTENT_W - company_w) / 2.0, footer_y + 16]
       end
+
+      # 2. Contatos e Paginação
       pdf.font('Geist Pixel Square', size: 6) do
         pdf.fill_color C[:gray_light]
-        contact_text = "#{PHONE}  ·  #{EMAIL}  ·  #{SITE}  ·  #{CNPJ}"
-        pdf.draw_text contact_text, at: [0, footer_y + 4]
 
-        page_text  = "#{pdf.page_number} de #{total}"
-        text_width = pdf.width_of(page_text)
-        pdf.draw_text page_text, at: [CONTENT_W - text_width, footer_y + 4]
-        contact_w = pdf.width_of(contact_text)
+        # Dados de Contato (Centralizado)
+        contact_text = "#{PHONE}  ·  #{EMAIL}  ·  #{SITE}  ·  #{CNPJ}"
+        contact_w    = pdf.width_of(contact_text)
         pdf.draw_text contact_text, at: [(CONTENT_W - contact_w) / 2.0, footer_y + 6]
-        page_text  = "#{pdf.page_number} de #{total}"
-        page_w     = pdf.width_of(page_text)
+
+        # Paginação (Centralizado, abaixo dos contatos)
+        page_text = "#{pdf.page_number} de #{total}"
+        page_w    = pdf.width_of(page_text)
         pdf.draw_text page_text, at: [(CONTENT_W - page_w) / 2.0, footer_y - 8]
       end
     end
@@ -1818,94 +1815,7 @@ class PortfolioMonthlyReportGenerator
           ]
         end
         styled_table([header] + body, col_widths: [120, 45, 50, 44, 40, 44, 40, 44])
-                   end
-    draw_section(title: 'METAS DA CARTEIRA VS. ARTIGOS NORMATIVOS',
-                 info: month_year_label,
-                 border: true,
-                 spacing: 20) do
-
-      policy = data[:investment_policy]
-      next if policy.nil? || policy.empty?
-
-      header = [
-        'Política de Investimentos',
-        'Carteira Atual',
-        'Alvo',
-        'Máximo',
-        'Mínimo',
-        'Em conformidade'
-      ]
-
-      body = policy.map do |r|
-        [
-          r[:label],
-          "#{fmt_num(r[:carteira_atual], 2)}%",
-          r[:alvo]   > 0 ? "#{fmt_num(r[:alvo],   2)}%" : '—',
-          r[:maximo] > 0 ? "#{fmt_num(r[:maximo], 2)}%" : '—',
-          r[:minimo] > 0 ? "#{fmt_num(r[:minimo], 2)}%" : '—',
-          r[:compliant] ? 'Sim' : 'Não'
-        ]
       end
-
-      table_data = [header] + body
-      sanitized  = table_data.map do |row|
-        row.map { |c| c.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?') }
-      end
-
-      col_widths = [220, 70, 70, 70, 70, 35]
-
-      pdf.table(sanitized,
-                header: true,
-                width: CONTENT_W,
-                column_widths: col_widths) do |t|
-
-        # Header row
-        t.row(0).tap do |r|
-          r.background_color = C[:primary]
-          r.text_color       = C[:white]
-          r.font             = 'Plus Jakarta Sans'
-          r.size             = 8
-          r.padding          = [6, 8]
-          r.borders          = %i[top bottom]
-          r.border_color     = C[:border]
-        end
-
-        # Body rows
-        (1...sanitized.size).each do |ri|
-          row = pna_data[ri - 1]
-
-          t.row(ri).tap do |r|
-            r.background_color = C[:white]
-            r.font             = 'Plus Jakarta Sans'
-            r.size             = 8
-            r.padding          = [6, 8]
-            r.borders          = %i[top bottom]
-            r.border_color     = C[:border]
-            r.text_color       = C[:body]
-          end
-
-          # "Carteira Atual" cell — Geist Mono, neutral muted color
-          t.cells[ri, 1].font       = 'Geist Mono'
-          t.cells[ri, 1].text_color = C[:muted]
-
-          # Numeric columns — Geist Mono
-          [2, 3, 4].each do |ci|
-            t.cells[ri, ci].font       = 'Geist Mono'
-            t.cells[ri, ci].text_color = C[:muted]
-          end
-
-          # "Em conformidade" cell — colored badge-like
-          status_cell                  = t.cells[ri, 5]
-          status_cell.font             = 'Plus Jakarta Sans'
-          status_cell.size             = 7
-          status_cell.text_color       = C[:white]
-          status_cell.background_color = row[:compliant] ? C[:success] : C[:danger]
-          status_cell.align            = :center
-        end
-      end
-    rescue Prawn::Errors::CannotFit
-      styled_table([header] + body)
-    end
     end
   end
 

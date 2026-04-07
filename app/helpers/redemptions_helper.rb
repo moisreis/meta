@@ -1,34 +1,87 @@
 # frozen_string_literal: true
 
+# == RedemptionsHelper
+#
+# @author Moisés Reis
+# @project Meta Investimentos
+# @added 06/04/2026
+# @package Meta
+# @category Helpers
+#
+# @description
+#   Provides calculation and validation logic for Redemption records. This helper
+#   manages financial performance metrics, quota allocation analysis, and
+#   chronological validation for investment redemptions.
+#
+# @example Basic usage in views
+#   redemption_metrics(@redemption)
+#   # => { yield_value: 1500.50, is_profit: true, ... }
+#
 module RedemptionsHelper
-  # Returns the yield value for the redemption
+  # == redemption_yield_value
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Numeric] yield value or 0 if nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Returns the yield value for the redemption, defaulting to zero if nil.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Numeric] The yield value or 0
+  #
   def redemption_yield_value(redemption)
     redemption.redemption_yield || 0
   end
 
-  # Checks if the redemption yielded a profit
+  # == redemption_is_profit?
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Boolean] true if yield is positive
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Checks if the redemption yielded a positive profit.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Boolean] True if yield is greater than zero
+  #
+  # @see #redemption_yield_value
+  #
   def redemption_is_profit?(redemption)
     redemption_yield_value(redemption) > 0
   end
 
-  # Checks if the redemption resulted in a loss
+  # == redemption_is_loss?
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Boolean] true if yield is negative
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Checks if the redemption resulted in a financial loss.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Boolean] True if yield is less than zero
+  #
+  # @see #redemption_yield_value
+  #
   def redemption_is_loss?(redemption)
     redemption_yield_value(redemption) < 0
   end
 
-  # Returns return percentage information
+  # == redemption_return_info
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Hash] hash with return percentage details
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Retrieves detailed return percentage information, including existence and polarity flags.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Hash] Details including :percentage, :has_return, and :positive
+  #
   def redemption_return_info(redemption)
     return_pct = redemption.return_percentage
     has_return = return_pct && return_pct != 0
@@ -40,36 +93,68 @@ module RedemptionsHelper
     }
   end
 
-  # Calculates processing days for the redemption
+  # == redemption_processing_days
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Integer, nil] number of days or nil if dates missing
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the number of days between the redemption request and its liquidation.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Integer, nil] Number of days or nil if dates are missing
+  #
   def redemption_processing_days(redemption)
     return nil unless redemption.request_date && redemption.liquidation_date
 
     (redemption.liquidation_date - redemption.request_date).to_i
   end
 
-  # Calculates total allocated quotas
+  # == redemption_allocated_total
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Numeric] total allocated quotas
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Retrieves the total number of quotas currently allocated to this redemption.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Numeric] Total allocated quotas
+  #
   def redemption_allocated_total(redemption)
     redemption.total_allocated_quotas
   end
 
-  # Returns redeemed quotas total
+  # == redemption_redeemed_total
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Numeric] total redeemed quotas or 0
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Returns the total number of quotas redeemed in this operation.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Numeric] Total redeemed quotas or 0
+  #
   def redemption_redeemed_total(redemption)
     redemption.redeemed_quotas || 0
   end
 
-  # Builds allocation breakdown by application
+  # == redemption_allocation_by_app
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Hash] hash mapping application labels to quotas used
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Builds a breakdown mapping application labels to the amount of quotas used from each.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Hash] Map of application labels to quotas used
+  #
   def redemption_allocation_by_app(redemption)
     redemption.redemption_allocations.map do |alloc|
       app_label = "App ##{alloc.application.id} (#{alloc.application.request_date.strftime('%d/%m/%Y')})"
@@ -77,30 +162,56 @@ module RedemptionsHelper
     end.to_h
   end
 
-  # Calculates total amount originally invested
+  # == redemption_total_invested
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Numeric] total invested amount
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the total original investment value based on the quota cost at the time of application.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Numeric] Total original investment amount
+  #
   def redemption_total_invested(redemption)
     redemption.redemption_allocations.sum do |alloc|
       alloc.quotas_used * alloc.application.quota_value_at_application
     end
   end
 
-  # Calculates net gain or loss
+  # == redemption_net_gain
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Numeric] net gain (positive) or loss (negative)
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the net financial gain or loss by comparing liquid redeemed value to invested capital.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Numeric] Net gain (positive) or loss (negative)
+  #
+  # @see #redemption_total_invested
+  #
   def redemption_net_gain(redemption)
     redeemed_value = redemption.redeemed_liquid_value || 0
     total_invested = redemption_total_invested(redemption)
     redeemed_value - total_invested
   end
 
-  # Calculates average quota cost
+  # == redemption_avg_quota_cost
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Numeric] average cost per quota or 0
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the weighted average cost per quota across all associated applications.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Numeric] Average cost per quota or 0
+  #
   def redemption_avg_quota_cost(redemption)
     total_invested = redemption_total_invested(redemption)
 
@@ -109,10 +220,18 @@ module RedemptionsHelper
     total_invested / redemption.redeemed_quotas
   end
 
-  # Calculates quota appreciation percentage
+  # == redemption_appreciation
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Numeric, nil] appreciation percentage or nil
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates the percentage appreciation of the quota value relative to the average cost.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Numeric, nil] Appreciation percentage or nil if calculation is impossible
+  #
   def redemption_appreciation(redemption)
     avg_cost = redemption_avg_quota_cost(redemption)
 
@@ -121,30 +240,54 @@ module RedemptionsHelper
     ((redemption.effective_quota_value - avg_cost) / avg_cost * 100)
   end
 
-  # Validates cotization date chronology
+  # == redemption_cotization_valid?
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Boolean] true if dates are valid
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Validates that the cotization date occurred after or on the same day as the request.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Boolean] True if chronological order is valid
+  #
   def redemption_cotization_valid?(redemption)
     return true unless redemption.cotization_date && redemption.request_date
 
     redemption.cotization_date >= redemption.request_date
   end
 
-  # Validates liquidation date chronology
+  # == redemption_liquidation_valid?
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Boolean] true if dates are valid
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Validates that the liquidation date occurred after or on the same day as the cotization.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Boolean] True if chronological order is valid
+  #
   def redemption_liquidation_valid?(redemption)
     return true unless redemption.liquidation_date && redemption.cotization_date
 
     redemption.liquidation_date >= redemption.cotization_date
   end
 
-  # Checks if quotas are sufficient for redemption
+  # == redemption_sufficient_quotas?
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Boolean] true if sufficient quotas available
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Validation
+  #
+  # @description
+  #   Checks if the fund investment has enough quotas held to cover the redemption amount.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Boolean] True if sufficient quotas are available
+  #
   def redemption_sufficient_quotas?(redemption)
     return false unless redemption.redeemed_quotas &&
                         redemption.fund_investment.total_quotas_held
@@ -152,10 +295,18 @@ module RedemptionsHelper
     redemption.redeemed_quotas <= redemption.fund_investment.total_quotas_held
   end
 
-  # Returns all validation states
+  # == redemption_validations
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Hash] validation results
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Aggregates all validation states for the redemption into a result hash.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Hash] Validation flags for dates, balance, and sufficiency
+  #
   def redemption_validations(redemption)
     {
       cotization_valid: redemption_cotization_valid?(redemption),
@@ -165,10 +316,18 @@ module RedemptionsHelper
     }
   end
 
-  # Returns all calculated metrics
+  # == redemption_metrics
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Hash] calculated metrics
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Calculates and collects all primary financial and processing metrics for a redemption.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Hash] Collection of yield, gain, cost, and appreciation metrics
+  #
   def redemption_metrics(redemption)
     {
       yield_value: redemption_yield_value(redemption),
@@ -184,10 +343,18 @@ module RedemptionsHelper
     }
   end
 
-  # Returns performance analysis data
+  # == redemption_performance_data
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Hash] performance data for charts
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Formats redemption data into structured datasets suitable for chart visualizations.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Hash] Performance datasets for composition and allocation status
+  #
   def redemption_performance_data(redemption)
     metrics = redemption_metrics(redemption)
 
@@ -207,10 +374,18 @@ module RedemptionsHelper
     }
   end
 
-  # Returns status text for redemption
+  # == redemption_status_text
   #
-  # @param redemption [Redemption] the redemption record
-  # @return [Hash] status information
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Returns localized status labels and flags for the current state of the redemption.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [Hash] Status info including completion flag and display text
+  #
   def redemption_status_text(redemption)
     {
       completed: redemption.completed?,
@@ -219,6 +394,18 @@ module RedemptionsHelper
     }
   end
 
+  # == redemption_type_label
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Maps internal redemption type keys to human-readable Portuguese labels.
+  #
+  # @param redemption [Redemption] The redemption record
+  # @return [String, nil] The localized label or nil
+  #
   def redemption_type_label(redemption)
     return nil if redemption.redemption_type.blank?
 

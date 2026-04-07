@@ -1,104 +1,150 @@
-module NormalizeHelper
+# frozen_string_literal: true
 
+# == NormalizeHelper
+#
+# @author Moisés Reis
+# @project Meta Investimentos
+# @added 04/06/2026
+# @package Meta
+# @category Helpers
+#
+# @description
+#   Provides a standardized set of methods to format and normalize data for the
+#   user interface. It ensures consistent styling for currencies, dates,
+#   percentages, and empty states across tables and cards.
+#
+# @example Formatting a currency value
+#   normalize_currency(1250.5)
+#   # => <span class="line-clamp-2 font-mono" scope="row">R$1.250,50</span>
+#
+module NormalizeHelper
+  # @return [String] Base CSS classes for table cell elements
   BASE_CLASSES = "line-clamp-2"
 
+  # @return [String] Standard placeholder for missing or null data
   NO_DATA_TEXT = "-"
 
-  def normalize_no_data
-    # Explanation:: This line retrieves the shared styling for text elements.
-    #               It ensures the "no data" message matches the size and
-    #               alignment of all other information in the table rows.
-    classes = "#{BASE_CLASSES} !text-muted !font-mono"
+  # @return [String] Default label for empty card metrics
+  NO_CARD_DATA_TEXT = "Sem alteração"
 
-    # Explanation:: This line produces the final HTML for the empty state.
-    #               It uses the predefined source of truth for the text
-    #               to keep the language uniform across the entire app.
+  # == normalize_no_data
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Renders a standardized placeholder for missing data with muted styling.
+  #
+  # @return [ActiveSupport::SafeBuffer] HTML span element with the "no data" text
+  #
+  def normalize_no_data
+    classes = "#{BASE_CLASSES} !text-muted !font-mono"
     content_tag(:span, NO_DATA_TEXT, class: classes, scope: "row")
   end
 
+  # == normalize_title
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats a string as a table title/header with medium font weight.
+  #
+  # @param title [String, nil] The text to display
+  # @return [ActiveSupport::SafeBuffer] Formatted span or "no data" placeholder
+  #
   def normalize_title(title)
-    # Explanation:: This line checks if the title exists and has content.
-    #               If the text is missing, it automatically displays the
-    #               standardized "no data" message instead of an empty space.
     return normalize_no_data if title.blank?
 
-    # Explanation:: This line defines the visual design for the table header.
-    #               It combines shared alignment with bold font and spacing
-    #               to create a prominent label that stands out to the user.
     classes = "#{BASE_CLASSES} font-medium"
-
-    # Explanation:: This line generates the HTML element for the table cell.
-    #               It combines the content and the styles to create a
-    #               finished component that the browser can display.
     content_tag(:span, title, class: classes, scope: "row")
   end
 
+  # == normalize_text
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats and truncates general text for display in table rows.
+  #
+  # @param text [String, nil] The text to normalize
+  # @return [ActiveSupport::SafeBuffer] Truncated span or "no data" placeholder
+  #
   def normalize_text(text)
-    # Explanation:: This line detects if the provided information is empty.
-    #               If no data is found, it triggers the automatic message
-    #               to inform the user that the information is unavailable.
     return normalize_no_data if text.blank?
 
-    # Explanation:: This variable builds the styling list for regular text.
-    #               It uses the base alignment rules and adds specific
-    #               colors and sizes to differentiate it from headers.
-    classes = "#{BASE_CLASSES}"
-
-    # Explanation:: This line creates the final visual container for the text.
-    #               It turns the raw data into a safe HTML element that
-    #               appears correctly inside your application's tables.
+    classes = BASE_CLASSES.to_s
     content_tag(:span, truncate(text, length: 60), class: classes, scope: "row")
   end
 
+  # == normalize_badge
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Renders a colorful badge component. If no type is provided, it assigns
+  #   a consistent color based on the content's hash.
+  #
+  # @param content [String, nil] The text inside the badge
+  # @param type [String, nil] Optional specific badge style (e.g., 'success')
+  # @return [ActiveSupport::SafeBuffer] HTML badge or "no data" placeholder
+  #
   def normalize_badge(content, type = nil)
-    # Explanation:: This line ensures that the badge is only drawn if there
-    #               is actual content. If the value is empty, it uses the
-    #               general placeholder so the interface remains uniform.
     return normalize_no_data if content.blank?
 
-    # Explanation:: This line defines the available color themes for the badges.
-    #               It provides a set of design tokens that the system can
-    #               rotate through to distinguish between different values.
     types = %w[inchworm indigo teal primary honeysuckle]
-
-    # Explanation:: This logic selects a color based on the content's unique ID.
-    #               By using a mathematical hash, it ensures that the same
-    #               word always receives the same color every time it appears.
     selected_type = type || types[content.to_s.hash % types.size]
 
-    # Explanation:: This line builds the final HTML tag for the badge component.
-    #               It combines the calculated type with the badge styles
-    #               to create a consistent and colorful visual indicator.
     content_tag(:span, content, class: "badge badge-#{selected_type}")
   end
 
+  # == normalize_currency
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Financial Helper
+  #
+  # @description
+  #   Formats a numeric value into Brazilian Real (BRL) currency format.
+  #
+  # @param value [Numeric, nil] The amount to format
+  # @return [ActiveSupport::SafeBuffer] Formatted currency span
+  #
+  # @example
+  #   normalize_currency(100) # => "R$100,00"
+  #
   def normalize_currency(value)
-    # Explanation:: This line verifies if a valid number was provided.
-    #               If the value is empty or missing, it automatically
-    #               shows the standard label for unavailable data.
     return normalize_no_data if value.blank? || !valid_nonzero_number?(value)
 
-    # Explanation:: This variable defines the alignment and look of the price.
-    #               It centers the currency and applies the base text rules
-    #               to keep financial data organized within the table.
     classes = "#{BASE_CLASSES} font-mono"
-
-    # Explanation:: This line transforms the raw number into a BRL string.
-    #               It adds the R$ symbol and uses commas for decimals to
-    #               comply with Brazilian financial formatting standards.
     formatted_money = number_to_currency(value, unit: "R$", separator: ",", delimiter: ".")
 
-    # Explanation:: This line creates the final HTML tag for the currency.
-    #               It wraps the formatted price in a span with the defined
-    #               styles so it aligns perfectly with other table rows.
     content_tag(:span, formatted_money, class: classes, scope: "row")
   end
 
+  # == normalize_quota
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Financial Helper
+  #
+  # @description
+  #   Formats a numeric value as a high-precision currency (6 decimals),
+  #   typically used for investment quotas.
+  #
+  # @param value [Numeric, nil] The quota value
+  # @return [ActiveSupport::SafeBuffer] Formatted quota span
+  #
   def normalize_quota(value)
     return normalize_no_data if value.blank? || !valid_nonzero_number?(value)
 
     classes = "#{BASE_CLASSES} font-mono"
-
     formatted_money = number_to_currency(
       value,
       unit: "R$",
@@ -110,21 +156,22 @@ module NormalizeHelper
     content_tag(:span, formatted_money, class: classes, scope: "row")
   end
 
-
+  # == normalize_number
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats a generic number with 2 decimal places and Brazilian separators.
+  #
+  # @param value [Numeric, nil] The number to format
+  # @return [ActiveSupport::SafeBuffer] Formatted numeric span
+  #
   def normalize_number(value)
-    # Explanation:: This line checks if the number is present and valid.
-    #               If the value is missing, it triggers the automatic
-    #               placeholder to avoid showing an empty or confusing gap.
     return normalize_no_data if value.blank? || !valid_nonzero_number?(value)
 
-    # Explanation:: This variable sets the typography for the number.
-    #               It uses a monospaced font so that every digit occupies
-    #               the same width, which is ideal for technical data.
     classes = "#{BASE_CLASSES} font-mono"
-
-    # Explanation:: Formats the number with:
-    #               - maximum 2 decimal places
-    #               - Brazilian thousand delimiter
     formatted_number = number_with_precision(
       value,
       precision: 2,
@@ -133,139 +180,176 @@ module NormalizeHelper
       strip_insignificant_zeros: true
     )
 
-    # Explanation:: This line creates the final container for the number.
     content_tag(:span, formatted_number, class: classes, scope: "row")
   end
 
+  # == normalize_fk
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats a foreign key or ID reference as a small outlined badge.
+  #
+  # @param value [Object, nil] The reference value
+  # @return [ActiveSupport::SafeBuffer] Formatted badge span
+  #
   def normalize_fk(value)
-
     return normalize_no_data if value.blank?
 
     classes = "#{BASE_CLASSES} badge badge-outline !text-2xs"
-
     content_tag(:span, value, class: classes, scope: "row")
   end
 
+  # == normalize_code
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats an identification code using a monospaced font.
+  #
+  # @param value [String, nil] The code string
+  # @return [ActiveSupport::SafeBuffer] Formatted code span
+  #
   def normalize_code(value)
     return normalize_no_data if value.blank?
 
     classes = "#{BASE_CLASSES} font-mono"
-
     content_tag(:span, value, class: classes, scope: "row")
   end
 
+  # == normalize_percentage
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats a numeric value as a percentage with a specific precision.
+  #
+  # @param value [Numeric, nil] The percentage value
+  # @param precision [Integer] Number of decimal places (default: 2)
+  # @return [ActiveSupport::SafeBuffer] Formatted percentage span
+  #
   def normalize_percentage(value, precision: 2)
-
-    # Explanation:: This line checks if the percentage value is available.
-    #               If the input is empty, it displays the standard message
-    #               for missing data to keep the table rows consistent.
     return normalize_no_data if value.blank?
 
-    # Explanation:: This variable sets the alignment and font for the data.
-    #               It uses monospaced text so that the percentage symbols
-    #               and digits align neatly across different rows.
     classes = "#{BASE_CLASSES} font-mono"
-
-    # Explanation:: This line formats the number with a percent sign.
-    #               It uses a comma as the decimal separator and ensures
-    #               the value follows the local mathematical notation.
     truncated_value = value.to_d.truncate(precision)
-
     formatted_percentage = number_to_percentage(truncated_value, precision: precision, separator: ",", delimiter: ".")
 
-    # Explanation:: This line produces the final HTML tag for the view.
-    #               It wraps the formatted percentage in a span that
-    #               aligns with the design of other numeric columns.
     content_tag(:span, formatted_percentage, class: classes, scope: "row")
   end
 
+  # == normalize_date
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats a date or time object into the Brazilian DD/MM/YYYY sequence.
+  #
+  # @param value [Date, Time, nil] The date object
+  # @return [ActiveSupport::SafeBuffer] Formatted date span
+  #
   def normalize_date(value)
-    # Explanation:: This line verifies if a valid date has been provided.
-    #               If the record has no date, it automatically triggers
-    #               the standard placeholder to keep the timeline consistent.
     return normalize_no_data if value.blank?
 
-    # Explanation:: This variable defines the visual style for the date text.
-    #               It uses monospaced font and base alignment to ensure
-    #               that columns of dates remain perfectly aligned and tidy.
     classes = "#{BASE_CLASSES} font-mono"
-
-    # Explanation:: This line converts the date object into a readable string.
-    #               It uses the Brazilian sequence of day, month, and year
-    #               separated by slashes for a familiar and clear appearance.
     formatted_date = value.to_date.strftime("%d/%m/%Y")
 
-    # Explanation:: This line creates the final visual container for the date.
-    #               It wraps the formatted string in a span that integrates
-    #               seamlessly with the rest of your application's tables.
     content_tag(:span, formatted_date, class: classes, scope: "row")
   end
 
+  # == normalize_trend
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Renders a value with a directional icon (up/down/stale) and semantic coloring.
+  #
+  # @param value [Numeric, nil] The change value to evaluate
+  # @param format [Symbol] Output format: :currency or :percentage (default: :currency)
+  # @return [ActiveSupport::SafeBuffer] Flex container with icon and formatted value
+  #
   def normalize_trend(value, format: :currency)
-    # Explanation:: This line ensures the method only runs if a value exists.
-    #               If the data is missing, it falls back to the standard
-    #               "SEM DADOS" message to maintain a clean interface.
     return normalize_no_data if value.blank?
 
-    # Explanation:: This logic identifies the direction of the numeric change.
-    #               It categorizes the value as positive, negative, or neutral
-    #               to determine which colors and icons to apply.
     trend = value > 0 ? :up : (value < 0 ? :down : :stale)
 
-    # Explanation:: This mapping defines the visual identity for each trend.
-    #               It links specific Tailwind colors to movement types,
-    #               ensuring the icon and text always share the same hue.
     styles = {
       up: { color: "text-success-600 [&>span]:!text-success-600", icon: "trending-up" },
       down: { color: "text-danger-600 [&>span]:!text-danger-600", icon: "trending-down" },
       stale: { color: "text-muted [&>svg]:hidden", icon: "minus" }
     }[trend]
 
-    # Explanation:: This logic chooses the correct formatting method to use.
-    #               It delegates the number processing to either the currency
-    #               or percentage helper based on the provided format attribute.
     formatted_value = format == :percentage ? normalize_percentage(value.abs) : normalize_currency(value.abs)
 
-    # Explanation:: This block generates the final HTML component for the view.
-    #               It groups the icon and text in a flex container, applying
-    #               the chosen color to both elements simultaneously.
     content_tag(:div, class: "flex items-center [&>span]:!font-medium gap-1 #{styles[:color]}") do
       concat inline_svg_tag("icons/#{styles[:icon]}.svg", class: "w-4 h-4 fill-current")
       concat formatted_value
     end
   end
 
+  # == normalize_latest_date
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Read
+  #
+  # @description
+  #   Retrieves and formats the date from the most recent record in a collection.
+  #
+  # @param collection [ActiveRecord::Relation] The collection to search
+  # @param attribute [Symbol] The date attribute to sort by (default: :date)
+  # @return [ActiveSupport::SafeBuffer] Formatted date span or placeholder
+  #
   def normalize_latest_date(collection, attribute: :date)
-    # Explanation:: This line retrieves the most recent record from the set.
-    #               It orders the items by the chosen date attribute in
-    #               descending order to extract the latest available entry.
     latest_record = collection.order(attribute => :desc).first
-
-    # Explanation:: This condition checks if the record and its date exist.
-    #               If the collection is empty, it returns the standard
-    #               missing data placeholder to keep the table consistent.
     return normalize_no_data if latest_record.blank? || latest_record.send(attribute).blank?
 
-    # Explanation:: This call delegates the formatting to the standard date helper.
-    #               It ensures the result uses the Brazilian format and
-    #               monospaced font for a professional, aligned appearance.
     normalize_date(latest_record.send(attribute))
   end
 
+  # == normalize_boolean
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Converts a boolean condition into a success or danger badge with custom text.
+  #
+  # @param condition [Boolean] The condition to evaluate
+  # @param true_text [String] Text for the success state
+  # @param false_text [String] Text for the danger state
+  # @return [ActiveSupport::SafeBuffer] HTML badge
+  #
   def normalize_boolean(condition, true_text, false_text)
-    # Explanation:: This line determines which label and color to use.
-    #               It checks the condition to pick the success style for
-    #               truthy values and the danger style for falsy ones.
     status = condition ? { text: true_text, type: "success" } : { text: false_text, type: "danger" }
-
-    # Explanation:: This call utilizes the standard badge helper for rendering.
-    #               It passes the selected text and the specific color type
-    #               to ensure the badge follows the application's UI standards.
     normalize_badge(status[:text], status[:type])
   end
 
-  NO_CARD_DATA_TEXT = "Sem alteração"
-
+  # == normalize_card_percentage
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats a numeric percentage for display inside a card metric.
+  #
+  # @param value [Numeric, nil] The percentage value
+  # @param precision [Integer] Number of decimal places (default: 2)
+  # @param zero_label [String] Text to show if value is zero (default: NO_CARD_DATA_TEXT)
+  # @return [String] Formatted percentage string
+  #
   def normalize_card_percentage(value, precision: 2, zero_label: NO_CARD_DATA_TEXT)
     return zero_label unless value.respond_to?(:to_f)
     return zero_label if value.to_f.zero?
@@ -274,6 +358,21 @@ module NormalizeHelper
     precision.zero? ? "#{formatted.to_i}%" : "#{formatted}%"
   end
 
+  # == normalize_card_text
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Formats a card metric text with optional prefixes for positive/negative numbers.
+  #
+  # @param value [Object, nil] The value to display
+  # @param zero_label [String] Label for zero or nil (default: NO_CARD_DATA_TEXT)
+  # @param positive_prefix [String] Prefix for positive values (default: "+")
+  # @param negative_prefix [String] Prefix for negative values (default: "")
+  # @return [String] Formatted string
+  #
   def normalize_card_text(value, zero_label: NO_CARD_DATA_TEXT, positive_prefix: "+", negative_prefix: "")
     return zero_label if value.nil?
     return zero_label if value.respond_to?(:zero?) && value.zero?
@@ -282,6 +381,19 @@ module NormalizeHelper
     value.positive? ? "#{positive_prefix}#{value}" : "#{negative_prefix}#{value}"
   end
 
+  # == normalize_card_time_ago
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Generates a "Time ago" string for card timestamps.
+  #
+  # @param value [Time, Date, nil] The timestamp
+  # @param zero_label [String] Label for missing or future dates (default: NO_CARD_DATA_TEXT)
+  # @return [String] Human-readable distance in words (e.g., "Há 5 minutos atrás")
+  #
   def normalize_card_time_ago(value, zero_label: NO_CARD_DATA_TEXT)
     return zero_label if value.blank?
     return zero_label unless value.respond_to?(:to_time)
@@ -292,6 +404,20 @@ module NormalizeHelper
     "Há #{time_ago_in_words(time)} atrás"
   end
 
+  # == normalize_card_boolean
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Converts boolean values into specific labels for card displays.
+  #
+  # @param value [Boolean, nil] The value to evaluate
+  # @param labels [Hash] Custom mapping for :true/:positive and :false/:negative
+  # @param zero_label [String] Label for nil (default: NO_CARD_DATA_TEXT)
+  # @return [String] The resolved label string
+  #
   def normalize_card_boolean(value, labels: {}, zero_label: NO_CARD_DATA_TEXT)
     return zero_label if value.nil?
 
@@ -305,6 +431,19 @@ module NormalizeHelper
     end
   end
 
+  # == normalize_card_time_since
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category UI Helper
+  #
+  # @description
+  #   Generates a "Since [time] ago" string for card timelines.
+  #
+  # @param value [Time, Date, nil] The start timestamp
+  # @param zero_label [String] Label for missing or future dates (default: NO_CARD_DATA_TEXT)
+  # @return [String] Human-readable distance in words (e.g., "Desde 2 dias atrás")
+  #
   def normalize_card_time_since(value, zero_label: NO_CARD_DATA_TEXT)
     return zero_label if value.blank?
     return zero_label unless value.respond_to?(:to_time)
@@ -315,7 +454,14 @@ module NormalizeHelper
     "Desde #{time_ago_in_words(time)} atrás"
   end
 
-  def normalize_card_currency
-
-  end
+  # == normalize_card_currency
+  #
+  # @author Moisés Reis
+  # @project Meta Investimentos
+  # @category Financial Helper
+  #
+  # @description
+  #   Placeholder for future card-specific currency normalization logic.
+  #
+  def normalize_card_currency; end
 end
