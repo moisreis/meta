@@ -29,7 +29,6 @@
 # large application relative to its opening balance.
 #
 class PerformanceCalculationJob < ApplicationJob
-
   queue_as :default
 
   # == perform
@@ -75,7 +74,11 @@ class PerformanceCalculationJob < ApplicationJob
     period_start = reference_date.beginning_of_month
     period_end = reference_date.end_of_month
 
-    quota_start = find_quota_value(fund.cnpj, period_start)
+    # CRITICAL: Use (period_start - 1.day) to get the last business day of the PREVIOUS month.
+    # This ensures initial_balance reflects the portfolio's opening value at month start,
+    # NOT the intra-month value. Using period_start directly could pick up incorrect valuations
+    # if the first day of the month is a weekend or has no valuation data.
+    quota_start = find_quota_value(fund.cnpj, period_start - 1.day)
     quota_end = find_quota_value(fund.cnpj, period_end)
 
     return unless quota_start && quota_end
