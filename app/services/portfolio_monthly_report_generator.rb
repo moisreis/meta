@@ -372,10 +372,10 @@ class PortfolioMonthlyReportGenerator
 
       art_bench = art.benchmark_target&.to_f
       prt_bench = pna.benchmark_target&.to_f
-      art_min   = art.minimum_target&.to_f
-      art_max   = art.maximum_target&.to_f
-      prt_min   = pna.minimum_target&.to_f
-      prt_max   = pna.maximum_target&.to_f
+      art_min = art.minimum_target&.to_f
+      art_max = art.maximum_target&.to_f
+      prt_min = pna.minimum_target&.to_f
+      prt_max = pna.maximum_target&.to_f
 
       deviation = (prt_bench && art_bench) ? (prt_bench - art_bench).round(4) : nil
 
@@ -390,15 +390,15 @@ class PortfolioMonthlyReportGenerator
                   end
 
       {
-        display_name:        art.display_name,
-        article_benchmark:   art_bench,
+        display_name: art.display_name,
+        article_benchmark: art_bench,
         portfolio_benchmark: prt_bench,
-        deviation:           deviation,
-        article_minimum:     art_min,
-        portfolio_minimum:   prt_min,
-        article_maximum:     art_max,
-        portfolio_maximum:   prt_max,
-        compliant:           compliant
+        deviation: deviation,
+        article_minimum: art_min,
+        portfolio_minimum: prt_min,
+        article_maximum: art_max,
+        portfolio_maximum: prt_max,
+        compliant: compliant
       }
     end
   rescue StandardError => e
@@ -412,13 +412,13 @@ class PortfolioMonthlyReportGenerator
   # @return [Hash]
   def empty_performance
     {
-      monthly_return:  0.0,
-      yearly_return:   0.0,
-      total_earnings:  0.0,
+      monthly_return: 0.0,
+      yearly_return: 0.0,
+      total_earnings: 0.0,
       yearly_earnings: 0.0,
-      total_value:     0.0,
+      total_value: 0.0,
       initial_balance: 0.0,
-      performances:    []
+      performances: []
     }
   end
 
@@ -438,12 +438,12 @@ class PortfolioMonthlyReportGenerator
   #   +:ibovespa+, +:meta+; each value is +{ monthly: Float, ytd: Float }+
   def collect_benchmark_data
     indices = EconomicIndex.all.index_by(&:abbreviation)
-    result  = {}
+    result = {}
 
     BENCHMARK_KEY_MAP.each do |abbr, key|
-      idx     = indices[abbr]
+      idx = indices[abbr]
       monthly = 0.0
-      ytd     = 0.0
+      ytd = 0.0
 
       if idx
         rec = idx.economic_index_histories
@@ -464,7 +464,7 @@ class PortfolioMonthlyReportGenerator
       result[key] = { monthly: monthly, ytd: ytd }
     end
 
-    ipca_idx     = indices['IPCA']
+    ipca_idx = indices['IPCA']
     monthly_rate = @portfolio.annual_interest_rate.to_f
 
     meta_ytd = if ipca_idx
@@ -482,7 +482,7 @@ class PortfolioMonthlyReportGenerator
 
     result[:meta] = {
       monthly: monthly_rate + result.dig(:ipca, :monthly).to_f,
-      ytd:     (meta_ytd - 1) * 100
+      ytd: (meta_ytd - 1) * 100
     }
 
     %i[cdi ipca ima_geral ibovespa meta].each { |k| result[k] ||= { monthly: 0.0, ytd: 0.0 } }
@@ -518,17 +518,17 @@ class PortfolioMonthlyReportGenerator
                      .order(period: :asc)
                      .map do |r|
       {
-        period:   r.period,
+        period: r.period,
         earnings: r.total_earnings.to_f,
-        balance:  r.total_initial.to_f + r.total_earnings.to_f
+        balance: r.total_initial.to_f + r.total_earnings.to_f
       }
     end
 
     if rows.any? && rows.last[:period] == @reference_date
       rows.last[:earnings] = @portfolio.total_earnings_on(@reference_date).to_f
-      rows.last[:balance]  = @portfolio.fund_investments
-                                       .includes(:investment_fund, :applications, :redemptions)
-                                       .sum { |fi| fi.current_market_value_on(@reference_date) }.to_f
+      rows.last[:balance] = @portfolio.fund_investments
+                                      .includes(:investment_fund, :applications, :redemptions)
+                                      .sum { |fi| fi.current_market_value_on(@reference_date) }.to_f
     end
 
     rows_by_month = rows.index_by { |r| r[:period].beginning_of_month }
@@ -552,11 +552,11 @@ class PortfolioMonthlyReportGenerator
   #   * +:redemptions+  [Float] total redemption value in currency
   def collect_monthly_flows
     start_date = (@reference_date - 11.months).beginning_of_month
-    result     = []
+    result = []
 
     12.times do |i|
       month_start = (start_date + i.months).beginning_of_month
-      month_end   = month_start.end_of_month
+      month_end = month_start.end_of_month
 
       apps = @portfolio.fund_investments
                        .joins(:applications)
@@ -584,9 +584,9 @@ class PortfolioMonthlyReportGenerator
   def calculate_allocation_data
     @portfolio.fund_investments.includes(:investment_fund).map do |fi|
       {
-        fund_name:  fi.investment_fund.fund_name,
+        fund_name: fi.investment_fund.fund_name,
         allocation: fi.percentage_allocation.to_f,
-        value:      fi.total_invested_value.to_f
+        value: fi.total_invested_value.to_f
       }
     end.sort_by { |a| -a[:allocation] }
   end
@@ -633,8 +633,8 @@ class PortfolioMonthlyReportGenerator
     @portfolio.fund_investments.includes(:investment_fund).each do |fi|
       ref = fi.investment_fund.benchmark_index.presence || '-'
       groups[ref][:allocation] += fi.percentage_allocation.to_f
-      groups[ref][:value]      += fi.current_market_value_on(@reference_date).to_f
-      groups[ref][:earnings]   += perf_by_fi[fi.id]&.earnings.to_f
+      groups[ref][:value] += fi.current_market_value_on(@reference_date).to_f
+      groups[ref][:earnings] += perf_by_fi[fi.id]&.earnings.to_f
     end
 
     groups
@@ -649,7 +649,7 @@ class PortfolioMonthlyReportGenerator
 
     @portfolio.fund_investments.includes(:investment_fund).each do |fi|
       inst = fi.investment_fund.administrator_name.presence || 'Outros'
-      groups[inst][:value]      += fi.current_market_value_on(@reference_date).to_f
+      groups[inst][:value] += fi.current_market_value_on(@reference_date).to_f
       groups[inst][:allocation] += fi.percentage_allocation.to_f
     end
 
@@ -679,12 +679,12 @@ class PortfolioMonthlyReportGenerator
               .each do |fi|
 
       articles = fi.investment_fund.investment_fund_articles
-      label    = articles.any? ?
-                   (articles.first.normative_article&.category.presence || 'Fundos ou ETF 100% TPF') :
-                   'Fundos ou ETF 100% TPF'
+      label = articles.any? ?
+                (articles.first.normative_article&.category.presence || 'Fundos ou ETF 100% TPF') :
+                'Fundos ou ETF 100% TPF'
       label = 'Fundos ou ETF 100% TPF' if label == 'Renda Fixa Geral'
 
-      groups[label][:value]    += fi.current_market_value_on(@reference_date).to_f
+      groups[label][:value] += fi.current_market_value_on(@reference_date).to_f
       groups[label][:earnings] += perf_by_fi[fi.id]&.earnings.to_f
     end
 
@@ -744,10 +744,10 @@ class PortfolioMonthlyReportGenerator
 
       result[label] = {
         display_name: label,
-        current:      current_alloc.round(2),
-        target:       tgt_v,
-        min:          min_v,
-        max:          max_v,
+        current: current_alloc.round(2),
+        target: tgt_v,
+        min: min_v,
+        max: max_v,
         within_range: within
       }
     end
@@ -767,7 +767,7 @@ class PortfolioMonthlyReportGenerator
   #   index abbreviation → { beginning_of_month_date => monthly_value }
   def collect_economic_indices_history
     start_date = (@reference_date - 11.months).beginning_of_month
-    result     = {}
+    result = {}
 
     EconomicIndex.all.each do |idx|
       rows = idx.economic_index_histories
@@ -845,12 +845,12 @@ class PortfolioMonthlyReportGenerator
       next unless art
 
       carteira_atual = alloc_by_article[art.id].round(4)
-      alvo           = art.benchmark_target.to_f
-      minimo         = art.try(:minimum_target).to_f
-      maximo         = art.try(:maximum_target).to_f
-      alvo           = pna.benchmark_target.to_f
-      minimo         = pna.minimum_target.to_f
-      maximo         = pna.maximum_target.to_f
+      alvo = art.benchmark_target.to_f
+      minimo = art.try(:minimum_target).to_f
+      maximo = art.try(:maximum_target).to_f
+      alvo = pna.benchmark_target.to_f
+      minimo = pna.minimum_target.to_f
+      maximo = pna.maximum_target.to_f
 
       compliant = if maximo > 0 || minimo > 0
                     carteira_atual >= minimo && (maximo.zero? || carteira_atual <= maximo)
@@ -859,18 +859,19 @@ class PortfolioMonthlyReportGenerator
                   end
 
       {
-        id:             art.id,
-        label:          art.display_name,
+        id: art.id,
+        label: art.display_name,
         article_number: art.article_number.presence || art.article_name.presence || "Art. ##{art.id}",
         carteira_atual: carteira_atual,
-        category:       art.category.presence || art.article_name.presence || "Não classificado",
-        alvo:           alvo,
-        minimo:         minimo,
-        maximo:         maximo,
-        compliant:      compliant
+        category: art.category.presence || art.article_name.presence || "Não classificado",
+        alvo: alvo,
+        minimo: minimo,
+        maximo: maximo,
+        compliant: compliant
       }
     end.compact
   end
+
   # Retrieves checking account records for the portfolio within the month of
   # +@requested_reference_date+.
   #
@@ -888,20 +889,20 @@ class PortfolioMonthlyReportGenerator
   #   * +:balance+        [Float]
   #   * +:notes+          [String] or +'-'+ when absent
   def collect_checking_accounts
-    ref         = @requested_reference_date
+    ref = @requested_reference_date
     month_start = ref.beginning_of_month
-    month_end   = ref.end_of_month
+    month_end = ref.end_of_month
 
     ::CheckingAccount
       .where(portfolio: @portfolio, reference_date: month_start..month_end)
       .order(:institution, :name)
       .map do |ca|
       {
-        name:           ca.name,
-        institution:    ca.institution,
+        name: ca.name,
+        institution: ca.institution,
         account_number: ca.account_number.presence || '-',
-        balance:        ca.balance.to_f,
-        notes:          ca.notes.presence || '-'
+        balance: ca.balance.to_f,
+        notes: ca.notes.presence || '-'
       }
     end
   rescue StandardError => e
@@ -940,12 +941,12 @@ class PortfolioMonthlyReportGenerator
 
         # Dados de Contato (Centralizado)
         contact_text = "#{PHONE}  ·  #{EMAIL}  ·  #{SITE}  ·  #{CNPJ}"
-        contact_w    = pdf.width_of(contact_text)
+        contact_w = pdf.width_of(contact_text)
         pdf.draw_text contact_text, at: [(CONTENT_W - contact_w) / 2.0, footer_y + 6]
 
         # Paginação (Centralizado, abaixo dos contatos)
         page_text = "#{pdf.page_number} de #{total}"
-        page_w    = pdf.width_of(page_text)
+        page_w = pdf.width_of(page_text)
         pdf.draw_text page_text, at: [(CONTENT_W - page_w) / 2.0, footer_y - 8]
       end
     end
@@ -964,7 +965,7 @@ class PortfolioMonthlyReportGenerator
   def stamp_watermark
     return unless File.exist?(WATERMARK_IMAGE_PATH)
 
-    wm_w  = WATERMARK_WIDTH.to_f
+    wm_w = WATERMARK_WIDTH.to_f
     img_x = (CONTENT_W - wm_w) / 2.0
     img_y = (PAGE_H - MARGIN_T - MARGIN_B) / 2.0 + (wm_w / 2.0)
 
@@ -1004,18 +1005,18 @@ class PortfolioMonthlyReportGenerator
     perf = data[:performance]
 
     metrics = [
-      { label: 'Rent. do Mês',         value: fmt_pct(perf[:monthly_return]) },
-      { label: 'Rent. do Ano',          value: fmt_pct(perf[:yearly_return]) },
-      { label: 'Ganhos do Mês',         value: fmt_cur(perf[:total_earnings]) },
-      { label: 'Ganhos Acum. do Ano',   value: fmt_cur(perf[:yearly_earnings]) },
-      { label: 'Total da Carteira',     value: fmt_cur(perf[:total_value]) }
+      { label: 'Rent. do Mês', value: fmt_pct(perf[:monthly_return]) },
+      { label: 'Rent. do Ano', value: fmt_pct(perf[:yearly_return]) },
+      { label: 'Ganhos do Mês', value: fmt_cur(perf[:total_earnings]) },
+      { label: 'Ganhos Acum. do Ano', value: fmt_cur(perf[:yearly_earnings]) },
+      { label: 'Total da Carteira', value: fmt_cur(perf[:total_value]) }
     ]
 
-    card_gap    = 6
-    card_w      = (CONTENT_W - card_gap * (metrics.size - 1)) / metrics.size.to_f
-    card_h      = 52
+    card_gap = 6
+    card_w = (CONTENT_W - card_gap * (metrics.size - 1)) / metrics.size.to_f
+    card_h = 52
     card_radius = 2
-    top_y       = pdf.cursor
+    top_y = pdf.cursor
 
     metrics.each_with_index do |m, i|
       x = i * (card_w + card_gap)
@@ -1066,11 +1067,11 @@ class PortfolioMonthlyReportGenerator
   # @param ima_pct      [Float]  portfolio return as % of IMA-Geral YTD
   # @return [void]
   def draw_summary_meta_vs_indices(meta_r_gauge:, cdi_pct:, ipca_pct:, ima_pct:)
-    col_gap  = 40
-    left_w   = CONTENT_W * 0.42
-    right_w  = CONTENT_W - left_w - col_gap
-    right_x  = left_w + col_gap
-    title_h  = 40
+    col_gap = 40
+    left_w = CONTENT_W * 0.42
+    right_w = CONTENT_W - left_w - col_gap
+    right_x = left_w + col_gap
+    title_h = 40
 
     draw_section(title: nil, info: nil, border: false, spacing: 10) do
       section_top = pdf.cursor
@@ -1105,24 +1106,24 @@ class PortfolioMonthlyReportGenerator
       pdf.move_down 10
 
       gauge_radius = 65
-      gauge_cx     = left_w / 2.0
-      gauge_cy     = section_top - title_h - gauge_radius - 18
+      gauge_cx = left_w / 2.0
+      gauge_cy = section_top - title_h - gauge_radius - 18
       draw_gauge_meter(value: meta_r_gauge, max: 200.0, cx: gauge_cx, cy: gauge_cy, radius: gauge_radius)
 
       rel_items = [
-        { label: 'Do CDI%',  value: cdi_pct,  color: C[:secondary] },
+        { label: 'Do CDI%', value: cdi_pct, color: C[:secondary] },
         { label: 'Do IPCA%', value: ipca_pct, color: C[:secondary] },
-        { label: 'Do IMA%',  value: ima_pct,  color: C[:secondary] }
+        { label: 'Do IMA%', value: ima_pct, color: C[:secondary] }
       ]
 
-      bar_max  = rel_items.map { |r| r[:value].to_f }.max.nonzero? || 1.0
+      bar_max = rel_items.map { |r| r[:value].to_f }.max.nonzero? || 1.0
       bar_area = right_w - 70
-      bar_h    = 14
-      gap      = 26
-      rel_top  = section_top - title_h - 30
+      bar_h = 14
+      gap = 26
+      rel_top = section_top - title_h - 30
 
       rel_items.each_with_index do |item, idx|
-        by    = rel_top - idx * gap
+        by = rel_top - idx * gap
         bar_w = (item[:value].to_f / bar_max * bar_area).round(1)
 
         pdf.fill_color C[:muted]
@@ -1162,12 +1163,12 @@ class PortfolioMonthlyReportGenerator
       perf = data[:performance]
       bnch = data[:benchmarks]
 
-      cdi_pct  = bnch[:cdi][:ytd].to_f  > 0 ? (perf[:yearly_return].to_f / bnch[:cdi][:ytd].to_f  * 100).round(2) : 0
+      cdi_pct = bnch[:cdi][:ytd].to_f > 0 ? (perf[:yearly_return].to_f / bnch[:cdi][:ytd].to_f * 100).round(2) : 0
       ipca_pct = bnch[:ipca][:ytd].to_f > 0 ? (perf[:yearly_return].to_f / bnch[:ipca][:ytd].to_f * 100).round(2) : 0
-      ima_pct  = bnch[:ima_geral][:ytd].to_f > 0 ? (perf[:yearly_return].to_f / bnch[:ima_geral][:ytd].to_f * 100).round(2) : 0
+      ima_pct = bnch[:ima_geral][:ytd].to_f > 0 ? (perf[:yearly_return].to_f / bnch[:ima_geral][:ytd].to_f * 100).round(2) : 0
 
       monthly_returns = build_yearly_returns_series
-      meta_series     = build_yearly_meta_series
+      meta_series = build_yearly_meta_series
 
       draw_summary_metrics_horizontal
 
@@ -1183,8 +1184,8 @@ class PortfolioMonthlyReportGenerator
           [cart[:label], cart[:value].to_f, meta[:value].to_f]
         end
 
-        yearly_twr  = perf[:yearly_return].to_f
-        meta_ytd    = data[:benchmarks][:meta][:ytd].to_f
+        yearly_twr = perf[:yearly_return].to_f
+        meta_ytd = data[:benchmarks][:meta][:ytd].to_f
         bar_data << ['Total', yearly_twr, meta_ytd]
 
         draw_grouped_bar_chart(
@@ -1228,8 +1229,8 @@ class PortfolioMonthlyReportGenerator
 
       fund_rows = [['Fundo', 'Rendimento', 'Movimentação', 'Valor Final', 'Rent.']]
 
-      total_earn  = 0.0
-      total_move  = 0.0
+      total_earn = 0.0
+      total_move = 0.0
       total_final = 0.0
 
       data[:fund_investments].select do |fi|
@@ -1239,17 +1240,17 @@ class PortfolioMonthlyReportGenerator
         reds = monthly_reds_for(fi)
         earn != 0 || apps != 0 || reds != 0
       end.each do |fi|
-        perf  = perf_by_fi[fi.id]
-        init  = perf&.initial_balance.to_f
-        earn  = perf&.earnings.to_f
-        apps  = monthly_apps_for(fi)
-        reds  = monthly_reds_for(fi)
-        move  = apps - reds
+        perf = perf_by_fi[fi.id]
+        init = perf&.initial_balance.to_f
+        earn = perf&.earnings.to_f
+        apps = monthly_apps_for(fi)
+        reds = monthly_reds_for(fi)
+        move = apps - reds
         final = init + earn + move
-        rent  = perf&.monthly_return.to_f
+        rent = perf&.monthly_return.to_f
 
-        total_earn  += earn
-        total_move  += move
+        total_earn += earn
+        total_move += move
         total_final += final
 
         fund_rows << [
@@ -1266,8 +1267,8 @@ class PortfolioMonthlyReportGenerator
 
       pdf.move_down 40
 
-      accounts       = data[:checking_accounts]
-      total_balance  = accounts.sum { |a| a[:balance] }
+      accounts = data[:checking_accounts]
+      total_balance = accounts.sum { |a| a[:balance] }
 
       draw_section(title: 'Relação de Contas Correntes', info: month_year_label, border: true, spacing: 0) do
         rows = [['Instituição', 'Nº da Conta', 'Saldo', '% do Total']]
@@ -1298,11 +1299,11 @@ class PortfolioMonthlyReportGenerator
 
           last = rows.size - 1
           t.row(last).background_color = C[:bg_light]
-          t.row(last).borders          = %i[top bottom]
-          t.row(last).border_color     = C[:body]
-          t.cells[last, 2].font        = 'Geist Pixel Square'
-          t.cells[last, 2].size        = 9
-          t.cells[last, 2].text_color  = C[:primary]
+          t.row(last).borders = %i[top bottom]
+          t.row(last).border_color = C[:body]
+          t.cells[last, 2].font = 'Geist Pixel Square'
+          t.cells[last, 2].size = 9
+          t.cells[last, 2].text_color = C[:primary]
         end
       rescue Prawn::Errors::CannotFit
         styled_table(rows)
@@ -1321,8 +1322,8 @@ class PortfolioMonthlyReportGenerator
           earn != 0 || apps != 0 || reds != 0
         end.each do |fi|
           fund = fi.investment_fund
-          enq  = fund.investment_fund_articles.first&.normative_article&.article_number || '-'
-          adm  = fund.administration_fee.present? ? "#{fmt_num(fund.administration_fee.to_f, 2)}%" : '-'
+          enq = fund.investment_fund_articles.first&.normative_article&.article_number || '-'
+          adm = fund.administration_fee.present? ? "#{fmt_num(fund.administration_fee.to_f, 2)}%" : '-'
 
           rel_rows << [
             fund.cnpj.presence || '-', fund.fund_name, enq, adm
@@ -1350,14 +1351,14 @@ class PortfolioMonthlyReportGenerator
   #
   # @return [void]
   def render_monthly_history_page
-    accounts       = data[:checking_accounts]
+    accounts = data[:checking_accounts]
     accounts_total = accounts.sum { |a| a[:balance] }
-    ref_month      = @reference_date.beginning_of_month
-    perf           = data[:performance]
+    ref_month = @reference_date.beginning_of_month
+    perf = data[:performance]
 
     closing_balance_by_month = begin
                                  periods_needed = data[:monthly_history].map { |m| m[:period] }
-                                 next_periods   = periods_needed.map { |p| p.next_month.end_of_month }
+                                 next_periods = periods_needed.map { |p| p.next_month.end_of_month }
 
                                  @portfolio.performance_histories
                                            .where(period: (periods_needed + next_periods).uniq)
@@ -1369,12 +1370,12 @@ class PortfolioMonthlyReportGenerator
       if m[:period].beginning_of_month == ref_month
         perf[:total_value] + accounts_total
       else
-        next_period      = m[:period].next_month.end_of_month
-        closing          = closing_balance_by_month[next_period].to_f
-        period_accounts  = CheckingAccount
-                             .where(portfolio: @portfolio,
-                                    reference_date: m[:period].beginning_of_month..m[:period].end_of_month)
-                             .sum(:balance).to_f
+        next_period = m[:period].next_month.end_of_month
+        closing = closing_balance_by_month[next_period].to_f
+        period_accounts = CheckingAccount
+                            .where(portfolio: @portfolio,
+                                   reference_date: m[:period].beginning_of_month..m[:period].end_of_month)
+                            .sum(:balance).to_f
         closing + period_accounts
       end
     }
@@ -1398,7 +1399,7 @@ class PortfolioMonthlyReportGenerator
         pat_rows = [['Mês', 'Patrimônio Total', 'Rendimento Mensal']]
         (1..12).each do |month|
           period = Date.new(@reference_date.year, month, 1)
-          m      = hist_by_month[period]
+          m = hist_by_month[period]
           pat_rows << [
             full_month(period),
             m ? fmt_cur(total_patrimony.(m)) : fmt_cur(0),
@@ -1411,7 +1412,7 @@ class PortfolioMonthlyReportGenerator
     end
 
     draw_page do
-      year           = @reference_date.year
+      year = @reference_date.year
 
       yearly_flows = (1..12).map do |month|
         period = Date.new(year, month, 1)
@@ -1431,9 +1432,9 @@ class PortfolioMonthlyReportGenerator
         flow_rows = [['Mês', 'Aplicações', 'Resgates', 'Movimentação Líquida']]
         (1..12).each do |month|
           period = Date.new(year, month, 1)
-          f      = flows_by_month[period]
-          apps   = f ? f[:applications] : 0.0
-          reds   = f ? f[:redemptions]  : 0.0
+          f = flows_by_month[period]
+          apps = f ? f[:applications] : 0.0
+          reds = f ? f[:redemptions] : 0.0
           flow_rows << [
             full_month(period),
             fmt_cur(apps),
@@ -1469,8 +1470,8 @@ class PortfolioMonthlyReportGenerator
       pdf.move_down 40
 
       draw_section(title: 'Distribuição por índices de referência', info: "Gráfico", border: true, spacing: 0) do
-        idx_groups  = data[:index_groups]
-        donut_data  = idx_groups.map { |k, v| { label: k, value: v[:allocation] } }.sort_by { |d| -d[:value] }
+        idx_groups = data[:index_groups]
+        donut_data = idx_groups.map { |k, v| { label: k, value: v[:allocation] } }.sort_by { |d| -d[:value] }
 
         draw_donut_chart(data: donut_data, cx: 120, cy: pdf.cursor - 80, radius: 70,
                          legend_x: 210, legend_y: pdf.cursor - 30)
@@ -1526,7 +1527,7 @@ class PortfolioMonthlyReportGenerator
 
         data[:fund_investments].each do |fi|
           alloc = fi.percentage_allocation.to_f
-          arts  = fi.investment_fund.investment_fund_articles
+          arts = fi.investment_fund.investment_fund_articles
 
           if arts.any?
             arts.each do |ifa|
@@ -1543,10 +1544,10 @@ class PortfolioMonthlyReportGenerator
                                   .reject { |d| d[:value] <= 0 }.sort_by { |d| -d[:value] }
 
         category_colors = {
-          'Renda Fixa'              => C[:primary],
-          'Renda Variável'          => C[:secondary],
-          'Investimento Exterior'   => C[:warning],
-          'Não Classificado'        => C[:muted]
+          'Renda Fixa' => C[:primary],
+          'Renda Variável' => C[:secondary],
+          'Investimento Exterior' => C[:warning],
+          'Não Classificado' => C[:muted]
         }
         cat_data.each { |d| d[:color] = category_colors[d[:label]] }
 
@@ -1565,7 +1566,7 @@ class PortfolioMonthlyReportGenerator
   # @return [void]
   def render_index_earnings_page
     draw_page(title: @portfolio.name) do
-      idx_groups  = data[:index_groups]
+      idx_groups = data[:index_groups]
 
       draw_section(title: 'Rendimento por Índice de Referência', info: month_year_label, border: true, spacing: 0) do
         earn_data = idx_groups.map { |k, v| { label: k, value: v[:earnings] } }.sort_by { |d| -d[:value] }
@@ -1606,9 +1607,9 @@ class PortfolioMonthlyReportGenerator
 
     category_colors = {
       'Fundos ou ETF 100% TPF' => '1a237e',
-      '100% Títulos Públicos'  => '1976d2',
-      'Investimento Exterior'  => '42a5f5',
-      'Renda Fixa'             => '607d8b'
+      '100% Títulos Públicos' => '1976d2',
+      'Investimento Exterior' => '42a5f5',
+      'Renda Fixa' => '607d8b'
     }
 
     draw_page(title: @portfolio.name) do
@@ -1645,18 +1646,18 @@ class PortfolioMonthlyReportGenerator
   # @return [void]
   def render_historical_table_page
     draw_page(title: @portfolio.name) do
-      accounts       = data[:checking_accounts]
+      accounts = data[:checking_accounts]
       accounts_total = accounts.sum { |a| a[:balance] }
-      ref_month      = @reference_date.beginning_of_month
-      perf           = data[:performance]
-      hist           = data[:monthly_history]
-      year           = @reference_date.year
+      ref_month = @reference_date.beginning_of_month
+      perf = data[:performance]
+      hist = data[:monthly_history]
+      year = @reference_date.year
 
       hist_by_month = hist.each_with_object({}) { |m, h| h[m[:period].beginning_of_month] = m }
 
       closing_balance_by_month = begin
                                    periods_needed = hist.map { |m| m[:period] }
-                                   next_periods   = periods_needed.map { |p| p.next_month.end_of_month }
+                                   next_periods = periods_needed.map { |p| p.next_month.end_of_month }
 
                                    @portfolio.performance_histories
                                              .where(period: (periods_needed + next_periods).uniq)
@@ -1675,8 +1676,8 @@ class PortfolioMonthlyReportGenerator
           balance = if period == ref_month
                       perf[:total_value] + accounts_total
                     else
-                      next_period     = period.next_month.end_of_month
-                      closing         = closing_balance_by_month[next_period].to_f
+                      next_period = period.next_month.end_of_month
+                      closing = closing_balance_by_month[next_period].to_f
                       period_accounts = CheckingAccount
                                           .where(portfolio: @portfolio,
                                                  reference_date: period..period.end_of_month)
@@ -1698,7 +1699,7 @@ class PortfolioMonthlyReportGenerator
 
       pdf.move_down 20
 
-      eco  = data[:economic_indices]
+      eco = data[:economic_indices]
       bnch = data[:benchmarks]
 
       active_months = hist
@@ -1713,8 +1714,8 @@ class PortfolioMonthlyReportGenerator
           idx_tbl << [
             full_month(period),
             fmt_pct(meta_monthly_series[period][:meta]),
-            fmt_pct(eco['IPCA']&.dig(period)     || bnch[:ipca][:monthly]),
-            fmt_pct(eco['CDI']&.dig(period)      || bnch[:cdi][:monthly]),
+            fmt_pct(eco['IPCA']&.dig(period) || bnch[:ipca][:monthly]),
+            fmt_pct(eco['CDI']&.dig(period) || bnch[:cdi][:monthly]),
             fmt_pct(eco['IMAGERAL']&.dig(period) || bnch[:ima_geral][:monthly]),
             fmt_pct(eco['IBOVESPA']&.dig(period) || bnch[:ibovespa][:monthly])
           ]
@@ -1742,7 +1743,7 @@ class PortfolioMonthlyReportGenerator
   #
   # @return [void]
   def render_investment_policy_page
-    policy   = data[:investment_policy]
+    policy = data[:investment_policy]
     pna_data = data[:portfolio_normative]
 
     return if (policy.nil? || policy.empty?) && pna_data.empty?
@@ -1755,9 +1756,9 @@ class PortfolioMonthlyReportGenerator
         draw_section(title: 'Carteira em relação a política de investimentos', border: true, spacing: 0) do
           [
             { title: 'Carteira Atual por Artigo', key: :carteira_atual },
-            { title: 'Alvo Carteira por Artigo',  key: :alvo },
-            { title: 'Máximo por Artigo',          key: :maximo },
-            { title: 'Mínimo por Artigo',          key: :minimo }
+            { title: 'Alvo Carteira por Artigo', key: :alvo },
+            { title: 'Máximo por Artigo', key: :maximo },
+            { title: 'Mínimo por Artigo', key: :minimo }
           ].each do |grp|
             pdf.fill_color C[:body]
             pdf.font('Geist Pixel Square', size: 8) do
@@ -1765,17 +1766,17 @@ class PortfolioMonthlyReportGenerator
             end
             pdf.move_down 16
 
-            max_pct  = [policy.map { |a| a[grp[:key]].to_f }.max, 1.0].max
-            label_w  = 130
+            max_pct = [policy.map { |a| a[grp[:key]].to_f }.max, 1.0].max
+            label_w = 130
             bar_area = CONTENT_W - label_w - 60
-            bar_h    = 14
-            gap      = 20
+            bar_h = 14
+            gap = 20
 
             policy.each_with_index do |art, idx|
-              val   = art[grp[:key]].to_f
+              val = art[grp[:key]].to_f
               bar_w = [(val / max_pct * bar_area).round(1), val > 0 ? 1.0 : 0].max
               color = article_colors[art[:article_number]] || default_colors[idx % default_colors.size]
-              by    = pdf.cursor - (idx * gap) - bar_h
+              by = pdf.cursor - (idx * gap) - bar_h
 
               pdf.fill_color C[:muted]
               pdf.font('Geist Pixel Square', size: 6.5) { pdf.draw_text truncate(art[:article_number], 24), at: [0, by + 6] }
@@ -1798,35 +1799,91 @@ class PortfolioMonthlyReportGenerator
 
     return if pna_data.empty?
 
+    return if pna_data.empty?
     draw_page(title: @portfolio.name) do
       draw_section(title: 'Metas da Carteira vs. Artigos Normativos',
                    info: month_year_label,
                    border: true,
                    spacing: 20) do
-        dash   = '—'
+
         header = [
-          'Artigo',
-          "Benchmark\n(Artigo)",
-          "Benchmark\n(Carteira)",
-          'Desvio',
-          "Mín.\n(Artigo)",
-          "Mín.\n(Carteira)",
-          "Máx.\n(Artigo)",
-          "Máx.\n(Carteira)"
+          'Política de Investimentos',
+          'Carteira Atual',
+          'Alvo',
+          'Máximo',
+          'Mínimo',
+          'Em conformidade'
         ]
+
         body = pna_data.map do |r|
+          compliant = if r[:article_minimum] && r[:article_maximum]
+                        v = r[:portfolio_benchmark].to_f
+                        v >= r[:article_minimum].to_f && v <= r[:article_maximum].to_f
+                      elsif r[:article_minimum]
+                        r[:portfolio_benchmark].to_f >= r[:article_minimum].to_f
+                      elsif r[:article_maximum]
+                        r[:portfolio_benchmark].to_f <= r[:article_maximum].to_f
+                      else
+                        true
+                      end
+
           [
             r[:display_name],
-            r[:article_benchmark]   ? "#{fmt_num(r[:article_benchmark],   2)}%" : dash,
-            r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 2)}%" : dash,
-            r[:deviation]           ? "#{r[:deviation] >= 0 ? '+' : ''}#{fmt_num(r[:deviation], 2)}%" : dash,
-            r[:article_minimum]     ? "#{fmt_num(r[:article_minimum],     2)}%" : dash,
-            r[:portfolio_minimum]   ? "#{fmt_num(r[:portfolio_minimum],   2)}%" : dash,
-            r[:article_maximum]     ? "#{fmt_num(r[:article_maximum],     2)}%" : dash,
-            r[:portfolio_maximum]   ? "#{fmt_num(r[:portfolio_maximum],   2)}%" : dash
+            r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 2)}%" : '—',
+            r[:article_benchmark] ? "#{fmt_num(r[:article_benchmark], 2)}%" : '—',
+            r[:article_maximum] ? "#{fmt_num(r[:article_maximum], 2)}%" : '—',
+            r[:article_minimum] ? "#{fmt_num(r[:article_minimum], 2)}%" : '—',
+            compliant ? 'Sim' : 'Não'
           ]
         end
-        styled_table([header] + body, col_widths: [120, 45, 50, 44, 40, 44, 40, 44])
+
+        rows = [header] + body
+        sanitized = rows.map do |row|
+          row.map { |c| c.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?') }
+        end
+
+        col_widths = [200, 75, 75, 75, 75, 75]
+
+        pdf.table(sanitized,
+                  header: true,
+                  width: CONTENT_W,
+                  column_widths: col_widths) do |t|
+
+          # Cabeçalho
+          t.row(0).tap do |r|
+            r.background_color = C[:primary]
+            r.text_color = C[:white]
+            r.font = 'Plus Jakarta Sans'
+            r.size = 7
+            r.padding = [6, 8]
+            r.borders = %i[top bottom]
+            r.border_color = C[:border]
+          end
+
+          # Corpo
+          (1...sanitized.size).each do |ri|
+            t.row(ri).tap do |r|
+              r.background_color = C[:white]
+              r.font = 'Plus Jakarta Sans'
+              r.size = 7
+              r.padding = [6, 8]
+              r.borders = %i[top bottom]
+              r.border_color = C[:border]
+              r.text_color = C[:body]
+            end
+
+            # Coluna "Em conformidade" colorida
+            status_cell = t.cells[ri, 5]
+            status_cell.font = 'Geist Pixel Square'
+            status_cell.size = 7
+            is_sim = sanitized[ri][5] == 'Sim'
+            status_cell.text_color = is_sim ? C[:success] : C[:danger]
+            status_cell.background_color = C[:white]
+          end
+        end
+
+      rescue Prawn::Errors::CannotFit
+        styled_table(rows)
       end
     end
   end
@@ -1846,34 +1903,34 @@ class PortfolioMonthlyReportGenerator
 
       meta_ytd = bnch[:meta][:ytd].to_f
       cart_ytd = perf[:yearly_return].to_f
-      cdi_ytd  = bnch[:cdi][:ytd].to_f
+      cdi_ytd = bnch[:cdi][:ytd].to_f
       ipca_ytd = bnch[:ipca][:ytd].to_f
-      ima_ytd  = bnch[:ima_geral][:ytd].to_f
+      ima_ytd = bnch[:ima_geral][:ytd].to_f
       ibov_ytd = bnch[:ibovespa][:ytd].to_f
 
       safe_div = ->(num, den) { den > 0 ? (num / den * 100).round(2) : 0 }
-      meta_r   = safe_div.call(cart_ytd, meta_ytd)
-      cdi_r    = safe_div.call(cart_ytd, cdi_ytd)
-      ipca_r   = safe_div.call(cart_ytd, ipca_ytd)
-      ima_r    = safe_div.call(cart_ytd, ima_ytd)
-      ibov_r   = safe_div.call(cart_ytd, ibov_ytd)
+      meta_r = safe_div.call(cart_ytd, meta_ytd)
+      cdi_r = safe_div.call(cart_ytd, cdi_ytd)
+      ipca_r = safe_div.call(cart_ytd, ipca_ytd)
+      ima_r = safe_div.call(cart_ytd, ima_ytd)
+      ibov_r = safe_div.call(cart_ytd, ibov_ytd)
 
       acc_data = [
-        { label: 'Meta Acumulado',         value: meta_ytd, color: C[:warning]   },
-        { label: 'Rentabilidade Carteira',  value: cart_ytd, color: C[:primary]   },
-        { label: 'IPCA Acumulado',          value: ipca_ytd, color: C[:danger]    },
-        { label: 'CDI Acumulado',           value: cdi_ytd,  color: C[:success]   },
-        { label: 'IMA-GERAL Acumulado',     value: ima_ytd,  color: C[:secondary] },
-        { label: 'Ibovespa Acumulado',      value: ibov_ytd, color: C[:warning]   }
+        { label: 'Meta Acumulado', value: meta_ytd, color: C[:warning] },
+        { label: 'Rentabilidade Carteira', value: cart_ytd, color: C[:primary] },
+        { label: 'IPCA Acumulado', value: ipca_ytd, color: C[:danger] },
+        { label: 'CDI Acumulado', value: cdi_ytd, color: C[:success] },
+        { label: 'IMA-GERAL Acumulado', value: ima_ytd, color: C[:secondary] },
+        { label: 'Ibovespa Acumulado', value: ibov_ytd, color: C[:warning] }
       ]
 
       relatives = {
-        'Meta Acumulado'        => safe_div.call(meta_ytd, meta_ytd),
+        'Meta Acumulado' => safe_div.call(meta_ytd, meta_ytd),
         'Rentabilidade Carteira' => meta_r,
-        'IPCA Acumulado'        => safe_div.call(ipca_ytd, meta_ytd),
-        'CDI Acumulado'         => safe_div.call(cdi_ytd,  meta_ytd),
-        'IMA-GERAL Acumulado'   => safe_div.call(ima_ytd,  meta_ytd),
-        'Ibovespa Acumulado'    => safe_div.call(ibov_ytd, meta_ytd)
+        'IPCA Acumulado' => safe_div.call(ipca_ytd, meta_ytd),
+        'CDI Acumulado' => safe_div.call(cdi_ytd, meta_ytd),
+        'IMA-GERAL Acumulado' => safe_div.call(ima_ytd, meta_ytd),
+        'Ibovespa Acumulado' => safe_div.call(ibov_ytd, meta_ytd)
       }
 
       draw_section(title: 'Índices Acumulados', info: @reference_date.year.to_s, border: true, spacing: 0) do
@@ -1885,12 +1942,12 @@ class PortfolioMonthlyReportGenerator
       draw_section(title: 'Rentabilidade Acumulada', info: 'Tabela', border: true, spacing: 0) do
         acc_rows = [
           ['Indicador', 'Rent. Acumulada', '% em Relação à Meta'],
-          ['Carteira',  fmt_pct(cart_ytd), "#{fmt_num(relatives['Rentabilidade Carteira'], 3)}%"],
-          ['Meta',      fmt_pct(meta_ytd), '100,00%'],
-          ['CDI',       fmt_pct(cdi_ytd),  "#{fmt_num(relatives['CDI Acumulado'],          3)}%"],
-          ['IPCA',      fmt_pct(ipca_ytd), "#{fmt_num(relatives['IPCA Acumulado'],         3)}%"],
-          ['IMA-GERAL', fmt_pct(ima_ytd),  "#{fmt_num(relatives['IMA-GERAL Acumulado'],    3)}%"],
-          ['Ibovespa',  fmt_pct(ibov_ytd), "#{fmt_num(relatives['Ibovespa Acumulado'],     3)}%"]
+          ['Carteira', fmt_pct(cart_ytd), "#{fmt_num(relatives['Rentabilidade Carteira'], 3)}%"],
+          ['Meta', fmt_pct(meta_ytd), '100,00%'],
+          ['CDI', fmt_pct(cdi_ytd), "#{fmt_num(relatives['CDI Acumulado'], 3)}%"],
+          ['IPCA', fmt_pct(ipca_ytd), "#{fmt_num(relatives['IPCA Acumulado'], 3)}%"],
+          ['IMA-GERAL', fmt_pct(ima_ytd), "#{fmt_num(relatives['IMA-GERAL Acumulado'], 3)}%"],
+          ['Ibovespa', fmt_pct(ibov_ytd), "#{fmt_num(relatives['Ibovespa Acumulado'], 3)}%"]
         ]
         styled_table(acc_rows, col_widths: [160, 170, 185])
       end
@@ -1924,22 +1981,22 @@ class PortfolioMonthlyReportGenerator
     end
 
     plot_data = skip_auto_total ? data[0...-1] : data
-    totals    = if skip_auto_total
-                  [data.last[1].to_f, data.last[2].to_f]
-                else
-                  [data.sum { |_, v1, _| v1.to_f }, data.sum { |_, _, v2| v2.to_f }]
-                end
+    totals = if skip_auto_total
+               [data.last[1].to_f, data.last[2].to_f]
+             else
+               [data.sum { |_, v1, _| v1.to_f }, data.sum { |_, _, v2| v2.to_f }]
+             end
 
-    values  = plot_data.flat_map { |_, a, b| [a, b] }.map(&:to_f) + totals
+    values = plot_data.flat_map { |_, a, b| [a, b] }.map(&:to_f) + totals
     max_val = [values.map(&:abs).max, 0.001].max
 
-    chart_y  = y - 8
+    chart_y = y - 8
     baseline = chart_y - height
-    n        = plot_data.size + 1
-    slot_w   = (CONTENT_W - 10) / n.to_f
-    pair_w   = slot_w * 0.84
-    gap      = 2.0
-    bar_w    = (pair_w - gap) / 2.0
+    n = plot_data.size + 1
+    slot_w = (CONTENT_W - 10) / n.to_f
+    pair_w = slot_w * 0.84
+    gap = 2.0
+    bar_w = (pair_w - gap) / 2.0
 
     pdf.stroke_color C[:border]
     pdf.line_width 0.5
@@ -1949,9 +2006,9 @@ class PortfolioMonthlyReportGenerator
       slot_x = i * slot_w + slot_w * 0.08
 
       [v1, v2].each_with_index do |val, j|
-        val    = val.to_f
-        bar_h  = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
-        x      = slot_x + j * (bar_w + gap)
+        val = val.to_f
+        bar_h = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
+        x = slot_x + j * (bar_w + gap)
         radius = [2, bar_h / 2.0, bar_w / 2.0].min
 
         pdf.fill_color colors[j]
@@ -1962,7 +2019,7 @@ class PortfolioMonthlyReportGenerator
         pdf.fill_color C[:body]
         pdf.font('Geist Pixel Square', size: 4) do
           lbl = fmt_pct(val)
-          lw  = pdf.width_of(lbl)
+          lw = pdf.width_of(lbl)
           pdf.draw_text lbl, at: [[x + (bar_w - lw) / 2.0, 0].max, baseline + bar_h + 2]
         end
       end
@@ -1977,9 +2034,9 @@ class PortfolioMonthlyReportGenerator
     slot_x = plot_data.size * slot_w + slot_w * 0.08
 
     totals.each_with_index do |val, j|
-      val    = val.to_f
-      bar_h  = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
-      x      = slot_x + j * (bar_w + gap)
+      val = val.to_f
+      bar_h = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
+      x = slot_x + j * (bar_w + gap)
       radius = [2, bar_h / 2.0, bar_w / 2.0].min
 
       pdf.fill_color colors[j]
@@ -1990,7 +2047,7 @@ class PortfolioMonthlyReportGenerator
       pdf.fill_color C[:body]
       pdf.font('Geist Pixel Square', size: 4) do
         lbl = fmt_pct(val)
-        lw  = pdf.width_of(lbl)
+        lw = pdf.width_of(lbl)
         pdf.draw_text lbl, at: [[x + (bar_w - lw) / 2.0, 0].max, baseline + bar_h + 2]
       end
     end
@@ -2041,14 +2098,14 @@ class PortfolioMonthlyReportGenerator
     body = rows.map do |r|
       [
         r[:display_name],
-        r[:article_benchmark]   ? "#{fmt_num(r[:article_benchmark],   4)}%" : dash,
+        r[:article_benchmark] ? "#{fmt_num(r[:article_benchmark], 4)}%" : dash,
         r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 4)}%" : dash,
-        r[:deviation]           ? "#{r[:deviation] >= 0 ? '+' : ''}#{fmt_num(r[:deviation], 4)}%" : dash,
-        r[:article_minimum]     ? "#{fmt_num(r[:article_minimum],     4)}%" : dash,
-        r[:portfolio_minimum]   ? "#{fmt_num(r[:portfolio_minimum],   4)}%" : dash,
-        r[:article_maximum]     ? "#{fmt_num(r[:article_maximum],     4)}%" : dash,
-        r[:portfolio_maximum]   ? "#{fmt_num(r[:portfolio_maximum],   4)}%" : dash,
-        r[:compliant]           ? 'CONFORME' : 'ALERTA'
+        r[:deviation] ? "#{r[:deviation] >= 0 ? '+' : ''}#{fmt_num(r[:deviation], 4)}%" : dash,
+        r[:article_minimum] ? "#{fmt_num(r[:article_minimum], 4)}%" : dash,
+        r[:portfolio_minimum] ? "#{fmt_num(r[:portfolio_minimum], 4)}%" : dash,
+        r[:article_maximum] ? "#{fmt_num(r[:article_maximum], 4)}%" : dash,
+        r[:portfolio_maximum] ? "#{fmt_num(r[:portfolio_maximum], 4)}%" : dash,
+        r[:compliant] ? 'CONFORME' : 'ALERTA'
       ]
     end
 
@@ -2067,12 +2124,12 @@ class PortfolioMonthlyReportGenerator
 
       t.row(0).tap do |r|
         r.background_color = C[:primary]
-        r.text_color       = C[:white]
-        r.font             = 'Plus Jakarta Sans'
-        r.size             = 7
-        r.padding          = [5, 6]
-        r.borders          = %i[top bottom]
-        r.border_color     = C[:border]
+        r.text_color = C[:white]
+        r.font = 'Plus Jakarta Sans'
+        r.size = 7
+        r.padding = [5, 6]
+        r.borders = %i[top bottom]
+        r.border_color = C[:border]
       end
 
       (1...sanitized.size).each do |ri|
@@ -2080,16 +2137,16 @@ class PortfolioMonthlyReportGenerator
 
         t.row(ri).tap do |r|
           r.background_color = C[:white]
-          r.font             = 'Plus Jakarta Sans'
-          r.size             = 7
-          r.padding          = [5, 6]
-          r.borders          = %i[top bottom]
-          r.border_color     = C[:border]
-          r.text_color       = C[:body]
+          r.font = 'Plus Jakarta Sans'
+          r.size = 7
+          r.padding = [5, 6]
+          r.borders = %i[top bottom]
+          r.border_color = C[:border]
+          r.text_color = C[:body]
         end
 
-        dev_cell            = t.cells[ri, 3]
-        dev_cell.font       = 'Geist Mono'
+        dev_cell = t.cells[ri, 3]
+        dev_cell.font = 'Geist Mono'
         dev_cell.text_color = if row[:deviation].nil?
                                 C[:muted]
                               elsif row[:deviation] >= 0
@@ -2098,17 +2155,17 @@ class PortfolioMonthlyReportGenerator
                                 C[:danger]
                               end
 
-        status_cell                  = t.cells[ri, 8]
-        status_cell.font             = 'Geist Pixel Square'
-        status_cell.size             = 6
-        status_cell.text_color       = C[:white]
+        status_cell = t.cells[ri, 8]
+        status_cell.font = 'Geist Pixel Square'
+        status_cell.size = 6
+        status_cell.text_color = C[:white]
         status_cell.background_color = row[:compliant] ? C[:success] : C[:danger]
       end
     end
   rescue Prawn::Errors::CannotFit
     pdf.table(sanitized, header: true, width: CONTENT_W) do |t|
       t.row(0).background_color = C[:primary]
-      t.row(0).text_color       = C[:white]
+      t.row(0).text_color = C[:white]
     end
   rescue StandardError => e
     Rails.logger.error("[draw_portfolio_normative_comparison_table] #{e.message}")
@@ -2136,23 +2193,23 @@ class PortfolioMonthlyReportGenerator
       return
     end
 
-    values  = data.map { |_, v| v.to_f }
+    values = data.map { |_, v| v.to_f }
     max_val = [values.map(&:abs).max, 0.001].max
     chart_y = y - 8
     baseline = chart_y - height
-    n       = show_total ? data.size + 1 : data.size
-    slot_w  = (CONTENT_W - 10) / [n, 1].max.to_f
+    n = show_total ? data.size + 1 : data.size
+    slot_w = (CONTENT_W - 10) / [n, 1].max.to_f
 
     pdf.stroke_color C[:border]
     pdf.line_width 0.5
     pdf.stroke_horizontal_line 0, CONTENT_W, at: baseline
 
     data.each_with_index do |(label, val), i|
-      val       = val.to_f
-      bar_h     = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
-      x         = i * slot_w + slot_w * 0.08
-      w         = slot_w * 0.84
-      radius    = [2, bar_h / 2.0, w / 2.0].min
+      val = val.to_f
+      bar_h = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
+      x = i * slot_w + slot_w * 0.08
+      w = slot_w * 0.84
+      radius = [2, bar_h / 2.0, w / 2.0].min
       bar_color = val >= 0 ? color : C[:danger]
 
       pdf.fill_color bar_color
@@ -2162,7 +2219,7 @@ class PortfolioMonthlyReportGenerator
         pdf.fill_color C[:body]
         pdf.font('Geist Pixel Square', size: 4) do
           lbl = val.abs >= 1000 ? fmt_cur(val) : fmt_pct(val)
-          lw  = pdf.width_of(lbl)
+          lw = pdf.width_of(lbl)
           pdf.draw_text lbl, at: [[x + (w - lw) / 2.0, 0].max, baseline + bar_h + 2]
         end
       end
@@ -2176,10 +2233,10 @@ class PortfolioMonthlyReportGenerator
 
     if show_total
       total_val = values.sum
-      x         = data.size * slot_w + slot_w * 0.08
-      w         = slot_w * 0.84
-      bar_h     = [(total_val.abs / max_val * (height - 18)).round(1), height - 18].min
-      radius    = [2, bar_h / 2.0, w / 2.0].min
+      x = data.size * slot_w + slot_w * 0.08
+      w = slot_w * 0.84
+      bar_h = [(total_val.abs / max_val * (height - 18)).round(1), height - 18].min
+      radius = [2, bar_h / 2.0, w / 2.0].min
       bar_color = total_val >= 0 ? C[:primary] : C[:danger]
 
       pdf.fill_color bar_color
@@ -2188,7 +2245,7 @@ class PortfolioMonthlyReportGenerator
       pdf.fill_color C[:body]
       pdf.font('Geist Pixel Square', size: 4) do
         lbl = fmt_cur(total_val)
-        lw  = pdf.width_of(lbl)
+        lw = pdf.width_of(lbl)
         pdf.draw_text lbl, at: [[x + (w - lw) / 2.0, 0].max, baseline + bar_h + 2]
       end
 
@@ -2218,25 +2275,25 @@ class PortfolioMonthlyReportGenerator
     return if flows.empty?
 
     net_values = flows.map { |f| (f[:applications] - f[:redemptions]).to_f }
-    total_net  = net_values.sum
+    total_net = net_values.sum
 
-    running  = 0.0
+    running = 0.0
     segments = flows.each_with_index.map do |f, i|
-      net   = net_values[i]
-      base  = running
+      net = net_values[i]
+      base = running
       running += net
       { period: f[:period], net: net, base: base, end_val: running }
     end
 
     all_vals = segments.flat_map { |s| [s[:base], s[:end_val]] } + [0, total_net]
-    y_min    = [all_vals.min, 0].min
-    y_max    = [all_vals.max, 0].max
-    y_range  = (y_max - y_min).nonzero? || 1.0
+    y_min = [all_vals.min, 0].min
+    y_max = [all_vals.max, 0].max
+    y_range = (y_max - y_min).nonzero? || 1.0
     usable_h = height - 18
-    chart_y  = y - 8
+    chart_y = y - 8
     baseline = chart_y - height
-    n        = segments.size + 1
-    slot_w   = (CONTENT_W - 10) / [n, 1].max.to_f
+    n = segments.size + 1
+    slot_w = (CONTENT_W - 10) / [n, 1].max.to_f
 
     to_px = ->(val) { baseline + ((val - y_min) / y_range * usable_h) }
 
@@ -2246,20 +2303,20 @@ class PortfolioMonthlyReportGenerator
     pdf.stroke_horizontal_line 0, CONTENT_W, at: baseline
 
     segments.each_with_index do |seg, i|
-      net      = seg[:net]
-      x        = i * slot_w + slot_w * 0.08
-      w        = slot_w * 0.84
+      net = seg[:net]
+      x = i * slot_w + slot_w * 0.08
+      w = slot_w * 0.84
       y_bottom = to_px.call([seg[:base], seg[:end_val]].min)
-      y_top    = to_px.call([seg[:base], seg[:end_val]].max)
-      bh       = [y_top - y_bottom, 1].max
-      radius   = [2, bh / 2.0, w / 2.0].min
+      y_top = to_px.call([seg[:base], seg[:end_val]].max)
+      bh = [y_top - y_bottom, 1].max
+      radius = [2, bh / 2.0, w / 2.0].min
 
       pdf.fill_color net >= 0 ? C[:success] : C[:danger]
       pdf.fill_rounded_rectangle [x, y_bottom + bh], w, bh, radius
 
       if i < segments.size - 1
         connector_y = to_px.call(seg[:end_val])
-        next_x      = (i + 1) * slot_w
+        next_x = (i + 1) * slot_w
 
         pdf.stroke_color C[:muted]
         pdf.line_width 0.4
@@ -2271,26 +2328,26 @@ class PortfolioMonthlyReportGenerator
       pdf.fill_color C[:body]
       pdf.font('Geist Pixel Square', size: 4) do
         val_label = fmt_cur(net)
-        lw        = pdf.width_of(val_label)
-        lx        = [x + (w - lw) / 2.0, 0].max
-        ly        = y_top + 2
+        lw = pdf.width_of(val_label)
+        lx = [x + (w - lw) / 2.0, 0].max
+        ly = y_top + 2
         pdf.draw_text val_label, at: [lx, ly]
       end
 
       pdf.fill_color C[:muted]
       pdf.font('Geist Pixel Square', size: 4) do
-        ml  = short_month(seg[:period])[0..2]
+        ml = short_month(seg[:period])[0..2]
         mlw = pdf.width_of(ml)
         pdf.draw_text ml, at: [x + (w - mlw) / 2.0, baseline - 9]
       end
     end
 
-    x        = segments.size * slot_w + slot_w * 0.08
-    w        = slot_w * 0.84
+    x = segments.size * slot_w + slot_w * 0.08
+    w = slot_w * 0.84
     y_bottom = to_px.call([0, total_net].min)
-    y_top    = to_px.call([0, total_net].max)
-    bh       = [y_top - y_bottom, 1].max
-    radius   = [2, bh / 2.0, w / 2.0].min
+    y_top = to_px.call([0, total_net].max)
+    bh = [y_top - y_bottom, 1].max
+    radius = [2, bh / 2.0, w / 2.0].min
 
     pdf.fill_color C[:primary]
     pdf.fill_rounded_rectangle [x, y_bottom + bh], w, bh, radius
@@ -2298,15 +2355,15 @@ class PortfolioMonthlyReportGenerator
     pdf.fill_color C[:body]
     pdf.font('Geist Pixel Square', size: 4) do
       val_label = fmt_cur(total_net)
-      lw        = pdf.width_of(val_label)
-      lx        = [x + (w - lw) / 2.0, 0].max
-      ly        = y_top + 2
+      lw = pdf.width_of(val_label)
+      lx = [x + (w - lw) / 2.0, 0].max
+      ly = y_top + 2
       pdf.draw_text val_label, at: [lx, ly]
     end
 
     pdf.fill_color C[:muted]
     pdf.font('Geist Pixel Square', size: 4) do
-      tl  = 'Total'
+      tl = 'Total'
       tlw = pdf.width_of(tl)
       pdf.draw_text tl, at: [x + (w - tlw) / 2.0, baseline - 9]
     end
@@ -2335,25 +2392,25 @@ class PortfolioMonthlyReportGenerator
   def draw_earnings_waterfall(data:, height:, y:)
     return if data.empty?
 
-    total   = data.sum { |_, v| v.to_f }
-    values  = data.map { |_, v| v.to_f }
+    total = data.sum { |_, v| v.to_f }
+    values = data.map { |_, v| v.to_f }
     max_val = [values.map(&:abs).max, 0.001].max
 
-    chart_y  = y - 8
+    chart_y = y - 8
     baseline = chart_y - height
-    n        = data.size + 1
-    slot_w   = (CONTENT_W - 10) / n.to_f
+    n = data.size + 1
+    slot_w = (CONTENT_W - 10) / n.to_f
 
     pdf.stroke_color C[:border]
     pdf.line_width 0.5
     pdf.stroke_horizontal_line 0, CONTENT_W, at: baseline
 
     data.each_with_index do |(label, val), i|
-      val       = val.to_f
-      bar_h     = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
-      x         = i * slot_w + slot_w * 0.08
-      w         = slot_w * 0.84
-      radius    = [2, bar_h / 2.0, w / 2.0].min
+      val = val.to_f
+      bar_h = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
+      x = i * slot_w + slot_w * 0.08
+      w = slot_w * 0.84
+      radius = [2, bar_h / 2.0, w / 2.0].min
       bar_color = val >= 0 ? C[:secondary] : C[:danger]
 
       pdf.fill_color bar_color
@@ -2362,7 +2419,7 @@ class PortfolioMonthlyReportGenerator
       pdf.fill_color C[:body]
       pdf.font('Geist Pixel Square', size: 4) do
         lbl = fmt_cur(val)
-        lw  = pdf.width_of(lbl)
+        lw = pdf.width_of(lbl)
         pdf.draw_text lbl, at: [[x + (w - lw) / 2.0, 0].max, baseline + bar_h + 2]
       end
 
@@ -2373,9 +2430,9 @@ class PortfolioMonthlyReportGenerator
       end
     end
 
-    x      = data.size * slot_w + slot_w * 0.08
-    w      = slot_w * 0.84
-    bar_h  = [(total.abs / max_val * (height - 18)).round(1), height - 18].min
+    x = data.size * slot_w + slot_w * 0.08
+    w = slot_w * 0.84
+    bar_h = [(total.abs / max_val * (height - 18)).round(1), height - 18].min
     radius = [2, bar_h / 2.0, w / 2.0].min
 
     pdf.fill_color C[:success]
@@ -2384,7 +2441,7 @@ class PortfolioMonthlyReportGenerator
     pdf.fill_color C[:body]
     pdf.font('Geist Pixel Square', size: 4) do
       lbl = fmt_cur(total)
-      lw  = pdf.width_of(lbl)
+      lw = pdf.width_of(lbl)
       pdf.draw_text lbl, at: [[x + (w - lw) / 2.0, 0].max, baseline + bar_h + 2]
     end
 
@@ -2421,12 +2478,12 @@ class PortfolioMonthlyReportGenerator
   # @return [void]
   def draw_gauge_meter(value:, max: 200.0, cx:, cy:, radius: 65)
     hole_ratio = 0.55
-    inner_r    = radius * hole_ratio
-    steps      = 80
-    bg_color   = 'e8e8e8'
+    inner_r = radius * hole_ratio
+    steps = 80
+    bg_color = 'e8e8e8'
     fill_color = 'd8db00'
-    start_deg  = 180.0
-    end_deg    = 0.0
+    start_deg = 180.0
+    end_deg = 0.0
 
     build_arc = lambda do |from_deg, to_deg, r_outer, r_inner, n|
       outer = n.times.map do |i|
@@ -2443,9 +2500,9 @@ class PortfolioMonthlyReportGenerator
     pdf.fill_color bg_color
     pdf.fill_polygon(*build_arc.call(start_deg, end_deg, radius, inner_r, steps))
 
-    clamped    = [[value.to_f, 0].max, max].min
+    clamped = [[value.to_f, 0].max, max].min
     fill_ratio = clamped / max
-    fill_end   = start_deg + (end_deg - start_deg) * fill_ratio
+    fill_end = start_deg + (end_deg - start_deg) * fill_ratio
 
     if fill_ratio > 0.005
       pdf.fill_color fill_color
@@ -2454,8 +2511,8 @@ class PortfolioMonthlyReportGenerator
 
     half_x = cx + radius * Math.cos(Math::PI / 2)
     half_y = cy + radius * Math.sin(Math::PI / 2)
-    in_x   = cx + inner_r * Math.cos(Math::PI / 2)
-    in_y   = cy + inner_r * Math.sin(Math::PI / 2)
+    in_x = cx + inner_r * Math.cos(Math::PI / 2)
+    in_y = cy + inner_r * Math.sin(Math::PI / 2)
 
     pdf.stroke_color C[:white]
     pdf.line_width 1.2
@@ -2473,7 +2530,7 @@ class PortfolioMonthlyReportGenerator
 
     pdf.fill_color C[:muted]
     pdf.font('Geist Pixel Square', size: 6) do
-      pdf.draw_text '0,00%',               at: [cx - radius - 2, cy - 14]
+      pdf.draw_text '0,00%', at: [cx - radius - 2, cy - 14]
       pdf.draw_text "#{fmt_num(max, 2)}%", at: [cx + inner_r + 4, cy - 14]
     end
   rescue StandardError => e
@@ -2492,16 +2549,16 @@ class PortfolioMonthlyReportGenerator
     return pdf.move_down(40) if alloc.empty?
 
     max_alloc = alloc.map { |a| a[:allocation].to_f }.max.nonzero? || 1.0
-    bar_h     = 18
-    spacing   = 20
-    label_w   = 160
+    bar_h = 18
+    spacing = 20
+    label_w = 160
 
     alloc.first(12).each_with_index do |item, i|
-      by      = y - i * spacing - 16
+      by = y - i * spacing - 16
       alloc_f = item[:allocation].to_f
-      bar_w   = (alloc_f / max_alloc * (CONTENT_W - 200)).round(1)
-      color   = C[:chart][i % C[:chart].size]
-      radius  = [2, (bar_h - 4) / 2.0].min
+      bar_w = (alloc_f / max_alloc * (CONTENT_W - 200)).round(1)
+      color = C[:chart][i % C[:chart].size]
+      radius = [2, (bar_h - 4) / 2.0].min
 
       pdf.fill_color C[:gray_dark]
       pdf.font('Geist Pixel Square', size: 7) { pdf.draw_text truncate(item[:fund_name].to_s, 28), at: [0, by + 6] }
@@ -2542,12 +2599,12 @@ class PortfolioMonthlyReportGenerator
 
     max_val = data.map { |d| d[:value].to_f }.max.nonzero? || 1.0
     label_w = 170
-    bar_h   = 18
+    bar_h = 18
     spacing = 22
 
     data.first(8).each_with_index do |item, i|
-      by     = y - i * spacing - 16
-      bar_w  = (item[:value].to_f / max_val * (CONTENT_W - 230)).round(1)
+      by = y - i * spacing - 16
+      bar_w = (item[:value].to_f / max_val * (CONTENT_W - 230)).round(1)
       radius = [2, (bar_h - 4) / 2.0].min
 
       pdf.fill_color C[:gray_dark]
@@ -2581,25 +2638,25 @@ class PortfolioMonthlyReportGenerator
   def draw_horizontal_policy_chart(articles:, y:)
     return if articles.empty?
 
-    label_w    = 80
-    chart_w    = CONTENT_W - label_w - 30
-    bar_h      = 10
-    bar_gap    = 3
-    group_gap  = 18
-    groups     = ['Mínimo', 'Máximo', 'Alvo', 'Carteira atual']
+    label_w = 80
+    chart_w = CONTENT_W - label_w - 30
+    bar_h = 10
+    bar_gap = 3
+    group_gap = 18
+    groups = ['Mínimo', 'Máximo', 'Alvo', 'Carteira atual']
     art_colors = [C[:primary], C[:secondary]] + C[:chart]
 
     all_vals = articles.flat_map { |a| [a[:minimo], a[:maximo], a[:alvo], a[:carteira_atual]] }
-    x_max    = (([all_vals.max.to_f, 1.0].max * 1.15).round(0) / 10.0).ceil * 10.0
+    x_max = (([all_vals.max.to_f, 1.0].max * 1.15).round(0) / 10.0).ceil * 10.0
 
-    n_arts   = articles.size
-    group_h  = n_arts * (bar_h + bar_gap) - bar_gap + 4
-    total_h  = groups.size * group_h + (groups.size - 1) * group_gap + 30
+    n_arts = articles.size
+    group_h = n_arts * (bar_h + bar_gap) - bar_gap + 4
+    total_h = groups.size * group_h + (groups.size - 1) * group_gap + 30
 
-    chart_top    = y - 10
-    chart_left   = label_w
+    chart_top = y - 10
+    chart_left = label_w
     chart_bottom = chart_top - total_h
-    tick_vals    = 9.times.map { |i| (x_max / 8.0 * i).round(1) }
+    tick_vals = 9.times.map { |i| (x_max / 8.0 * i).round(1) }
 
     pdf.save_graphics_state do
       tick_vals.each do |tv|
@@ -2628,13 +2685,13 @@ class PortfolioMonthlyReportGenerator
 
       articles.each_with_index do |art, ai|
         val = case grp_label
-              when 'Mínimo'        then art[:minimo]
-              when 'Máximo'        then art[:maximo]
-              when 'Alvo'          then art[:alvo]
+              when 'Mínimo' then art[:minimo]
+              when 'Máximo' then art[:maximo]
+              when 'Alvo' then art[:alvo]
               when 'Carteira atual' then art[:carteira_atual]
               end
 
-        by    = gy - ai * (bar_h + bar_gap)
+        by = gy - ai * (bar_h + bar_gap)
         bar_w = [x_max > 0 ? (val.to_f / x_max * chart_w) : 0, 0.5].max
         radius = [(bar_h - 2) / 2.0, 2].min
 
@@ -2674,17 +2731,17 @@ class PortfolioMonthlyReportGenerator
   # @param category_colors [Hash{String => String}] category → hex color
   # @return [void]
   def draw_asset_type_bars(asset_groups:, value_key:, format:, category_colors:)
-    label_w  = 130
+    label_w = 130
     bar_area = CONTENT_W - label_w - 70
-    bar_h    = 16
-    gap      = 28
-    max_val  = asset_groups.values.map { |v| v[value_key].to_f }.max.nonzero? || 1.0
+    bar_h = 16
+    gap = 28
+    max_val = asset_groups.values.map { |v| v[value_key].to_f }.max.nonzero? || 1.0
 
     asset_groups.sort_by { |_, v| -v[value_key].to_f }.each_with_index do |(category_label, vals), i|
-      val   = vals[value_key].to_f
+      val = vals[value_key].to_f
       bar_w = [((val.abs / max_val) * bar_area).round(1), val != 0 ? 1.0 : 0].max
       color = category_colors[category_label] || '607d8b'
-      by    = pdf.cursor - (i * gap) - bar_h
+      by = pdf.cursor - (i * gap) - bar_h
 
       pdf.fill_color '666666'
       pdf.font('Geist Pixel Square', size: 7) { pdf.draw_text truncate(category_label, 22), at: [0, by + 4] }
@@ -2727,19 +2784,19 @@ class PortfolioMonthlyReportGenerator
     total = data.sum { |d| d[:value].to_f }
     return if total <= 0
 
-    colors      = C[:chart]
-    steps       = 60
+    colors = C[:chart]
+    steps = 60
     start_angle = 90.0
 
     data.each_with_index do |item, i|
       pct = item[:value].to_f / total
       next if pct <= 0
 
-      sweep   = [pct * 360.0 - gap_deg, 0.1].max
+      sweep = [pct * 360.0 - gap_deg, 0.1].max
       end_angle = start_angle - sweep
-      color   = item[:color] || colors[i % colors.size]
+      color = item[:color] || colors[i % colors.size]
       n_steps = [(pct * steps).ceil, 2].max
-      angles  = n_steps.times.map { |j| start_angle - (sweep * j / (n_steps - 1).to_f) }
+      angles = n_steps.times.map { |j| start_angle - (sweep * j / (n_steps - 1).to_f) }
 
       points = [[cx, cy]] + angles.map do |a|
         rad = a * Math::PI / 180.0
@@ -2751,13 +2808,13 @@ class PortfolioMonthlyReportGenerator
 
       if pct >= 0.04
         mid_rad = ((start_angle + end_angle) / 2.0) * Math::PI / 180.0
-        lr      = radius * 0.73
-        lx      = cx + lr * Math.cos(mid_rad)
-        ly      = cy + lr * Math.sin(mid_rad)
+        lr = radius * 0.73
+        lx = cx + lr * Math.cos(mid_rad)
+        ly = cy + lr * Math.sin(mid_rad)
         pdf.fill_color C[:white]
         pdf.font('Geist Pixel Square', size: 0) do
           lbl = "#{fmt_num(pct * 100, 2)}%"
-          lw  = pdf.width_of(lbl)
+          lw = pdf.width_of(lbl)
           pdf.draw_text lbl, at: [lx - lw / 2.0, ly - 3]
         end
       end
@@ -2768,16 +2825,16 @@ class PortfolioMonthlyReportGenerator
     pdf.fill_color C[:white]
     pdf.fill_circle [cx, cy], radius * hole_ratio
 
-    lx             = legend_x || (cx + radius + 16)
-    ly             = legend_y || (cy + radius / 2.0)
-    line_h         = 16
-    legend_text_x  = lx + 14
-    legend_text_w  = CONTENT_W - legend_text_x
+    lx = legend_x || (cx + radius + 16)
+    ly = legend_y || (cy + radius / 2.0)
+    line_h = 16
+    legend_text_x = lx + 14
+    legend_text_w = CONTENT_W - legend_text_x
 
     data.each_with_index do |item, i|
-      pct   = item[:value].to_f / total
+      pct = item[:value].to_f / total
       color = item[:color] || colors[i % colors.size]
-      iy    = ly - i * line_h
+      iy = ly - i * line_h
 
       pdf.fill_color color
       pdf.fill_circle [lx + 5, iy + 4], 4.5
@@ -2810,18 +2867,18 @@ class PortfolioMonthlyReportGenerator
   def draw_policy_compliance_bars(compliance, y:)
     return if compliance.empty?
 
-    bar_h      = 10
-    group_gap  = 28
-    label_w    = 160
-    bar_area   = CONTENT_W - label_w - 50
-    colors     = C[:chart]
-    all_pcts   = compliance.values.flat_map { |v| [v[:current], v[:target], v[:min], v[:max]].compact }
-    max_pct    = [all_pcts.max.to_f, 100.0].max
-    cur_y      = y - 4
+    bar_h = 10
+    group_gap = 28
+    label_w = 160
+    bar_area = CONTENT_W - label_w - 50
+    colors = C[:chart]
+    all_pcts = compliance.values.flat_map { |v| [v[:current], v[:target], v[:min], v[:max]].compact }
+    max_pct = [all_pcts.max.to_f, 100.0].max
+    cur_y = y - 4
 
     compliance.each_with_index do |(_, v), idx|
-      color  = colors[idx % colors.size]
-      mid_y  = cur_y - idx * group_gap
+      color = colors[idx % colors.size]
+      mid_y = cur_y - idx * group_gap
 
       cart_w = (v[:current] / max_pct * bar_area).round(1)
       pdf.fill_color C[:danger]
@@ -2898,18 +2955,18 @@ class PortfolioMonthlyReportGenerator
   # @param y         [Numeric] starting Y coordinate in points
   # @return [void]
   def draw_comparison_bars_labeled(items, relatives:, y:)
-    label_w     = 150
-    bar_h       = 18
-    spacing     = 26
-    radius      = 2
+    label_w = 150
+    bar_h = 18
+    spacing = 26
+    radius = 2
     val_label_w = 110
-    bar_area    = CONTENT_W - label_w - val_label_w
-    max_val     = items.map { |i| i[:value].to_f.abs }.max.nonzero? || 1.0
+    bar_area = CONTENT_W - label_w - val_label_w
+    max_val = items.map { |i| i[:value].to_f.abs }.max.nonzero? || 1.0
 
     items.each_with_index do |item, i|
-      by    = y - i * spacing - 16
+      by = y - i * spacing - 16
       bar_w = (item[:value].to_f.abs / max_val * bar_area).round(1)
-      rel   = relatives[item[:label]].to_f
+      rel = relatives[item[:label]].to_f
       label = rel > 0 ? "#{fmt_pct(item[:value])} (#{fmt_num(rel, 2)}%)" : fmt_pct(item[:value])
 
       pdf.fill_color C[:muted]
@@ -3010,10 +3067,10 @@ class PortfolioMonthlyReportGenerator
       { color: color, label: art[:label] }
     end
     ly = pdf.cursor
-    x  = 0
+    x = 0
     pdf.fill_color C[:muted]
     pdf.font('Plus Jakarta Sans', size: 6.5) do
-    pdf.draw_text 'Artigo', at: [x, ly]
+      pdf.draw_text 'Artigo', at: [x, ly]
       x += pdf.width_of('Tipo de Ativo') + 10
     end
     legend_items.each do |item|
@@ -3078,17 +3135,17 @@ class PortfolioMonthlyReportGenerator
     build = lambda do |opts|
       pdf.table(sanitized, opts) do |t|
         t.row(0).tap do |r|
-          r.text_color       = C[:body]
+          r.text_color = C[:body]
           r.background_color = C[:bg_light]
-          r.borders          = %i[top bottom]
+          r.borders = %i[top bottom]
         end
 
         (1...sanitized.size).each do |ri|
           t.row(ri).background_color = C[:white]
           sanitized[ri].each_with_index do |cell_val, ci|
-            cell            = t.cells[ri, ci]
-            numeric_val     = extract_numeric_value(cell_val)
-            cell.font       = 'Geist Mono'
+            cell = t.cells[ri, ci]
+            numeric_val = extract_numeric_value(cell_val)
+            cell.font = 'Geist Mono'
             cell.text_color = color_for_value(numeric_val)
           end
         end
@@ -3097,13 +3154,13 @@ class PortfolioMonthlyReportGenerator
           last = sanitized.size - 1
           t.row(last).tap do |r|
             r.background_color = C[:bg_light]
-            r.borders          = %i[top bottom]
-            r.border_color     = C[:body]
+            r.borders = %i[top bottom]
+            r.border_color = C[:body]
           end
           sanitized[last].each_with_index do |cell_val, ci|
             cell = t.cells[last, ci]
             if numeric_cell?(cell_val)
-              cell.font       = 'Geist Pixel Square'
+              cell.font = 'Geist Pixel Square'
               cell.text_color = color_for_value(extract_numeric_value(cell_val))
             else
               cell.text_color = C[:body]
@@ -3163,9 +3220,12 @@ class PortfolioMonthlyReportGenerator
   # @param value [Numeric]
   # @return [String] hex color string
   def color_for_value(value)
-    if value < 0 then C[:danger]
-    elsif value == 0 then C[:muted]
-    else C[:muted]
+    if value < 0 then
+      C[:danger]
+    elsif value == 0 then
+      C[:muted]
+    else
+      C[:muted]
     end
   end
 
@@ -3248,7 +3308,7 @@ class PortfolioMonthlyReportGenerator
         if info
           pdf.fill_color C[:muted]
           pdf.font('Geist Mono', size: 8) do
-            info_text  = info.to_s.upcase
+            info_text = info.to_s.upcase
             info_width = pdf.width_of(info_text)
             pdf.draw_text info_text, at: [CONTENT_W - info_width, start_y]
           end
@@ -3290,9 +3350,9 @@ class PortfolioMonthlyReportGenerator
 
     12.times.map do |i|
       period = (start_date + i.months).beginning_of_month
-      ret    = history_months.include?(period) ?
-                 @portfolio.portfolio_return_percentage(period) :
-                 BigDecimal("0")
+      ret = history_months.include?(period) ?
+              @portfolio.portfolio_return_percentage(period) :
+              BigDecimal("0")
 
       { period: period, value: ret, label: short_month(period) }
     end
@@ -3317,8 +3377,8 @@ class PortfolioMonthlyReportGenerator
 
     (1..12).map do |month|
       period = Date.new(year, month, 1)
-      m      = hist_by_month[period]
-      value  = m ? total_patrimony.(m) : 0.0
+      m = hist_by_month[period]
+      value = m ? total_patrimony.(m) : 0.0
       [short_month(period), value]
     end
   end
@@ -3359,12 +3419,12 @@ class PortfolioMonthlyReportGenerator
                        .to_set
 
     (1..12).map do |month|
-      period     = Date.new(year, month, 1)
-      end_date   = [period.end_of_month, @reference_date].min
+      period = Date.new(year, month, 1)
+      end_date = [period.end_of_month, @reference_date].min
 
       ret = if history_months.include?(period)
               @portfolio.portfolio_twr_return_on(
-                period - 1.day,   # ← mesmo padrão dos cards
+                period - 1.day, # ← mesmo padrão dos cards
                 end_date
               )
             else
@@ -3384,7 +3444,7 @@ class PortfolioMonthlyReportGenerator
   #
   # @return [Array<Hash>] 12 elements, each with +:period+, +:value+, +:label+
   def build_yearly_meta_series
-    year         = @reference_date.year
+    year = @reference_date.year
     monthly_rate = @portfolio.annual_interest_rate.to_f
 
     history_months = data[:monthly_history]
@@ -3394,9 +3454,9 @@ class PortfolioMonthlyReportGenerator
 
     (1..12).map do |month|
       period = Date.new(year, month, 1)
-      val    = history_months.include?(period) ?
-                 meta_monthly_series[period][:ipca] + monthly_rate :
-                 0.0
+      val = history_months.include?(period) ?
+              meta_monthly_series[period][:ipca] + monthly_rate :
+              0.0
 
       { period: period, value: val, label: short_month(period) }
     end
@@ -3412,7 +3472,7 @@ class PortfolioMonthlyReportGenerator
   #
   # @return [Array<Hash>] 12 elements, each with +:period+, +:value+, +:label+
   def build_meta_series
-    start_date   = (@reference_date - 11.months).beginning_of_month
+    start_date = (@reference_date - 11.months).beginning_of_month
     monthly_rate = @portfolio.annual_interest_rate.to_f
 
     history_months = data[:monthly_history]
@@ -3444,9 +3504,9 @@ class PortfolioMonthlyReportGenerator
   # @return [Hash{Date => Hash}]
   def meta_monthly_series
     @meta_monthly_series ||= begin
-                               ipca_index   = EconomicIndex.find_by(abbreviation: 'IPCA')
+                               ipca_index = EconomicIndex.find_by(abbreviation: 'IPCA')
                                monthly_rate = @portfolio.annual_interest_rate.to_f
-                               start_date   = (@reference_date - 11.months).beginning_of_month
+                               start_date = (@reference_date - 11.months).beginning_of_month
 
                                ipca_by_month = if ipca_index
                                                  ipca_index.economic_index_histories
@@ -3457,9 +3517,9 @@ class PortfolioMonthlyReportGenerator
                                                end
 
                                Hash.new do |h, date|
-                                 key      = date.beginning_of_month
+                                 key = date.beginning_of_month
                                  ipca_val = ipca_by_month[key]&.value.to_f || 0.0
-                                 h[key]   = { ipca: ipca_val, meta: monthly_rate + ipca_val }
+                                 h[key] = { ipca: ipca_val, meta: monthly_rate + ipca_val }
                                end
                              end
   end
