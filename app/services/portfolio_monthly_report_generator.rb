@@ -1182,11 +1182,17 @@ class PortfolioMonthlyReportGenerator
         bar_data = monthly_returns.zip(meta_series).map do |cart, meta|
           [cart[:label], cart[:value].to_f, meta[:value].to_f]
         end
+
+        yearly_twr  = perf[:yearly_return].to_f
+        meta_ytd    = data[:benchmarks][:meta][:ytd].to_f
+        bar_data << ['Total', yearly_twr, meta_ytd]
+
         draw_grouped_bar_chart(
           data: bar_data,
           labels: ['Carteira', 'Meta'],
           colors: [C[:primary], C[:warning]],
-          height: 100, y: pdf.cursor
+          height: 100, y: pdf.cursor,
+          skip_auto_total: true
         )
         pdf.move_down 115
       end
@@ -1908,7 +1914,7 @@ class PortfolioMonthlyReportGenerator
   # @param height [Numeric] total chart height in points
   # @param y      [Numeric] Y coordinate of the top of the chart area
   # @return [void]
-  def draw_grouped_bar_chart(data:, labels:, colors:, height:, y:)
+  def draw_grouped_bar_chart(data:, labels:, colors:, height:, y:, skip_auto_total: false)
     if data.empty?
       pdf.fill_color C[:gray]
       pdf.font('Plus Jakarta Sans', size: 9, style: :italic) do
@@ -1917,13 +1923,19 @@ class PortfolioMonthlyReportGenerator
       return
     end
 
-    totals  = [data.sum { |_, v1, _| v1.to_f }, data.sum { |_, _, v2| v2.to_f }]
-    values  = data.flat_map { |_, a, b| [a, b] }.map(&:to_f) + totals
+    plot_data = skip_auto_total ? data[0...-1] : data
+    totals    = if skip_auto_total
+                  [data.last[1].to_f, data.last[2].to_f]
+                else
+                  [data.sum { |_, v1, _| v1.to_f }, data.sum { |_, _, v2| v2.to_f }]
+                end
+
+    values  = plot_data.flat_map { |_, a, b| [a, b] }.map(&:to_f) + totals
     max_val = [values.map(&:abs).max, 0.001].max
 
     chart_y  = y - 8
     baseline = chart_y - height
-    n        = data.size + 1
+    n        = plot_data.size + 1
     slot_w   = (CONTENT_W - 10) / n.to_f
     pair_w   = slot_w * 0.84
     gap      = 2.0
@@ -1933,13 +1945,13 @@ class PortfolioMonthlyReportGenerator
     pdf.line_width 0.5
     pdf.stroke_horizontal_line 0, CONTENT_W, at: baseline
 
-    data.each_with_index do |(label, v1, v2), i|
+    plot_data.each_with_index do |(label, v1, v2), i|
       slot_x = i * slot_w + slot_w * 0.08
 
       [v1, v2].each_with_index do |val, j|
-        val   = val.to_f
-        bar_h = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
-        x     = slot_x + j * (bar_w + gap)
+        val    = val.to_f
+        bar_h  = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
+        x      = slot_x + j * (bar_w + gap)
         radius = [2, bar_h / 2.0, bar_w / 2.0].min
 
         pdf.fill_color colors[j]
@@ -1962,7 +1974,8 @@ class PortfolioMonthlyReportGenerator
       end
     end
 
-    slot_x = data.size * slot_w + slot_w * 0.08
+    slot_x = plot_data.size * slot_w + slot_w * 0.08
+
     totals.each_with_index do |val, j|
       val    = val.to_f
       bar_h  = [(val.abs / max_val * (height - 18)).round(1), height - 18].min
