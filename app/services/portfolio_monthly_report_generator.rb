@@ -3346,10 +3346,17 @@ class PortfolioMonthlyReportGenerator
                        .to_set
 
     (1..12).map do |month|
-      period = Date.new(year, month, 1)
-      ret    = history_months.include?(period) ?
-                 @portfolio.portfolio_return_percentage(period) :
-                 BigDecimal("0")
+      period     = Date.new(year, month, 1)
+      end_date   = [period.end_of_month, @reference_date].min
+
+      ret = if history_months.include?(period)
+              @portfolio.portfolio_twr_return_on(
+                period - 1.day,   # ← mesmo padrão dos cards
+                end_date
+              )
+            else
+              BigDecimal("0")
+            end
 
       { period: period, value: ret, label: short_month(period) }
     end
