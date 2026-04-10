@@ -77,3 +77,6 @@ application.register("toast", ToastController);
 import NestedNormativeArticles from "controllers/nested_normative_articles_controller";
 
 application.register("nested-normative-articles", NestedNormativeArticles);
+
+import SidebarController from "controllers/sidebar_controller"
+application.register("sidebar", SidebarController)

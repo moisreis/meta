@@ -135,17 +135,17 @@
 	/* Neutral
      * Structural colors for surfaces, borders, and backgrounds.
      * Scale: 50 (near-white) → 950 (near-black). */
-	--color-neutral-50: oklch(98.5% 0 0);
-	--color-neutral-100: oklch(97% 0 0);
-	--color-neutral-200: oklch(92.2% 0 0);
-	--color-neutral-300: oklch(87% 0 0);
-	--color-neutral-400: oklch(70.8% 0 0);
-	--color-neutral-500: oklch(55.6% 0 0);
-	--color-neutral-600: oklch(43.9% 0 0);
-	--color-neutral-700: oklch(37.1% 0 0);
-	--color-neutral-800: oklch(26.9% 0 0);
-	--color-neutral-900: oklch(20.5% 0 0);
-	--color-neutral-950: oklch(14.5% 0 0);
+	--color-neutral-50: oklch(98.48% 0.0037 151.825);
+	--color-neutral-100: oklch(96.8% 0.0067 115.705);
+	--color-neutral-200: oklch(92.44% 0.0139 107.95);
+	--color-neutral-300: oklch(86.94% 0.0227 113.461);
+	--color-neutral-400: oklch(70.97% 0.0395 114.154);
+	--color-neutral-500: oklch(55.6% 0.0468 115.705);
+	--color-neutral-600: oklch(44.71% 0.0414 127.908);
+	--color-neutral-700: oklch(37.57% 0.0391 123.089);
+	--color-neutral-800: oklch(27.26% 0.0321 97.429);
+	--color-neutral-900: oklch(21.69% 0.0302 115.68);
+	--color-neutral-950: oklch(14.51% 0.0262 110.117);
 
 	/* Surface & Structural
      * Single-purpose tokens for layout and component backgrounds.
@@ -155,9 +155,9 @@
      * --color-input       → Input field background tint.
      * --color-accent      → Subtle hover/active surface highlight. */
 	--color-white: oklch(100% 0 0);
-	--color-background: #f8f8f7;
+	--color-background: oklch(96.8% 0.0067 115.705);
 	--color-transparent: transparent;
-	--color-border: oklch(95% 0 0);
+	--color-border: oklch(92.44% 0.0139 107.95);
 	--color-input: #fcfcfe;
 	--color-accent: oklch(97% 0 0);
 
@@ -379,7 +379,7 @@
 	input[type="submit"],
 	button,
 	.button {
-		@apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-xs text-primary-50 font-mono uppercase !font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-primary-100 focus:outline-primary-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-primary-100 focus-visible:outline-offset-2 focus-visible:outline-primary-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-primary-600 hover:bg-primary-600/90 active:bg-primary-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-primary-50 [&>svg]:!size-3.5 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer select-none;
+		@apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-xs text-neutral-50 font-mono uppercase !font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-neutral-100 focus:outline-neutral-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-neutral-100 focus-visible:outline-offset-2 focus-visible:outline-neutral-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-neutral-600 hover:bg-neutral-600/90 active:bg-neutral-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-neutral-50 [&>svg]:!size-3.5 [&>span>svg]:!size-4 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer select-none;
 	}
 
 	/**
@@ -397,7 +397,7 @@
      * Enlarges the inner SVG slightly to fill the compact space.
      */
 	.button-icon {
-		@apply [&>svg]:!size-4 !h-9 !w-9 !p-2;
+		@apply [&>svg]:!size-4 [&>span>svg]:!size-4 !h-9 !w-9 !p-2;
 	}
 
 	/**
@@ -434,7 +434,17 @@
      * and visual consistency with the sidebar layout.
      */
 	.button-sidebar {
-		@apply !h-7 !px-2.5 !py-0.75 text-primary-50 bg-primary-950 hover:!bg-primary-900 !shadow-none [&>svg]:!stroke-primary-50;
+		@apply !h-7 !px-2.5 !py-0.75 text-neutral-50 bg-neutral-900 hover:!bg-neutral-900 !shadow-none [&>svg]:!stroke-neutral-50;
+	}
+
+	/**
+ * .button-sidebar
+ * Compact button variant designed for use inside sidebar navigation areas.
+ * Uses the primary dark background with light text to maintain contrast
+ * and visual consistency with the sidebar layout.
+ */
+	.button-sidebar--active {
+		@apply !h-7 !px-2.5 !py-0.75 text-neutral-900 bg-neutral-200 hover:!bg-neutral-200 !shadow-none [&>svg]:!stroke-neutral-900;
 	}
 
 	/**
@@ -558,6 +568,22 @@
 		-ms-overflow-style: none;
 		scrollbar-width: none;
 	}
+
+	/* ── Sidebar collapse ─────────────────────────────────────── */
+	aside[data-collapsed="true"] {
+		display: none;
+	}
+
+	div[data-sidebar-target="container"][data-sidebar-collapsed="true"] {
+		grid-column: span 16;
+	}
+	/* Sidebar open → show collapse icon, hide expand icon */
+	.icon-sidebar-close { display: none; }
+	.icon-sidebar-open  { display: flex; }
+
+	/* Sidebar closed → flip them */
+	[data-sidebar-collapsed="true"] .icon-sidebar-open  { display: none; }
+	[data-sidebar-collapsed="true"] .icon-sidebar-close { display: flex; }
 
 	/**
      * Global custom scrollbar styling.

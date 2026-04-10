@@ -17,15 +17,15 @@
 <div id="sidebarCheckingAccount"
      class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-background border-l border-border overflow-y-scroll z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
 
-     <div class="!h-20 flex flex-row justify-between items-center px-16 mb-3 !bg-white border-b border-border">
-       <h3 class="font-heading capitalize font-medium text-3xl line-clamp-2">Nova Conta Corrente</h3>
+  <div class="!h-20 flex flex-row justify-between items-center px-16 mb-3 !bg-white border-b border-border">
+    <h3 class="font-heading capitalize font-medium text-3xl line-clamp-2">Nova Conta Corrente</h3>
 
-     <%= button_tag id: "closeCheckingAccountBtn",
-                    type: "button",
-                    class: "button button-danger button-icon button-small" do %>
-       <%= inline_svg_tag "icons/x.svg" %>
-     <% end %>
-   </div>
+    <%= button_tag id: "closeCheckingAccountBtn",
+                   type: "button",
+                   class: "button button-danger button-icon button-small" do %>
+      <%= inline_svg_tag "icons/x.svg" %>
+    <% end %>
+  </div>
 
   <%= form_with model: [@portfolio, CheckingAccount.new],
                 class: "flex flex-col h-full" do |form| %>
@@ -41,14 +41,20 @@
                  fieldset_title: "Identificação",
                  fieldset_desc: "Nomeie a conta e informe a instituição financeira responsável." do %>
 
-        <%= render "partials/modules/input-field",
-                   f: form,
-                   name: :name,
-                   label: "Nome",
-                   placeholder: "CC Principal, Conta Reserva",
-                   desc: "Escolha um nome descritivo para identificar esta conta.",
-                   field_type: :text_field,
-                   icon_name: "tag" %>
+        <%# Campo name oculto — preenchido automaticamente, não exibido ao usuário %>
+        <div class="hidden">
+          <%= render "partials/modules/input-field",
+                     f: form,
+                     name: :name,
+                     label: "Nome",
+                     placeholder: "CC Principal, Conta Reserva",
+                     desc: "Escolha um nome descritivo para identificar esta conta.",
+                     field_type: :text_field,
+                     icon_name: "tag",
+                     value: "Conta Corrente" %>
+        </div>
+
+        <%= form.hidden_field :name, value: "Conta Corrente" %>
 
         <%= render "partials/modules/input-field",
                    f: form,

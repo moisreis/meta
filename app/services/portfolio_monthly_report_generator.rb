@@ -1270,7 +1270,7 @@ class PortfolioMonthlyReportGenerator
         apps = monthly_apps_for(fi)
         reds = monthly_reds_for(fi)
         earn != 0 || apps != 0 || reds != 0
-      end.each do |fi|
+      end.sort_by { |fi| fi.investment_fund.fund_name }.each do |fi|  # ← aqui
         perf = perf_by_fi[fi.id]
         init = perf&.initial_balance.to_f
         earn = perf&.earnings.to_f
@@ -1279,11 +1279,9 @@ class PortfolioMonthlyReportGenerator
         move = apps - reds
         final = init + earn + move
         rent = perf&.monthly_return.to_f
-
         total_earn += earn
         total_move += move
         total_final += final
-
         fund_rows << [
           fi.investment_fund.fund_name,
           fmt_cur(earn), fmt_cur(move), fmt_cur(final), fmt_pct(rent)
@@ -1556,36 +1554,26 @@ class PortfolioMonthlyReportGenerator
       draw_section(title: 'Distribuição por Categoria Normativa', border: true, spacing: 10) do
         category_groups = Hash.new(0.0)
 
-        data[:fund_investments].each do |fi|
-          alloc = fi.percentage_allocation.to_f
-          arts = fi.investment_fund.investment_fund_articles
-
-          if arts.any?
-            arts.each do |ifa|
-              cat = ifa.normative_article&.category.presence || 'Não Classificado'
-              cat = 'Fundos ou ETF 100% TPF' if cat == 'Renda Fixa Geral'
-              category_groups[cat] += alloc / arts.size
-            end
-          else
-            category_groups['Não Classificado'] += alloc
-          end
+        data[:portfolio_normative].each do |r|
+          cat = r[:display_name].presence || 'Não Classificado'
+          category_groups[cat] += r[:carteira_atual].to_f
         end
 
         cat_data = category_groups.map { |k, v| { label: k, value: v } }
-                                  .reject { |d| d[:value] <= 0 }.sort_by { |d| -d[:value] }
+                                  .reject { |d| d[:value] <= 0 }
+                                  .sort_by { |d| -d[:value] }
 
         category_colors = {
-          'Renda Fixa' => C[:primary],
-          'Renda Variável' => C[:secondary],
+          'Renda Fixa'            => C[:primary],
+          'Renda Variável'        => C[:secondary],
           'Investimento Exterior' => C[:warning],
-          'Não Classificado' => C[:muted]
+          'Não Classificado'      => C[:muted]
         }
         cat_data.each { |d| d[:color] = category_colors[d[:label]] }
 
         draw_donut_chart(data: cat_data, cx: 130, cy: pdf.cursor - 90, radius: 80,
                          legend_x: 225, legend_y: pdf.cursor - 40)
-      end
-    end
+      end    end
 
     compliance = data[:policy_compliance]
     return if compliance.empty?
@@ -2624,23 +2612,24 @@ class PortfolioMonthlyReportGenerator
       return
     end
 
-    max_val = data.map { |d| d[:value].to_f }.max.nonzero? || 1.0
+    max_val = data.map { |d| d[:value].to_f.abs }.max.nonzero? || 1.0  # ← .abs para negativos não quebrarem a escala
     label_w = 170
     bar_h = 18
     spacing = 22
 
     data.first(8).each_with_index do |item, i|
       by = y - i * spacing - 16
-      bar_w = (item[:value].to_f / max_val * (CONTENT_W - 230)).round(1)
+      bar_w = (item[:value].to_f.abs / max_val * (CONTENT_W - 230)).round(1)  # ← .abs na largura
       radius = [2, (bar_h - 4) / 2.0].min
+      bar_color = item[:value].to_f < 0 ? C[:danger] : color  # ← vermelho para negativos
 
       pdf.fill_color C[:gray_dark]
       pdf.font('Geist Pixel Square', size: 7) { pdf.draw_text truncate(item[:label].to_s, 26), at: [0, by + 6] }
 
-      pdf.fill_color color
+      pdf.fill_color bar_color
       pdf.fill_rounded_rectangle [label_w, by + bar_h - 2], [bar_w, 1].max, bar_h - 4, radius
 
-      pdf.fill_color C[:gray]
+      pdf.fill_color item[:value].to_f < 0 ? C[:danger] : C[:gray]  # ← label também em vermelho
       pdf.font('Geist Pixel Square', size: 7) { pdf.draw_text fmt_cur(item[:value]), at: [label_w + bar_w + 4, by + 6] }
 
       break if by < 20

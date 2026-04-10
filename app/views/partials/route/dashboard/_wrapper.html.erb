@@ -30,23 +30,20 @@
   Meta - <%= page_title %>
 <% end %>
 
-<main class="grid grid-cols-16 justify-start w-screen no-scrollbar">
+<main class="grid grid-cols-16 justify-start w-screen no-scrollbar"
+      data-controller="sidebar">
 
-  <%# Explanation:: This line calls the sidebar menu into the layout.
-    #               It places the navigation links on the left side so
-    #               the user can move between different app features.
-    %>
   <%= render 'partials/route/dashboard/sidebar' %>
 
-  <%# Explanation:: This block renders the main content area of the screen.
-    #               It accepts titles and descriptions and acts as a
-    #               placeholder where the actual page information is shown.
-    %>
-  <%= render 'partials/route/dashboard/container',
-             page_title: page_title,
-             page_desc: page_desc,
-             current_view: current_view do
-  %>
-    <%= yield %>
-  <% end %>
+  <%# Add data-sidebar-target here so the controller can resize it %>
+  <div data-sidebar-target="container"
+       class="col-span-10 md:col-span-12 xl:col-span-14">
+    <%= render 'partials/route/dashboard/container',
+               page_title: page_title,
+               page_desc: page_desc,
+               current_view: current_view do %>
+      <%= yield %>
+    <% end %>
+  </div>
+
 </main>

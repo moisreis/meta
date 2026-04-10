@@ -23,7 +23,18 @@
 <%# This container groups the portfolio dropdown and the direct link
     to view details. It allows the user to quickly navigate between
     different investment sets managed within their account. %>
-<div class="h-14 px-16 flex flex-row justify-between items-center gap-6 bg-white border-b border-border">
+<div class="h-14 px-16 flex flex-row justify-between items-center gap-6 bg-white/90 backdrop-blur-lg border-b border-border sticky top-0 z-[99999999999]">
+
+  <button data-action="click->sidebar#toggle"
+          class="button button-outline button-icon button-small flex-shrink-0"
+          title="Menu">
+  <span class="icon-sidebar-open">
+    <%= inline_svg_tag "icons/panel-left-close.svg" %>
+  </span>
+    <span class="icon-sidebar-close">
+      <%= inline_svg_tag "icons/panel-left-open.svg" %>
+    </span>
+  </button>
 
   <div class="flex flex-row items-center gap-3">
     <%= form_with url: "#",
