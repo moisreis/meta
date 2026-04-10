@@ -41,8 +41,6 @@
                  fieldset_title: "Identificação",
                  fieldset_desc: "Nomeie a conta e informe a instituição financeira responsável." do %>
 
-        <%# Campo name oculto — preenchido automaticamente, não exibido ao usuário %>
-        <div class="hidden">
           <%= render "partials/modules/input-field",
                      f: form,
                      name: :name,
@@ -50,11 +48,7 @@
                      placeholder: "CC Principal, Conta Reserva",
                      desc: "Escolha um nome descritivo para identificar esta conta.",
                      field_type: :text_field,
-                     icon_name: "tag",
-                     value: "Conta Corrente" %>
-        </div>
-
-        <%= form.hidden_field :name, value: "Conta Corrente" %>
+                     icon_name: "tag" %>
 
         <%= render "partials/modules/input-field",
                    f: form,
