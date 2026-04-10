@@ -364,6 +364,33 @@ class PortfolioMonthlyReportGenerator
   #   * +:portfolio_maximum+     [Float, nil]
   #   * +:compliant+             [Boolean]
   def collect_portfolio_normative_data
+    # Calcula a alocação real por artigo (mesma lógica de collect_investment_policy_data)
+    active_fi_ids = (@performance_data[:performances] || [])
+                      .select { |p| p.earnings.to_f != 0 || p.initial_balance.to_f > 0 }
+                      .map(&:fund_investment_id)
+                      .to_set
+
+    perf_by_fi = (@performance_data[:performances] || [])
+                   .each_with_object({}) { |p, h| h[p.fund_investment_id] = p }
+
+    total_initial = perf_by_fi.values.sum { |p| p.initial_balance.to_f }
+
+    alloc_by_article = Hash.new(0.0)
+    @portfolio.fund_investments
+              .includes(investment_fund: { investment_fund_articles: :normative_article })
+              .select { |fi| active_fi_ids.include?(fi.id) }
+              .each do |fi|
+      perf = perf_by_fi[fi.id]
+      next unless perf && perf.initial_balance.to_f > 0
+
+      weight = total_initial > 0 ? (perf.initial_balance.to_f / total_initial * 100) : 0.0
+
+      fi.investment_fund.investment_fund_articles.each do |ifa|
+        next unless ifa.normative_article
+        alloc_by_article[ifa.normative_article.id] += weight / fi.investment_fund.investment_fund_articles.size
+      end
+    end
+
     @portfolio
       .portfolio_normative_articles
       .includes(:normative_article)
@@ -372,33 +399,37 @@ class PortfolioMonthlyReportGenerator
 
       art_bench = art.benchmark_target&.to_f
       prt_bench = pna.benchmark_target&.to_f
-      art_min = art.minimum_target&.to_f
-      art_max = art.maximum_target&.to_f
-      prt_min = pna.minimum_target&.to_f
-      prt_max = pna.maximum_target&.to_f
+      art_min   = art.minimum_target&.to_f
+      art_max   = art.maximum_target&.to_f
+      prt_min   = pna.minimum_target&.to_f
+      prt_max   = pna.maximum_target&.to_f
+
+      # Alocação real calculada a partir do initial_balance das performances
+      carteira_atual = alloc_by_article[art.id].round(4)
 
       deviation = (prt_bench && art_bench) ? (prt_bench - art_bench).round(4) : nil
 
-      compliant = if prt_bench && art_min && art_max
-                    prt_bench >= art_min && prt_bench <= art_max
-                  elsif prt_bench && art_min
-                    prt_bench >= art_min
-                  elsif prt_bench && art_max
-                    prt_bench <= art_max
+      compliant = if prt_min && prt_max && prt_max > 0
+                    carteira_atual >= prt_min && carteira_atual <= prt_max
+                  elsif prt_min
+                    carteira_atual >= prt_min
+                  elsif prt_max
+                    carteira_atual <= prt_max
                   else
                     true
                   end
 
       {
-        display_name: art.display_name,
-        article_benchmark: art_bench,
-        portfolio_benchmark: prt_bench,
-        deviation: deviation,
-        article_minimum: art_min,
-        portfolio_minimum: prt_min,
-        article_maximum: art_max,
-        portfolio_maximum: prt_max,
-        compliant: compliant
+        display_name:        art.display_name,
+        carteira_atual:      carteira_atual,   # ← alocação real calculada
+        article_benchmark:   art_bench,
+        portfolio_benchmark: prt_bench,        # ← alvo do portfólio
+        deviation:           deviation,
+        article_minimum:     art_min,
+        portfolio_minimum:   prt_min,
+        article_maximum:     art_max,
+        portfolio_maximum:   prt_max,
+        compliant:           compliant
       }
     end
   rescue StandardError => e
@@ -1798,10 +1829,8 @@ class PortfolioMonthlyReportGenerator
     end
 
     return if pna_data.empty?
-
-    return if pna_data.empty?
     draw_page(title: @portfolio.name) do
-      draw_section(title: 'Metas da Carteira vs. Artigos Normativos',
+      draw_section(title: 'Verificação de conformidade da carteira',
                    info: month_year_label,
                    border: true,
                    spacing: 20) do
@@ -1816,23 +1845,21 @@ class PortfolioMonthlyReportGenerator
         ]
 
         body = pna_data.map do |r|
-          compliant = if r[:article_minimum] && r[:article_maximum]
-                        v = r[:portfolio_benchmark].to_f
-                        v >= r[:article_minimum].to_f && v <= r[:article_maximum].to_f
-                      elsif r[:article_minimum]
-                        r[:portfolio_benchmark].to_f >= r[:article_minimum].to_f
-                      elsif r[:article_maximum]
-                        r[:portfolio_benchmark].to_f <= r[:article_maximum].to_f
+          compliant = if r[:portfolio_minimum] && r[:portfolio_maximum] && r[:portfolio_maximum] > 0
+                        r[:carteira_atual] >= r[:portfolio_minimum] && r[:carteira_atual] <= r[:portfolio_maximum]
+                      elsif r[:portfolio_minimum]
+                        r[:carteira_atual] >= r[:portfolio_minimum]
+                      elsif r[:portfolio_maximum]
+                        r[:carteira_atual] <= r[:portfolio_maximum]
                       else
                         true
                       end
-
           [
             r[:display_name],
-            r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 2)}%" : '—',
-            r[:article_benchmark] ? "#{fmt_num(r[:article_benchmark], 2)}%" : '—',
-            r[:article_maximum] ? "#{fmt_num(r[:article_maximum], 2)}%" : '—',
-            r[:article_minimum] ? "#{fmt_num(r[:article_minimum], 2)}%" : '—',
+            r[:carteira_atual]      ? "#{fmt_num(r[:carteira_atual],      2)}%" : '—',  # ← alocação real
+            r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 2)}%" : '—',  # ← alvo
+            r[:portfolio_maximum]   ? "#{fmt_num(r[:portfolio_maximum],   2)}%" : '—',  # ← máximo do portfólio
+            r[:portfolio_minimum]   ? "#{fmt_num(r[:portfolio_minimum],   2)}%" : '—',  # ← mínimo do portfólio
             compliant ? 'Sim' : 'Não'
           ]
         end
@@ -3250,7 +3277,7 @@ class PortfolioMonthlyReportGenerator
   # @return [void]
   def page_header(title)
     pdf.pad 10 do
-      pdf.font('Source Serif 4', size: 24) do
+      pdf.font('Source Serif 4', size: 18) do
         text_h = pdf.height_of(title, width: CONTENT_W - 140)
         pdf.text_box title, width: CONTENT_W - 140, height: text_h, overflow: :expand
         pdf.move_down text_h
