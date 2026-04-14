@@ -34,20 +34,21 @@
     <div class="flex-grow px-16 space-y-8 overflow-y-auto w-full">
 
 <%# Destino ─ select de todos os fundos cadastrados %>
-      <%= render "partials/blocks/fieldset",
-                 fieldset_title: "Destino da Transação",
-                 fieldset_desc: "Selecione o fundo que receberá a aplicação." do %>
+<%# Destino ─ select de todos os fundos cadastrados por CNPJ %>
+<%= render "partials/blocks/fieldset",
+           fieldset_title: "Destino da Transação",
+           fieldset_desc: "Selecione o fundo pelo CNPJ que receberá a aplicação." do %>
 
-        <%= form.hidden_field :portfolio_id, value: @portfolio.id %>
+  <%= form.hidden_field :portfolio_id, value: @portfolio.id %>
 
-        <%= render "partials/modules/select",
-                   f: form,
-                   name: :investment_fund_id,
-                   label: "Fundo alvo",
-                   desc: "Selecione o fundo de investimento.",
-                   options_collection: InvestmentFund.order(:fund_name)
-                                                     .map { |f| [f.fund_name, f.id] } %>
-      <% end %>
+  <%= render "partials/modules/select",
+             f: form,
+             name: :investment_fund_id,
+             label: "Fundo alvo",
+             desc: "Busque pelo CNPJ do fundo de investimento.",
+             options_collection: InvestmentFund.order(:cnpj)
+                                               .map { |f| ["#{f.cnpj} / #{f.fund_name}", f.id] } %>
+<% end %>
 
       <%# Valores Financeiros %>
       <%= render "partials/blocks/fieldset",

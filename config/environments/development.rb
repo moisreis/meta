@@ -9,6 +9,8 @@ Rails.application.configure do
   # Do not eager load code on boot.
   config.eager_load = false
 
+  config.lograge.enabled = true
+
   config.logger = ActiveSupport::Logger.new($stdout)
   config.log_level = :debug
 
@@ -44,7 +46,7 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
 
   # Print deprecation notices to the Rails logger.
-  config.active_support.deprecation = :log
+  config.active_support.deprecation = :silence
 
   # Raise an error on page load if there are pending migrations.
   config.active_record.migration_error = :page_load

@@ -35,6 +35,7 @@ gem 'prawn-table'
 gem "victor"
 gem "prawn-svg"
 gem 'inputmask-rails'
+gem 'lograge'
 
 
 group :development, :test do
@@ -46,6 +47,8 @@ end
 
 group :development do
   gem "web-console"
+    gem "rack-mini-profiler"
+    gem "amazing_print"
 end
 
 group :test do

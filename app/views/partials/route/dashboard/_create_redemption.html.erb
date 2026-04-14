@@ -40,16 +40,17 @@
                  fieldset_title: "Origem do Resgate",
                  fieldset_desc: "Selecione o fundo desta carteira de onde o capital será retirado." do %>
 
-        <%= render "partials/modules/select",
-                   f: form,
-                   name: :fund_investment_id,
-                   label: "Fundo alvo",
-                   desc: "Apenas os fundos alocados nesta carteira são exibidos.",
-                   is_half_width: false,
-                   options_collection: @portfolio.fund_investments
-                                                 .includes(:investment_fund)
-                                                 .map { |fi| [fi.investment_fund.fund_name, fi.id] },
-                   is_inactive: false %>
+                     <%= render "partials/modules/select",
+                                f: form,
+                                name: :fund_investment_id,
+                                label: "Fundo alvo (CNPJ)",
+                                desc: "Selecione pelo CNPJ. Apenas fundos já alocados nesta carteira são exibidos.",
+                                is_half_width: false,
+                                options_collection: @portfolio.fund_investments
+                                                              .joins(:investment_fund)
+                                                              .order("investment_funds.cnpj ASC")
+                                                              .map { |fi| ["#{fi.investment_fund.cnpj} / #{fi.investment_fund.fund_name}", fi.id] },
+                                is_inactive: false %>
       <% end %>
 
       <%# Dados Financeiros %>
