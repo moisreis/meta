@@ -1,12 +1,19 @@
-# === portfolio_normative_article.rb
+# == Schema Information
 #
-# Description:: Join model linking a Portfolio to a NormativeArticle.
-#               Stores the portfolio-specific benchmark, minimum and maximum
-#               targets that will be compared against the article's own targets
-#               for compliance reporting.
+# Table name: portfolio_normative_articles
 #
-class PortfolioNormativeArticle < ApplicationRecord
+# [Run 'bundle exec annotate --models' to update this block]
+#
+# @author Moisés Reis
 
+# Join model linking a Portfolio to a NormativeArticle for compliance reporting. [cite: 35]
+#
+# This class stores portfolio-specific benchmarks, minimum, and maximum targets.
+# These values are used to override or compare against the article's default
+# targets during the generation of compliance reports. [cite: 36]
+#
+# @author Moisés Reis [cite: 37]
+class PortfolioNormativeArticle < ApplicationRecord
   belongs_to :portfolio
   belongs_to :normative_article
 
@@ -27,10 +34,9 @@ class PortfolioNormativeArticle < ApplicationRecord
 
   validate :maximum_not_below_minimum
 
-  # == benchmark_deviation
+  # Calculates the difference between the portfolio benchmark and the article benchmark. [cite: 60]
   #
-  # Returns how far the portfolio's benchmark_target is from the article's own,
-  # or nil if either side is blank.
+  # @return [BigDecimal, nil] The deviation value or nil if targets are missing.
   def benchmark_deviation
     return nil unless benchmark_target.present? && normative_article.benchmark_target.present?
     benchmark_target - normative_article.benchmark_target
@@ -38,6 +44,9 @@ class PortfolioNormativeArticle < ApplicationRecord
 
   private
 
+  # Validates that the maximum target is not numerically lower than the minimum target. [cite: 81]
+  #
+  # @return [void] [cite: 69]
   def maximum_not_below_minimum
     return unless minimum_target.present? && maximum_target.present?
     if maximum_target < minimum_target

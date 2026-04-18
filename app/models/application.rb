@@ -22,6 +22,8 @@
 #
 class Application < ApplicationRecord
 
+  after_commit :recalculate_performance, on: [:create, :destroy]
+
   before_validation :sync_dates
 
   # Explanation:: This establishes a direct link, indicating that every application belongs
@@ -155,6 +157,20 @@ class Application < ApplicationRecord
   end
 
   private
+
+  def recalculate_performance
+    return unless cotization_date
+
+    affected_period = cotization_date.end_of_month
+    PerformanceHistory
+      .where(fund_investment_id: fund_investment_id, period: affected_period)
+      .destroy_all
+
+    RecalculatePerformanceJob.perform_later(
+      fund_investment_id: fund_investment_id,
+      reference_date: cotization_date
+    )
+  end
 
   # == cotization_after_request
   #

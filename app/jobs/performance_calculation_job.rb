@@ -100,7 +100,19 @@ class PerformanceCalculationJob < ApplicationJob
                     period_redemptions.sum(:redeemed_liquid_value)
 
     earnings = final_balance - initial_balance - net_cash_flow
+
+
     monthly_return = percentage(quota_end - quota_start, quota_start)
+
+    if initial_balance <= 0 && final_balance <= 0
+      # Fundo sem posição neste período — garante limpeza se já existia registro stale
+      PerformanceHistory
+        .where(portfolio_id: portfolio.id,
+               fund_investment_id: fund_investment.id,
+               period: period_end)
+        .destroy_all
+      return
+    end
 
     performance = PerformanceHistory.find_or_initialize_by(
       portfolio_id: portfolio.id,

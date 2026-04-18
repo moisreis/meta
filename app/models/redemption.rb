@@ -4,6 +4,8 @@
 #
 class Redemption < ApplicationRecord
 
+  after_commit :recalculate_performance, on: [:create, :destroy]
+
   # FIX: same sync_dates issue as Application — use ||= to avoid overwriting
   # explicit date values that differ from cotization_date.
   before_validation :sync_dates
@@ -75,6 +77,20 @@ class Redemption < ApplicationRecord
   end
 
   private
+
+  def recalculate_performance
+    return unless cotization_date
+
+    affected_period = cotization_date.end_of_month
+    PerformanceHistory
+      .where(fund_investment_id: fund_investment_id, period: affected_period)
+      .destroy_all
+
+    RecalculatePerformanceJob.perform_later(
+      fund_investment_id: fund_investment_id,
+      reference_date: cotization_date
+    )
+  end
 
   def cotization_after_request
     return unless request_date && cotization_date
