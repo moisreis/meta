@@ -1,51 +1,50 @@
-# === importmap.rb
+# Defines JavaScript module import mappings for the Rails application using Importmap.
 #
-# Description:: Manages the import map configuration for the application.
-#               It maps JavaScript module names to their corresponding files
-#               so the browser can resolve dependencies correctly.
+# This file maps frontend dependencies to their corresponding asset paths,
+# enabling module-based JavaScript without a bundler.
 #
-# Usage:: *What* - Defines the manifest of JavaScript packages available.
-#         *How* - Uses the pin command to map import names to library files.
-#         *Why* - Allows the application to use modern JavaScript imports
-#         without needing a complex bundler like Webpack.
+# TABLE OF CONTENTS:
 #
-# Attributes:: - *pin* - Maps a module name to a specific file or path.
-#              - *pin_all_from* - Registers all modules within a directory.
+# 1. Core Application
+# 2. Visualization Libraries
+# 3. Hotwire Framework
+# 4. Stimulus Controllers
 #
-# View:: - None
-#
-# Notes:: References to internal scripts or gems like +Turbo+ or +Stimulus+
-#         are handled via this map to ensure they load properly in the browser.
-
+# @author Moisés Reis
 
 # =============================================================
-# Package Definitions
+#                     1. CORE APPLICATION
 # =============================================================
 
-# This directive maps the core application entry point to its file.
-# It serves as the primary script for site-wide initialization.
+# Main application entry point.
 pin "application"
 
-# This maps the Chartkick library to its source file.
-# It makes the charting interface available for the application.
+# =============================================================
+#                  2. VISUALIZATION LIBRARIES
+# =============================================================
+
+# Chartkick wrapper for data visualization.
 pin "chartkick", to: "chartkick.js"
 
-# This maps the Chart.bundle library to its source file.
-# It provides the rendering engine required by Chartkick.
+# Chart.js bundled dependency required by Chartkick.
 pin "Chart.bundle", to: "Chart.bundle.js"
 
-# This maps the Turbo library to the minified source file.
-# It enables fast navigation and dynamic page updates.
+# =============================================================
+#                     3. HOTWIRE FRAMEWORK
+# =============================================================
+
+# Turbo for SPA-like navigation.
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 
-# This maps the Stimulus framework to the minified source file.
-# It provides the base for modular JavaScript components.
+# Stimulus core framework.
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 
-# This maps the Stimulus loading utility to its source file.
-# It automates the discovery and registration of controllers.
+# Lazy-loading helper for Stimulus controllers.
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 
-# This directive imports all JavaScript files in the controllers folder.
-# It makes these local controllers available under the controllers namespace.
+# =============================================================
+#                  4. STIMULUS CONTROLLERS
+# =============================================================
+
+# Auto-load all Stimulus controllers from the controllers directory.
 pin_all_from "app/javascript/controllers", under: "controllers"

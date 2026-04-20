@@ -1,13 +1,10 @@
-# encoding: UTF-8
-# pt-BR translations for Ruby on Rails
 "pt-BR":
-  # formatos de data e hora
   date:
     formats:
       default: "%d/%m/%Y"
       short: "%d de %B"
       long: "%d de %B de %Y"
-      month_year: "%b/%Y"   # ← add this line
+      month_year: "%b/%Y"
 
     day_names:
       - Domingo
@@ -64,10 +61,9 @@
       default: "%A, %d de %B de %Y, %H:%M h"
       short: "%d/%m, %H:%M h"
       long: "%A, %d de %B de %Y, %H:%M h"
-    am: ''
-    pm: ''
+    am: ""
+    pm: ""
 
-  # Usado no Array.to_sentence
   support:
     array:
       words_connector: ", "
@@ -79,33 +75,33 @@
 
   number:
     format:
-      separator: ','
-      delimiter: '.'
+      separator: ","
+      delimiter: "."
       precision: 3
       significant: false
       strip_insignificant_zeros: false
 
     currency:
       format:
-        format: '%u %n'
-        unit: 'R$'
-        separator: ','
-        delimiter: '.'
+        format: "%u %n"
+        unit: "R$"
+        separator: ","
+        delimiter: "."
         precision: 2
         significant: false
         strip_insignificant_zeros: false
 
     percentage:
       format:
-        delimiter: '.'
+        delimiter: "."
 
     precision:
       format:
-        delimiter: '.'
+        delimiter: "."
 
     human:
       format:
-        delimiter: '.'
+        delimiter: "."
         precision: 2
         significant: true
         strip_insignificant_zeros: true
@@ -119,8 +115,7 @@
           mb: "MB"
           gb: "GB"
           tb: "TB"
-      # number_to_human()
-      # new in rails 3: please add to other locales
+
       decimal_units:
         format: "%n %u"
         units:
@@ -139,43 +134,42 @@
             one: quatrilhão
             other: quatrilhões
 
-  # distancia do tempo em palavras
   datetime:
     distance_in_words:
-      half_a_minute: 'meio minuto'
+      half_a_minute: "meio minuto"
       less_than_x_seconds:
-        one: 'menos de 1 segundo'
-        other: 'menos de %{count} segundos'
+        one: "menos de 1 segundo"
+        other: "menos de %{count} segundos"
       x_seconds:
-        one: '1 segundo'
-        other: '%{count} segundos'
+        one: "1 segundo"
+        other: "%{count} segundos"
       less_than_x_minutes:
-        one: 'menos de um minuto'
-        other: 'menos de %{count} minutos'
+        one: "menos de um minuto"
+        other: "menos de %{count} minutos"
       x_minutes:
-        one: '1 minuto'
-        other: '%{count} minutos'
+        one: "1 minuto"
+        other: "%{count} minutos"
       about_x_hours:
-        one: 'aproximadamente 1 hora'
-        other: 'aproximadamente %{count} horas'
+        one: "aproximadamente 1 hora"
+        other: "aproximadamente %{count} horas"
       x_days:
-        one: '1 dia'
-        other: '%{count} dias'
+        one: "1 dia"
+        other: "%{count} dias"
       about_x_months:
-        one: 'aproximadamente 1 mês'
-        other: 'aproximadamente %{count} meses'
+        one: "aproximadamente 1 mês"
+        other: "aproximadamente %{count} meses"
       x_months:
-        one: '1 mês'
-        other: '%{count} meses'
+        one: "1 mês"
+        other: "%{count} meses"
       about_x_years:
-        one: 'aproximadamente 1 ano'
-        other: 'aproximadamente %{count} anos'
+        one: "aproximadamente 1 ano"
+        other: "aproximadamente %{count} anos"
       over_x_years:
-        one: 'mais de 1 ano'
-        other: 'mais de %{count} anos'
+        one: "mais de 1 ano"
+        other: "mais de %{count} anos"
       almost_x_years:
-        one: 'quase 1 ano'
-        other: 'quase %{count} anos'
+        one: "quase 1 ano"
+        other: "quase %{count} anos"
     prompts:
       year: "Ano"
       month: "Mês"
@@ -189,9 +183,9 @@
       prompt: "Por favor selecione"
 
     submit:
-      create: 'Criar %{model}'
-      update: 'Atualizar %{model}'
-      submit: 'Salvar %{model}'
+      create: "Criar %{model}"
+      update: "Atualizar %{model}"
+      submit: "Salvar %{model}"
 
   errors:
     format: "%{attribute} %{message}"

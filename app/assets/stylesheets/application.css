@@ -65,7 +65,6 @@
  */
 @import "helpers/table-shade.css";
 
-
 /* =============================================================================
  * 3. FONT FACES
  * ============================================================================= */
@@ -90,4 +89,24 @@
     src: url("SourceSerif4-Regular.ttf") format("truetype");
     font-style: normal;
     font-weight: 400;
+}
+
+/**
+ * Gambetta
+ */
+@font-face {
+    font-family: "Gambetta";
+    src: url("Gambetta-Variable.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 400;
+}
+
+/**
+ * Paper Mono
+ */
+@font-face {
+    font-family: "Paper Mono";
+    src: url("PaperMono-Regular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 500;
 }

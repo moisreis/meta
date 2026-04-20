@@ -1,7 +1,35 @@
 #!/usr/bin/env ruby.exe
+
+# Entry point script for executing Brakeman security analysis.
+#
+# This script ensures the latest Brakeman rules are used and delegates
+# execution to the Brakeman CLI bundled with the application.
+#
+# TABLE OF CONTENTS:
+#
+# 1. Environment Setup
+# 2. Argument Preparation
+# 3. Execution
+#
+# @author Moisés Reis
+
+# =============================================================
+#                    1. ENVIRONMENT SETUP
+# =============================================================
+
 require "rubygems"
 require "bundler/setup"
 
+# =============================================================
+#                  2. ARGUMENT PREPARATION
+# =============================================================
+
+# Ensure Brakeman uses the latest vulnerability checks.
 ARGV.unshift("--ensure-latest")
 
+# =============================================================
+#                        3. EXECUTION
+# =============================================================
+
+# Load and execute the Brakeman CLI binary.
 load Gem.bin_path("brakeman", "brakeman")

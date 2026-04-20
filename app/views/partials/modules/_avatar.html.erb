@@ -1,21 +1,22 @@
 <%#
-  # Partial: _avatar.html
-  # Date: 11/13/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Defines a reusable avatar component for displaying user profile images.
-  #              Maintains a consistent size, shape, and behavior across the interface.
-  #              Uses Tailwind utilities to ensure responsiveness and visual balance.
-  #
-  # Usage: - What: Renders a circular avatar element that displays a user’s profile image.
-  #                Automatically clips content within a rounded container to maintain shape.
-  #        - How:  Wraps an <img> tag with Tailwind classes for size and shape.
-  #                Accepts a dynamic image source and alt text for accessibility.
-  #        - Why:  Ensures consistent and accessible avatar rendering across different modules.
-  %>
-<span data-slot="avatar" class="relative flex justify-center items-center h-8 w-8 shrink-0 overflow-hidden rounded-full bg-inchworm-300">
-  <div class="flex flex-row items-center justify-center gap-0 [&>span]:uppercase [&>span]:font-body [&>span]:font-semibold [&>span]:text-3xs [&>span]:text-body">
+  PARTIAL: app/views/partials/modules/_avatar.html.erb
+  DESCRIPTION: Renders a circular user avatar displaying user initials.
+
+  LOCAL VARIABLES:
+  - current_user: [User] The user whose avatar should be displayed.
+%>
+
+<span data-slot="avatar"
+      class="relative flex justify-center items-center h-7 w-7 shrink-0 overflow-hidden rounded-full bg-honeysuckle-300">
+
+  <div class="flex flex-row items-center justify-center gap-0
+              [&>span]:uppercase
+              [&>span]:font-mono
+              [&>span]:font-semibold
+              [&>span]:text-3xs
+              [&>span]:text-mono">
+
     <%= content_tag :span, "#{current_user.first_name.first}#{current_user.last_name.first}" %>
+
   </div>
 </span>

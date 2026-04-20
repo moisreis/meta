@@ -28,38 +28,41 @@
 
 <aside data-sidebar-target="aside"
        data-collapsed="false"
-       class="flex flex-col justify-start items-center h-screen col-span-6 md:col-span-4 xl:col-span-2 max-h-screen sticky no-scrollbar overflow-y-auto top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-neutral-900 border-r border-border px-0 pt-0 py-3">
+       class="flex flex-col justify-start items-center h-screen col-span-6 md:col-span-4 xl:col-span-2 max-h-screen sticky no-scrollbar overflow-y-auto top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-neutral-700 border-r border-border px-0 pt-0 py-3">
 
-  <div class="flex flex-row justify-start gap-0 !h-14 items-center w-full p-6 !px-12 bg-neutral-800 mb-6 border-b border-neutral-800">
-    <%= render "partials/modules/logo", size: "28" %>
+           <div class="flex !flex-row justify-start gap-0 !h-14 !items-center w-full p-6 !px-10 mb-3">
+             <%= render "partials/modules/logo", size: "28" %>
 
-  </div>
+             <button class="!p-0 bg-neutral-700 [&>svg]:!w-8 [&>svg]:!h-8 ml-auto flex-shrink-0"
+                     data-controller="tippy"
+                     data-tippy-type-value="menu"
+                     data-tippy-target="#logo-area-menu">
+               <%= inline_svg_tag "icons/arrow-down-two.svg" %>
+             </button>
+           </div>
+
+           <%# Conteúdo do popover — oculto no DOM, lido pelo Tippy %>
+           <div id="logo-area-menu" style="display: none;">
+             <div class="flex flex-col gap-1 p-1 w-[100px]">
+               <%= link_to authenticated_root_path,
+                           class: "button button-ghost w-full button-small flex justify-start" do %>
+                 <%= inline_svg_tag "icons/home.svg" %>
+                 <%= content_tag :span, "Início" %>
+               <% end %>
+
+               <%= button_to destroy_user_session_path,
+                             method: :delete,
+                             data: { turbo_confirm: "Tem certeza que deseja sair?" },
+                             class: "button button-danger w-full button-small flex justify-start",
+                             form: { style: "display: flex; align-items: center;" } do %>
+                 <%= inline_svg_tag "icons/log-out.svg" %>
+                 <%= content_tag :span, "Sair" %>
+               <% end %>
+             </div>
+           </div>
 
   <div class="flex flex-col h-full !justify-between [&>div]:flex [&>div]: [&>div]:flex-col [&>div]:!gap-9 [&>div]:!py-6 [&>div]:items-center [&>div]:justify-center [&>div]:w-full [&>div>div]:w-full [&>div>div]:space-y-1.5 px-3">
     <div style="padding-top: 4px !important">
-
-      <%# =============================================================
-          Global Actions — Home & Sign Out
-          ============================================================= %>
-      <div>
-        <%= link_to authenticated_root_path,
-                    class: "button button-sidebar w-full button-small flex justify-start" do %>
-          <%= inline_svg_tag "icons/home.svg" %>
-          <%= content_tag :span, "Início" %>
-        <% end %>
-
-        <%# Note: Sends a DELETE request with a confirmation dialog before
-                  destroying the session. The form style override is required
-                  to keep the button aligned inside the flex sidebar column. %>
-        <%= button_to destroy_user_session_path,
-                      method: :delete,
-                      data: { turbo_confirm: "Tem certeza que deseja sair?" },
-                      class: "button button-sidebar w-full button-small flex justify-start",
-                      form: { style: "display: flex; align-items: center;" } do %>
-          <%= inline_svg_tag "icons/log-out.svg" %>
-          <%= content_tag :span, "Sair" %>
-        <% end %>
-      </div>
 
       <%# =============================================================
           Resource Navigation — crud_nav_for Groups

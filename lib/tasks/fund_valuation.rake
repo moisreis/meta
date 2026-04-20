@@ -1,34 +1,46 @@
-# lib/tasks/fund_valuation.rake
+# Manages the importation of fund valuation quotas from the CVM (Brazilian Securities and Exchange Commission).
+#
+# This namespace provides tasks to fetch and process historical quota data, allowing
+# for incremental updates, specific date targeting, or full historical rebuilds.
+#
+# TABLE OF CONTENTS:
+#
+# 1. Standard Import Tasks
+# 2. Historical & Specific Import Tasks
+#
+# @author Moisés Reis
+
+# =============================================================
+#                  1. STANDARD IMPORT TASKS
+# =============================================================
 
 namespace :fund_valuation do
-  desc "Importa cotas do CVM dos últimos meses"
+  desc "Imports CVM quotas from the last months"
   task import: :environment do
-    # Explanation:: Permite especificar quantos meses buscar via variável de ambiente
-    #               Padrão: 2 meses (mês atual + mês anterior)
     months_back = ENV['MONTHS']&.to_i || 2
 
-    puts "🚀 Iniciando importação de cotas do CVM..."
-    puts "📅 Buscando últimos #{months_back} meses"
+    puts "Starting CVM quota import..."
+    puts "Fetching the last #{months_back} months"
     puts ""
 
     result = FundValuationImportJob.perform_now(months_back: months_back)
 
     puts ""
-    puts "✅ Importação concluída!"
-    puts "   Arquivos processados: #{result[:files_processed]}"
-    puts "   Registros importados: #{result[:records_imported]}"
-    puts "   Registros ignorados: #{result[:records_skipped]}"
-    puts "   Duração: #{result[:duration_seconds]} segundos"
+    puts "Import completed!"
+    puts "   Files processed: #{result[:files_processed]}"
+    puts "   Records imported: #{result[:records_imported]}"
+    puts "   Records skipped: #{result[:records_skipped]}"
+    puts "   Duration: #{result[:duration_seconds]} seconds"
   end
 
-  desc "Importa cotas de uma data específica"
+  desc "Imports quotas for a specific date"
   task :import_date, [:date] => :environment do |t, args|
     target_date = args[:date] ? Date.parse(args[:date]) : Date.current
     months_back = ENV['MONTHS']&.to_i || 2
 
-    puts "🚀 Iniciando importação de cotas do CVM..."
-    puts "📅 Data alvo: #{target_date.strftime('%d/%m/%Y')}"
-    puts "📅 Buscando #{months_back} meses para trás"
+    puts "Starting CVM quota import..."
+    puts "Target date: #{target_date.strftime('%d/%m/%Y')}"
+    puts "Fetching #{months_back} months back"
     puts ""
 
     result = FundValuationImportJob.perform_now(
@@ -37,39 +49,27 @@ namespace :fund_valuation do
     )
 
     puts ""
-    puts "✅ Importação concluída!"
-    puts "   Arquivos processados: #{result[:files_processed]}"
-    puts "   Registros importados: #{result[:records_imported]}"
+    puts "Import completed!"
+    puts "   Files processed: #{result[:files_processed]}"
+    puts "   Records imported: #{result[:records_imported]}"
   end
 
-  desc "Importa histórico completo (12 meses)"
+# =============================================================
+#            2. HISTORICAL & SPECIFIC IMPORT TASKS
+# =============================================================
+
+  desc "Imports full history (12 months)"
   task import_full: :environment do
-    puts "🚀 Iniciando importação completa de 12 meses..."
-    puts "⚠️  Isso pode demorar alguns minutos..."
+    puts "Starting full 12-month import..."
+    puts "This may take a few minutes..."
     puts ""
 
     result = FundValuationImportJob.perform_now(months_back: 12)
 
     puts ""
-    puts "✅ Importação concluída!"
-    puts "   Arquivos processados: #{result[:files_processed]}"
-    puts "   Registros importados: #{result[:records_imported]}"
-    puts "   Duração: #{result[:duration_seconds]} segundos"
-  end
-
-  desc "Importa apenas o mês de dezembro/2025 (para teste Jacoprev)"
-  task import_december: :environment do
-    puts "🚀 Importando cotas de dezembro/2025..."
-    puts ""
-
-    result = FundValuationImportJob.perform_now(
-      start_date: Date.new(2025, 12, 31),
-      months_back: 1  # Apenas dezembro
-    )
-
-    puts ""
-    puts "✅ Importação concluída!"
-    puts "   Arquivos processados: #{result[:files_processed]}"
-    puts "   Registros importados: #{result[:records_imported]}"
+    puts "Import completed!"
+    puts "   Files processed: #{result[:files_processed]}"
+    puts "   Records imported: #{result[:records_imported]}"
+    puts "   Duration: #{result[:duration_seconds]} seconds"
   end
 end

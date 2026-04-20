@@ -1,53 +1,90 @@
-# The test environment is used exclusively to run your application's
-# test suite. You never need to work with it otherwise. Remember that
-# your test database is "scratch space" for the test suite and is wiped
-# and recreated between test runs. Don't rely on the data there!
+# Configures the test environment for the Rails application.
+#
+# This environment is optimized for automated testing, prioritizing speed,
+# isolation, and deterministic behavior. Data persistence is temporary and
+# reset between test runs.
+#
+# TABLE OF CONTENTS:
+#
+# 1. Code Loading & Reloading
+# 2. File Server & Caching
+# 3. Error Handling
+# 4. Security Settings
+# 5. Active Storage
+# 6. Action Mailer
+# 7. Logging & Diagnostics
+#
+# @author Moisés Reis
 
 Rails.application.configure do
-  # Settings specified here will take precedence over those in config/application.rb.
 
-  # While tests run files are not watched, reloading is not necessary.
+  # =============================================================
+  #               1. CODE LOADING & RELOADING
+  # =============================================================
+
+  # Disable code reloading for faster test execution.
   config.enable_reloading = false
 
-  # Eager loading loads your entire application. When running a single test locally,
-  # this is usually not necessary, and can slow down your test suite. However, it's
-  # recommended that you enable it in continuous integration systems to ensure eager
-  # loading is working properly before deploying your code.
+  # Enable eager loading only in CI environments to validate boot integrity.
   config.eager_load = ENV["CI"].present?
 
-  # Configure public file server for tests with cache-control for performance.
-  config.public_file_server.headers = { "cache-control" => "public, max-age=3600" }
+  # =============================================================
+  #               2. FILE SERVER & CACHING
+  # =============================================================
+
+  # Configure static file server headers for test performance.
+  config.public_file_server.headers = {
+    "cache-control" => "public, max-age=3600"
+  }
+
+  # Disable caching.
+  config.cache_store = :null_store
+
+  # =============================================================
+  #                  3. ERROR HANDLING
+  # =============================================================
 
   # Show full error reports.
   config.consider_all_requests_local = true
-  config.cache_store = :null_store
 
-  # Render exception templates for rescuable exceptions and raise for other exceptions.
+  # Render templates for known exceptions, raise others.
   config.action_dispatch.show_exceptions = :rescuable
 
-  # Disable request forgery protection in test environment.
+  # =============================================================
+  #                  4. SECURITY SETTINGS
+  # =============================================================
+
+  # Disable CSRF protection in test environment.
   config.action_controller.allow_forgery_protection = false
 
-  # Store uploaded files on the local file system in a temporary directory.
+  # Raise error for invalid callback configurations.
+  config.action_controller.raise_on_missing_callback_actions = true
+
+  # =============================================================
+  #                    5. ACTIVE STORAGE
+  # =============================================================
+
+  # Store uploads in a temporary test location.
   config.active_storage.service = :test
 
-  # Tell Action Mailer not to deliver emails to the real world.
-  # The :test delivery method accumulates sent emails in the
-  # ActionMailer::Base.deliveries array.
+  # =============================================================
+  #                    6. ACTION MAILER
+  # =============================================================
+
+  # Prevent real email delivery; store emails in memory.
   config.action_mailer.delivery_method = :test
 
-  # Set host to be used by links generated in mailer templates.
+  # Default host for URL generation in mailers.
   config.action_mailer.default_url_options = { host: "example.com" }
 
-  # Print deprecation notices to the stderr.
+  # =============================================================
+  #               7. LOGGING & DIAGNOSTICS
+  # =============================================================
+
+  # Output deprecation warnings to stderr.
   config.active_support.deprecation = :stderr
 
-  # Raises error for missing translations.
+  # Optional diagnostics (disabled by default)
   # config.i18n.raise_on_missing_translations = true
-
-  # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
-
-  # Raise error when a before_action's only/except options reference missing actions.
-  config.action_controller.raise_on_missing_callback_actions = true
 end

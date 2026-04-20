@@ -1,24 +1,35 @@
-# === chartkick
+# Configures global Chartkick and Chart.js defaults for all charts.
+#
+# This initializer defines visual styling, formatting rules, and behavior
+# for charts across the application, ensuring consistency and avoiding
+# repetition in view-level configuration.
+#
+# TABLE OF CONTENTS:
+#
+# 1. Global Chartkick Options
+#   1a. Formatting & Dimensions
+#   1b. Color Palette
+# 2. Chart.js Library Configuration
+#   2a. Animation & Typography
+#   2b. Element Styling
+#   2c. Plugins
+#       2c1. Legend
+#       2c2. Tooltip
+#   2d. Scales
 #
 # @author Moisés Reis
-# @added 11/30/2025
-# @package *Meta*
-# @description This file sets the global visual settings for all charts in the app.
-#              It defines how charts look and behave so that every graph follows a
-#              unified visual identity across **views**.
-# @category *Initializer*
-#
-# Usage:: - *[What]* It provides the visual defaults applied to every chart in the app.
-#         - *[How]* It sends configuration rules directly to the **Chartkick** library.
-#         - *[Why]* It keeps all charts consistent and avoids repeating style settings.
-#
-# Attributes:: - *options* @hash - stores all global Chartkick preferences.
-#
+
+# =============================================================
+#              1. GLOBAL CHARTKICK OPTIONS
+# =============================================================
+
 Chartkick.options = {
 
-  # Explanation:: This sets the default color palette for all charts. It defines the
-  #               sequence of colors used when multiple datasets appear in a graph.
-  #               It ensures visual consistency across every chart.
+  # =============================================================
+  #           1b. COLOR PALETTE
+  # =============================================================
+
+  # Defines default dataset colors for all charts.
   colors: [
     "rgb(34, 120, 87)",
     "rgb(185, 28, 28)",
@@ -27,62 +38,59 @@ Chartkick.options = {
     "rgb(109, 40, 217)",
     "rgb(17, 94, 89)",
   ],
-  # Explanation:: This adds a currency prefix to values displayed on charts. It formats
-  #               numbers as Brazilian currency and helps users understand values quickly.
+
+  # =============================================================
+  #        1a. FORMATTING & DIMENSIONS
+  # =============================================================
+
+  # Currency prefix (empty for BR formatting handled elsewhere).
   prefix: "",
 
-  # Explanation:: This defines the character used for thousands separation in numbers.
-  #               It follows the Brazilian formatting standard to improve readability.
+  # Thousands separator (Brazilian format).
   thousands: ".",
 
-  # Explanation:: This defines the decimal separator. It uses a comma since this is the
-  #               default format in Brazilian financial notation.
+  # Decimal separator (Brazilian format).
   decimal: ",",
 
-  # Explanation:: This sets the default height for charts. It ensures a balanced visual
-  #               space so charts remain readable on most screen sizes.
+  # Default chart height.
   height: "500px",
 
-  # == library
-  #
-  # @author Moisés Reis
-  # @category *Settings*
-  #
-  # Settings:: This group sets the internal chart behavior and style rules. It controls
-  #            animation, font usage, and how elements like bars, lines, and points look.
-  #
-  # Attributes:: - *library* @hash - holds raw **Chart.js** options that Chartkick passes through.
-  #
+  # =============================================================
+  #        2. CHART.JS LIBRARY CONFIGURATION
+  # =============================================================
+
   library: {
 
-    # Explanation:: This enables smooth transitions when charts load or update. The duration
-    #               value defines how long the animation takes, improving user experience.
+    # =============================================================
+    #          2a. ANIMATION & TYPOGRAPHY
+    # =============================================================
+
+    # Controls animation timing.
     animation: {
       duration: 750
     },
 
-    # Explanation:: This sets the default font applied across all chart text. It controls
-    #               the family, size and weight so every chart uses the same typography.
+    # Default font configuration.
     font: {
       family: "'Geist Mono'",
       size: 12,
       weight: '400'
     },
 
-    # Explanation:: This configures the visual appearance of different chart elements.
-    #               It ensures bars, points, lines and arcs follow the same design rules.
+    # =============================================================
+    #             2b. ELEMENT STYLING
+    # =============================================================
+
     elements: {
 
-      # Explanation:: This sets how bars appear in bar charts. Rounded corners make them
-      #               modern-looking, and skipping no borders improves shape consistency.
+      # Bar chart appearance.
       bar: {
         borderRadius: 6,
         borderSkipped: false,
         borderWidth: 0,
       },
 
-      # Explanation:: This controls how data points appear in line charts. It adjusts their
-      #               size, border, and hover behavior to improve clarity for users.
+      # Line chart points.
       point: {
         radius: 4,
         hoverRadius: 6,
@@ -90,15 +98,13 @@ Chartkick.options = {
         hoverBorderWidth: 3
       },
 
-      # Explanation:: This defines the look of lines in line charts. It smooths the curve
-      #               and sets line thickness for easier visual tracking.
+      # Line chart curves.
       line: {
         borderWidth: 0,
         tension: 0.4
       },
 
-      # Explanation:: This controls arcs in pie and doughnut charts. It sets border rules
-      #               and hover behavior so slices appear clean and well-defined.
+      # Pie/doughnut arcs.
       arc: {
         borderWidth: 2,
         borderRadius: 4,
@@ -106,19 +112,16 @@ Chartkick.options = {
       }
     },
 
-    # == plugins
-    #
-    # @category *Settings*
-    #
-    # Settings:: This section customizes built-in plugins like legends and tooltips. It
-    #            ensures labels and hover information are readable and consistent.
-    #
-    # Attributes:: - *plugins* @hash - configures optional helpers that improve chart UX.
-    #
+    # =============================================================
+    #                    2c. PLUGINS
+    # =============================================================
+
     plugins: {
 
-      # Explanation:: This sets the position and appearance of the chart legend. It defines
-      #               how dataset labels look so users can easily identify each color.
+      # =============================================================
+      #                     2c1. LEGEND
+      # =============================================================
+
       legend: {
         position: 'bottom',
         labels: {
@@ -136,8 +139,10 @@ Chartkick.options = {
         }
       },
 
-      # Explanation:: This defines how tooltips appear when a user hovers over a chart.
-      #               It controls colors, borders and spacing to improve visibility.
+      # =============================================================
+      #                     2c2. TOOLTIP
+      # =============================================================
+
       tooltip: {
         displayColors: true,
         usePointStyle: true,
@@ -151,28 +156,24 @@ Chartkick.options = {
         cornerRadius: 6,
         padding: 12,
 
-        # Explanation:: This sets the font used in tooltip titles. It keeps titles readable
-        #               and aligned with the app's typographic style.
         titleFont: {
           family: "'Geist Mono'",
           size: 12,
           weight: '400',
-          color: '#333333',
         },
 
-        # Explanation:: This sets the font for tooltip body text. It follows the same style
-        #               rules to maintain visual balance inside the tooltip box.
         bodyFont: {
           family: "'Geist Mono'",
           size: 12,
           weight: '400',
-          color: '#8a8a8a',
         }
       }
     },
 
-    # Explanation:: This sets how the X and Y axes look. It controls fonts, colors and grid
-    #               lines so charts stay readable and uncluttered.
+    # =============================================================
+    #                      2d. SCALES
+    # =============================================================
+
     scales: {
       x: {
         ticks: {

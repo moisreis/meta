@@ -1,90 +1,121 @@
+# Configures the production environment for the Rails application.
+#
+# This environment prioritizes performance, security, and stability by enabling
+# caching, eager loading, background processing, and optimized logging behavior.
+#
+# TABLE OF CONTENTS:
+#
+# 1. Code Loading & Performance
+# 2. Caching & File Server
+# 3. Assets & Storage
+# 4. Logging
+# 5. Background Jobs
+# 6. Action Mailer
+# 7. Internationalization (I18n)
+# 8. Active Record
+# 9. Security & Host Configuration
+#
+# @author Moisés Reis
+
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  # Settings specified here will take precedence over those in config/application.rb.
 
-  # Code is not reloaded between requests.
+  # =============================================================
+  #           1. CODE LOADING & PERFORMANCE
+  # =============================================================
+
+  # Disable code reloading in production.
   config.enable_reloading = false
 
-  # Eager load code on boot for better performance and memory savings (ignored by Rake tasks).
+  # Eager load all application code on boot.
   config.eager_load = true
 
-  # Full error reports are disabled.
+  # Disable full error reports.
   config.consider_all_requests_local = false
 
-  # Turn on fragment caching in view templates.
+  # =============================================================
+  #            2. CACHING & FILE SERVER
+  # =============================================================
+
+  # Enable controller-level caching.
   config.action_controller.perform_caching = true
 
-  # Cache assets for far-future expiry since they are all digest stamped.
-  config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
+  # Configure static file caching headers.
+  config.public_file_server.headers = {
+    "cache-control" => "public, max-age=#{1.year.to_i}"
+  }
 
-  # Enable serving of images, stylesheets, and JavaScripts from an asset server.
-  # config.asset_host = "http://assets.example.com"
-
-  # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
-
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # config.assume_ssl = true
-
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
-
-  # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
-
-  # Log to STDOUT with the current request id as a default log tag.
-  config.log_tags = [ :request_id ]
-  config.logger   = ActiveSupport::TaggedLogging.logger(STDOUT)
-
-  # Change to "debug" to log everything (including potentially personally-identifiable information!).
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
-
-  # Prevent health checks from clogging up the logs.
-  config.silence_healthcheck_path = "/up"
-
-  # Don't log any deprecations.
-  config.active_support.report_deprecations = false
-
-  # Replace the default in-process memory cache store with a durable alternative.
+  # Use durable cache store.
   config.cache_store = :solid_cache_store
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
+  # =============================================================
+  #               3. ASSETS & STORAGE
+  # =============================================================
+
+  # Store uploaded files locally.
+  config.active_storage.service = :local
+
+  # =============================================================
+  #                      4. LOGGING
+  # =============================================================
+
+  # Tag logs with request ID.
+  config.log_tags = [:request_id]
+
+  # Output logs to STDOUT.
+  config.logger = ActiveSupport::TaggedLogging.logger(STDOUT)
+
+  # Log level (configurable via environment variable).
+  # ENV:
+  # - RAILS_LOG_LEVEL: [String] Log verbosity (default: "info").
+  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+
+  # Silence health check endpoint logs.
+  config.silence_healthcheck_path = "/up"
+
+  # Disable deprecation reporting.
+  config.active_support.report_deprecations = false
+
+  # =============================================================
+  #                 5. BACKGROUND JOBS
+  # =============================================================
+
+  # Use Solid Queue for background processing.
   config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  # Configure database connection for queue.
+  config.solid_queue.connects_to = {
+    database: { writing: :queue }
+  }
 
-  # Set host to be used by links generated in mailer templates.
+  # =============================================================
+  #                  6. ACTION MAILER
+  # =============================================================
+
+  # Default host for URL generation.
   config.action_mailer.default_url_options = { host: "example.com" }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # =============================================================
+  #           7. INTERNATIONALIZATION (I18N)
+  # =============================================================
 
-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
-  # the I18n.default_locale when a translation cannot be found).
+  # Enable locale fallbacks.
   config.i18n.fallbacks = true
+
+  # =============================================================
+  #                  8. ACTIVE RECORD
+  # =============================================================
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
-  # Only use :id for inspections in production.
-  config.active_record.attributes_for_inspect = [ :id ]
+  # Limit inspected attributes in logs.
+  config.active_record.attributes_for_inspect = [:id]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # =============================================================
+  #          9. SECURITY & HOST CONFIGURATION
+  # =============================================================
+
+  # (Optional) Host authorization and SSL-related settings can be configured here.
 end

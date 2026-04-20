@@ -1,43 +1,87 @@
+# Configures the Rails application and initializes framework-level settings.
+#
+# This file defines global configuration for the application, including
+# framework loading, internationalization, error handling, asset paths,
+# and autoload/eager load behavior.
+#
+# TABLE OF CONTENTS:
+#
+# 1. Boot & Framework Loading
+# 2. Application Configuration
+#   2a. Error Handling
+#   2b. Assets
+#   2c. Internationalization (I18n)
+#   2d. Autoloading & Eager Loading
+#   2e. Time Zone Configuration
+#
+# @author Moisés Reis
+
+# =============================================================
+#              1. BOOT & FRAMEWORK LOADING
+# =============================================================
+
 require_relative "boot"
 
 require "rails/all"
 
-# Require the gems listed in Gemfile, including any gems
-# you've limited to :test, :development, or :production.
+# Require the gems listed in Gemfile for the current environment.
 Bundler.require(*Rails.groups)
 
 module Meta
+  # Main Rails application configuration class.
+  #
+  # Responsible for defining global behavior across all environments.
+  #
+  # @author Moisés Reis
   class Application < Rails::Application
-    config.exceptions_app = ->(env) {
-      ErrorsController.action(:show).call(env)
-    }
 
+    # =============================================================
+    #                2a. ERROR HANDLING
+    # =============================================================
+
+    # Route all exceptions through Rails routing system.
+    # Enables custom error pages via ErrorsController.
+    config.exceptions_app = self.routes
+
+    # =============================================================
+    #                     2b. ASSETS
+    # =============================================================
+
+    # Enable asset pipeline and register custom asset paths.
     config.assets.enabled = true
     config.assets.paths << Rails.root.join("app", "assets", "fonts")
 
-    config.exceptions_app = self.routes
+    # =============================================================
+    #            2c. INTERNATIONALIZATION (I18N)
+    # =============================================================
 
-    # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 8.1
-
+    # Set default locale and supported locales.
     config.i18n.default_locale = :'pt-BR'
     config.i18n.available_locales = [:'pt-BR', :en]
 
-    # Please, add to the `ignore` list any other `lib` subdirectories that do
-    # not contain `.rb` files, or that should not be reloaded or eager loaded.
-    # Common ones are `templates`, `generators`, or `middleware`, for example.
+    # =============================================================
+    #          2d. AUTOLOADING & EAGER LOADING
+    # =============================================================
+
+    # Autoload lib directory while ignoring non-Ruby subdirectories.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Add service objects to eager load paths.
+    config.eager_load_paths << Rails.root.join("app/services")
 
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config/application.rb
+    # =============================================================
+    #              2e. TIME ZONE CONFIGURATION
+    # =============================================================
+
+    # Set application time zone and database timezone behavior.
     config.time_zone = "Brasilia"
     config.active_record.default_timezone = :local
-    # config.eager_load_paths << Rails.root.join("extras")
-    config.eager_load_paths << Rails.root.join("app/services")
+
+    # =============================================================
+    #              DEFAULT FRAMEWORK CONFIGURATION
+    # =============================================================
+
+    # Initialize configuration defaults for the target Rails version.
+    config.load_defaults 8.1
   end
 end

@@ -78,6 +78,9 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     amazing_print (2.0.0)
+    annotate (2.6.5)
+      activerecord (>= 2.3.0)
+      rake (>= 0.8.7)
     ast (2.4.3)
     base64 (0.3.0)
     bcrypt (3.1.20)
@@ -435,6 +438,7 @@ GEM
     websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
+    yard (0.9.43)
     zeitwerk (2.7.3)
 
 PLATFORMS
@@ -443,6 +447,7 @@ PLATFORMS
 
 DEPENDENCIES
   amazing_print
+  annotate
   bcrypt (~> 3.1.7)
   bootsnap
   brakeman
@@ -487,6 +492,7 @@ DEPENDENCIES
   tzinfo-data
   victor
   web-console
+  yard
 
 BUNDLED WITH
    2.6.9

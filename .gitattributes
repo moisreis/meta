@@ -1,9 +1,28 @@
-# See https://git-scm.com/docs/gitattributes for more about git attribute files.
+# Defines path-specific attributes and handling rules for Git.
+#
+# This file ensures generated files, vendored code, and encrypted credentials
+# are treated correctly by the version control system and repository linguists.
+#
+# TABLE OF CONTENTS:
+#
+# 1. Linguist Overrides
+# 2. Encrypted Credentials
+#
+# @author Moisés Reis
+
+# =============================================================
+#                    1. LINGUIST OVERRIDES
+# =============================================================
 
 # Mark the database schema as having been generated.
 db/schema.rb linguist-generated
 
 # Mark any vendored files as having been vendored.
 vendor/* linguist-vendored
+
+# =============================================================
+#                  2. ENCRYPTED CREDENTIALS
+# =============================================================
+
 config/credentials/*.yml.enc diff=rails_credentials
 config/credentials.yml.enc diff=rails_credentials

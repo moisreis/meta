@@ -1,8 +1,43 @@
 #!/usr/bin/env ruby.exe
+
+# Entry point script for executing RuboCop with a fixed project configuration.
+#
+# This script initializes the Bundler environment, injects a project-specific
+# RuboCop configuration file into the CLI arguments, and delegates execution
+# to the RuboCop binary.
+#
+# TABLE OF CONTENTS:
+#
+# 1. Dependency Boot
+# 2. CLI Configuration Injection
+# 3. Execution
+#
+# @author Moisés Reis
+
+# =============================================================
+#                     1. DEPENDENCY BOOT
+# =============================================================
+
 require "rubygems"
 require "bundler/setup"
 
-# Explicit RuboCop config increases performance slightly while avoiding config confusion.
-ARGV.unshift("--config", File.expand_path("../.rubocop.yml", __dir__))
+# =============================================================
+#             2. CLI CONFIGURATION INJECTION
+# =============================================================
 
+# Explicitly force project RuboCop configuration for consistency and performance.
+#
+# This ensures:
+# - Deterministic lint rules across environments
+# - Avoidance of global/user-level config interference
+ARGV.unshift(
+  "--config",
+  File.expand_path("../.rubocop.yml", __dir__)
+)
+
+# =============================================================
+#                        3. EXECUTION
+# =============================================================
+
+# Load and execute RuboCop CLI.
 load Gem.bin_path("rubocop", "rubocop")
