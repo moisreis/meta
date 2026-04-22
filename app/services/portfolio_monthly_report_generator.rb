@@ -1802,19 +1802,29 @@ class PortfolioMonthlyReportGenerator
             { title: 'Máximo por Artigo', key: :maximo },
             { title: 'Mínimo por Artigo', key: :minimo }
           ].each do |grp|
+            # Para grupos que não são carteira_atual, filtra apenas artigos
+            # que têm valor configurado (alvo/máximo/mínimo > 0)
+            articles_for_group = if grp[:key] == :carteira_atual
+                                   policy
+                                 else
+                                   policy.select { |a| a[grp[:key]].to_f > 0 }
+                                 end
+
+            next if articles_for_group.empty?
+
             pdf.fill_color C[:body]
             pdf.font('Geist Pixel Square', size: 8) do
               pdf.text_box grp[:title], at: [0, pdf.cursor], width: CONTENT_W, align: :center
             end
             pdf.move_down 16
 
-            max_pct = [policy.map { |a| a[grp[:key]].to_f }.max, 1.0].max
+            max_pct = [articles_for_group.map { |a| a[grp[:key]].to_f }.max, 1.0].max
             label_w = 130
             bar_area = CONTENT_W - label_w - 60
             bar_h = 14
             gap = 20
 
-            policy.each_with_index do |art, idx|
+            articles_for_group.each_with_index do |art, idx|
               val = art[grp[:key]].to_f
               bar_w = [(val / max_pct * bar_area).round(1), val > 0 ? 1.0 : 0].max
               color = article_colors[art[:article_number]] || default_colors[idx % default_colors.size]
@@ -1827,11 +1837,12 @@ class PortfolioMonthlyReportGenerator
               pdf.fill_rounded_rectangle [label_w, by + bar_h], [bar_w, 0.5].max, bar_h - 2, 2
 
               pdf.fill_color C[:muted]
-              pdf.font('Geist Pixel Square', size: 6.5) { pdf.draw_text "#{fmt_num(val, 2)}%", at: [label_w + bar_w + 4, by + 6] }
+              # MUDANÇA: 4 casas decimais
+              pdf.font('Geist Pixel Square', size: 6.5) { pdf.draw_text "#{fmt_num(val, 4)}%", at: [label_w + bar_w + 4, by + 6] }
             end
 
-            pdf.move_down policy.size * gap + 8
-            draw_policy_legend(policy, article_colors, default_colors)
+            pdf.move_down articles_for_group.size * gap + 8
+            draw_policy_legend(articles_for_group, article_colors, default_colors)
             pdf.move_down 16
           end
         end
