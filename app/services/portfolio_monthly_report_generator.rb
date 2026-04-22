@@ -1576,7 +1576,6 @@ class PortfolioMonthlyReportGenerator
 
       draw_section(title: 'Distribuição por Categoria Normativa', border: true, spacing: 10) do
         category_groups = Hash.new(0.0)
-
         data[:portfolio_normative].each do |r|
           cat = r[:display_name].presence || 'Não Classificado'
           category_groups[cat] += r[:carteira_atual].to_f
@@ -1592,7 +1591,11 @@ class PortfolioMonthlyReportGenerator
           'Investimento Exterior' => C[:warning],
           'Não Classificado'      => C[:muted]
         }
-        cat_data.each { |d| d[:color] = category_colors[d[:label]] }
+        # MUDANÇA: display_value com 4 casas para sobrescrever o label da legenda
+        cat_data.each do |d|
+          d[:color] = category_colors[d[:label]]
+          d[:display_value] = "#{fmt_num(d[:value], 4)}%"
+        end
 
         draw_donut_chart(data: cat_data, cx: 130, cy: pdf.cursor - 90, radius: 80,
                          legend_x: 225, legend_y: pdf.cursor - 40)
@@ -1882,7 +1885,7 @@ class PortfolioMonthlyReportGenerator
             r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 2)}%" : '—',  # ← alvo
             r[:portfolio_maximum]   ? "#{fmt_num(r[:portfolio_maximum],   2)}%" : '—',  # ← máximo do portfólio
             r[:portfolio_minimum]   ? "#{fmt_num(r[:portfolio_minimum],   2)}%" : '—',  # ← mínimo do portfólio
-            compliant ? 'Sim' : 'Não'
+            compliant ? '—' : 'Não'
           ]
         end
 
