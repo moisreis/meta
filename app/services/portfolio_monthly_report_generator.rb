@@ -364,7 +364,6 @@ class PortfolioMonthlyReportGenerator
   #   * +:portfolio_maximum+     [Float, nil]
   #   * +:compliant+             [Boolean]
   def collect_portfolio_normative_data
-    # Calcula a alocação real por artigo (mesma lógica de collect_investment_policy_data)
     active_fi_ids = (@performance_data[:performances] || [])
                       .select { |p| p.earnings.to_f != 0 || p.initial_balance.to_f > 0 }
                       .map(&:fund_investment_id)
@@ -384,27 +383,38 @@ class PortfolioMonthlyReportGenerator
       next unless perf && perf.initial_balance.to_f > 0
 
       weight = total_initial > 0 ? (perf.initial_balance.to_f / total_initial * 100) : 0.0
+      articles = fi.investment_fund.investment_fund_articles.select(&:normative_article)
+      next if articles.empty?
 
-      fi.investment_fund.investment_fund_articles.each do |ifa|
-        next unless ifa.normative_article
-        alloc_by_article[ifa.normative_article.id] += weight / fi.investment_fund.investment_fund_articles.size
+      articles.each do |ifa|
+        alloc_by_article[ifa.normative_article.id] += weight / articles.size
       end
     end
 
-    @portfolio
-      .portfolio_normative_articles
-      .includes(:normative_article)
-      .map do |pna|
-      art = pna.normative_article
+    # --- MUDANÇA PRINCIPAL ---
+    # Coleta todos os artigos normativos presentes nos fundos ativos,
+    # independente de estarem em portfolio_normative_articles
+    pna_by_article_id = @portfolio
+                          .portfolio_normative_articles
+                          .includes(:normative_article)
+                          .each_with_object({}) { |pna, h| h[pna.normative_article_id] = pna }
+
+    # União: artigos do portfolio_normative_articles + artigos vindos dos fundos ativos
+    article_ids_from_funds = alloc_by_article.keys
+    all_article_ids = (pna_by_article_id.keys + article_ids_from_funds).uniq
+
+    NormativeArticle
+      .where(id: all_article_ids)
+      .map do |art|
+      pna = pna_by_article_id[art.id]
 
       art_bench = art.benchmark_target&.to_f
-      prt_bench = pna.benchmark_target&.to_f
+      prt_bench = pna&.benchmark_target&.to_f
       art_min   = art.minimum_target&.to_f
       art_max   = art.maximum_target&.to_f
-      prt_min   = pna.minimum_target&.to_f
-      prt_max   = pna.maximum_target&.to_f
+      prt_min   = pna&.minimum_target&.to_f
+      prt_max   = pna&.maximum_target&.to_f
 
-      # Alocação real calculada a partir do initial_balance das performances
       carteira_atual = alloc_by_article[art.id].round(4)
 
       deviation = (prt_bench && art_bench) ? (prt_bench - art_bench).round(4) : nil
@@ -421,9 +431,9 @@ class PortfolioMonthlyReportGenerator
 
       {
         display_name:        art.display_name,
-        carteira_atual:      carteira_atual,   # ← alocação real calculada
+        carteira_atual:      carteira_atual,
         article_benchmark:   art_bench,
-        portfolio_benchmark: prt_bench,        # ← alvo do portfólio
+        portfolio_benchmark: prt_bench,
         deviation:           deviation,
         article_minimum:     art_min,
         portfolio_minimum:   prt_min,
@@ -431,7 +441,7 @@ class PortfolioMonthlyReportGenerator
         portfolio_maximum:   prt_max,
         compliant:           compliant
       }
-    end
+    end.sort_by { |r| -r[:carteira_atual] }
   rescue StandardError => e
     Rails.logger.error("[collect_portfolio_normative_data] #{e.message}")
     []
@@ -844,15 +854,16 @@ class PortfolioMonthlyReportGenerator
                       .select { |p| p.earnings.to_f != 0 || p.initial_balance.to_f > 0 }
                       .map(&:fund_investment_id)
                       .to_set
-    # Use initial_balance from performance records as the basis —
-    # percentage_allocation reflects end-of-period state and will be
-    # zero for fully-redeemed funds that were active during the period.
+
     perf_by_fi = (@performance_data[:performances] || [])
                    .each_with_object({}) { |p, h| h[p.fund_investment_id] = p }
 
     total_initial = perf_by_fi.values.sum { |p| p.initial_balance.to_f }
 
     alloc_by_article = Hash.new(0.0)
+    # Coleta também os metadados de cada artigo para usar abaixo
+    article_meta = {}
+
     @portfolio.fund_investments
               .includes(investment_fund: { investment_fund_articles: :normative_article })
               .select { |fi| active_fi_ids.include?(fi.id) }
@@ -860,28 +871,38 @@ class PortfolioMonthlyReportGenerator
       perf = perf_by_fi[fi.id]
       next unless perf && perf.initial_balance.to_f > 0
 
-      # Derive allocation from initial_balance proportion
       weight = total_initial > 0 ? (perf.initial_balance.to_f / total_initial * 100) : 0.0
+      articles = fi.investment_fund.investment_fund_articles.select(&:normative_article)
+      next if articles.empty?
 
-      fi.investment_fund.investment_fund_articles.each do |ifa|
-        next unless ifa.normative_article
-        alloc_by_article[ifa.normative_article.id] += weight / fi.investment_fund.investment_fund_articles.size
+      articles.each do |ifa|
+        art = ifa.normative_article
+        alloc_by_article[art.id] += weight / articles.size
+        article_meta[art.id] ||= art
       end
     end
 
-    @portfolio.portfolio_normative_articles
-              .includes(:normative_article)
-              .map do |pna|
-      art = pna.normative_article
-      next unless art
+    # --- MUDANÇA PRINCIPAL ---
+    # Base: portfolio_normative_articles existentes
+    pna_by_article_id = @portfolio
+                          .portfolio_normative_articles
+                          .includes(:normative_article)
+                          .each_with_object({}) { |pna, h| h[pna.normative_article_id] = pna }
 
-      carteira_atual = alloc_by_article[art.id].round(4)
-      alvo = art.benchmark_target.to_f
-      minimo = art.try(:minimum_target).to_f
-      maximo = art.try(:maximum_target).to_f
-      alvo = pna.benchmark_target.to_f
-      minimo = pna.minimum_target.to_f
-      maximo = pna.maximum_target.to_f
+    # União de artigos: os configurados no portfólio + os que vieram dos fundos ativos
+    all_article_ids = (pna_by_article_id.keys + alloc_by_article.keys).uniq
+
+    NormativeArticle
+      .where(id: all_article_ids)
+      .map do |art|
+      pna = pna_by_article_id[art.id]
+
+      carteira_atual = alloc_by_article[art.id].to_f.round(4)
+
+      # Se não há PNA cadastrado, usa os valores do próprio artigo como fallback
+      alvo   = pna ? pna.benchmark_target.to_f : art.benchmark_target.to_f
+      minimo = pna ? pna.minimum_target.to_f   : art.try(:minimum_target).to_f
+      maximo = pna ? pna.maximum_target.to_f   : art.try(:maximum_target).to_f
 
       compliant = if maximo > 0 || minimo > 0
                     carteira_atual >= minimo && (maximo.zero? || carteira_atual <= maximo)
@@ -890,17 +911,19 @@ class PortfolioMonthlyReportGenerator
                   end
 
       {
-        id: art.id,
-        label: art.display_name,
-        article_number: art.article_number.presence || art.article_name.presence || "Art. ##{art.id}",
-        carteira_atual: carteira_atual,
-        category: art.category.presence || art.article_name.presence || "Não classificado",
-        alvo: alvo,
-        minimo: minimo,
-        maximo: maximo,
-        compliant: compliant
+        id:              art.id,
+        label:           art.display_name,
+        article_number:  art.article_number.presence || art.article_name.presence || "Art. ##{art.id}",
+        carteira_atual:  carteira_atual,
+        category:        art.category.presence || art.article_name.presence || "Não classificado",
+        alvo:            alvo,
+        minimo:          minimo,
+        maximo:          maximo,
+        compliant:       compliant
       }
-    end.compact
+    end
+    .compact
+    .sort_by { |r| -r[:carteira_atual] }
   end
 
   # Retrieves checking account records for the portfolio within the month of
@@ -3319,7 +3342,7 @@ class PortfolioMonthlyReportGenerator
         start_y = pdf.cursor
 
         pdf.fill_color C[:body]
-        pdf.font('Geist Mono', size: 14) { pdf.draw_text title.to_s.upcase, at: [0, start_y] }
+        pdf.font('Geist Mono', size: 11) { pdf.draw_text title.to_s.upcase, at: [0, start_y] }
 
         if info
           pdf.fill_color C[:muted]

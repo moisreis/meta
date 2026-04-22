@@ -434,7 +434,7 @@
      * and visual consistency with the sidebar layout.
      */
     .button-sidebar {
-        @apply !h-7 !px-2.5 !py-0.75 text-neutral-50 bg-neutral-700 hover:!bg-neutral-700 !shadow-none [&>svg]:!stroke-neutral-50;
+        @apply !h-7 !px-2.5 !py-0.75 text-neutral-50 bg-neutral-800 hover:!bg-neutral-800 !shadow-none [&>svg]:!stroke-neutral-50;
     }
 
     /**
