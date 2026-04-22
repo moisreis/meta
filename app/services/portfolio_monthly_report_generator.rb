@@ -1869,22 +1869,20 @@ class PortfolioMonthlyReportGenerator
           'Em conformidade'
         ]
 
-        body = pna_data.map do |r|
-          compliant = if r[:portfolio_minimum] && r[:portfolio_maximum] && r[:portfolio_maximum] > 0
-                        r[:carteira_atual] >= r[:portfolio_minimum] && r[:carteira_atual] <= r[:portfolio_maximum]
-                      elsif r[:portfolio_minimum]
-                        r[:carteira_atual] >= r[:portfolio_minimum]
-                      elsif r[:portfolio_maximum]
-                        r[:carteira_atual] <= r[:portfolio_maximum]
+        # MUDANÇA: usa policy (data[:investment_policy]) em vez de pna_data (data[:portfolio_normative])
+        body = policy.map do |r|
+          compliant = if r[:maximo] > 0 || r[:minimo] > 0
+                        r[:carteira_atual] >= r[:minimo] && (r[:maximo].zero? || r[:carteira_atual] <= r[:maximo])
                       else
                         true
                       end
+
           [
-            r[:display_name],
-            r[:carteira_atual]      ? "#{fmt_num(r[:carteira_atual],      2)}%" : '—',  # ← alocação real
-            r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 2)}%" : '—',  # ← alvo
-            r[:portfolio_maximum]   ? "#{fmt_num(r[:portfolio_maximum],   2)}%" : '—',  # ← máximo do portfólio
-            r[:portfolio_minimum]   ? "#{fmt_num(r[:portfolio_minimum],   2)}%" : '—',  # ← mínimo do portfólio
+            r[:label],
+            "#{fmt_num(r[:carteira_atual], 4)}%",
+            r[:alvo]   > 0 ? "#{fmt_num(r[:alvo],   2)}%" : '—',
+            r[:maximo] > 0 ? "#{fmt_num(r[:maximo], 2)}%" : '—',
+            r[:minimo] > 0 ? "#{fmt_num(r[:minimo], 2)}%" : '—',
             compliant ? '—' : 'Não'
           ]
         end
