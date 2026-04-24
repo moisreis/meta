@@ -704,18 +704,23 @@ class PortfolioMonthlyReportGenerator
     perf_by_fi = (@performance_data[:performances] || [])
                    .index_by(&:fund_investment_id)
 
+    active_fi_ids = (@performance_data[:performances] || [])
+                      .select { |p| p.earnings.to_f != 0 || p.initial_balance.to_f > 0 }
+                      .map(&:fund_investment_id)
+                      .to_set
+
     @portfolio.fund_investments
               .includes(:investment_fund, :applications, :redemptions,
                         investment_fund: { investment_fund_articles: :normative_article })
+              .select { |fi| active_fi_ids.include?(fi.id) }
               .each do |fi|
 
       articles = fi.investment_fund.investment_fund_articles
-      label = articles.any? ?
-                (articles.first.normative_article&.category.presence || 'Fundos ou ETF 100% TPF') :
-                'Fundos ou ETF 100% TPF'
-      label = 'Fundos ou ETF 100% TPF' if label == 'Renda Fixa Geral'
+      raw_cat = articles.any? ? articles.first.normative_article&.category.to_s.strip : ''
+      label = raw_cat.presence || 'Fundos ou ETF 100% TPF'
+      label = 'Fundos ou ETF 100% TPF' if label.match?(/renda fixa geral/i)
 
-      groups[label][:value] += fi.current_market_value_on(@reference_date).to_f
+      groups[label][:value]    += fi.current_market_value_on(@reference_date).to_f
       groups[label][:earnings] += perf_by_fi[fi.id]&.earnings.to_f
     end
 
