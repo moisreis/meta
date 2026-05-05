@@ -1,18 +1,11 @@
 # Configures the development environment for the Rails application.
 #
-# This environment prioritizes developer productivity by enabling code reloading,
-# verbose logging, debugging tools, and flexible caching behavior.
-#
-# TABLE OF CONTENTS:
-#
-# 1. Code Loading & Performance
-# 2. Logging
-# 3. Caching
-# 4. Active Storage
-# 5. Action Mailer
-# 6. Active Record & Debugging
-# 7. Assets & Views
-# 8. Controller & Framework Safety
+# This environment prioritizes developer productivity by enabling:
+# - Automatic code reloading
+# - Verbose debugging and query logging
+# - Local file storage
+# - Flexible caching behavior
+# - Development diagnostics tooling
 #
 # @author Moisés Reis
 
@@ -21,113 +14,137 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
 
   # =============================================================
-  #           1. CODE LOADING & PERFORMANCE
+  #                  1. DEVELOPMENT TOOLING
   # =============================================================
 
-  # Enable code reloading without server restart.
+  config.after_initialize do
+    Bullet.enable        = true
+    Bullet.alert         = true
+    Bullet.bullet_logger = true
+    Bullet.console       = true
+    Bullet.rails_logger  = true
+    Bullet.add_footer    = true
+  end
+
+  # =============================================================
+  #             2. CODE LOADING & PERFORMANCE
+  # =============================================================
+
+  # Enable Semantic Logger lifecycle events.
+  config.rails_semantic_logger.started    = true
+  config.rails_semantic_logger.processing = true
+  config.rails_semantic_logger.rendered   = true
+
+  # Reload application code between requests.
   config.enable_reloading = true
 
-  # Disable eager loading for faster boot.
+  # Disable eager loading for faster boot time.
   config.eager_load = false
 
-  # Enable server timing metrics.
+  # Enable browser timing metrics.
   config.server_timing = true
 
-  # Show full error reports.
-  config.consider_all_requests_local = false
+  # Show detailed exception pages.
+  config.consider_all_requests_local = true
 
   # =============================================================
-  #                      2. LOGGING
+  #                        3. LOGGING
   # =============================================================
 
-  # Enable Lograge for structured logging.
-  config.lograge.enabled = true
-
-  # Log to STDOUT.
+  # Log application output to STDOUT.
   config.logger = ActiveSupport::Logger.new($stdout)
 
-  # Debug-level logging.
+  # Enable verbose logging.
   config.log_level = :debug
 
-  # Silence deprecation warnings.
+  # Silence framework deprecation warnings.
   config.active_support.deprecation = :silence
 
   # =============================================================
-  #                       3. CACHING
+  #                         4. CACHING
   # =============================================================
 
-  # Toggle caching via tmp/caching-dev.txt.
+  # Toggle caching using tmp/caching-dev.txt.
   if Rails.root.join("tmp/caching-dev.txt").exist?
+
+    # Enable controller caching.
     config.action_controller.perform_caching = true
+
+    # Enable fragment cache logging.
     config.action_controller.enable_fragment_cache_logging = true
 
-    # Cache static files for short duration in development.
+    # Cache static assets for a short duration.
     config.public_file_server.headers = {
       "cache-control" => "public, max-age=#{2.days.to_i}"
     }
+
   else
+
+    # Disable controller caching.
     config.action_controller.perform_caching = false
+
   end
 
-  # Use in-memory cache store.
+  # Use in-memory cache storage.
   config.cache_store = :memory_store
 
   # =============================================================
-  #                    4. ACTIVE STORAGE
+  #                    5. ACTIVE STORAGE
   # =============================================================
 
-  # Store uploads locally.
+  # Store uploaded files locally.
   config.active_storage.service = :local
 
   # =============================================================
-  #                    5. ACTION MAILER
+  #                    6. ACTION MAILER
   # =============================================================
 
-  # Do not raise errors if mail delivery fails.
+  # Do not raise delivery errors.
   config.action_mailer.raise_delivery_errors = false
 
   # Disable mailer caching.
   config.action_mailer.perform_caching = false
 
-  # Default URL options for mailer links.
+  # Configure mailer URL generation.
   config.action_mailer.default_url_options = {
     host: "localhost",
     port: 3000
   }
 
   # =============================================================
-  #         6. ACTIVE RECORD & DEBUGGING
+  #              7. ACTIVE RECORD & DEBUGGING
   # =============================================================
 
-  # Raise error if migrations are pending.
+  # Raise an error when migrations are pending.
   config.active_record.migration_error = :page_load
 
-  # Highlight query origins in logs.
+  # Highlight query source locations.
   config.active_record.verbose_query_logs = true
 
-  # Append metadata to SQL queries.
+  # Append metadata tags to SQL queries.
   config.active_record.query_log_tags_enabled = true
 
-  # Highlight job enqueue origins.
+  # Highlight Active Job enqueue locations.
   config.active_job.verbose_enqueue_logs = true
 
-  # Highlight redirect origins.
+  # Highlight redirect source locations.
   config.action_dispatch.verbose_redirect_logs = true
 
   # =============================================================
-  #                7. ASSETS & VIEWS
+  #                   8. ASSETS & VIEWS
   # =============================================================
 
-  # Suppress asset request logs.
+  # Suppress asset request logging.
   config.assets.quiet = true
 
-  # Annotate rendered views with file names.
+  # Annotate rendered templates with file paths.
   config.action_view.annotate_rendered_view_with_filenames = true
 
   # =============================================================
-  #        8. CONTROLLER & FRAMEWORK SAFETY
+  #          9. CONTROLLER & FRAMEWORK SAFETY
   # =============================================================
 
-  # Raise error for invalid callback configurations.
+  # Raise errors for invalid callback references.
   config.action_controller.raise_on_missing_callback_actions = true
+
 end

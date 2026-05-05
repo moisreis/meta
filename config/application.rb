@@ -68,6 +68,10 @@ module Meta
 
     # Add service objects to eager load paths.
     config.eager_load_paths << Rails.root.join("app/services")
+    config.autoload_paths << Rails.root.join("app/queries")
+    config.eager_load_paths << Rails.root.join("app/queries")
+    config.eager_load_paths << Rails.root.join("app/forms")
+    config.autoload_paths  << Rails.root.join("app/forms")
 
     # =============================================================
     #              2e. TIME ZONE CONFIGURATION

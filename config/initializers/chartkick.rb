@@ -72,7 +72,7 @@ Chartkick.options = {
 
     # Default font configuration.
     font: {
-      family: "'Geist Mono'",
+      family: "'Source Code Pro'",
       size: 12,
       weight: '400'
     },
@@ -131,7 +131,7 @@ Chartkick.options = {
           borderSkipped: true,
           borderWidth: 0,
           font: {
-            family: "'Geist Mono'",
+            family: "'Source Code Pro'",
             size: 12,
             weight: '400'
           },
@@ -157,13 +157,13 @@ Chartkick.options = {
         padding: 12,
 
         titleFont: {
-          family: "'Geist Mono'",
+          family: "'Source Code Pro'",
           size: 12,
           weight: '400',
         },
 
         bodyFont: {
-          family: "'Geist Mono'",
+          family: "'Source Code Pro'",
           size: 12,
           weight: '400',
         }
@@ -178,7 +178,7 @@ Chartkick.options = {
       x: {
         ticks: {
           font: {
-            family: "'Geist Mono'",
+            family: "'Source Code Pro'",
             size: 12
           },
           color: '#8a8a8a',
@@ -191,7 +191,7 @@ Chartkick.options = {
       y: {
         ticks: {
           font: {
-            family: "'Geist Mono'",
+            family: "'Source Code Pro'",
             size: 12
           },
           color: '#8a8a8a'

@@ -1,0 +1,13 @@
+<div id="toast-icons" class="hidden" aria-hidden="true">
+  <% ICON_MAP.each do |type, icon| %>
+    <span data-icon="<%= type %>">
+      <%= render_icon icon, class: "size-4" %>
+    </span>
+  <% end %>
+</div>
+
+<div
+  data-controller="toast"
+  data-toast-messages-value="<%= flash_messages_json %>"
+  data-toast-duration-value="<%= TOAST_DURATION_MS %>"
+></div>

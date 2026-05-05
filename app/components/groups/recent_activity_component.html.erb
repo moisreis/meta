@@ -1,0 +1,9 @@
+<%= render(Blocks::SectionComponent.new(title: @title, columns: 1, action: @action)) do %>
+  <% if empty? %>
+    <%= content_tag :p, "Ainda não há dados.", class: "badge badge-outline" %>
+  <% else %>
+    <% items.each do |item| %>
+      <%= item %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,14 @@
+<%# app/components/chart_list_component.html.erb %>
+
+<%= render(
+      Modules::ChartComponent.new(
+        chart_title: chart_title,
+        data_source: data_source,
+        chart_id: chart_id,
+        chart_meta: chart_meta
+      )
+    ) do %>
+
+  <%= rendered_chart %>
+
+<% end %>

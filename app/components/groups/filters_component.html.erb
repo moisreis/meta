@@ -1,0 +1,83 @@
+<%# frozen_string_literal: true %>
+
+<%# =========================================================
+  #                  FILTER SIDEBAR
+  # ========================================================= %>
+<div id="sidebarFilters"
+     class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-background border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
+
+  <%= helpers.search_form_for @q_object,
+                      url:    @search_url,
+                      method: :get,
+                      html:   { id: "filter_form", class: "flex flex-col h-full" },
+                      data:   { turbo_frame: @turbo_frame_id } do |f| %>
+
+    <%# -------------------------------------------------------
+      #                      HEADER
+      # ------------------------------------------------------- %>
+    <div class="h-20 flex flex-row justify-between items-center px-16 !bg-white border-b border-border">
+      <h3 class="font-heading capitalize font-medium text-3xl line-clamp-2">Filtros</h3>
+
+      <%= button_tag id:    "closeFiltersBtn",
+                     type:  "button",
+                     class: "button button-danger button-icon button-small" do %>
+        <%= render_icon("x") %>
+      <% end %>
+    </div>
+
+    <%# -------------------------------------------------------
+      #                   FILTER FIELDS
+      # ------------------------------------------------------- %>
+    <div class="flex-grow px-16 space-y-8 overflow-y-auto">
+      <% @filters.each do |filter| %>
+        <% if date_filter?(filter) %>
+          <%= render partial: "partials/modules/date-field", locals: {
+                f:         f,
+                name:      filter[:key],
+                label:     filter[:label],
+                desc:      filter[:description],
+                icon_name: filter[:icon_name]
+              } %>
+        <% else %>
+          <%= render Forms::InputFieldComponent.new(
+                f:            f,
+                name:         filter[:key],
+                label:        filter[:label],
+                desc:         filter[:description],
+                placeholder:  filter[:placeholder],
+                field_type:   :text_field,
+                icon_name:    filter[:icon_name],
+                cnpj_mask:    filter[:cnpj_mask]    || false,
+                currency_mask: filter[:currency_mask] || false
+              ) %>
+        <% end %>
+      <% end %>
+
+      <%# -------------------------------------------------------
+        #                   ACTIONS
+        # ------------------------------------------------------- %>
+      <div class="flex flex-row gap-1.5">
+        <%= button_tag type:  :submit,
+                       class: "button button-small button-accent",
+                       id:    "applyFiltersBtn" do %>
+          <%= render_icon("funnel") %>
+          <%= content_tag :span, "Aplicar" %>
+        <% end %>
+
+        <%= link_to @search_url,
+                    class: "button button-small button-outline",
+                    data:  { turbo_frame: @turbo_frame_id } do %>
+          <%= render_icon("refresh-cw") %>
+          <%= content_tag :span, "Limpar" %>
+        <% end %>
+      </div>
+    </div>
+
+  <% end %>
+</div>
+
+<%# =========================================================
+  #                   BACKDROP OVERLAY
+  # ========================================================= %>
+<div id="filterOverlay"
+     class="h-screen w-screen bg-body/10 backdrop-blur-sm z-40 hidden fixed top-0 right-0"></div>

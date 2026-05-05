@@ -1,224 +1,366 @@
 <%#
-  # Partial: _footer_scripts.html
-  # Date: 11/26/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Loads and initializes client-side JavaScript needed by views
-  #              that rely on enhanced form controls. Ensures the TomSelect
-  #              component is properly attached to its corresponding input field.
-  #
-  # Usage:
-  #   - What: Injects page-specific scripts at the bottom of the layout.
-  #           Initializes TomSelect for elements that require advanced select UI.
-  #   - How: Render this partial inside the main layout or inside a view that
-  #          needs TomSelect active on an element with id `tom-select-it`.
-  #   - Why: Keeps script initialization centralized, improves readability,
-  #          avoids duplicate JavaScript blocks in multiple templates, and
-  #          ensures consistent behavior across pages using the same widgets.
-  %>
+  PARTIAL: app/views/shared/_footer_scripts.html.erb
 
-<!-- [Script] sidebarFilters -->
+  DESCRIPTION:
+  Loads and initializes page-level JavaScript behaviors used
+  throughout the application interface.
+
+  RESPONSIBILITIES:
+  - Sidebar open/close interactions
+  - Overlay synchronization
+  - Escape-key sidebar dismissal
+  - Portfolio link synchronization
+  - Shared event listener registration
+
+  NOTES:
+  - Scripts are initialized using Turbo lifecycle events.
+  - All behaviors rely on fixed DOM element identifiers.
+  - Missing elements are logged to the browser console.
+%>
+
+<%# ========================================================= %>
+<%#                  1. FILTER SIDEBAR                       %>
+<%# ========================================================= %>
+
 <script>
-    let sidebar;
-    let openBtn;
-    let closeBtn;
-    let filterOverlay;
+  let sidebar;
+  let openBtn;
+  let closeBtn;
+  let filterOverlay;
 
-    function openSidebar() {
-        sidebar.classList.add('opacity-100');
-        sidebar.classList.remove('opacity-0', 'pointer-events-none');
-        filterOverlay.classList.remove('hidden');
+  function openSidebar() {
+    sidebar.classList.add('opacity-100');
+    sidebar.classList.remove('opacity-0', 'pointer-events-none');
+
+    filterOverlay.classList.remove('hidden');
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('opacity-100');
+    sidebar.classList.add('opacity-0', 'pointer-events-none');
+
+    filterOverlay.classList.add('hidden');
+  }
+
+  function setupEventListeners() {
+    sidebar       = document.getElementById('sidebarFilters');
+    openBtn       = document.getElementById('openFiltersBtn');
+    closeBtn      = document.getElementById('closeFiltersBtn');
+    filterOverlay = document.getElementById('filterOverlay');
+
+    if (sidebar && openBtn && closeBtn) {
+      openBtn.addEventListener('click', openSidebar);
+      closeBtn.addEventListener('click', closeSidebar);
+    } else {
+      console.error(
+        'Sidebar setup failed: One or more IDs were not found in the HTML.'
+      );
     }
+  }
 
-    function closeSidebar() {
-        sidebar.classList.remove('opacity-100');
-        sidebar.classList.add('opacity-0', 'pointer-events-none');
-        filterOverlay.classList.add('hidden');
-    }
-
-    function setupEventListeners() {
-        sidebar = document.getElementById('sidebarFilters');
-        openBtn = document.getElementById('openFiltersBtn');
-        closeBtn = document.getElementById('closeFiltersBtn');
-        filterOverlay = document.getElementById('filterOverlay')
-
-        if (sidebar && openBtn && closeBtn) {
-            openBtn.addEventListener('click', openSidebar);
-            closeBtn.addEventListener('click', closeSidebar);
-        } else {
-            console.error("Sidebar setup failed: One or more IDs were not found in the HTML.");
-        }
-    }
-
-    document.addEventListener('turbo:load', setupEventListeners);
+  document.addEventListener('turbo:load', setupEventListeners);
 </script>
 
-<!-- [Script] portfolioDropdown -->
-<script>
-    // Explanation:: This script watches the portfolio dropdown for changes.
-    //               When a new option is picked, it updates the button's link.
-    //               This prevents the user from going to the wrong portfolio.
-    document.addEventListener('change', (event) => {
-        if (event.target.name === 'portfolio_id') {
-            const link = document.getElementById('view-portfolio-link');
-            const selectedId = event.target.value;
-            const baseUrl = link.dataset.baseUrl;
+<%# ========================================================= %>
+<%#                2. PORTFOLIO DROPDOWN LINK               %>
+<%# ========================================================= %>
 
-            if (selectedId) {
-                link.href = baseUrl + selectedId;
-            }
-        }
-    });
+<script>
+  document.addEventListener('change', (event) => {
+    if (event.target.name === 'portfolio_id') {
+      const link       = document.getElementById('view-portfolio-link');
+      const selectedId = event.target.value;
+      const baseUrl    = link.dataset.baseUrl;
+
+      if (selectedId) {
+        link.href = baseUrl + selectedId;
+      }
+    }
+  });
 </script>
 
-<!-- [Script] sidebarApplication -->
+<%# ========================================================= %>
+<%#                3. APPLICATION SIDEBAR                   %>
+<%# ========================================================= %>
+
 <script>
-    let applicationSidebar;
-    let openApplicationBtn;
-    let closeApplicationBtn;
-    let cancelApplicationBtn;
-    let applicationOverlay;
+  let applicationSidebar;
+  let openApplicationBtn;
+  let closeApplicationBtn;
+  let cancelApplicationBtn;
+  let applicationOverlay;
 
-    function openApplicationSidebar() {
-        applicationSidebar.classList.add('opacity-100');
-        applicationSidebar.classList.remove('opacity-0', 'pointer-events-none');
-        applicationOverlay.classList.remove('hidden');
-    }
+  function openApplicationSidebar() {
+    applicationSidebar.classList.add('opacity-100');
+    applicationSidebar.classList.remove('opacity-0', 'pointer-events-none');
 
-    function closeApplicationSidebar() {
-        applicationSidebar.classList.remove('opacity-100');
-        applicationSidebar.classList.add('opacity-0', 'pointer-events-none');
-        applicationOverlay.classList.add('hidden');
-    }
+    applicationOverlay.classList.remove('hidden');
+  }
 
-    function setupApplicationSidebarListeners() {
-        applicationSidebar = document.getElementById('sidebarApplication');
-        openApplicationBtn = document.getElementById('openApplicationBtn');
-        closeApplicationBtn = document.getElementById('closeApplicationBtn');
-        cancelApplicationBtn = document.getElementById('cancelApplicationBtn');
-        applicationOverlay = document.getElementById('applicationOverlay');
+  function closeApplicationSidebar() {
+    applicationSidebar.classList.remove('opacity-100');
+    applicationSidebar.classList.add('opacity-0', 'pointer-events-none');
 
-        if (applicationSidebar && openApplicationBtn && closeApplicationBtn) {
-            openApplicationBtn.addEventListener('click', openApplicationSidebar);
-            closeApplicationBtn.addEventListener('click', closeApplicationSidebar);
-            cancelApplicationBtn.addEventListener('click', closeApplicationSidebar);
-            applicationOverlay.addEventListener('click', closeApplicationSidebar);
+    applicationOverlay.classList.add('hidden');
+  }
 
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') closeApplicationSidebar();
-            });
-        } else {
-            console.error("Application sidebar setup failed: one or more IDs were not found in the HTML.");
+  function setupApplicationSidebarListeners() {
+    applicationSidebar = document.getElementById('sidebarApplication');
+
+    openApplicationBtn   = document.getElementById('openApplicationBtn');
+    closeApplicationBtn  = document.getElementById('closeApplicationBtn');
+    cancelApplicationBtn = document.getElementById('cancelApplicationBtn');
+
+    applicationOverlay = document.getElementById('applicationOverlay');
+
+    if (
+      applicationSidebar &&
+      openApplicationBtn &&
+      closeApplicationBtn
+    ) {
+      openApplicationBtn.addEventListener(
+        'click',
+        openApplicationSidebar
+      );
+
+      closeApplicationBtn.addEventListener(
+        'click',
+        closeApplicationSidebar
+      );
+
+      cancelApplicationBtn.addEventListener(
+        'click',
+        closeApplicationSidebar
+      );
+
+      applicationOverlay.addEventListener(
+        'click',
+        closeApplicationSidebar
+      );
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          closeApplicationSidebar();
         }
+      });
+    } else {
+      console.error(
+        'Application sidebar setup failed: one or more IDs were not found in the HTML.'
+      );
     }
+  }
 
-    document.addEventListener('turbo:load', setupApplicationSidebarListeners);
+  document.addEventListener(
+    'turbo:load',
+    setupApplicationSidebarListeners
+  );
 </script>
 
-<!-- [Script] sidebarRedemption -->
+<%# ========================================================= %>
+<%#                 4. REDEMPTION SIDEBAR                     %>
+<%# ========================================================= %>
+
 <script>
-    let redemptionSidebar;
-    let openRedemptionBtn;
-    let closeRedemptionBtn;
-    let cancelRedemptionBtn;
-    let redemptionOverlay;
+  let redemptionSidebar;
+  let openRedemptionBtn;
+  let closeRedemptionBtn;
+  let cancelRedemptionBtn;
+  let redemptionOverlay;
 
-    function openRedemptionSidebar() {
-        redemptionSidebar.classList.add('opacity-100');
-        redemptionSidebar.classList.remove('opacity-0', 'pointer-events-none');
-        redemptionOverlay.classList.remove('hidden');
-    }
+  function openRedemptionSidebar() {
+    redemptionSidebar.classList.add('opacity-100');
 
-    function closeRedemptionSidebar() {
-        redemptionSidebar.classList.remove('opacity-100');
-        redemptionSidebar.classList.add('opacity-0', 'pointer-events-none');
-        redemptionOverlay.classList.add('hidden');
-    }
+    redemptionSidebar.classList.remove(
+      'opacity-0',
+      'pointer-events-none'
+    );
 
-    function setupRedemptionSidebarListeners() {
-        redemptionSidebar = document.getElementById('sidebarRedemption');
-        openRedemptionBtn = document.getElementById('openRedemptionBtn');
-        closeRedemptionBtn = document.getElementById('closeRedemptionBtn');
-        cancelRedemptionBtn = document.getElementById('cancelRedemptionBtn');
-        redemptionOverlay = document.getElementById('redemptionOverlay');
+    redemptionOverlay.classList.remove('hidden');
+  }
 
-        if (redemptionSidebar && openRedemptionBtn && closeRedemptionBtn) {
-            openRedemptionBtn.addEventListener('click', openRedemptionSidebar);
-            closeRedemptionBtn.addEventListener('click', closeRedemptionSidebar);
-            cancelRedemptionBtn.addEventListener('click', closeRedemptionSidebar);
-            redemptionOverlay.addEventListener('click', closeRedemptionSidebar);
+  function closeRedemptionSidebar() {
+    redemptionSidebar.classList.remove('opacity-100');
 
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') closeRedemptionSidebar();
-            });
-        } else {
-            console.error("Redemption sidebar setup failed: one or more IDs were not found in the HTML.");
+    redemptionSidebar.classList.add(
+      'opacity-0',
+      'pointer-events-none'
+    );
+
+    redemptionOverlay.classList.add('hidden');
+  }
+
+  function setupRedemptionSidebarListeners() {
+    redemptionSidebar = document.getElementById('sidebarRedemption');
+
+    openRedemptionBtn   = document.getElementById('openRedemptionBtn');
+    closeRedemptionBtn  = document.getElementById('closeRedemptionBtn');
+    cancelRedemptionBtn = document.getElementById('cancelRedemptionBtn');
+
+    redemptionOverlay = document.getElementById('redemptionOverlay');
+
+    if (
+      redemptionSidebar &&
+      openRedemptionBtn &&
+      closeRedemptionBtn
+    ) {
+      openRedemptionBtn.addEventListener(
+        'click',
+        openRedemptionSidebar
+      );
+
+      closeRedemptionBtn.addEventListener(
+        'click',
+        closeRedemptionSidebar
+      );
+
+      cancelRedemptionBtn.addEventListener(
+        'click',
+        closeRedemptionSidebar
+      );
+
+      redemptionOverlay.addEventListener(
+        'click',
+        closeRedemptionSidebar
+      );
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          closeRedemptionSidebar();
         }
+      });
+    } else {
+      console.error(
+        'Redemption sidebar setup failed: one or more IDs were not found in the HTML.'
+      );
     }
+  }
 
-    document.addEventListener('turbo:load', setupRedemptionSidebarListeners);
+  document.addEventListener(
+    'turbo:load',
+    setupRedemptionSidebarListeners
+  );
 </script>
 
-<!-- [Script] sidebarCheckingAccount -->
+<%# ========================================================= %>
+<%#              5. CHECKING ACCOUNT SIDEBAR                %>
+<%# ========================================================= %>
+
 <script>
-    let checkingAccountSidebar;
-    let openCheckingAccountBtn;
-    let closeCheckingAccountBtn;
-    let cancelCheckingAccountBtn;
-    let checkingAccountOverlay;
+  let checkingAccountSidebar;
+  let openCheckingAccountBtn;
+  let closeCheckingAccountBtn;
+  let cancelCheckingAccountBtn;
+  let checkingAccountOverlay;
 
-    function openCheckingAccountSidebar() {
-        checkingAccountSidebar.classList.add('opacity-100');
-        checkingAccountSidebar.classList.remove('opacity-0', 'pointer-events-none');
-        checkingAccountOverlay.classList.remove('hidden');
-    }
+  function openCheckingAccountSidebar() {
+    checkingAccountSidebar.classList.add('opacity-100');
 
-    function closeCheckingAccountSidebar() {
-        checkingAccountSidebar.classList.remove('opacity-100');
-        checkingAccountSidebar.classList.add('opacity-0', 'pointer-events-none');
-        checkingAccountOverlay.classList.add('hidden');
-    }
+    checkingAccountSidebar.classList.remove(
+      'opacity-0',
+      'pointer-events-none'
+    );
 
-    function setupCheckingAccountSidebarListeners() {
-        checkingAccountSidebar = document.getElementById('sidebarCheckingAccount');
-        openCheckingAccountBtn = document.getElementById('openCheckingAccountBtn');
-        closeCheckingAccountBtn = document.getElementById('closeCheckingAccountBtn');
-        cancelCheckingAccountBtn = document.getElementById('cancelCheckingAccountBtn');
-        checkingAccountOverlay = document.getElementById('checkingAccountOverlay');
+    checkingAccountOverlay.classList.remove('hidden');
+  }
 
-        if (checkingAccountSidebar && openCheckingAccountBtn && closeCheckingAccountBtn) {
-            openCheckingAccountBtn.addEventListener('click', openCheckingAccountSidebar);
-            closeCheckingAccountBtn.addEventListener('click', closeCheckingAccountSidebar);
-            cancelCheckingAccountBtn.addEventListener('click', closeCheckingAccountSidebar);
-            checkingAccountOverlay.addEventListener('click', closeCheckingAccountSidebar);
+  function closeCheckingAccountSidebar() {
+    checkingAccountSidebar.classList.remove('opacity-100');
 
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') closeCheckingAccountSidebar();
-            });
-        } else {
-            console.error("Checking account sidebar setup failed: one or more IDs were not found in the HTML.");
+    checkingAccountSidebar.classList.add(
+      'opacity-0',
+      'pointer-events-none'
+    );
+
+    checkingAccountOverlay.classList.add('hidden');
+  }
+
+  function setupCheckingAccountSidebarListeners() {
+    checkingAccountSidebar = document.getElementById(
+      'sidebarCheckingAccount'
+    );
+
+    openCheckingAccountBtn = document.getElementById(
+      'openCheckingAccountBtn'
+    );
+
+    closeCheckingAccountBtn = document.getElementById(
+      'closeCheckingAccountBtn'
+    );
+
+    cancelCheckingAccountBtn = document.getElementById(
+      'cancelCheckingAccountBtn'
+    );
+
+    checkingAccountOverlay = document.getElementById(
+      'checkingAccountOverlay'
+    );
+
+    if (
+      checkingAccountSidebar &&
+      openCheckingAccountBtn &&
+      closeCheckingAccountBtn
+    ) {
+      openCheckingAccountBtn.addEventListener(
+        'click',
+        openCheckingAccountSidebar
+      );
+
+      closeCheckingAccountBtn.addEventListener(
+        'click',
+        closeCheckingAccountSidebar
+      );
+
+      cancelCheckingAccountBtn.addEventListener(
+        'click',
+        closeCheckingAccountSidebar
+      );
+
+      checkingAccountOverlay.addEventListener(
+        'click',
+        closeCheckingAccountSidebar
+      );
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          closeCheckingAccountSidebar();
         }
+      });
+    } else {
+      console.error(
+        'Checking account sidebar setup failed: one or more IDs were not found in the HTML.'
+      );
     }
+  }
 
-    document.addEventListener('turbo:load', setupCheckingAccountSidebarListeners);
+  document.addEventListener(
+    'turbo:load',
+    setupCheckingAccountSidebarListeners
+  );
 </script>
 
-<!-- [Script] portfolioDropdownSync -->
+<%# ========================================================= %>
+<%#              6. PORTFOLIO LINK SYNCHRONIZATION          %>
+<%# ========================================================= %>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const portfolioSelect = document.getElementById('portfolio-select');
-        const viewPortfolioLink = document.getElementById('view-portfolio-link');
+  document.addEventListener('DOMContentLoaded', function () {
+    const portfolioSelect = document.getElementById(
+      'portfolio-select'
+    );
 
-        if (portfolioSelect && viewPortfolioLink) {
-            portfolioSelect.addEventListener('change', function () {
-                const selectedPortfolioId = this.value;
-                if (selectedPortfolioId) {
-                    viewPortfolioLink.href = `/portfolios/${selectedPortfolioId}`;
-                }
-            });
+    const viewPortfolioLink = document.getElementById(
+      'view-portfolio-link'
+    );
+
+    if (portfolioSelect && viewPortfolioLink) {
+      portfolioSelect.addEventListener('change', function () {
+        const selectedPortfolioId = this.value;
+
+        if (selectedPortfolioId) {
+          viewPortfolioLink.href =
+            `/portfolios/${selectedPortfolioId}`;
         }
-    });
+      });
+    }
+  });
 </script>
-
-

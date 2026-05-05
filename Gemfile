@@ -78,7 +78,10 @@ gem "prawn"
 gem "prawn-table"
 gem "victor"
 gem "prawn-svg"
-gem "lograge"
+gem "view_component"
+gem "amazing_print"
+gem "bullet"
+gem "rails_semantic_logger"
 
 # =============================================================
 #        6a. DEVELOPMENT & TEST — SHARED DEPENDENCIES

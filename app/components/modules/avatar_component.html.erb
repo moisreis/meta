@@ -1,9 +1,13 @@
 <%#
-  PARTIAL: app/views/partials/modules/_avatar.html.erb
-  DESCRIPTION: Renders a circular user avatar displaying user initials.
+  VIEW: app/components/modules/avatar_component.html.erb
+  COMPONENT: Modules::AvatarComponent
 
-  LOCAL VARIABLES:
-  - current_user: [User] The user whose avatar should be displayed.
+  DESCRIPTION:
+  Renders a circular avatar displaying a user's initials. Acts as a fallback
+  when no profile image is available.
+
+  DEPENDENCIES:
+  - initials: [String] Two-character uppercase initials derived from the component.
 %>
 
 <span data-slot="avatar"
@@ -16,7 +20,7 @@
               [&>span]:text-3xs
               [&>span]:text-mono">
 
-    <%= content_tag :span, "#{current_user.first_name.first}#{current_user.last_name.first}" %>
+    <span><%= initials %></span>
 
   </div>
 </span>

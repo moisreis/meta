@@ -1,0 +1,67 @@
+# app/services/portfolios/performance_returns_calculator.rb
+#
+# Computes total earnings, weighted portfolio return, and weighted 12-month
+# return from a set of PerformanceHistory records.
+module Portfolios
+  class PerformanceReturnsCalculator
+    Result = Struct.new(:total_earnings, :portfolio_return, :portfolio_12m_return, keyword_init: true)
+
+    ZERO = BigDecimal("0")
+
+    def self.call(recent_performance, reference_date)
+      new(recent_performance, reference_date).call
+    end
+
+    def initialize(recent_performance, reference_date)
+      @recent_performance = recent_performance
+      @reference_date     = reference_date
+    end
+
+    def call
+      return empty_result if @recent_performance.none?
+
+      active    = active_performance
+      total_initial = active.sum { |p| effective_balance(p) }
+      total_earnings = active.sum(&:earnings)
+
+      return empty_result.tap { |r| r.total_earnings = total_earnings } unless total_initial > 0
+
+      portfolio_return = (total_earnings / total_initial) * 100
+      portfolio_12m    = active.sum do |perf|
+        (effective_balance(perf) / total_initial) * (perf.last_12_months_return || 0)
+      end
+
+      Result.new(
+        total_earnings:    total_earnings,
+        portfolio_return:  portfolio_return,
+        portfolio_12m_return: portfolio_12m
+      )
+    end
+
+    private
+
+    def active_performance
+      period = @reference_date.end_of_month
+      @recent_performance.select do |perf|
+        fi = perf.fund_investment
+        fi.current_market_value_on(@reference_date) > 0 ||
+          fi.applications.where("cotization_date <= ?", period).sum(:number_of_quotas) >
+            fi.redemptions.where("cotization_date <= ?", period).sum(:redeemed_quotas)
+      end
+    end
+
+    def effective_balance(perf)
+      if perf.initial_balance&.positive?
+        perf.initial_balance
+      elsif perf.monthly_return&.nonzero? && perf.earnings
+        (perf.earnings / (perf.monthly_return / BigDecimal("100"))).abs
+      else
+        ZERO
+      end
+    end
+
+    def empty_result
+      Result.new(total_earnings: ZERO, portfolio_return: ZERO, portfolio_12m_return: ZERO)
+    end
+  end
+end

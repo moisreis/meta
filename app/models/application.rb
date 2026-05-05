@@ -23,6 +23,8 @@
 class Application < ApplicationRecord
 
   after_commit :recalculate_performance, on: [:create, :destroy]
+delegate :fund_name, to: :investment_fund
+delegate :name,      to: :portfolio, prefix: true
 
   before_validation :sync_dates
 
@@ -157,6 +159,9 @@ class Application < ApplicationRecord
   end
 
   private
+
+def investment_fund = fund_investment.investment_fund
+def portfolio       = fund_investment.portfolio
 
   def recalculate_performance
     return unless cotization_date

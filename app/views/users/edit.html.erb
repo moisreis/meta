@@ -1,35 +1,37 @@
 <%#
-  # Partial: edit.html.erb
-  # Date: 11/20/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Renders the page for updating an existing User record. It displays the
-  #              edit form and incorporates a dedicated, irreversible action section
-  #              for deleting the user account and associated data.
-  #
-  # Usage:: - What: Renders the full view dedicated to editing an existing User record.
-  #                It includes the update form and a separate "Danger Zone" for account deletion.
-  #         - How: Renders the **_wrapper** for layout, passing the current user's full name as the title.
-  #                It uses the **_form** partial for input and a custom **_card** partial.
-  #         - Why: Provides the interface necessary to execute the 'Update' and 'Delete'
-  #                functions (U and D in CRUD) for the User resource.
-  %>
+  VIEW: app/views/users/edit.html.erb
+  ACTION: UsersController#edit
 
-<%# Explanation:: This layout wrapper organizes the entire page content into a clean
-  #               dashboard structure to ensure consistency; it is used as the main
-  #               container and works by setting the page title to the user's full name.
-  %>
-<%= render 'partials/route/dashboard/wrapper',
-           page_title: "Editar #{@user.full_name}",
-           page_desc: "Atualize suas informações do usuário." do %>
+  DESCRIPTION:
+  Renders the user update page, including the dashboard layout
+  wrapper and the shared user form partial configured for record updates.
 
-  <%# Explanation:: This helper renders the central input structure to modify
-    #               existing user details; it is used to save changes and
-    #               works by passing the current record and a refresh icon button.
-    %>
-  <%= render "form",
-             user: @user,
-             button_name: "Atualizar",
-             icon_name: "refresh-cw" %>
+  INSTANCE VARIABLES:
+  - @user: [User] The user record being edited.
+  - @form: [ActiveModel] Form object responsible for update attributes and validations.
+%>
+
+<%# ========================================================= %>
+<%#                    1. DASHBOARD WRAPPER                  %>
+<%# ========================================================= %>
+
+<%= render(
+      Layout::DashboardWrapperComponent.new(
+        page_title: "Editar #{@user.full_name}",
+        page_desc: "Atualize suas informações do usuário."
+      )
+    ) do %>
+
+  <%# ======================================================= %>
+  <%#                   2. USER FORM PARTIAL                 %>
+  <%# ======================================================= %>
+
+  <%= render(
+        "form",
+        form_url:    user_path(@user),
+        form_method: :patch,
+        button_name: "Atualizar usuário",
+        icon_name:   "save"
+      ) %>
+
 <% end %>

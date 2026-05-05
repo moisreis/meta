@@ -1,0 +1,23 @@
+<section class="w-full flex flex-col no-scrollbar">
+
+  <%= render "partials/route/dashboard/header", page_title: @page_title %>
+
+  <div class="flex flex-col [&>form]:flex [&>form]:!gap-6 [&>form]:p-6 no-scrollbar bg-background">
+
+    <%# Page title bar %>
+    <div class="h-24 px-16 grid grid-cols-2 mb-12">
+      <div class="flex flex-row justify-start gap-3 items-end">
+        <%= content_tag :h1,
+                        @page_title,
+                        class: "font-heading capitalize font-medium text-4xl line-clamp-2" %>
+      </div>
+    </div>
+
+    <%# Page body %>
+    <div class="px-16 py-6 flex flex-col gap-16">
+      <%= content %>
+    </div>
+
+  </div>
+
+</section>

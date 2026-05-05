@@ -1,0 +1,16 @@
+pt-BR:
+  users:
+    create:
+      success: "Usuário criado com sucesso."
+      failure: "Não foi possível criar o usuário."
+
+    update:
+      success: "Usuário atualizado com sucesso."
+      failure: "Não foi possível atualizar o usuário."
+
+    destroy:
+      success: "Usuário deletado com sucesso."
+      failure: "Não foi possível deletar o usuário."
+
+    destroyed: "Usuário deletado com sucesso."
+    destroy_failed: "Não foi possível deletar o usuário."

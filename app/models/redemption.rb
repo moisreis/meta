@@ -6,6 +6,9 @@ class Redemption < ApplicationRecord
 
   after_commit :recalculate_performance, on: [:create, :destroy]
 
+delegate :fund_name, to: :investment_fund
+delegate :name,      to: :portfolio, prefix: true  # produces portfolio_name
+
   # FIX: same sync_dates issue as Application — use ||= to avoid overwriting
   # explicit date values that differ from cotization_date.
   before_validation :sync_dates
@@ -77,6 +80,9 @@ class Redemption < ApplicationRecord
   end
 
   private
+
+def investment_fund = fund_investment.investment_fund
+def portfolio       = fund_investment.portfolio
 
   def recalculate_performance
     return unless cotization_date

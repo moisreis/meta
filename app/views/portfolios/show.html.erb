@@ -116,6 +116,34 @@
     # Analytical Charts & Visualizations
     # ============================================================= %>
 
+    <%= render "partials/route/dashboard/section",
+               section_title: "Compliance e Limites Legais",
+               section_desc: "Comparativo entre alocação atual e limites da política de investimento.",
+               columns: 1 do %>
+
+      <%= render "partials/groups/chart-list",
+                 chart_type: :bar_chart,
+                 data_source: [
+                   { name: "Alocação Atual", data: @compliance_report.map { |r| [r[:article], r[:actual]] } },
+                   { name: "Objetivo (Target)", data: @compliance_report.map { |r| [r[:article], r[:target]] } },
+                   { name: "Limite Máximo", data: @compliance_report.map { |r| [r[:article], r[:max]] } }
+                 ],
+                 chart_title: "Enquadramento por Artigo (%)",
+                 chart_options: {
+                   suffix: "%",
+                   colors: ["rgb(109, 40, 217)", "rgb(34, 120, 87)", "rgb(17, 94, 89)"],
+                   library: {
+                     plugins: {
+                       legend: { position: 'bottom' }
+                     }
+                   },
+                   dataset: {
+                     borderWidth: 0,
+                   }
+                 }
+      %>
+    <% end %>
+
   <%= render "partials/route/dashboard/section",
              section_title: "Análise Detalhada",
              columns: 2 do
@@ -314,13 +342,11 @@
              action_name: "Nova Conta",
              button_id: "openCheckingAccountBtn",
              action_icon: "plus",
-             headers: ["Nome", "Instituição", "Conta", "Moeda", "Saldo", "Referência"],
-             column_icons: ["tag", "building", "hash", "dollar", "banknote", "calendar"],
+             headers: ["Instituição", "Conta", "Saldo", "Referência"],
+             column_icons: ["building", "hash", "banknote", "calendar"],
              body_procs: [
-               ->(ca) { normalize_title(ca.name) },
-               ->(ca) { ca.institution.presence || "—" },
-               ->(ca) { ca.account_number.presence || "—" },
-               ->(ca) { ca.currency },
+               ->(ca) { normalize_title(ca.institution.presence) },
+               ->(ca) { normalize_code(ca.account_number.presence) },
                ->(ca) { normalize_currency(ca.balance) },
                ->(ca) { l(ca.reference_date, format: :long) }
              ],

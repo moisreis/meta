@@ -3,18 +3,6 @@
 # This environment prioritizes performance, security, and stability by enabling
 # caching, eager loading, background processing, and optimized logging behavior.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Code Loading & Performance
-# 2. Caching & File Server
-# 3. Assets & Storage
-# 4. Logging
-# 5. Background Jobs
-# 6. Action Mailer
-# 7. Internationalization (I18n)
-# 8. Active Record
-# 9. Security & Host Configuration
-#
 # @author Moisés Reis
 
 require "active_support/core_ext/integer/time"
@@ -112,10 +100,4 @@ Rails.application.configure do
 
   # Limit inspected attributes in logs.
   config.active_record.attributes_for_inspect = [:id]
-
-  # =============================================================
-  #          9. SECURITY & HOST CONFIGURATION
-  # =============================================================
-
-  # (Optional) Host authorization and SSL-related settings can be configured here.
 end

@@ -1,114 +1,66 @@
-# frozen_string_literal: true
-
-# == NavHelper
+# Provides helper methods for rendering structured navigation sections
+# based on a given ActiveRecord model and its associated routes.
+#
+# This helper delegates item construction to {NavItemsBuilder} and
+# rendering concerns to {NavPresenter}, enforcing separation of concerns
+# between data preparation and view presentation.
+#
+# The generated navigation section typically includes:
+# - An index link (e.g., "All Users")
+# - An optional "new" resource link (e.g., "New User")
+# - Custom icons and paths when provided
+#
+# TABLE OF CONTENTS:
+#   1. Public Methods
 #
 # @author Moisés Reis
-# @project Meta Investimentos
-# @added 06/04/2026
-# @package Meta
-# @category Helpers
-#
-# @description
-#   Provides utility methods for generating navigation elements, specifically
-#   standardized CRUD navigation blocks and buttons for the application sidebar.
-#
-# @example Basic usage in a view
-#   crud_nav_for(User)
-#
 module NavHelper
-  # == crud_nav_for
+  # =============================================================
+  #                         1. PUBLIC METHODS
+  # =============================================================
+
+  # Renders a navigation section for a given model class.
   #
-  # @author Moisés Reis
-  # @project Meta Investimentos
-  # @category UI Helper
+  # This method dynamically builds a navigation structure using the model's
+  # naming conventions and optional overrides. It delegates:
+  # - Item construction to {NavItemsBuilder}
+  # - Rendering to {NavPresenter}
   #
-  # @description
-  #   Generates a structured navigation section for a specific model class,
-  #   including links for listing and creating records.
+  # @param model_class [Class] The ActiveRecord model class (e.g., User, Post).
+  # @param plural [String, nil] Optional custom plural label for the section.
+  #   Defaults to the model's humanized plural name.
+  # @param icons [Hash] Optional icon mappings for navigation items.
+  # @option icons [String, Symbol] :index Icon identifier for the index link.
+  # @option icons [String, Symbol] :new Icon identifier for the "new" link.
+  # @param index_path [String, nil] Optional override for the index route path.
+  #   If nil, defaults to the standard Rails route helper.
+  # @param new_path [String, nil] Optional override for the "new" route path.
+  #   If nil, defaults to the standard Rails route helper.
+  # @param show_new [Boolean] Whether to include the "new" resource link.
+  #   Defaults to true.
   #
-  # @param model_class [Class] The ActiveRecord model class to base the navigation on
-  # @param singular [String] Custom singular label (default: model human name)
-  # @param plural [String] Custom plural label (default: model human name count 2)
-  # @param icons [Hash] Custom icons for :index and :new actions
-  # @param index_path [String] Custom URL for the index action
-  # @param new_path [String] Custom URL for the new action
-  # @param show_new [Boolean] Whether to include the 'Add New' button (default: true)
-  # @return [String] HTML safe navigation block
+  # @return [String] HTML-safe string containing the rendered navigation section.
   #
-  # @example
-  #   crud_nav_for(EconomicIndex, icons: { index: "chart.svg" })
-  #
-  def crud_nav_for(model_class, singular: nil, plural: nil, icons: {}, index_path: nil, new_path: nil, show_new: true)
-    singular ||= model_class.model_name.human
-    plural   ||= model_class.model_name.human(count: 2)
+  # @raise [ArgumentError] If model_class does not respond to ActiveModel naming.
+  def render_nav_section_for(model_class, plural: nil, icons: {}, index_path: nil, new_path: nil, show_new: true)
+    unless model_class.respond_to?(:model_name)
+      raise ArgumentError, "model_class must respond to :model_name"
+    end
+
+    plural ||= model_class.model_name.human(count: 2)
 
     resources = model_class.model_name.route_key
-
-    default_icons = { index: "wallet.svg", new: "plus.svg" }
-    icon_set = default_icons.merge(icons.symbolize_keys)
-
-    items = [
-      {
-        icon: icon_set[:index],
-        text: "Ver todos",
-        path: index_path || url_for(controller: "/#{resources}", action: :index)
-      }
-    ]
-
-    if show_new
-      items << {
-        icon: icon_set[:new],
-        text: "Adicionar novo",
-        path: new_path || url_for(controller: "/#{resources}", action: :new)
-      }
-    end
-
     nav_id = "nav-#{resources}"
 
-    content_tag :div, class: "flex flex-col gap-1.5 w-full" do
-      safe_join([
-                  content_tag(:div, class: "flex flex-row justify-center items-center w-full") do
-                    safe_join([
-                                content_tag(:span, plural, class: "px-3 text-3xs font-mono tracking-widest font-semibold uppercase text-neutral-50 opacity-40"),
-                                content_tag(:div, nil, class: "h-[2px] bg-transparent w-full opacity-30")
-                              ])
-                  end,
-                  content_tag(:div, id: nav_id, class: "flex flex-col gap-1 px-1.5 w-full") do
-                    safe_join(items.map { |item| crud_nav_button(item) })
-                  end
-                ])
-    end
-  end
+    items = NavItemsBuilder.new(self).call(
+      model_class,
+      icons: icons,
+      index_path: index_path,
+      new_path: new_path,
+      show_new: show_new
+    )
 
-  # == crud_nav_button
-  #
-  # @author Moisés Reis
-  # @project Meta Investimentos
-  # @category UI Helper
-  #
-  # @description
-  #   Renders a single navigation button with an icon and text, applying active
-  #   styles if the current page matches the item path.
-  #
-  # @param item [Hash] A hash containing :icon, :text, and :path
-  # @return [String] HTML safe link button
-  #
-  # @see #crud_nav_for
-  #
-  def crud_nav_button(item)
-    active = current_page?(item[:path])
-
-    classes = [
-      "relative", "button", "button-small", "w-full", "flex flex-row justify-start",
-      ("button-sidebar" unless active),
-      ("button-sidebar--active" if active)
-    ].compact.join(" ")
-
-    link_to item[:path], class: classes do
-      safe_join([
-                  inline_svg_tag("icons/#{item[:icon]}", class: "w-4 h-4"),
-                  content_tag(:span, item[:text], class: "text-sm font-medium")
-                ])
-    end
+    presenter = NavPresenter.new(self)
+    presenter.render(label: plural, nav_id: nav_id, items: items)
   end
 end

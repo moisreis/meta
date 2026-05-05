@@ -1,0 +1,67 @@
+<tr class="odd:bg-neutral-50 hover:bg-neutral-100
+           odd:[&>td]:border-none odd:[&>td]:border-border
+           odd:[&>td:first-child]:border-l odd:[&>td:first-child]:rounded-l-base
+           odd:[&>td:last-child]:border-r  odd:[&>td:last-child]:rounded-r-base
+           [&>td]:whitespace-nowrap [&>td]:text-left [&>td]:px-3 [&>td]:text-sm">
+
+  <% @cells.each_with_index do |cell, index| %>
+    <td class="<%= 'font-medium' if index.zero? %>">
+      <div class="line-clamp-1"><%= cell %></div>
+    </td>
+  <% end %>
+
+  <% if actions? %>
+    <td class="min-h-9 flex flex-col justify-center items-center">
+
+      <%= button_tag type: "button",
+                     class: "button button-ghost button-small row-options-button",
+                     data: {
+                       controller: "tippy",
+                       tippy_type_value: "menu",
+                       tippy_target: "##{action_menu_id}"
+                     } do %>
+        <%= render_icon("ellipsis") %>
+      <% end %>
+
+      <div class="options-content" id="<%= action_menu_id %>" style="display: none;">
+        <div class="flex flex-col gap-1.5 w-full justify-start items-start">
+
+          <% if @show_path.present? %>
+            <%= link_to @show_path,
+                        data: { turbo: false },
+                        class: "button button-ghost button-small w-full justify-start" do %>
+              <%= render_icon("external-link") %>
+              <%= content_tag :span, "Ver" %>
+            <% end %>
+          <% end %>
+
+          <% if @edit_path.present? %>
+            <%= link_to @edit_path,
+                        data: { turbo: false },
+                        class: "button button-ghost button-small w-full justify-start" do %>
+              <%= render_icon("settings-2") %>
+              <%= content_tag :span, "Editar" %>
+            <% end %>
+          <% end %>
+
+          <% if @destroy_path.present? %>
+            <%= button_to @destroy_path,
+                          method: :delete,
+                          data: {
+                            turbo_confirm: "Tem certeza que deseja deletar este registro?",
+                            turbo_frame: "_top"
+                          },
+                          class: "button button-ghost button-small w-full justify-start" do %>
+              <%= render_icon("trash") %>
+              <%= content_tag :span, "Deletar" %>
+            <% end %>
+          <% end %>
+
+        </div>
+      </div>
+    </td>
+  <% else %>
+    <td></td>
+  <% end %>
+
+</tr>

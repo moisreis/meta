@@ -1,0 +1,21 @@
+<div class="grid grid-cols-2 items-center gap-4 px-4 py-3.5 bg-white border border-border rounded-base">
+
+  <div class="flex items-center gap-3 min-w-0">
+
+    <div class="size-7 rounded-full flex-shrink-0 flex items-center justify-center <%= color_classes[:bg] %>">
+      <%= render_icon(icon_name, class: "#{color_classes[:stroke]} !size-3.5") %>
+    </div>
+
+    <div class="flex flex-col gap-0.5 min-w-0">
+      <%= content_tag :span, @title, class: "text-sm font-medium text-body truncate" %>
+      <%= content_tag :span, formatted_date, class: "font-mono text-muted uppercase text-3xs tracking-wide" %>
+    </div>
+
+  </div>
+
+  <div class="flex flex-col items-end gap-0.5">
+    <%= content_tag :span, @value, class: "font-heading text-xl font-normal tracking-tight #{color_classes[:text]}" %>
+    <%= content_tag :span, @sub,   class: "font-mono text-muted uppercase text-3xs tracking-wide" %>
+  </div>
+
+</div>

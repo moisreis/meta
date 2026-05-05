@@ -1,0 +1,17 @@
+<%#
+  VIEW: app/components/modules/copyright_component.html.erb
+  COMPONENT: Modules::CopyrightComponent
+
+  DESCRIPTION:
+  Renders a copyright notice with the current year and company name.
+
+  DEPENDENCIES:
+  - current_year: [Integer] Provided by the component.
+  - AppConstants::COMPANY_NAME_LONG
+%>
+
+<div class="flex flex-row">
+  <p class="text-muted font-body text-2xs font-normal">
+    &copy; <%= current_year %> <%= AppConstants::COMPANY_NAME_LONG %>
+  </p>
+</div>

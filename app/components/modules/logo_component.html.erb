@@ -1,0 +1,15 @@
+<%#
+  Component: LogoComponent
+  Template:  logo_component.html.erb
+  Date:      11/12/2025
+  Author:    Moisés Reis
+  Package:   Meta
+
+  Description: Renders the application logo image inside a flex container.
+               Receives all data from the component class — no local variable
+               assignments needed here.
+%>
+
+<div class="flex flex-row">
+  <%= image_tag("logo.svg", size: @size, alt: @alt) %>
+</div>

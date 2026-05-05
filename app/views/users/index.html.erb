@@ -1,183 +1,111 @@
 <%#
-  # Partial: index.html.erb
-  # Date: 11/20/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Constructs the main index page for User resources. It renders a dynamic
-  #              data table to display a list of all users and includes integrated
-  #              search and filtering components for effective data querying.
-  #
-  # Usage:: - What: Renders the complete, dynamic index view for the User resource,
-  #                including a fully functional, filterable, and Turbo-integrated data table.
-  #         - How: Renders the **dashboard/wrapper** for the page layout, followed by the
-  #                **data-table** and **filters** partials.
-  #         - Why: Provides an efficient and secure interface for administrators
-  #                to manage and audit the application's user base.
-  %>
+  VIEW: app/views/users/index.html.erb
+  ACTION: UsersController#index
 
-<%# Explanation:: This layout wrapper organizes the entire page content into a clean
-  #               dashboard structure to ensure consistency; it is used as the main
-  #               container and works by setting the page title and descriptive labels.
-  %>
-<%= render 'partials/route/dashboard/wrapper',
-           page_title: "Lista de usuários",
-           page_desc: "Lista de usuários cadastrados no sistema.",
-           current_view: "datatable" do
+  DESCRIPTION:
+  Displays the user listing page with searchable, filterable,
+  and paginated records using reusable table and filter
+  components.
+
+  INSTANCE VARIABLES:
+  - @users: [ActiveRecord::Relation<User>]
+    Paginated collection of users displayed in the table.
+
+  - @q: [Ransack::Search]
+    Search object used to filter and query users.
 %>
 
-  <%# Explanation:: This partial generates a dynamic table to list user records
-    #               clearly; it is used to present organized data to the user and
-    #               works by receiving headers and data-fetching logic as arguments.
-    %>
-  <%= render partial: "partials/blocks/data-table", locals: {
+<%# ========================================================= %>
+<%#                    1. DASHBOARD WRAPPER                  %>
+<%# ========================================================= %>
 
-    # Explanation:: This array defines the text labels displayed at the top of
-    #               the table columns; it is used to give context to the data
-    #               and works by mapping each string to a specific column header.
-    columns_header: [
-      "Nome",
-      "E-mail",
-      "Nível",
-      "Carteiras"
-    ],
+<%= render(
+      Layout::DashboardWrapperComponent.new(
+        page_title:   "Lista de usuários",
+        page_desc:    "Lista de usuários cadastrados no sistema.",
+        current_view: "datatable"
+      )
+    ) do %>
 
-    # Explanation:: This collection holds visual icons to accompany the column
-    #               titles for better recognition; it is used to beautify the
-    #               header and works by rendering specific Material Symbols.
-    columns_icons: [
-      "user",
-      "at-sign",
-      "shield-user",
-      "wallet"
-    ],
+  <%# ======================================================= %>
+  <%#                    2. USERS DATA TABLE                 %>
+  <%# ======================================================= %>
 
-    # Explanation:: This list contains the logic for filling each row with
-    #               user information; it is used to handle data extraction
-    #               and works by executing symbols or functions for every record.
-    columns_body: [
+  <%= render(
+        Groups::DataTableComponent.new(
+          columns: [
+            { label: "Nome",      icon: "user" },
+            { label: "E-mail",    icon: "at-sign" },
+            { label: "Nível",     icon: "shield-user" },
+            { label: "Carteiras", icon: "wallet" }
+          ],
+          rows:           @users,
+          turbo_frame_id: "users_table",
+          search_url:     users_path,
+          new_path:       new_user_path,
+          q_object:       @q
+        )
+      ) do %>
 
-      ->(user) do
-        normalize_title(user.full_name)
-      end,
+    <%# ===================================================== %>
+    <%#                     2a. TABLE ROWS                   %>
+    <%# ===================================================== %>
 
-      ->(user) do
-        normalize_text(user.email)
-      end,
+    <% @users.each do |user| %>
 
-      # Explanation:: This logic identifies the user's role and applies a color
-      #               badge for quick identification; it is used for security
-      #               auditing and works by checking the role string and returning
-      #               a styled badge.
-      # Explanation:: This logic identifies the user's role and applies a color
-      #               badge for quick identification; it is used for security
-      #               auditing and works by checking the role string and returning
-      #               a styled badge.
-      ->(user) do
-        # Explanation:: This logic maps the internal role to a user-friendly name.
-        #               It identifies administrators to ensure they are labeled
-        #               clearly, defaulting to a standard user label otherwise.
-        role_name = ["admin", "administrator"].include?(user.role.to_s) ? "Administrador" : "Usuário"
+      <%# =================================================== %>
+      <%#                    2b. USER ROW                    %>
+      <%# =================================================== %>
 
-        # Explanation:: This call utilizes the agnostic helper to render the badge.
-        #               It automatically assigns a consistent color based on the
-        #               text provided, or shows "SEM DADOS" if no role is found.
-        normalize_badge(role_name)
-      end,
+      <%= render(
+            Modules::TableRowComponent.new(
+              cells: [
+                normalize_title(user.full_name),
+                normalize_text(user.email),
+                normalize_badge(
+                  user.admin? ? "Administrador" : "Usuário"
+                ),
+                user.portfolios.size.zero? ?
+                  normalize_no_data :
+                  normalize_number(user.portfolios.size)
+              ],
+              model_id:     user.id,
+              show_path:    user_path(user),
+              edit_path:    edit_user_path(user),
+              destroy_path: user_path(user)
+            )
+          ) %>
 
-      # Explanation:: This line displays the quantity of portfolios owned
-      #               by the user to show activity levels; it is used to monitor
-      #               asset ownership and works by counting the associated portfolio records.
-      ->(user) do
-        # Explanation:: This line calculates the total number of portfolios for the user.
-        #               It counts the records in the database to determine how much
-        #               content is associated with this specific account.
-        count = user.portfolios.size
+    <% end %>
 
-        # Explanation:: This condition checks if the count is zero or missing.
-        #               If no portfolios are found, it triggers the automatic
-        #               standard placeholder to keep the table cell consistent.
-        return normalize_no_data if count.zero?
+  <% end %>
 
-        # Explanation:: This call utilizes the specialized number helper.
-        #               It ensures the count is formatted with thousands separators
-        #               and monospaced font for a clean, professional look.
-        normalize_number(count)
-      end
-    ],
-
-    # Explanation:: This attribute provides the actual list of user objects
-    #               retrieved from the database; it is used as the table's
-    #               data source and works by feeding the rows into the display loop.
-    models: @users,
-
-    # Explanation:: This configuration sets the rules for how users can reorder
-    #               the list; it is used to allow custom sorting and works by
-    #               integrating with the database search parameters.
-    sort_options: [],
-
-    # Explanation:: This object manages the current search and sort criteria
-    #               for the collection; it is used to keep track of user
-    #               filters and works by generating valid database queries.
-    q_object: @q,
-
-    # Explanation:: This path tells the table where to send search and page
-    #               requests; it is used to keep the user on the correct page
-    #               and works by linking actions to the User index route.
-    search_url: users_path,
-
-    # Explanation:: This unique identifier allows the table to update without
-    #               refreshing the whole page; it is used for speed and works
-    #               by isolating the table content within a Turbo Frame.
-    turbo_frame_id: "users_table",
-
-    # Explanation:: This setting provides a link for users to download the
-    #               table data as a file; it is used for reporting and works
-    #               by enabling an export button when a URL is provided.
-    export_url: nil
-  } %>
 <% end %>
 
-<%# Explanation:: This partial renders a sidebar or header with search inputs
-  #               to help users find data; it is used to refine the list and
-  #               works by sending form data to the table's Turbo Frame.
-  %>
-<%= render partial: "partials/route/dashboard/filters",
-           locals: {
+<%# ========================================================= %>
+<%#                      3. FILTERS PANEL                    %>
+<%# ========================================================= %>
 
-             # Explanation:: This search object connects the filter fields to the
-             #               database query logic; it is used to pre-fill inputs and
-             #               works by syncing with the Ransack gem settings.
-             q_object: @q,
-
-             # Explanation:: This destination URL determines where the search filters
-             #               are sent upon submission; it is used to refresh the data
-             #               and works by targeting the main user list route.
-             search_url: users_path,
-
-             # Explanation:: This list defines the specific text and icon for each
-             #               filter input box; it is used to build the search form
-             #               and works by generating fields for names and emails.
-             filters: [
-               {
-                 key: :first_name_cont,
-                 label: "Nome",
-                 description: "Mostra usuários cujo nome contém estes caracteres.",
-                 placeholder: "Maria da Silva",
-                 icon_name: "user"
-               },
-               {
-                 key: :email_cont,
-                 label: "E-mail",
-                 description: "Mostra usuários cujo e-mail contém estes caracteres.",
-                 placeholder: "emaildousuario@email.com",
-                 icon_name: "at-sign"
-               }
-             ],
-
-             # Explanation:: This ID links the filter results directly to the table
-             #               container for seamless updates; it is used to avoid full
-             #               page reloads and works by targeting the specific Turbo Frame.
-             turbo_frame_id: "users_table"
-           }
-%>
+<%= render(
+      Groups::FiltersComponent.new(
+        q_object:       @q,
+        search_url:     users_path,
+        turbo_frame_id: "users_table",
+        filters: [
+          {
+            key:         :first_name_cont,
+            label:       "Nome",
+            description: "Mostra usuários cujo nome contém estes caracteres.",
+            placeholder: "Maria da Silva",
+            icon_name:   "user"
+          },
+          {
+            key:         :email_cont,
+            label:       "E-mail",
+            description: "Mostra usuários cujo e-mail contém estes caracteres.",
+            placeholder: "emaildousuario@email.com",
+            icon_name:   "at-sign"
+          }
+        ]
+      )
+    ) %>

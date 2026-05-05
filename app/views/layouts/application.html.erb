@@ -30,7 +30,7 @@
 <body class="overflow-x-hidden no-scrollbar">
 <%= render "partials/blocks/loader" %>
 <main class="no-scrollbar">
-  <%= render 'shared/flash_messages' %>
+  <%= render Shared::FlashMessagesComponent.new(flash: flash) %>
   <%= yield %>
 </main>
 </body>

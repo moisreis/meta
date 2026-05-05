@@ -94,9 +94,9 @@
      * --font-heading  → Display and heading elements.
      * --font-mono     → Code, keys, labels, and button text.
      */
-    --font-body: "Inter", sans-serif;
+    --font-body: "Source Sans 3", sans-serif;
     --font-heading: "Source Serif 4", serif;
-    --font-mono: "Geist Mono", monospace;
+    --font-mono: "Source Code Pro", monospace;
 
     /**
      * Extended text sizes below Tailwind's default `xs` (0.75rem).

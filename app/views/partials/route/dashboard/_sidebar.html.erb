@@ -13,15 +13,15 @@
   Dependencies
   ============================================================
 
-  @uses   current_user   Implicit dependency via crud_nav_for and authenticated_root_path.
+  @uses   current_user   Implicit dependency via authenticated_root_path.
+  @uses   render_nav_section_for (NavHelper) - Delegates to NavPresenter for rendering.
 
   ============================================================
   Notes
   ============================================================
 
   - This partial accepts no locals. It is always rendered in full.
-  - crud_nav_for is a helper that generates an index link and a new-record
-    link for the given model. Consult ApplicationHelper for its full signature.
+  - render_nav_section_for uses NavItemsBuilder for data and NavPresenter for rendering.
   - The aside uses arbitrary Tailwind variants ([&>div]:...) to apply layout
     rules uniformly to all direct children without adding wrapper classes to each.
 %>
@@ -31,7 +31,7 @@
        class="flex flex-col justify-start items-center h-screen col-span-6 md:col-span-4 xl:col-span-2 max-h-screen sticky no-scrollbar overflow-y-auto top-0 [&>div]:px-0 [&>div]:flex [&>div]:flex-col [&>div]:items-start [&>div]:justify-center [&>div]:gap-1.5 bg-neutral-800 border-r border-border px-0 pt-0 py-3">
 
            <div class="flex !flex-row justify-start gap-0 !h-14 !items-center w-full p-6 !px-10 mb-3">
-             <%= render "partials/modules/logo", size: "28" %>
+             <%= render Modules::LogoComponent.new(size: "28") %>
 
              <button class="!p-0 bg-neutral-800 [&>svg]:!w-8 [&>svg]:!h-8 ml-auto flex-shrink-0"
                      data-controller="tippy"
@@ -65,57 +65,52 @@
     <div style="padding-top: 4px !important">
 
       <%# =============================================================
-          Resource Navigation — crud_nav_for Groups
+          Resource Navigation — render_nav_section_for Groups
           ============================================================= %>
 
-      <%# Note: Each crud_nav_for call generates an index and a new-record
-                button for that model. Add or remove entries here as
-                resources are introduced or retired from the application. %>
-      <%= crud_nav_for Portfolio,
-                       singular: "Carteira",
-                       plural: "Carteiras",
-                       icons: { index: "wallet.svg", new: "plus.svg" } %>
+      <%# Note: Each render_nav_section_for call generates an index and a new-record
+                button for that model. Uses NavPresenter + NavItemsBuilder.
+                Add or remove entries here as resources are introduced or retired
+                from the application. %>
 
-      <%= crud_nav_for User,
-                       singular: "Usuário",
-                       plural: "Usuários",
-                       icons: { index: "users.svg", new: "plus.svg" } %>
+      <%= render_nav_section_for Portfolio,
+                                  plural: "Carteiras",
+                                  icons: { index: "wallet.svg", new: "plus.svg" } %>
 
-      <%= crud_nav_for InvestmentFund,
-                       singular: "Credenciamento",
-                       plural: "Credenciamentos",
-                       icons: { index: "chart-pie.svg", new: "plus.svg" } %>
+      <%= render_nav_section_for User,
+                                  plural: "Usuários",
+                                  icons: { index: "users.svg", new: "plus.svg" } %>
 
-      <%= crud_nav_for NormativeArticle,
-                       singular: "Norma",
-                       plural: "Normas",
-                       icons: { index: "scale.svg", new: "plus.svg" } %>
+      <%= render_nav_section_for InvestmentFund,
+                                  plural: "Credenciamentos",
+                                  icons: { index: "chart-pie.svg", new: "plus.svg" } %>
 
-      <%= crud_nav_for Application,
-                       singular: "Aplicação",
-                       plural: "Aplicações",
-                       icons: { index: "trending-up.svg" },
-                       show_new: false %>
+      <%= render_nav_section_for NormativeArticle,
+                                  plural: "Normas",
+                                  icons: { index: "scale.svg", new: "plus.svg" } %>
 
-      <%= crud_nav_for Redemption,
-                       singular: "Resgate",
-                       plural: "Resgates",
-                       icons: { index: "trending-down.svg" },
-                       show_new: false %>
+      <%= render_nav_section_for Application,
+                                  plural: "Aplicações",
+                                  icons: { index: "trending-up.svg" },
+                                  show_new: false %>
 
-      <%= crud_nav_for FundValuation, singular: "CVM", plural: "CVM",
-                       icons: { index: "calendar-setting.svg" },
-                       show_new: false %>
+      <%= render_nav_section_for Redemption,
+                                  plural: "Resgates",
+                                  icons: { index: "trending-down.svg" },
+                                  show_new: false %>
 
-      <%= crud_nav_for EconomicIndex,
-                       singular: "Índice",
-                       plural: "Índices",
-                       icons: { index: "trending-up.svg", new: "plus.svg" } %>
+      <%= render_nav_section_for FundValuation,
+                                  plural: "CVM",
+                                  icons: { index: "calendar-setting.svg" },
+                                  show_new: false %>
 
-      <%= crud_nav_for EconomicIndexHistory,
-                       singular: "Histórico",
-                       plural: "Históricos",
-                       icons: { index: "calendar-clock.svg", new: "plus.svg" } %>
+      <%= render_nav_section_for EconomicIndex,
+                                  plural: "Índices",
+                                  icons: { index: "trending-up.svg", new: "plus.svg" } %>
+
+      <%= render_nav_section_for EconomicIndexHistory,
+                                  plural: "Históricos",
+                                  icons: { index: "calendar-clock.svg", new: "plus.svg" } %>
 
     </div>
   </div>

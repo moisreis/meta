@@ -1,0 +1,10 @@
+<th class="h-9">
+  <div class="flex flex-col justify-start items-start h-9">
+    <span class="font-mono text-xs text-body tracking-widest uppercase font-medium">
+      <%= @label %>
+    </span>
+    <% if description? %>
+      <%= content_tag :span, @description, class: "font-medium font-mono text-3xs uppercase text-muted" %>
+    <% end %>
+  </div>
+</th>

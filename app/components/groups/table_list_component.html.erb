@@ -1,0 +1,45 @@
+<%= render(Blocks::SectionComponent.new(title: @title, description: @description, columns: 1, action: @action)) do %>
+
+  <% if empty? %>
+    <%= content_tag :p, "Ainda não há dados.", class: "badge badge-outline" %>
+  <% else %>
+
+    <div class="p-3 rounded-base border border-border bg-white overflow-x-auto">
+      <table class="w-full text-sm table-auto border-separate border-spacing-y-1.5
+                    [&>thead]:w-full [&>tbody]:w-full
+                    [&>tbody>tr]:h-9 [&>tbody>tr]:w-full
+                    [&>thead>tr]:h-9">
+
+        <thead>
+          <tr class="[&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:text-xs [&>th]:text-body
+                     [&>th]:tracking-widest [&>th]:text-left [&>th]:uppercase
+                     [&>th]:font-medium [&>th]:font-mono">
+            <% columns.each do |column| %>
+              <%= column %>
+            <% end %>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% rows.each do |row| %>
+            <%= row %>
+          <% end %>
+        </tbody>
+
+        <tfoot>
+          <tr class="h-9 border-t border-border bg-white">
+            <td class="px-3" colspan="<%= columns.size + 1 %>">
+              <%= content_tag :span,
+                    "<span>#{row_count}</span> item(s)".html_safe,
+                    class: "font-normal font-mono text-xs uppercase text-muted" %>
+            </td>
+          </tr>
+        </tfoot>
+
+      </table>
+    </div>
+
+  <% end %>
+
+<% end %>

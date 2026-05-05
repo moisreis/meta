@@ -5,7 +5,6 @@
       short: "%d de %B"
       long: "%d de %B de %Y"
       month_year: "%b/%Y"
-
     day_names:
       - Domingo
       - Segunda
@@ -22,7 +21,6 @@
       - Qui
       - Sex
       - Sáb
-
     month_names:
       - ~
       - Janeiro
@@ -55,7 +53,6 @@
       - :day
       - :month
       - :year
-
   time:
     formats:
       default: "%A, %d de %B de %Y, %H:%M h"
@@ -63,16 +60,13 @@
       long: "%A, %d de %B de %Y, %H:%M h"
     am: ""
     pm: ""
-
   support:
     array:
       words_connector: ", "
       two_words_connector: " e "
       last_word_connector: " e "
-
     select:
       prompt: "Por favor selecione"
-
   number:
     format:
       separator: ","
@@ -80,7 +74,6 @@
       precision: 3
       significant: false
       strip_insignificant_zeros: false
-
     currency:
       format:
         format: "%u %n"
@@ -90,15 +83,12 @@
         precision: 2
         significant: false
         strip_insignificant_zeros: false
-
     percentage:
       format:
         delimiter: "."
-
     precision:
       format:
         delimiter: "."
-
     human:
       format:
         delimiter: "."
@@ -115,7 +105,6 @@
           mb: "MB"
           gb: "GB"
           tb: "TB"
-
       decimal_units:
         format: "%n %u"
         units:
@@ -133,7 +122,6 @@
           quadrillion:
             one: quatrilhão
             other: quatrilhões
-
   datetime:
     distance_in_words:
       half_a_minute: "meio minuto"
@@ -177,16 +165,13 @@
       hour: "Hora"
       minute: "Minuto"
       second: "Segundo"
-
   helpers:
     select:
       prompt: "Por favor selecione"
-
     submit:
       create: "Criar %{model}"
       update: "Atualizar %{model}"
       submit: "Salvar %{model}"
-
   errors:
     format: "%{attribute} %{message}"
     messages: &errors_messages
@@ -216,16 +201,13 @@
         one: "Não foi possível gravar %{model}: 1 erro"
         other: "Não foi possível gravar %{model}: %{count} erros."
       body: "Por favor, verifique o(s) seguinte(s) campo(s):"
-
   activerecord:
     errors:
       messages:
         <<: *errors_messages
       template:
         <<: *errors_template
-
       full_messages:
         format: "%{attribute} %{message}"
-
     notices:
       destroyed: "%{model} foi removido com sucesso."

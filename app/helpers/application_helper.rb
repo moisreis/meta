@@ -18,6 +18,13 @@
 #   # => "Dashboard | Financial Portfolio Manager"
 #
 module ApplicationHelper
+
+  # Returns a memoized instance of a UI presenter
+    def ui(presenter_name)
+      @ui_presenters ||= {}
+      @ui_presenters[presenter_name] ||= "Ui::#{presenter_name.to_s.classify}Presenter".constantize.new(self)
+    end
+
   # == SHADE_STEPS
   #
   # @author Moisés Reis

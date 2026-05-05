@@ -1,0 +1,85 @@
+<%#
+  VIEW: app/components/modules/section_component.html.erb
+  COMPONENT: Modules::SectionComponent
+
+  DESCRIPTION:
+  Renders a responsive section container with optional title, description,
+  action button, and a configurable grid layout for child content.
+
+  DEPENDENCIES:
+  - @title: [String, nil] Section title.
+  - @description: [String, nil] Section description.
+  - @action: [Hash, nil] Optional action configuration.
+  - title?: [Boolean] Presence helper.
+  - description?: [Boolean] Presence helper.
+  - action?: [Boolean] Presence helper.
+  - description_dom_id: [String] DOM id derived from title.
+  - grid_classes: [String] Tailwind grid class string.
+  - content: [String] Rendered block content.
+
+  TABLE OF CONTENTS:
+  1.  Header Container
+      1a. Title & Description
+      1b. Hidden Description Element
+      1c. Action Button
+  2.  Content Grid
+%>
+
+<%# ========================================================= %>
+<%#                    1. HEADER CONTAINER                    %>
+<%# ========================================================= %>
+
+<section class="flex flex-col gap-4">
+
+  <div class="flex flex-row items-center justify-between">
+
+    <%# ===================================================== %>
+    <%#               1a. TITLE & DESCRIPTION                %>
+    <%# ===================================================== %>
+
+    <% if title? %>
+      <div class="flex flex-col gap-1">
+        <p class="font-mono text-body uppercase text-xs tracking-widest font-medium">
+          <%= @title %>
+        </p>
+
+        <% if description? %>
+          <p class="font-body text-muted text-sm font-normal">
+            <%= @description %>
+          </p>
+        <% end %>
+      </div>
+
+      <%# =================================================== %>
+      <%#           1b. HIDDEN DESCRIPTION ELEMENT           %>
+      <%# =================================================== %>
+
+      <div class="section-desc" id="<%= description_dom_id %>" style="display: none;">
+        <%= content_tag :h2, @description, class: "text-sm text-muted text-left" %>
+      </div>
+    <% end %>
+
+    <%# ===================================================== %>
+    <%#                 1c. ACTION BUTTON                    %>
+    <%# ===================================================== %>
+
+    <% if action? %>
+      <%= link_to @action[:route],
+                  id: @action[:id],
+                  class: "button button-small button-outline flex-shrink-0" do %>
+        <%= render_icon(@action[:icon]) %>
+        <%= content_tag :span, @action[:label] %>
+      <% end %>
+    <% end %>
+
+  </div>
+
+  <%# ========================================================= %>
+  <%#                      2. CONTENT GRID                     %>
+  <%# ========================================================= %>
+
+  <div class="grid <%= grid_classes %> gap-3">
+    <%= content %>
+  </div>
+
+</section>

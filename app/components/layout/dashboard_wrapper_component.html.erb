@@ -1,0 +1,21 @@
+<% content_for :title do %>
+  Meta - <%= @page_title %>
+<% end %>
+
+<main class="grid grid-cols-16 justify-start w-screen no-scrollbar"
+      data-controller="sidebar">
+
+  <%= render "partials/route/dashboard/sidebar" %>
+
+  <div data-sidebar-target="container"
+       class="col-span-10 md:col-span-12 xl:col-span-14">
+    <%= render(Layout::DashboardContainerComponent.new(
+          page_title:   @page_title,
+          page_desc:    @page_desc,
+          current_view: @current_view
+        )) do %>
+      <%= content %>
+    <% end %>
+  </div>
+
+</main>
