@@ -1,62 +1,8 @@
-<%#
-  VIEW: app/views/portfolios/show.html.erb
-  ACTION: PortfoliosController#show
-
-  INSTANCE VARIABLES:
-  - @portfolio: [Portfolio] The portfolio dashboard data and associations used for the view.
-  - @total_market_value: [BigDecimal] The portfolio's total market value for KPI display.
-  - @reference_date: [Date] The current reference date for chart and table snapshots.
-  - @reference_period: [Date] The current reference period used to label recent performance.
-  - @portfolio_yearly_twr: [Numeric] The portfolio's cumulative year-to-date time-weighted return.
-  - @portfolio_monthly_twr: [Numeric] The portfolio's monthly time-weighted return.
-  - @portfolio_12m_return: [Numeric] The portfolio's trailing 12-month return.
-  - @compliance_report: [Array<Hash>] Compliance metrics for portfolio policy articles.
-  - @monthly_earnings_history: [Array<[String, Numeric]>] Monthly earnings values used by the chart.
-  - @equity_evolution: [Array<[String, Numeric]>] Historical portfolio equity values used by the chart.
-  - @monthly_flows: [Array<[String, Numeric]>] Monthly cash flow values used by the chart.
-  - @allocation_data: [Array<Hash>] Current fund allocation values used by the allocation pie chart.
-  - @indices_data: [Array<Hash>] Distribution data by benchmark index.
-  - @institution_distribution: [Array<Hash>] Distribution data by financial institution.
-  - @recent_performance: [Array<PerformanceHistory>] Recent fund performance records.
-  - @recent_applications: [Array<Application>] Recent application transactions displayed in the APR panel.
-  - @recent_redemptions: [Array<Redemption>] Recent redemption transactions displayed in the APR panel.
-
-  TABLE OF CONTENTS:
-  1.  Dashboard Wrapper
-  2.  KPIs
-  3.  Compliance & Legal Limits
-  4.  Detailed Analysis
-      4a. Monthly Earnings
-      4b. Equity Evolution
-      4c. Movements
-  5.  Current Allocation
-  6.  Diversification Analysis
-      6a. By Benchmark Index
-      6b. By Institution
-  7.  Fund Investment List
-  8.  Investment Policy
-  9.  Fund Performance
-  10. Checking Accounts
-  11. APR Activity
-      11a. Applications
-      11b. Redemptions
-  12. Transaction Modals
-%>
-
-<%# ========================================================= %>
-<%#                    1. DASHBOARD WRAPPER                    %>
-<%# ========================================================= %>
-
 <%= render(Layout::DashboardWrapperComponent.new(
   page_title: @portfolio.name,
   page_desc: "Carteira de #{@portfolio.user.full_name}",
   current_view: "show"
 )) do %>
-
-
-<%# ========================================================= %>
-<%#                         2. KPIs                           %>
-<%# ========================================================= %>
 
   <%= render(
     Blocks::SectionComponent.new(
@@ -64,7 +10,7 @@
       description: "Indicadores-chave de desempenho da carteira",
       columns: 4,
     )
-  ) do %>  
+  ) do %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -133,11 +79,7 @@
     )
   ) do %>
 
-<%# ========================================================= %>
-<%#               3. COMPLIANCE & LEGAL LIMITS                %>
-<%# ========================================================= %>
-
-<%= render Groups::ChartListComponent.new(
+    <%= render Groups::ChartListComponent.new(
       chart_type:  :bar_chart,
       chart_title: "Enquadramento por Artigo (%)",
       palette:     :compliance,
@@ -158,11 +100,8 @@
         }
       }
     ) %>
-    <% end %>
 
-<%# ========================================================= %>
-<%#                      4. DETAILED ANALYSIS                   %>
-<%# ========================================================= %>
+  <% end %>
 
   <%= render(
     Blocks::SectionComponent.new(
@@ -172,11 +111,7 @@
     )
   ) do %>
 
-<%# ========================================================= %>
-<%#                    4a. MONTHLY EARNINGS                     %>
-<%# ========================================================= %>
-
-<%= render Groups::ChartListComponent.new(
+    <%= render Groups::ChartListComponent.new(
       chart_type:  :column_chart,
       chart_title: "Rendimento Mensal",
       palette:     nil,
@@ -199,11 +134,7 @@
       }
     ) %>
 
-<%# ========================================================= %>
-<%#                   4b. EQUITY EVOLUTION                      %>
-<%# ========================================================= %>
-
-<%= render Groups::ChartListComponent.new(
+    <%= render Groups::ChartListComponent.new(
       chart_type:  :column_chart,
       chart_title: "Evolução do Patrimônio",
       palette:     nil,
@@ -226,11 +157,7 @@
       }
     ) %>
 
-<%# ========================================================= %>
-<%#                      4c. MOVEMENTS                          %>
-<%# ========================================================= %>
-
-<%= render Groups::ChartListComponent.new(
+    <%= render Groups::ChartListComponent.new(
       chart_type:  :column_chart,
       chart_title: "Movimentações",
       palette:     nil,
@@ -247,10 +174,6 @@
 
   <% end %>
 
-<%# ========================================================= %>
-<%#                     5. CURRENT ALLOCATION                    %>
-<%# ========================================================= %>
-
   <%= render(
     Blocks::SectionComponent.new(
       title: "Alocação Atual",
@@ -259,7 +182,7 @@
     )
   ) do %>
 
-<%= render Groups::ChartListComponent.new(
+    <%= render Groups::ChartListComponent.new(
       chart_type:  :pie_chart,
       chart_title: "Fundos alocados",
       palette:     :distribution,
@@ -270,13 +193,10 @@
         legend: "left"
       }
     ) %>
+
   <% end %>
 
-<%# ========================================================= %>
-<%#                  6. DIVERSIFICATION ANALYSIS                 %>
-<%# ========================================================= %>
-
-    <%= render(
+  <%= render(
     Blocks::SectionComponent.new(
       title: "Análise de Diversificação",
       description: "Distribuição da carteira por índices de referência e instituições financeiras para monitorar níveis de concentração.",
@@ -284,11 +204,7 @@
     )
   ) do %>
 
-<%# ========================================================= %>
-<%#              6a. BY BENCHMARK INDEX                         %>
-<%# ========================================================= %>
-
-<%= render Groups::ChartListComponent.new(
+    <%= render Groups::ChartListComponent.new(
       chart_type:  :pie_chart,
       chart_title: "Distribuição por Índice",
       palette:     :distribution,
@@ -300,11 +216,7 @@
       }
     ) %>
 
-<%# ========================================================= %>
-<%#                6b. BY INSTITUTION                           %>
-<%# ========================================================= %>
-
-<%= render Groups::ChartListComponent.new(
+    <%= render Groups::ChartListComponent.new(
       chart_type:  :pie_chart,
       chart_title: "Distribuição por Instituição",
       palette:     :distribution,
@@ -315,36 +227,33 @@
         legend: "left"
       }
     ) %>
+
   <% end %>
 
-<%# ========================================================= %>
-<%#                   7. FUND INVESTMENT LIST                     %>
-<%# ========================================================= %>
-
-<%# Displays a comprehensive list of all funds within the portfolio,
-      including current valuation and periodic performance metrics. %>
-<%= render(Groups::TableListComponent.new(
+  <%= render(Groups::TableListComponent.new(
       title:       "Lista de fundos alocados",
       description: "Dados de #{l(@reference_date, format: :long)}",
       action:      { path: new_fund_investment_path(portfolio_id: @portfolio.id), label: "Nova alocação" },
       collection:  @portfolio.fund_investments.includes(:investment_fund, :applications, :redemptions)
     )) do |table| %>
 
-  <% ref = l(@reference_date, format: :default) %>
+    <% ref = l(@reference_date, format: :default) %>
 
-  <% table.with_column(label: "Fundo",              icon: "layers",   description: nil) %>
-  <% table.with_column(label: "Alocação",            icon: "shuffle",  description: nil) %>
-  <% table.with_column(label: "Movimentação",        icon: "banknote", description: nil) %>
-  <% table.with_column(label: "Cota mais recente",   icon: "percent",  description: ref) %>
-  <% table.with_column(label: "Valor Atual",         icon: "banknote", description: ref) %>
-  <% table.with_column(label: "Rendimento",          icon: nil,        description: ref) %>
-  <% table.with_column(label: "Rent.",               icon: nil,        description: ref) %>
+    <% table.with_column(label: "Fundo",            icon: "layers",   description: nil) %>
+    <% table.with_column(label: "Alocação",         icon: "shuffle",  description: nil) %>
+    <% table.with_column(label: "Movimentação",     icon: "banknote", description: nil) %>
+    <% table.with_column(label: "Cota mais recente", icon: "percent", description: ref) %>
+    <% table.with_column(label: "Valor Atual",      icon: "banknote", description: ref) %>
+    <% table.with_column(label: "Rendimento",       icon: nil,        description: ref) %>
+    <% table.with_column(label: "Rent.",            icon: nil,        description: ref) %>
 
-  <% @portfolio.fund_investments
-               .includes(:investment_fund, :applications, :redemptions)
-               .each do |fi| %>
-    <% perf = @performance_by_fund[fi.id] %>
-    <% table.with_row(
+    <% @portfolio.fund_investments
+                 .includes(:investment_fund, :applications, :redemptions)
+                 .each do |fi| %>
+
+      <% perf = @performance_by_fund[fi.id] %>
+
+      <% table.with_row(
         model_id:     fi.id,
         show_path:    fund_investment_path(fi),
         edit_path:    edit_fund_investment_path(fi),
@@ -359,33 +268,32 @@
           normalize_trend(perf&.monthly_return, format: :percentage)
         ]
       ) %>
+
+    <% end %>
+
   <% end %>
 
-<% end %>
-
-<%# ========================================================= %>
-<%#                  8. INVESTMENT POLICY                       %>
-<%# ========================================================= %>
-
-<%= render(Groups::TableListComponent.new(
+  <%= render(Groups::TableListComponent.new(
       title:       "Política de Investimentos",
       description: "Metas da carteira comparadas aos limites de cada artigo.",
       collection:  @portfolio.portfolio_normative_articles.includes(:normative_article)
     )) do |table| %>
 
-  <% table.with_column(label: "Artigo",               icon: "file-text")     %>
-  <% table.with_column(label: "Categoria",             icon: "tag")           %>
-  <% table.with_column(label: "Benchmark (Artigo)",    icon: "target")        %>
-  <% table.with_column(label: "Benchmark (Carteira)",  icon: "target")        %>
-  <% table.with_column(label: "Desvio",                icon: "activity")      %>
-  <% table.with_column(label: "Mín. (Artigo)",         icon: "trending-down") %>
-  <% table.with_column(label: "Mín. (Carteira)",       icon: "trending-down") %>
-  <% table.with_column(label: "Máx. (Artigo)",         icon: "trending-up")   %>
-  <% table.with_column(label: "Máx. (Carteira)",       icon: "trending-up")   %>
+    <% table.with_column(label: "Artigo",              icon: "file-text") %>
+    <% table.with_column(label: "Categoria",           icon: "tag") %>
+    <% table.with_column(label: "Benchmark (Artigo)",  icon: "target") %>
+    <% table.with_column(label: "Benchmark (Carteira)", icon: "target") %>
+    <% table.with_column(label: "Desvio",              icon: "activity") %>
+    <% table.with_column(label: "Mín. (Artigo)",       icon: "trending-down") %>
+    <% table.with_column(label: "Mín. (Carteira)",     icon: "trending-down") %>
+    <% table.with_column(label: "Máx. (Artigo)",       icon: "trending-up") %>
+    <% table.with_column(label: "Máx. (Carteira)",     icon: "trending-up") %>
 
-  <% @portfolio.portfolio_normative_articles.includes(:normative_article).each do |pna| %>
-    <% article = pna.normative_article %>
-    <% table.with_row(
+    <% @portfolio.portfolio_normative_articles.includes(:normative_article).each do |pna| %>
+
+      <% article = pna.normative_article %>
+
+      <% table.with_row(
         model_id: pna.id,
         cells: [
           article.display_name,
@@ -399,29 +307,28 @@
           normalize_percentage(pna.maximum_target)
         ]
       ) %>
+
+    <% end %>
+
   <% end %>
 
-<% end %>
+  <% if @recent_performance.any? %>
 
-<%# ========================================================= %>
-<%#                    9. FUND PERFORMANCE                      %>
-<%# ========================================================= %>
+    <% ref_month = l(@reference_period, format: :month_year) %>
 
-<% if @recent_performance.any? %>
-  <% ref_month = l(@reference_period, format: :month_year) %>
+    <%= render(Groups::TableListComponent.new(
+      title:      "Performance dos Fundos",
+      action:     { path: "#", label: "Ver histórico" },
+      collection: @recent_performance
+    )) do |table| %>
 
-  <%= render(Groups::TableListComponent.new(
-        title:      "Performance dos Fundos",
-        action:     { path: "#", label: "Ver histórico" },
-        collection: @recent_performance
-      )) do |table| %>
+      <% table.with_column(label: "Fundo",         icon: "trending-up", description: nil) %>
+      <% table.with_column(label: "Rentabilidade", icon: "percent",     description: ref_month) %>
+      <% table.with_column(label: "Rendimento",    icon: "banknote",    description: ref_month) %>
 
-    <% table.with_column(label: "Fundo",         icon: "trending-up", description: nil)       %>
-    <% table.with_column(label: "Rentabilidade",  icon: "percent",     description: ref_month) %>
-    <% table.with_column(label: "Rendimento",     icon: "banknote",    description: ref_month) %>
+      <% @recent_performance.each do |ph| %>
 
-    <% @recent_performance.each do |ph| %>
-      <% table.with_row(
+        <% table.with_row(
           model_id: ph.id,
           cells: [
             normalize_title(ph.fund_investment.investment_fund.fund_name),
@@ -429,14 +336,12 @@
             normalize_currency(ph.earnings)
           ]
         ) %>
+
+      <% end %>
+
     <% end %>
 
   <% end %>
-<% end %>
-<%# ========================================================= %>
-<%#                    10. CHECKING ACCOUNTS                    %>
-<%# ========================================================= %>
-
 
   <%= render "partials/groups/table-list",
              section_title: "Contas Correntes",
@@ -461,15 +366,12 @@
 
   <%= render "partials/route/dashboard/create_checkingaccount" %>
 
-<%= render "partials/route/dashboard/section",
+  <%= render "partials/route/dashboard/section",
              columns: 2,
              section_title: "APR",
              section_desc: "Autorização de Aplicação e Resgate",
-             has_action: false do
-  %>
+             has_action: false do %>
 
-    <%# Lists the five most recent investment applications made within
-        the current year to provide a quick operational summary. %>
     <%= render "partials/groups/recent_activity",
                section_title: "Aplicações",
                section_columns: 1,
@@ -497,8 +399,7 @@
                  )
                }
     %>
-    <%# Displays the five most recent redemption requests to track
-        the liquidation history of assets during the year. %>
+
     <%= render "partials/groups/recent_activity",
                section_title: "Resgates",
                section_columns: 1,
@@ -519,20 +420,16 @@
                title_proc: ->(red) { red.fund_investment.investment_fund.fund_name },
                value_proc: ->(red) { normalize_currency(red.redeemed_liquid_value) },
                sub_value_proc: ->(red) {
-                 content_tag(:span,
-                             "#{strip_tags(normalize_number(red.redeemed_quotas))} cotas",
-                             style: "white-space: nowrap;"
+                 content_tag(
+                   :span,
+                   "#{strip_tags(normalize_number(red.redeemed_quotas))} cotas",
+                   style: "white-space: nowrap;"
                  )
                }
     %>
+
   <% end %>
 
-  <%# =============================================================
-    # Transaction Modals
-    # ============================================================= %>
-
-  <%# Injects the hidden modals required to record new application
-      and redemption transactions directly from the dashboard. %>
   <%= render "partials/route/dashboard/create_application" %>
   <%= render "partials/route/dashboard/create_redemption" %>
 

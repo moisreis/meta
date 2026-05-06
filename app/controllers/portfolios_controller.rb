@@ -255,13 +255,10 @@ def run_calculations
                      Date.current.prev_month.beginning_of_month
                    end
 
-  # If you want to calculate April, the target_date passed to the Job
-  # must be in May, because the job logic uses target_date.prev_month[cite: 1, 3]
-  target_date = selected_month.next_month.end_of_month
+  target_date = selected_month.end_of_month  # ← remova o .next_month
 
   PerformanceCalculationJob.perform_later(target_date: target_date)
 
-  # Redirect back to the end of the month we are actually calculating
   redirect_to portfolio_path(@portfolio, reference_date: selected_month.end_of_month),
               notice: "Cálculo de #{I18n.l(selected_month, format: '%B/%Y')} iniciado!"
 end
