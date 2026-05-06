@@ -248,20 +248,23 @@ class PortfoliosController < ApplicationController
     redirect_to portfolios_path, notice: "Carteira deletada com sucesso.", status: :see_other
   end
 
-  def run_calculations
-    selected_month = if params[:month].present?
-                       Date.strptime(params[:month], "%Y-%m")
-                     else
-                       Date.yesterday.prev_month.beginning_of_month
-                     end
+def run_calculations
+  selected_month = if params[:month].present?
+                     Date.strptime(params[:month], "%Y-%m")
+                   else
+                     Date.current.prev_month.beginning_of_month
+                   end
 
-    target_date = selected_month.next_month.end_of_month
+  # If you want to calculate April, the target_date passed to the Job
+  # must be in May, because the job logic uses target_date.prev_month[cite: 1, 3]
+  target_date = selected_month.next_month.end_of_month
 
-    PerformanceCalculationJob.perform_later(target_date: target_date)
+  PerformanceCalculationJob.perform_later(target_date: target_date)
 
-    redirect_to portfolio_path(@portfolio, reference_date: selected_month.end_of_month),
-                notice: "Cálculo de #{I18n.l(selected_month, format: '%B/%Y')} iniciado em segundo plano!"
-  end
+  # Redirect back to the end of the month we are actually calculating
+  redirect_to portfolio_path(@portfolio, reference_date: selected_month.end_of_month),
+              notice: "Cálculo de #{I18n.l(selected_month, format: '%B/%Y')} iniciado!"
+end
 
   def monthly_report
     day = params[:day].presence&.to_i

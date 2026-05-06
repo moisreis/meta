@@ -1,31 +1,27 @@
-<%# app/components/chart_component.html.erb %>
+<%# app/components/blocks/chart_component.html.erb %>
 
-<div
-  class="bg-white border border-border rounded-base flex flex-col overflow-hidden"
-  data-chart-id="<%= chart_id %>"
->
+<div class="bg-white border border-border rounded-base flex flex-col overflow-hidden"
+     data-chart-id="<%= @id %>">
+
   <%# Header %>
   <div class="flex items-center justify-between px-6 py-3 flex-shrink-0">
     <div class="flex items-center gap-3">
       <span class="size-[5px] rounded-full bg-neutral-300 flex-shrink-0"></span>
-
-      <%= content_tag(
-            :h3,
-            chart_title,
-            class: "font-mono text-muted uppercase text-xs tracking-widest font-medium"
-          ) %>
+      <h3 class="font-mono text-muted uppercase text-xs tracking-widest font-medium">
+        <%= @title %>
+      </h3>
     </div>
 
-    <% if chart_meta.present? %>
+    <% if @meta.present? %>
       <span class="font-mono text-muted uppercase text-3xs tracking-wide">
-        <%= chart_meta %>
+        <%= @meta %>
       </span>
     <% end %>
   </div>
 
   <%# Body %>
   <div class="flex items-center justify-center h-full p-5">
-    <% if data_available? %>
+    <% if data? %>
       <%= content %>
     <% else %>
       <p class="font-mono text-muted uppercase text-3xs tracking-widest py-16">
@@ -33,4 +29,5 @@
       </p>
     <% end %>
   </div>
+
 </div>
