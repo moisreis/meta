@@ -51,6 +51,16 @@ class PortfoliosController < ApplicationController
   end
 
   def show
+    begin
+      @data = Portfolios::ShowService.call(
+        @portfolio,
+        reference_date: params[:reference_date].present? ? Date.parse(params[:reference_date]) : Date.current
+      )
+    rescue => e
+      Rails.logger.warn("[ShowService] #{e.class}: #{e.message}")
+      @data = nil
+    end
+
     @new_application = Application.new
     @new_redemption = Redemption.new
 

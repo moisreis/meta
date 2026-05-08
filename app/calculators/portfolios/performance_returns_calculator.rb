@@ -1,4 +1,4 @@
-# app/services/portfolios/performance_returns_calculator.rb
+# app/calculators/portfolios/performance_returns_calculator.rb
 #
 # Computes total earnings, weighted portfolio return, and weighted 12-month
 # return from a set of PerformanceHistory records.

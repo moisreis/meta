@@ -64,11 +64,12 @@
     <%# ===================================================== %>
 
     <% if action? %>
-      <%= link_to @action[:route],
+      <%= link_to @action[:route] || @action[:path] || "#",
                   id: @action[:id],
-                  class: "button button-small button-outline flex-shrink-0" do %>
+                  class: "button button-small button-outline flex-shrink-0",
+                  data: @action[:data] do %>
         <%= render_icon(@action[:icon]) %>
-        <%= content_tag :span, @action[:label] %>
+        <%= content_tag :span, @action[:label] || @action[:name] %>
       <% end %>
     <% end %>
 
@@ -78,7 +79,7 @@
   <%#                      2. CONTENT GRID                     %>
   <%# ========================================================= %>
 
-  <div class="grid <%= grid_classes %> gap-3">
+  <div class="grid <%= grid_classes %> <%= gap_classes %> <%= separator_classes %>">
     <%= content %>
   </div>
 

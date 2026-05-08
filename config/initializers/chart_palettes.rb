@@ -116,7 +116,10 @@ module ChartPalettes
     default: %i[indigo].freeze,
 
     # generic allocation/distribution visualizations
-    distribution: %i[indigo violet teal green gray].freeze
+    distribution: %i[indigo violet teal green gray].freeze,
+
+    # multi-series line charts 
+    line_series:  %i[indigo gray teal violet].freeze
   }.freeze
 
   # =============================================================

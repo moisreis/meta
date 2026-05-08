@@ -1,13 +1,27 @@
-# app/queries/portfolios/allocation_data_query.rb
+# Handles aggregation of allocation percentages per investment fund within a portfolio.
 #
-# Returns fund name + allocation percentage pairs for pie chart rendering.
-# Accepts the already-loaded fund_investments relation to avoid a second query.
-module Portfolios
-  class AllocationDataQuery
-    def self.call(fund_investments)
-      fund_investments.map do |fi|
-        [fi.investment_fund.fund_name, fi.percentage_allocation || 0]
-      end
-    end
+# This query object extracts fund-level allocation data and normalizes missing
+# percentage values to zero.
+#
+# @author Moisés Reis
+class Portfolios::AllocationDataQuery
+
+  # =============================================================
+  #                      1. PUBLIC METHODS
+  # =============================================================
+
+  # =============================================================
+  #                          1a. CALL
+  # =============================================================
+
+  # Builds an array of fund names and their allocation percentages for a portfolio.
+  #
+  # @param portfolio [Portfolio] The portfolio containing fund investments.
+  #
+  # @return [Array<Array(String, Numeric)>] List of [fund_name, percentage] pairs.
+  def self.call(portfolio)
+    portfolio.fund_investments
+             .includes(:investment_fund)
+             .map { |fi| [fi.investment_fund.fund_name, fi.percentage_allocation || 0] }
   end
 end

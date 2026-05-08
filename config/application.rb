@@ -72,6 +72,10 @@ module Meta
     config.eager_load_paths << Rails.root.join("app/queries")
     config.eager_load_paths << Rails.root.join("app/forms")
     config.autoload_paths  << Rails.root.join("app/forms")
+    config.eager_load_paths << Rails.root.join("app/calculators")
+    config.autoload_paths  << Rails.root.join("app/calculators")
+    config.eager_load_paths << Rails.root.join("app/builders")
+    config.autoload_paths  << Rails.root.join("app/builders")
 
     # =============================================================
     #              2e. TIME ZONE CONFIGURATION
