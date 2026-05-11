@@ -1,138 +1,134 @@
 <%#
-  # Partial: _form.html.erb
-  # Date: 11/20/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: This file creates a form used to manage financial portfolios,
-  #              allowing users to name their assets and share access with
-  #               other people.
-  #
-  # Usage:: - What: A standardized input layout for creating or modifying
-  #                **Portfolio** records in the database.
-  #         - How: It uses **form_with** to handle data and includes modules
-  #                for text, selection, and radio buttons.
-  #         - Why: It ensures that user data is gathered consistently and
-  #                provides a clear path for saving information.
-  %>
+  PARTIAL: app/views/portfolios/_form.html.erb
+  DESCRIPTION: Renders the portfolio creation and editing form, including
+  portfolio identification fields and nested normative article associations.
 
-<%# Explanation:: This tag initializes the form to capture and send portfolio
-  #               data to the server; it is used during creation or editing
-  #               and works by binding input fields to the Portfolio model.
-  %>
+  LOCAL VARIABLES:
+  - portfolio: [Portfolio] The portfolio instance bound to the form. (required)
+%>
+
+<%# ========================================================= %>
+<%#                   1. FORM INITIALIZATION                  %>
+<%# ========================================================= %>
+
 <%= form_with(model: portfolio, class: "contents") do |form| %>
 
-  <%# Explanation:: This layout block groups identification fields to keep
-    #               the interface organized; it is used to separate identity
-    #               data and works by rendering a titled frame around the input.
-    %>
-  <%= render "partials/blocks/fieldset",
-             fieldset_title: "Identificação",
-             fieldset_desc: "Defina o nome principal para organizar sua nova carteira." do %>
+  <%# ========================================================= %>
+  <%#             2. PORTFOLIO IDENTIFICATION FIELDSET         %>
+  <%# ========================================================= %>
 
-    <%# Explanation:: This module creates a text box for the user to type a
-      #               descriptive name; it is used to label the portfolio and
-      #               works by rendering a standard HTML input with a wallet icon.
-      %>
-    <%= render "partials/modules/input-field",
-               f: form,
-               name: :name,
-               label: "Nome da carteira",
-               placeholder: "Carteira de Longo Prazo",
-               desc: "Escolha um nome claro e descritivo.",
-               field_type: :text_field,
-               icon_name: "wallet"
-    %>
+  <%= render(Forms::FieldsetComponent.new(
+    title: "Identificação",
+    description: "Defina o nome principal para organizar sua nova carteira."
+  )) do %>
 
-    <%= render "partials/modules/input-field",
-               f: form,
-               name: :annual_interest_rate,
-               label: "Taxa de juros anual (%)",
-               placeholder: "10.00",
-               desc: "Juros anuais que compõem a meta da carteira (ex: 10.00 para 10% a.a.).",
-               field_type: :number_field,
-               icon_name: "percent",
-               step: :any
-    %>
+    <%# ========================================================= %>
+    <%#                 2a. PORTFOLIO NAME FIELD                %>
+    <%# ========================================================= %>
+
+    <%= render(Forms::InputFieldComponent.new(
+      f:           form,
+      name:        :name,
+      label:       "Nome da carteira",
+      placeholder: "Carteira de Longo Prazo",
+      desc:        "Escolha um nome claro e descritivo.",
+      field_type:  :text_field,
+      icon_name:   "wallet"
+    )) %>
+
+    <%# ========================================================= %>
+    <%#             2b. ANNUAL INTEREST RATE FIELD              %>
+    <%# ========================================================= %>
+
+    <%= render(Forms::InputFieldComponent.new(
+      f:           form,
+      name:        :annual_interest_rate,
+      label:       "Taxa de juros anual (%)",
+      placeholder: "10.00",
+      desc:        "Juros anuais que compõem a meta da carteira (ex: 10.00 para 10% a.a.).",
+      field_type:  :number_field,
+      icon_name:   "percent",
+      step:        :any
+    )) %>
+
   <% end %>
 
-  <%= render "partials/blocks/fieldset",
-             fieldset_title: "Política de Investimento",
-             fieldset_desc: "Selecione os artigos normativos aplicáveis e defina as metas de comparação para cada um." do %>
+  <%# ========================================================= %>
+  <%#              3. INVESTMENT POLICY FIELDSET               %>
+  <%# ========================================================= %>
 
-    <%# Explanation:: This root element is the Stimulus controller boundary. Every
-                 #               data-action and data-target directive inside it is scoped to the
-                 #               nested-normative-articles controller exclusively.
-                 %>
+  <%= render(Forms::FieldsetComponent.new(
+    title: "Política de Investimento",
+    description: "Selecione os artigos normativos aplicáveis e defina as metas de comparação para cada um."
+  )) do %>
+
     <div data-controller="nested-normative-articles"
          class="flex flex-col gap-1.5">
 
-      <%# Explanation:: This container holds all rendered entries — both the ones that already
-                   #               exist on the record and any new ones the user appends at runtime.
-                   #               The Stimulus controller inserts cloned rows into this element.
-                   %>
+      <%# ========================================================= %>
+      <%#            3a. NESTED NORMATIVE ARTICLE ENTRIES         %>
+      <%# ========================================================= %>
+
       <div data-nested-normative-articles-target="container"
            class="flex flex-col gap-4">
 
-        <%# Explanation:: This block iterates over existing PortfolioNormativeArticle records
-                     #               attached to the portfolio and renders one entry row per record.
-                     #               On a new portfolio this block produces no output.
-                     %>
         <%= form.fields_for :portfolio_normative_articles do |pna_form| %>
           <%= render "normative_article_entry",
                      f: pna_form,
-                     normative_articles: @normative_articles
-          %>
+                     normative_articles: @normative_articles %>
         <% end %>
 
       </div>
 
-      <%# Explanation:: This native <template> element holds a pre-rendered blank entry row
-                   #               with a NEW_RECORD placeholder in place of every array index Rails
-                   #               would normally generate. The Stimulus controller clones its innerHTML,
-                   #               replaces the placeholder with a timestamp, and inserts the result into
-                   #               the container above — giving each new row a unique, collision-free index.
-                   %>
-      <template data-nested-normative-articles-target="template" class="flex flex-col gap-4">
-        <% blank_pna = PortfolioNormativeArticle.new %>
-        <%= form.fields_for :portfolio_normative_articles, blank_pna, child_index: "NEW_RECORD" do |pna_form| %>
+      <%# ========================================================= %>
+      <%#                3b. DYNAMIC ENTRY TEMPLATE               %>
+      <%# ========================================================= %>
+
+      <template data-nested-normative-articles-target="template"
+                class="flex flex-col gap-4">
+
+        <%= form.fields_for :portfolio_normative_articles,
+                            PortfolioNormativeArticle.new,
+                            child_index: "NEW_RECORD" do |pna_form| %>
+
           <%= render "normative_article_entry",
                      f: pna_form,
-                     normative_articles: @normative_articles
-          %>
+                     normative_articles: @normative_articles %>
+
         <% end %>
+
       </template>
 
-      <%# Explanation:: This button appends a blank entry row when clicked. It does not submit
-                   #               the form; it only triggers the addEntry action on the Stimulus controller.
-                   %>
+      <%# ========================================================= %>
+      <%#                 3c. ADD ENTRY ACTION BUTTON             %>
+      <%# ========================================================= %>
+
       <button type="button"
               data-action="click->nested-normative-articles#addEntry"
               class="button button-secondary button-small button-outline w-fit flex items-center gap-2">
+
         <%= inline_svg_tag "icons/plus.svg" %>
+
         <span>Adicionar Artigo</span>
       </button>
 
     </div>
+
   <% end %>
 
-  <%# Explanation:: This hidden field automatically assigns the current user
-    #               as the primary owner; it is used to ensure data integrity
-    #               and works by sending the user's ID without requiring an input box.
-    %>
-  <%= form.hidden_field :user_id,
-                        value: current_user.id
-  %>
+  <%# ========================================================= %>
+  <%#                 4. HIDDEN USER ASSOCIATION               %>
+  <%# ========================================================= %>
 
-  <%# Explanation:: This button triggers the submission to save all entered
-    #               information; it is used to complete the form process and
-    #               works by sending the gathered data to the server via a click.
-    %>
-  <%= form.button :submit,
-                  name: nil,
-                  class: "button button-primary w-fit flex items-center gap-2" do
-  %>
-    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
-    <%= content_tag :span, button_name %>
-  <% end %>
+  <%= form.hidden_field :user_id, value: current_user.id %>
+
+  <%# ========================================================= %>
+  <%#                     5. FORM SUBMISSION                    %>
+  <%# ========================================================= %>
+
+  <%= render(Forms::SubmitButtonComponent.new(
+    builder: form,
+    method:  portfolio.persisted? ? :patch : :post
+  )) %>
+
 <% end %>

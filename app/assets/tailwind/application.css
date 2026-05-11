@@ -352,6 +352,7 @@
  * ============================================================================= */
 
 @layer components {
+    
     /* --- 5a. Buttons ------------------------------------------------------- */
     /**
      * .button  (also: button, input[type=submit])
@@ -379,7 +380,7 @@
     input[type="submit"],
     button,
     .button {
-        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-xs text-neutral-50 font-mono uppercase !font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-neutral-100 focus:outline-neutral-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-neutral-100 focus-visible:outline-offset-2 focus-visible:outline-neutral-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-neutral-600 hover:bg-neutral-600/90 active:bg-neutral-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-neutral-50 [&>svg]:!size-3.5 [&>span>svg]:!size-4 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer select-none;
+        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-sm text-neutral-50 font-body !font-medium transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-neutral-100 focus:outline-neutral-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-neutral-100 focus-visible:outline-offset-2 focus-visible:outline-neutral-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-neutral-600 hover:bg-neutral-600/90 active:bg-neutral-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-neutral-50 [&>svg]:!size-3.5 [&>span>svg]:!size-4 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer select-none;
     }
 
     /**

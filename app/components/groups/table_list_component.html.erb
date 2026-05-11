@@ -1,7 +1,7 @@
 <%= render(Blocks::SectionComponent.new(title: @title, description: @description, columns: 1, action: @action)) do %>
 
   <% if empty? %>
-    <%= content_tag :p, "Ainda não há dados.", class: "badge badge-outline" %>
+    <%= content_tag :p, "Nenhum dado disponível.", class: "font-mono text-muted uppercase text-3xs tracking-widest" %>
   <% else %>
 
     <div class="p-3 rounded-base border border-border bg-white overflow-x-auto">

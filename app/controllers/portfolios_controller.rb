@@ -1,16 +1,13 @@
-PORTFOLIOS_ALLOWED_SORT_COLUMNS = %w[id name created_at updated_at].freeze
-
-PORTFOLIOS_ALLOWED_DIRECTIONS = %w[asc desc].freeze
-
 class PortfoliosController < ApplicationController
 
   include PdfExportable
-
   include MonthlyReportable
 
   before_action :authenticate_user!
   before_action :set_portfolio, only: %i[show edit update destroy monthly_report run_calculations calculation_progress]
   before_action :authorize_portfolio_management!, only: %i[edit update destroy run_calculations monthly_report calculation_progress]
+  before_action :load_normative_articles,
+                only: %i[new edit create update]
 
   rescue_from ActiveRecord::RecordNotFound do |e|
     respond_to do |format|
@@ -34,244 +31,196 @@ class PortfoliosController < ApplicationController
     end
   end
 
+  # =============================================================
+  #                           INDEX
+  # =============================================================
+
+  # Displays the portfolio listing page.
+  #
+  # Delegates searching, filtering, authorization scoping,
+  # sorting, eager loading, and pagination responsibilities
+  # to {Portfolios::IndexQuery}.
+  #
+  # @return [void]
   def index
-    base_scope = current_user.admin? ? Portfolio.all : Portfolio.for_user(current_user)
+    result = Portfolios::IndexQuery.call(
+      params[:q],
+      page: params[:page],
+      sort: params[:sort],
+      direction: params[:direction],
+      actor: current_user
+    )
 
-    @q = base_scope.includes(:user, :user_portfolio_permissions).ransack(params[:q])
-    filtered = @q.result(distinct: true)
-
-    @total_items = filtered.count
-
-    sort = PORTFOLIOS_ALLOWED_SORT_COLUMNS.include?(params[:sort]) ? params[:sort] : "id"
-    direction = PORTFOLIOS_ALLOWED_DIRECTIONS.include?(params[:direction]) ? params[:direction] : "asc"
-
-    @portfolios = @models = filtered.order("portfolios.#{sort} #{direction}").page(params[:page]).per(14)
-
-    respond_to { |f| f.html }
+    @q = result.search
+    @portfolios = result.records
+    @total_items = result.total_items
   end
 
+  # =============================================================
+  #                           SHOW
+  # =============================================================
+
+  # Displays the portfolio dashboard.
+  #
+  # Delegates all dashboard aggregation, chart assembly,
+  # performance calculations, compliance analysis, and
+  # transactional summaries to {Portfolios::ShowService}.
+  #
+  # @return [void]
   def show
-    begin
-      @data = Portfolios::ShowService.call(
-        @portfolio,
-        reference_date: params[:reference_date].present? ? Date.parse(params[:reference_date]) : Date.current
-      )
-    rescue => e
-      Rails.logger.warn("[ShowService] #{e.class}: #{e.message}")
-      @data = nil
-    end
-
-    @new_application = Application.new
-    @new_redemption = Redemption.new
-
-    @reference_date = params[:reference_date].present? ? Date.parse(params[:reference_date]) : Date.current
-
-    fund_investments = @portfolio.fund_investments
-                                 .includes(:investment_fund, :applications, :redemptions)
-
-    @allocation_data = fund_investments.map do |fi|
-      [fi.investment_fund.fund_name, fi.percentage_allocation || 0]
-    end
-
-    @institution_distribution = fund_investments
-                                  .group_by { |fi| fi.investment_fund.administrator_name }
-                                  .map { |admin, investments| [admin, investments.sum { |fi| fi.percentage_allocation || 0 }] }
-
-    @indices_data = @portfolio.fund_investments
-                              .joins(:investment_fund)
-                              .group("investment_funds.benchmark_index")
-                              .sum(:percentage_allocation)
-                              .transform_keys { |key| key.presence || "Outros" }
-
-    @normative_data = @portfolio.fund_investments
-                                .joins(investment_fund: :normative_articles)
-                                .group("normative_articles.article_number")
-                                .sum(:percentage_allocation)
-                                .transform_keys { |key| key.presence || "Não enquadrado" }
-
-    @monthly_flows = calculate_monthly_flows(@portfolio)
-
-    @reference_period = @reference_date.end_of_month
-
-    @recent_performance = @portfolio.performance_histories
-                                    .where(period: @reference_period)
-                                    .includes(fund_investment: :investment_fund)
-
-    @portfolio_monthly_twr = @portfolio.portfolio_twr_return_on(
-      @reference_date.beginning_of_month - 1.day,
-      @reference_date
-    )
-    @portfolio_yearly_twr = @portfolio.portfolio_twr_return_on(
-      @reference_date.beginning_of_year - 1.day,
-      @reference_date
+    @data = Portfolios::ShowService.call(
+      @portfolio,
+      reference_date: parsed_reference_date
     )
 
-    if @recent_performance.empty?
-      latest_period = @portfolio.performance_histories.maximum(:period)
-      if latest_period
-        @reference_period = latest_period
-        @recent_performance = @portfolio.performance_histories
-                                        .where(period: @reference_period)
-                                        .includes(fund_investment: :investment_fund)
-      end
-    end
-
-    @performance_by_fund = @recent_performance.index_by(&:fund_investment_id)
-
-    @recent_performance = @recent_performance.order("monthly_return DESC")
-    @portfolio_yearly_return = @portfolio.portfolio_yearly_return_percentage(@reference_period)
-
-    @equity_evolution = @portfolio.value_timeline(12)
-    @monthly_earnings_history = @portfolio.monthly_earnings_history
-
-    @total_market_value = fund_investments.sum { |fi| fi.current_market_value_on(@reference_date) }
-
-    @total_earnings = BigDecimal("0")
-    @portfolio_return = BigDecimal("0")
-    @portfolio_12m_return = BigDecimal("0")
-
-    if @recent_performance.any?
-      active_performance = @recent_performance.select do |perf|
-        fi = perf.fund_investment
-        fi.current_market_value_on(@reference_period) > 0 ||
-          fi.applications.where("cotization_date <= ?", @reference_period).sum(:number_of_quotas) >
-            fi.redemptions.where("cotization_date <= ?", @reference_period).sum(:redeemed_quotas)
-      end
-
-      effective_initial_balance = ->(perf) do
-        if perf.initial_balance&.positive?
-          perf.initial_balance
-        elsif perf.monthly_return&.nonzero? && perf.earnings
-          (perf.earnings / (perf.monthly_return / BigDecimal("100"))).abs
-        else
-          BigDecimal("0")
-        end
-      end
-
-      total_initial_balance = active_performance.sum { |p| effective_initial_balance.call(p) }
-      @total_earnings = active_performance.sum(&:earnings)
-
-      if total_initial_balance > 0
-        @portfolio_return = (@total_earnings / total_initial_balance) * 100
-
-        weighted_12m = BigDecimal("0")
-        active_performance.each do |perf|
-          weight = effective_initial_balance.call(perf) / total_initial_balance
-          weighted_12m += (perf.last_12_months_return || 0) * weight
-        end
-
-        @portfolio_12m_return = weighted_12m
-      end
-    end
-
-      primary_benchmark_name = @portfolio.fund_investments
-                                         .joins(:investment_fund)
-                                         .group("investment_funds.benchmark_index")
-                                         .order("count_all DESC")
-                                         .count
-                                         .keys.first || "CDI"
-
-      target_index = EconomicIndex.find_by(abbreviation: primary_benchmark_name)
-
-      @benchmark_series = []
-      if target_index
-        cumulative_bench = BigDecimal("1.0")
-
-        histories = target_index.economic_index_histories
-                                .where("date >= ? AND date <= ?", @reference_date.beginning_of_year, @reference_date)
-                                .order(:date)
-
-        histories.each do |h|
-          variation = (h.value || 0) / BigDecimal("100")
-          cumulative_bench *= (1 + variation)
-          @benchmark_series << [I18n.l(h.date, format: "%b/%y"), ((cumulative_bench - 1) * 100).to_f.round(2)]
-        end
-      end
-
-      @portfolio_yield_series = []
-      cumulative_port = BigDecimal("1.0")
-
-      @portfolio.performance_histories
-                .where("period >= ? AND period <= ?", @reference_date.beginning_of_year, @reference_date)
-                .select("period, SUM(earnings) as total_earnings, SUM(initial_balance) as total_balance")
-                .group(:period).order(:period).each do |hist|
-        if hist.total_balance.to_f > 0
-          m_return = hist.total_earnings / hist.total_balance
-          cumulative_port *= (1 + m_return)
-          @portfolio_yield_series << [I18n.l(hist.period, format: "%b/%y"), ((cumulative_port - 1) * 100).to_f.round(2)]
-        end
-      end
-
-      @current_benchmark_label = target_index&.name || "Benchmark"
-
-      @compliance_report = @portfolio.portfolio_normative_articles.map do |pna|
-        actual_alloc = @normative_data[pna.normative_article.article_number] || 0
-        {
-          article: pna.normative_article.article_number,
-          actual: actual_alloc.to_f,
-          min: pna.minimum_target.to_f,
-          max: pna.maximum_target.to_f,
-          target: pna.benchmark_target.to_f,
-          status: (actual_alloc >= pna.minimum_target && actual_alloc <= pna.maximum_target) ? "success" : "danger"
-        }
-      end
-
-      peak = 0
-      @drawdown_series = @portfolio_yield_series.map do |date, return_pct|
-        peak = [peak, return_pct].max
-        drawdown = peak == 0 ? 0 : ((return_pct - peak))
-        [date, drawdown.round(2)]
-      end
+    @reference_date = @data.reference_date
+    @reference_period = @data.reference_period
   end
 
+  # =============================================================
+  #                      PORTFOLIO CREATION
+  # =============================================================
+
+  # Renders the portfolio creation form.
+  #
+  # Initializes a new {PortfolioForm} instance associated with the
+  # currently authenticated user and loads the available normative
+  # articles required by the nested investment policy fields.
+  #
+  # @return [void]
   def new
-    @portfolio = Portfolio.new
-    @normative_articles = NormativeArticle.all.map { |a| [a.display_name, a.id] }
+    @form = PortfolioForm.new(
+      user_id: current_user.id
+    )
+
+    load_normative_articles
   end
 
-  def edit
-    @normative_articles = NormativeArticle.all.map { |a| [a.display_name, a.id] }
-  end
-
+  # Creates a new portfolio and its associated investment policy data.
+  #
+  # Delegates portfolio persistence, validation, and business-rule
+  # orchestration to {Portfolios::CreationService}.
+  #
+  # Redirects to the created portfolio on success. Re-renders the
+  # form with validation errors on failure.
+  #
+  # @return [void]
   def create
-    @portfolio = Portfolio.new(portfolio_params.except(:shared_user_id))
+    result = Portfolios::CreationService.call(
+      portfolio_params,
+      actor: current_user
+    )
 
-    if @portfolio.save
-      grant_permission_if_present
-      redirect_to @portfolio, notice: "Carteira criada com sucesso."
+    if result.success?
+      redirect_to(
+        result.portfolio,
+        notice: "Carteira criada com sucesso."
+      )
     else
+      @form = result.form
+
+      load_normative_articles
+
       render :new, status: :unprocessable_entity
     end
   end
 
+  # =============================================================
+  #                      PORTFOLIO UPDATES
+  # =============================================================
+
+  # Renders the portfolio editing form.
+  #
+  # Hydrates a {PortfolioForm} instance using the persisted
+  # portfolio state and loads the normative articles required
+  # by the nested policy configuration interface.
+  #
+  # @return [void]
+  def edit
+    @form = PortfolioForm.from_portfolio(@portfolio)
+
+    load_normative_articles
+  end
+
+  # Updates an existing portfolio and its associated policy data.
+  #
+  # Delegates validation, persistence, and domain-level update
+  # orchestration to {Portfolios::UpdateService}.
+  #
+  # Redirects to the updated portfolio on success. Re-renders
+  # the edit form with validation errors on failure.
+  #
+  # @return [void]
   def update
-    if @portfolio.update(portfolio_params.except(:shared_user_id))
-      grant_permission_if_present
-      redirect_to @portfolio, notice: "Carteira atualizada com sucesso.", status: :see_other
+    result = Portfolios::UpdateService.call(
+      @portfolio,
+      portfolio_params,
+      actor: current_user
+    )
+
+    if result.success?
+      redirect_to(
+        result.portfolio,
+        notice: "Carteira atualizada com sucesso.",
+        status: :see_other
+      )
     else
+      @form = result.form
+
+      load_normative_articles
+
       render :edit, status: :unprocessable_entity
     end
   end
 
+  # =============================================================
+  #                     PORTFOLIO DELETION
+  # =============================================================
+
+  # Deletes the selected portfolio.
+  #
+  # Delegates authorization checks, dependency handling,
+  # and deletion orchestration to {Portfolios::DeletionService}.
+  #
+  # Redirects back to the portfolio index with a status message
+  # indicating whether the operation succeeded.
+  #
+  # @return [void]
   def destroy
-    @portfolio.destroy!
-    redirect_to portfolios_path, notice: "Carteira deletada com sucesso.", status: :see_other
+    result = Portfolios::DeletionService.call(
+      @portfolio,
+      actor: current_user
+    )
+
+    if result.success?
+      redirect_to(
+        portfolios_path,
+        notice: "Carteira deletada com sucesso.",
+        status: :see_other
+      )
+    else
+      redirect_to(
+        portfolios_path,
+        alert: "Não foi possível deletar a carteira.",
+        status: :see_other
+      )
+    end
   end
 
-def run_calculations
-  selected_month = if params[:month].present?
-                     Date.strptime(params[:month], "%Y-%m")
-                   else
-                     Date.current.prev_month.beginning_of_month
-                   end
+  def run_calculations
+    selected_month = if params[:month].present?
+                       Date.strptime(params[:month], "%Y-%m")
+                     else
+                       Date.current.prev_month.beginning_of_month
+                     end
 
-  target_date = selected_month.end_of_month  # ← remova o .next_month
+    target_date = selected_month.end_of_month # ← remova o .next_month
 
-  PerformanceCalculationJob.perform_later(target_date: target_date)
+    PerformanceCalculationJob.perform_later(target_date: target_date)
 
-  redirect_to portfolio_path(@portfolio, reference_date: selected_month.end_of_month),
-              notice: "Cálculo de #{I18n.l(selected_month, format: '%B/%Y')} iniciado!"
-end
+    redirect_to portfolio_path(@portfolio, reference_date: selected_month.end_of_month),
+                notice: "Cálculo de #{I18n.l(selected_month, format: '%B/%Y')} iniciado!"
+  end
 
   def monthly_report
     day = params[:day].presence&.to_i
@@ -315,6 +264,20 @@ end
 
   private
 
+  def load_normative_articles
+    @normative_articles = NormativeArticle.all.map do |article|
+      [article.display_name, article.id]
+    end
+  end
+
+  def parsed_reference_date
+    return Date.current unless params[:reference_date].present?
+
+    Date.parse(params[:reference_date])
+  rescue ArgumentError
+    Date.current
+  end
+
   def set_portfolio
     @portfolio = Portfolio.for_user(current_user).find(params[:id])
   end
@@ -338,20 +301,6 @@ end
         :_destroy
       ]
     )
-  end
-
-  def grant_permission_if_present
-    shared_user_id = params.dig(:portfolio, :shared_user_id)
-    permission_level = params.dig(:portfolio, :grant_crud_permission) || "read"
-
-    return unless shared_user_id.present?
-
-    UserPortfolioPermission.find_or_create_by!(
-      user_id: shared_user_id,
-      portfolio_id: @portfolio.id
-    ) do |p|
-      p.permission_level = permission_level
-    end
   end
 
   def calculate_monthly_flows(portfolio)

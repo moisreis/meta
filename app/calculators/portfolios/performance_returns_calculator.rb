@@ -42,11 +42,30 @@ module Portfolios
 
     def active_performance
       period = @reference_date.end_of_month
+
+      fi_ids = @recent_performance.map(&:fund_investment_id).uniq
+      return @recent_performance if fi_ids.empty?
+
+      net_quotas = lambda do |date|
+        apps = Application.where(fund_investment_id: fi_ids)
+                          .where("cotization_date <= ?", date)
+                          .group(:fund_investment_id)
+                          .sum(:number_of_quotas)
+        reds = Redemption.where(fund_investment_id: fi_ids)
+                         .where("cotization_date <= ?", date)
+                         .group(:fund_investment_id)
+                         .sum(:redeemed_quotas)
+        fi_ids.index_with { |id| apps[id].to_d - reds[id].to_d }
+      end
+
+      net_at_reference = net_quotas.call(@reference_date)
+      net_at_period    = net_quotas.call(period)
+
       @recent_performance.select do |perf|
         fi = perf.fund_investment
-        fi.current_market_value_on(@reference_date) > 0 ||
-          fi.applications.where("cotization_date <= ?", period).sum(:number_of_quotas) >
-            fi.redemptions.where("cotization_date <= ?", period).sum(:redeemed_quotas)
+        quota = fi.investment_fund.quota_value_on(@reference_date)
+        market_value = quota ? net_at_reference[fi.id] * BigDecimal(quota.to_s) : BigDecimal("0")
+        market_value > 0 || net_at_period[fi.id] > 0
       end
     end
 

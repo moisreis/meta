@@ -1,8 +1,33 @@
+<%#
+  VIEW: app/views/portfolios/show.html.erb
+  ACTION: PortfoliosController#show
+
+  DESCRIPTION:
+  Displays the complete portfolio analytics dashboard, including
+  KPIs, compliance analysis, allocation breakdowns, diversification
+  metrics, benchmark comparisons, operational summaries, and
+  investment performance tables.
+
+  INSTANCE VARIABLES:
+  - @portfolio: [Portfolio] The portfolio being displayed.
+  - @data: [Portfolios::ShowService::Result] Aggregated portfolio reporting and analytics data.
+  - @reference_date: [Date] Reference date used for charts, metrics, and snapshots.
+  - @reference_period: [Date] Monthly reporting period used in performance analysis.
+%>
+
+<%# ========================================================= %>
+<%#                    1. DASHBOARD WRAPPER                  %>
+<%# ========================================================= %>
+
 <%= render(Layout::DashboardWrapperComponent.new(
   page_title: @portfolio.name,
   page_desc: "Carteira de #{@portfolio.user.full_name}",
   current_view: "show"
 )) do %>
+
+  <%# ======================================================= %>
+  <%#                       2. KPI SECTION                   %>
+  <%# ======================================================= %>
 
   <%= render(
     Blocks::SectionComponent.new(
@@ -11,6 +36,10 @@
       columns: 4,
     )
   ) do %>
+
+    <%# ===================================================== %>
+    <%#                2a. PORTFOLIO TOTAL VALUE             %>
+    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -21,6 +50,10 @@
       <%= normalize_currency(@data.total_market_value) %>
     <% end %>
 
+    <%# ===================================================== %>
+    <%#                    2b. YEARLY EARNINGS               %>
+    <%# ===================================================== %>
+
     <%= render(
       Blocks::CardComponent.new(
         title: "Rendimento Acumulado do Ano",
@@ -29,6 +62,10 @@
     ) do %>
       <%= normalize_currency(@data.yearly_earnings) %>
     <% end %>
+
+    <%# ===================================================== %>
+    <%#                    2c. MONTHLY EARNINGS              %>
+    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -40,6 +77,10 @@
       <%= normalize_trend(@data.total_earnings) %>
     <% end %>
 
+    <%# ===================================================== %>
+    <%#             2d. YEARLY TIME-WEIGHTED RETURN          %>
+    <%# ===================================================== %>
+
     <%= render(
       Blocks::CardComponent.new(
         title: "Rendimento Acumulado do Ano",
@@ -48,6 +89,10 @@
     ) do %>
       <%= normalize_trend(@data.portfolio_yearly_twr, format: :percentage) %>
     <% end %>
+
+    <%# ===================================================== %>
+    <%#             2e. MONTHLY TIME-WEIGHTED RETURN         %>
+    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -58,6 +103,10 @@
     ) do %>
       <%= normalize_trend(@data.portfolio_monthly_twr, format: :percentage) %>
     <% end %>
+
+    <%# ===================================================== %>
+    <%#                 2f. TWELVE-MONTH RETURN              %>
+    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -70,6 +119,10 @@
     <% end %>
 
   <% end %>
+
+  <%# ======================================================= %>
+  <%#               3. COMPLIANCE & LEGAL LIMITS             %>
+  <%# ======================================================= %>
 
   <%= render(
     Blocks::SectionComponent.new(
@@ -91,6 +144,10 @@
 
   <% end %>
 
+  <%# ======================================================= %>
+  <%#                  4. DETAILED ANALYTICS                 %>
+  <%# ======================================================= %>
+
   <%= render(
     Blocks::SectionComponent.new(
       title: "Análise Detalhada",
@@ -98,6 +155,10 @@
       columns: 2,
     )
   ) do %>
+
+    <%# ===================================================== %>
+    <%#                4a. MONTHLY EARNINGS CHART            %>
+    <%# ===================================================== %>
 
     <%= render Groups::ChartListComponent.new(
       chart_type:  :column_chart,
@@ -108,6 +169,10 @@
         @data.monthly_earnings_history
       )
     ) %>
+
+    <%# ===================================================== %>
+    <%#                4b. EQUITY EVOLUTION CHART            %>
+    <%# ===================================================== %>
 
     <%= render Groups::ChartListComponent.new(
       chart_type:  :column_chart,
@@ -121,7 +186,11 @@
 
   <% end %>
 
-    <%= render(
+  <%# ======================================================= %>
+  <%#                  5. MONTHLY MOVEMENTS                  %>
+  <%# ======================================================= %>
+
+  <%= render(
     Blocks::SectionComponent.new(
       title: "Movimentações Mensais",
       description: "Gráfico detalhado das entradas e saídas mensais",
@@ -140,6 +209,10 @@
     ) %>
 
   <% end %>
+
+  <%# ======================================================= %>
+  <%#                   6. CURRENT ALLOCATION                %>
+  <%# ======================================================= %>
 
   <%= render(
     Blocks::SectionComponent.new(
@@ -161,6 +234,10 @@
 
   <% end %>
 
+  <%# ======================================================= %>
+  <%#                7. DIVERSIFICATION ANALYSIS             %>
+  <%# ======================================================= %>
+
   <%= render(
     Blocks::SectionComponent.new(
       title: "Análise de Diversificação",
@@ -168,6 +245,10 @@
       columns: 2,
     )
   ) do %>
+
+    <%# ===================================================== %>
+    <%#                 7a. INDEX DISTRIBUTION               %>
+    <%# ===================================================== %>
 
     <%= render Groups::ChartListComponent.new(
       chart_type:  :pie_chart,
@@ -178,6 +259,10 @@
         @data.indices_data
       )
     ) %>
+
+    <%# ===================================================== %>
+    <%#              7b. INSTITUTION DISTRIBUTION            %>
+    <%# ===================================================== %>
 
     <%= render Groups::ChartListComponent.new(
       chart_type:  :pie_chart,
@@ -191,39 +276,50 @@
 
   <% end %>
 
+  <%# ======================================================= %>
+  <%#                 8. PORTFOLIO VS BENCHMARKS             %>
+  <%# ======================================================= %>
+
   <%= render(
     Blocks::SectionComponent.new(
       title: "Carteira vs Benchmarks",
       description: "Comparativo da evolução da carteira em relação aos principais índices de referência",
       columns: 1,
     )
-  ) do %>  
+  ) do %>
 
     <%= render Groups::ChartListComponent.new(
       chart_type:    :line_chart,
       chart_title:   "Carteira vs Benchmarks",
       palette:       :line_series,
       data_source:   @data.benchmark_comparison_series,
-      chart_options: Charts::LineSeriesChartOptionsBuilder.call(@data.benchmark_comparison_series)
+      chart_options: Charts::LineSeriesChartOptionsBuilder.call(
+        @data.benchmark_comparison_series
+      )
     ) %>
 
   <% end %>
+
+    <%# ======================================================= %>
+  <%#                 9. ALLOCATED FUNDS TABLE               %>
+  <%# ======================================================= %>
+
   <%= render(Groups::TableListComponent.new(
       title:       "Lista de fundos alocados",
       description: "Dados de #{l(@reference_date, format: :long)}",
       collection:  @data.fund_investments
     )) do |table| %>
 
-    <% table.with_column(label: "Fundo",             icon: nil,   description: nil) %>
-    <% table.with_column(label: "Alocação",          icon: nil,   description: nil) %>
-    <% table.with_column(label: "Movimentação",      icon: nil,   description: nil) %>
-    <% table.with_column(label: "Cota mais recente", icon: nil,   description: l(@reference_date, format: :default)) %>
-    <% table.with_column(label: "Valor Atual",       icon: nil,   description: l(@reference_date, format: :default)) %>
-    <% table.with_column(label: "Rendimento",        icon: nil,   description: l(@reference_date, format: :default)) %>
-    <% table.with_column(label: "Rent.",             icon: nil,   description: l(@reference_date, format: :default)) %>
+    <% table.with_column(label: "Fundo",             icon: nil, description: nil) %>
+    <% table.with_column(label: "Alocação",          icon: nil, description: nil) %>
+    <% table.with_column(label: "Movimentação",      icon: nil, description: nil) %>
+    <% table.with_column(label: "Cota mais recente", icon: nil, description: l(@reference_date, format: :default)) %>
+    <% table.with_column(label: "Valor Atual",       icon: nil, description: l(@reference_date, format: :default)) %>
+    <% table.with_column(label: "Rendimento",        icon: nil, description: l(@reference_date, format: :default)) %>
+    <% table.with_column(label: "Rent.",             icon: nil, description: l(@reference_date, format: :default)) %>
 
     <% @data.fund_investments.each do |fi| %>
-    
+
       <% table.with_row(
         model_id:     fi.id,
         show_path:    fund_investment_path(fi),
@@ -244,21 +340,56 @@
 
   <% end %>
 
+  <%# ======================================================= %>
+  <%#                10. INVESTMENT POLICY TABLE             %>
+  <%# ======================================================= %>
+
   <%= render(Groups::TableListComponent.new(
       title:       "Política de Investimentos",
       description: "Metas da carteira comparadas aos limites de cada artigo.",
       collection:  @data.normative_articles
     )) do |table| %>
 
-    <% table.with_column(label: "Artigo",               icon: nil) %>
-    <% table.with_column(label: "Categoria",            icon: nil) %>
-    <% table.with_column(label: "Benchmark",   icon: nil, description: "Artigo") %>
-    <% table.with_column(label: "Benchmark", icon: nil, description: "Carteira") %>
-    <% table.with_column(label: "Desvio",               icon: nil) %>
-    <% table.with_column(label: "Mín.",        icon: nil, description: "Artigo") %>
-    <% table.with_column(label: "Mín.",      icon: nil, description: "Carteira") %>
-    <% table.with_column(label: "Máx.",        icon: nil, description: "Artigo") %>
-    <% table.with_column(label: "Máx.",      icon: nil, description: "Carteira") %>
+    <% table.with_column(label: "Artigo",    icon: nil) %>
+    <% table.with_column(label: "Categoria", icon: nil) %>
+
+    <% table.with_column(
+      label: "Benchmark",
+      icon: nil,
+      description: "Artigo"
+    ) %>
+
+    <% table.with_column(
+      label: "Benchmark",
+      icon: nil,
+      description: "Carteira"
+    ) %>
+
+    <% table.with_column(label: "Desvio", icon: nil) %>
+
+    <% table.with_column(
+      label: "Mín.",
+      icon: nil,
+      description: "Artigo"
+    ) %>
+
+    <% table.with_column(
+      label: "Mín.",
+      icon: nil,
+      description: "Carteira"
+    ) %>
+
+    <% table.with_column(
+      label: "Máx.",
+      icon: nil,
+      description: "Artigo"
+    ) %>
+
+    <% table.with_column(
+      label: "Máx.",
+      icon: nil,
+      description: "Carteira"
+    ) %>
 
     <% @data.normative_articles.each do |pna| %>
 
@@ -269,7 +400,10 @@
           normalize_text(pna.normative_article.category),
           normalize_percentage(pna.normative_article.benchmark_target),
           normalize_percentage(pna.benchmark_target),
-          normalize_trend(@data.benchmark_deviation_by_pna[pna.id], format: :percentage),
+          normalize_trend(
+            @data.benchmark_deviation_by_pna[pna.id],
+            format: :percentage
+          ),
           normalize_percentage(pna.normative_article.minimum_target),
           normalize_percentage(pna.minimum_target),
           normalize_percentage(pna.normative_article.maximum_target),
@@ -283,14 +417,32 @@
 
   <% if @data.recent_performance.any? %>
 
+    <%# ===================================================== %>
+    <%#               11. FUND PERFORMANCE TABLE             %>
+    <%# ===================================================== %>
+
     <%= render(Groups::TableListComponent.new(
       title:      "Performance dos Fundos",
       collection: @data.recent_performance
     )) do |table| %>
 
-      <% table.with_column(label: "Fundo",         icon: nil,  description: nil) %>
-      <% table.with_column(label: "Rentabilidade", icon: nil,  description: l(@reference_period, format: :month_year)) %>
-      <% table.with_column(label: "Rendimento",    icon: nil,  description: l(@reference_period, format: :month_year)) %>
+      <% table.with_column(
+        label: "Fundo",
+        icon: nil,
+        description: nil
+      ) %>
+
+      <% table.with_column(
+        label: "Rentabilidade",
+        icon: nil,
+        description: l(@reference_period, format: :month_year)
+      ) %>
+
+      <% table.with_column(
+        label: "Rendimento",
+        icon: nil,
+        description: l(@reference_period, format: :month_year)
+      ) %>
 
       <% @data.recent_performance.each do |ph| %>
 
@@ -309,6 +461,10 @@
 
   <% end %>
 
+  <%# ======================================================= %>
+  <%#                12. CHECKING ACCOUNTS TABLE             %>
+  <%# ======================================================= %>
+
   <%= render(Groups::TableListComponent.new(
       title:      "Contas Correntes",
       collection: @data.checking_accounts,
@@ -322,7 +478,7 @@
     <% @data.checking_accounts.each do |ca| %>
 
       <% table.with_row(
-        model_id:     ca.id,
+        model_id: ca.id,
         cells: [
           normalize_title(ca.institution.presence),
           normalize_code(ca.account_number.presence),
@@ -338,6 +494,10 @@
 
   <% end %>
 
+  <%# ======================================================= %>
+  <%#                      13. APR SECTION                   %>
+  <%# ======================================================= %>
+
   <%= render(
     Blocks::SectionComponent.new(
       title: "APR",
@@ -345,68 +505,52 @@
       columns: 2,
       separator: :vertical
     )
-  ) do %>  
+  ) do %>
 
-    <%= render "partials/groups/recent_activity",
-               section_title: "Aplicações",
-               section_columns: 1,
-               has_action: true,
-               button_route: "javascript:void(0)",
-               button_name: "Nova Aplicação",
-               button_id: "openApplicationBtn",
-               button_icon: "plus",
-               collection: @portfolio.fund_investments
-                                     .includes(:applications)
-                                     .flat_map(&:applications)
-                                     .select { |app| app.request_date&.year == Date.current.year }
-                                     .sort_by(&:request_date)
-                                     .reverse
-                                     .first(5),
-               color: "success",
-               see_all_path: applications_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
-               title_proc: ->(app) { app.fund_investment.investment_fund.fund_name },
-               value_proc: ->(app) { normalize_currency(app.financial_value) },
-               sub_value_proc: ->(app) {
-                 content_tag(
-                   :span,
-                   "#{strip_tags(normalize_number(app.number_of_quotas))} cotas",
-                   style: "white-space: nowrap;"
-                 )
-               }
-    %>
+    <%# ===================================================== %>
+    <%#                    13a. APPLICATIONS                 %>
+    <%# ===================================================== %>
 
-    <%= render "partials/groups/recent_activity",
-               section_title: "Resgates",
-               section_columns: 1,
-               has_action: true,
-               button_route: "javascript:void(0)",
-               button_name: "Novo Resgate",
-               button_icon: "minus",
-               button_id: "openRedemptionBtn",
-               collection: @portfolio.fund_investments
-                                     .includes(:redemptions)
-                                     .flat_map(&:redemptions)
-                                     .select { |red| red.request_date&.year == Date.current.year }
-                                     .sort_by(&:request_date)
-                                     .reverse
-                                     .first(5),
-               color: "danger",
-               see_all_path: redemptions_path(q: { fund_investment_portfolio_id_eq: @portfolio.id }),
-               title_proc: ->(red) { red.fund_investment.investment_fund.fund_name },
-               value_proc: ->(red) { normalize_currency(red.redeemed_liquid_value) },
-               sub_value_proc: ->(red) {
-                 content_tag(
-                   :span,
-                   "#{strip_tags(normalize_number(red.redeemed_quotas))} cotas",
-                   style: "white-space: nowrap;"
-                 )
-               }
-    %>
+    <%= render(Groups::RecentActivityComponent.new(
+      title: "Aplicações"
+    )) do |component| %>
+
+      <% @data.recent_applications.each do |app| %>
+
+        <%= component.with_item(
+          title: app.fund_investment.investment_fund.fund_name,
+          value: normalize_currency(app.financial_value),
+          sub: "#{strip_tags(normalize_number(app.number_of_quotas))} cotas",
+          date: app.request_date,
+          color: :success
+        ) %>
+
+      <% end %>
+
+    <% end %>
+
+    <%# ===================================================== %>
+    <%#                     13b. REDEMPTIONS                 %>
+    <%# ===================================================== %>
+
+    <%= render(Groups::RecentActivityComponent.new(
+      title: "Resgates"
+    )) do |component| %>
+
+      <% @data.recent_redemptions.each do |red| %>
+
+        <%= component.with_item(
+          title: red.fund_investment.investment_fund.fund_name,
+          value: normalize_currency(red.redeemed_liquid_value),
+          sub: "#{strip_tags(normalize_number(red.redeemed_quotas))} cotas",
+          date: red.request_date,
+          color: :danger
+        ) %>
+
+      <% end %>
+
+    <% end %>
 
   <% end %>
-
-  <%= render "partials/route/dashboard/create_checkingaccount" %>
-  <%= render "partials/route/dashboard/create_application" %>
-  <%= render "partials/route/dashboard/create_redemption" %>
 
 <% end %>
