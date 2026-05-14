@@ -465,9 +465,20 @@
   <%#                12. CHECKING ACCOUNTS TABLE             %>
   <%# ======================================================= %>
 
+  <%= render "partials/route/dashboard/create_checkingaccount" %>
   <%= render(Groups::TableListComponent.new(
       title:      "Contas Correntes",
       collection: @data.checking_accounts,
+      action: {
+        label: "Nova",
+        path: "#",
+        icon: "plus",
+        data: {
+          action: "click",
+          turbo: false
+        },
+        id: "openCheckingAccountBtn"
+      }
     )) do |table| %>
 
     <% table.with_column(label: "Instituição", icon: "building") %>
@@ -511,8 +522,19 @@
     <%#                    13a. APPLICATIONS                 %>
     <%# ===================================================== %>
 
+    <%= render "partials/route/dashboard/create_application" %>
     <%= render(Groups::RecentActivityComponent.new(
-      title: "Aplicações"
+      title: "Aplicações",
+      action: {
+        label: "Nova",
+        path: "#",
+        icon: "plus",
+        data: {
+          action: "click",
+          turbo: false
+        },
+        id: "openApplicationBtn"
+      }
     )) do |component| %>
 
       <% @data.recent_applications.each do |app| %>
@@ -533,8 +555,19 @@
     <%#                     13b. REDEMPTIONS                 %>
     <%# ===================================================== %>
 
+    <%= render "partials/route/dashboard/create_redemption" %>
     <%= render(Groups::RecentActivityComponent.new(
-      title: "Resgates"
+      title: "Resgates",
+      action: {
+        label: "Novo",
+        path: "#",
+        icon: "plus",
+        data: {
+          action: "click",
+          turbo: false
+        },
+        id: "openRedemptionBtn"
+      }
     )) do |component| %>
 
       <% @data.recent_redemptions.each do |red| %>

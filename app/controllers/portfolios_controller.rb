@@ -110,6 +110,8 @@ class PortfoliosController < ApplicationController
       reference_date: Portfolios::ReferenceDateResolver.call(params[:reference_date])
     )
 
+    @new_application = Application.new
+    @new_redemption  = Redemption.new
     @reference_date = @data.reference_date
     @reference_period = @data.reference_period
   end
