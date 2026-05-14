@@ -1,50 +1,53 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/fk_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing presenters responsible for standardized UI rendering.
-#
-# Renders foreign key references as outlined badges.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #               Ui::FkPresenter
-  # =============================================================
+
+  # Renders styled foreign-key and identifier reference values.
   #
-  # Provides consistent rendering of foreign key references,
-  # relation IDs, and cross-table references with badge styling.
-  #
+  # This presenter formats reference values using compact outlined badge
+  # styling and delegates blank-state rendering behavior to
+  # {EmptyStatePresenter}.
   class FkPresenter < BasePresenter
 
-    # =============================================================
-    #                      1. INITIALIZATION
-    # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # @param view_context [ActionView::Base] Rails view context providing helper methods.
+    # Initializes the presenter.
+    #
+    # @param view_context [ActionView::Base] Rails view context instance.
     def initialize(view_context)
       super
+
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # =============================================================
-    #                    2a. RENDER
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Renders a foreign key reference as a small outlined badge.
+    # Renders a styled foreign-key or identifier reference value.
     #
-    # @param value [Object, nil] The reference value (ID, code, or identifier)
-    # @return [ActiveSupport::SafeBuffer] HTML badge span or empty-state fallback
+    # Blank values are delegated to {EmptyStatePresenter}.
     #
-    # @example
-    #   presenter = Ui::FkPresenter.new(view_context)
-    #   presenter.render(42)
-    #   # => <span class="line-clamp-2 badge badge-outline !text-2xs" scope="row">42</span>
-    #
+    # @param value [String, Numeric, #to_s, nil] Reference value rendered in badge format.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def render(value)
       return @empty.render if value.blank?
 
-      h.content_tag(:span, value, class: "line-clamp-2 badge badge-outline !text-2xs", scope: "row")
+      h.content_tag(
+        :span,
+        value,
+        class: "line-clamp-2 badge badge-outline !text-2xs",
+        scope: "row"
+      )
     end
   end
 end

@@ -1,27 +1,19 @@
 <%#
   PARTIAL: app/views/users/_form.html.erb
-  DESCRIPTION: Renders the user form with grouped input sections for email, personal data, and password credentials.
+  DESCRIPTION: Renders user form with fieldsets for email, personal data, and password.
 
   LOCAL VARIABLES:
-  - form_url:    [String] URL where the form will be submitted. (required)
-  - form_method: [Symbol] HTTP method for the form submission (:post, :patch). (required)
-  - @form:       [ActiveModel] Form object providing attributes and validations.
+  - form: [ActionView::Helpers::FormBuilder] Form builder instance.
+  - form_url: [String] Target URL for form submission.
+  - form_method: [Symbol] HTTP method for submission (:post or :patch).
 %>
 
-<%# ========================================================= %>
-<%#                    1. FORM WRAPPER                        %>
-<%# ========================================================= %>
-
 <%= form_with(
-      model:  @form,
-      url:    form_url,
-      method: form_method,
-      class:  "contents"
-    ) do |form| %>
-
-  <%# ======================================================= %>
-  <%#                    2. EMAIL FIELDSET                    %>
-  <%# ======================================================= %>
+  model:  @form,
+  url:    form_url,
+  method: form_method,
+  class:  "contents"
+) do |form| %>
 
   <%= render Forms::FieldsetComponent.new(
     title: "E-mail",
@@ -40,18 +32,10 @@
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                 3. USER DATA FIELDSET                  %>
-  <%# ======================================================= %>
-
   <%= render Forms::FieldsetComponent.new(
     title: "Dados do usuário",
     description: "Utilizamos esses nomes para personalizar sua experiência."
   ) do %>
-
-    <%# ===================================================== %>
-    <%#                   3a. FIRST NAME INPUT               %>
-    <%# ===================================================== %>
 
     <%= render Forms::InputFieldComponent.new(
       f:           form,
@@ -62,10 +46,6 @@
       desc:        "Informe seu primeiro nome",
       icon_name:   "user-round-pen"
     ) %>
-
-    <%# ===================================================== %>
-    <%#                   3b. LAST NAME INPUT                %>
-    <%# ===================================================== %>
 
     <%= render Forms::InputFieldComponent.new(
       f:           form,
@@ -79,18 +59,10 @@
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                  4. PASSWORD FIELDSET                 %>
-  <%# ======================================================= %>
-
   <%= render Forms::FieldsetComponent.new(
     title: "Senha",
     description: "Sua senha deve ser mantida em segredo."
   ) do %>
-
-    <%# ===================================================== %>
-    <%#                    4a. PASSWORD INPUT                %>
-    <%# ===================================================== %>
 
     <%= render Forms::InputFieldComponent.new(
       f:           form,
@@ -101,10 +73,6 @@
       desc:        "Crie uma senha segura com, pelo menos, 6 caracteres",
       icon_name:   "key"
     ) %>
-
-    <%# ===================================================== %>
-    <%#           4b. PASSWORD CONFIRMATION INPUT            %>
-    <%# ===================================================== %>
 
     <%= render Forms::InputFieldComponent.new(
       f:           form,
@@ -117,10 +85,6 @@
     ) %>
 
   <% end %>
-
-  <%# ======================================================= %>
-  <%#                    5. SUBMIT BUTTON                    %>
-  <%# ======================================================= %>
 
   <%= render Forms::SubmitButtonComponent.new(
     builder: form,

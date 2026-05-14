@@ -1,63 +1,83 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/text_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing presenters responsible for standardized UI text rendering.
-#
-# Handles generic text normalization for table UI.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #                 Ui::TextPresenter
-  # =============================================================
+
+  # Renders formatted textual presentation values.
   #
-  # Normalizes and formats textual UI output for table-based layouts.
+  # This presenter provides standardized rendering helpers for:
+  # - titles
+  # - generic text content
   #
+  # Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
   class TextPresenter < BasePresenter
 
-    # =============================================================
-    #                 1. CONSTANTS & CONFIGURATION
-    # =============================================================
+    # ==========================================================================
+    # CONSTANTS
+    # ==========================================================================
 
+    # Shared CSS utility classes applied to textual content rendering.
+    #
+    # @return [String] CSS class list used for text rendering.
     BASE_CLASSES = "line-clamp-2".freeze
 
-    # =============================================================
-    #                      2. INITIALIZATION
-    # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # @param view_context [ActionView::Base] Rails view context providing helper methods.
+    # Initializes the presenter.
+    #
+    # @param view_context [ActionView::Base] Rails view context instance.
     def initialize(view_context)
       super
+
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # =============================================================
-    #                      3a. TITLE RENDERING
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Renders a title-style text element for table rows.
+    # Renders emphasized title-style textual content.
     #
-    # @param value [String, nil] The text to render as a title.
-    # @return [ActiveSupport::SafeBuffer] HTML span element or empty-state fallback.
+    # Blank values are delegated to {EmptyStatePresenter}.
+    #
+    # @param value [String, #to_s, nil] Title content rendered in emphasized style.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def title(value)
       return @empty.render if value.blank?
 
-      h.content_tag(:span, value, class: "#{BASE_CLASSES} font-medium", scope: "row")
+      h.content_tag(
+        :span,
+        value,
+        class: "#{BASE_CLASSES} font-medium",
+        scope: "row"
+      )
     end
 
-    # =============================================================
-    #                      3b. TEXT RENDERING
-    # =============================================================
-
-    # Renders a truncated text element for table rows.
+    # Renders truncated textual content.
     #
-    # @param value [String, nil] The text to render.
-    # @return [ActiveSupport::SafeBuffer] HTML span element with truncated content or empty-state fallback.
+    # Content exceeding 60 characters is truncated automatically.
+    #
+    # Blank values are delegated to {EmptyStatePresenter}.
+    #
+    # @param value [String, #to_s, nil] Text content rendered in standard style.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def text(value)
       return @empty.render if value.blank?
 
-      h.content_tag(:span, h.truncate(value, length: 60), class: BASE_CLASSES, scope: "row")
+      h.content_tag(
+        :span,
+        h.truncate(value, length: 60),
+        class: BASE_CLASSES,
+        scope: "row"
+      )
     end
   end
 end

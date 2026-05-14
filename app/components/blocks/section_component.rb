@@ -1,26 +1,20 @@
-# Provides a reusable layout container for dashboard sections with
-# configurable grid columns, optional title, description, and actions.
+# frozen_string_literal: true
+
+# Component responsible for rendering a structured content section with
+# configurable grid layout, optional header metadata, and separator styling.
 #
-# This component standardizes section layout composition across the
-# application, ensuring consistent spacing, responsiveness, and structure
-# for grouped UI blocks such as cards, tables, and activity panels.
-#
-# TABLE OF CONTENTS:
-#   1.  Configuration
-#   2.  Initialization
-#   3.  Public Interface
-#       3a. Grid Classes
-#       3b. Separator Classes
-#       3c. Presence Helpers
-#       3d. DOM Utilities
+# This component is used as a layout primitive for grouping UI blocks
+# consistently across dashboards and feature pages.
 #
 # @author Moisés Reis
+
 class Blocks::SectionComponent < ApplicationComponent
 
-  # =============================================================
-  #                        1. CONFIGURATION
-  # =============================================================
+  # ==========================================================================
+  # CONSTANTS
+  # ==========================================================================
 
+  # Responsive grid mappings based on the number of columns requested.
   GRID_CLASSES = {
     1 => "grid-cols-1",
     2 => "grid-cols-1 md:grid-cols-2",
@@ -30,25 +24,21 @@ class Blocks::SectionComponent < ApplicationComponent
     6 => "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4"
   }.freeze
 
+  # Default grid behavior if columns input is out of mapped bounds.
   FALLBACK_GRID_CLASS = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
 
-  # Accepted separator orientations.
+  # Permitted separator types for layout division.
   VALID_SEPARATORS = %i[vertical horizontal both].freeze
 
-  # =============================================================
-  #                        2. INITIALIZATION
-  # =============================================================
+  # ==========================================================================
+  # INITIALIZATION
+  # ==========================================================================
 
-  # Initializes a SectionComponent.
-  #
-  # @param title [String, nil] Section title displayed in header.
-  # @param description [String, nil] Optional section description text.
-  # @param columns [Integer] Number of grid columns (default: 2).
-  # @param action [Hash, nil] Optional action configuration for header button.
-  # @param separator [Symbol, nil] Optional inter-item separator.
-  #   Accepts :vertical (between columns), :horizontal (between rows),
-  #   :both, or nil (no separator). Default: nil.
-  # @return [void]
+  # @param title [String, nil] Section heading text.
+  # @param description [String, nil] Explanatory text rendered below the title.
+  # @param columns [Integer] Target column count for the grid (1-6).
+  # @param action [Hash, nil] Optional link (e.g., { label: "View All", path: "/..." }).
+  # @param separator [Symbol, nil] Type of visual division between grid items.
   def initialize(title: nil, description: nil, columns: 2, action: nil, separator: nil)
     @title       = title
     @description = description
@@ -57,52 +47,28 @@ class Blocks::SectionComponent < ApplicationComponent
     @separator   = separator.in?(VALID_SEPARATORS) ? separator : nil
   end
 
-  # =============================================================
-  #                      3. PUBLIC INTERFACE
-  # =============================================================
+  # ==========================================================================
+  # GRID CONFIGURATION
+  # ==========================================================================
 
-  # =============================================================
-  #                      3a. GRID CLASSES
-  # =============================================================
-
-  # Returns the CSS grid class string based on column configuration.
-  #
-  # @return [String] Tailwind grid class definition.
+  # Returns Tailwind classes for the grid structure.
+  # @return [String]
   def grid_classes
     GRID_CLASSES.fetch(@columns, FALLBACK_GRID_CLASS)
   end
 
-  # Returns gap classes with the divided axis collapsed to zero.
-  #
-  # When a separator is active on an axis, its gap is removed so the divide
-  # border lands exactly at the content boundary. Spacing on that axis is
-  # then owned entirely by the padding injected onto children via [&>*].
-  #
+  # Adjusts spacing based on whether separators are present.
   # @return [String]
   def gap_classes
     case @separator
-    when :vertical   then "gap-y-6"   # column gap removed — divider owns that axis
-    when :horizontal then "gap-x-6"   # row gap removed    — divider owns that axis
-    when :both       then ""          # both gaps removed
+    when :vertical   then "gap-y-6"
+    when :horizontal then "gap-x-6"
+    when :both       then ""
     else                  "gap-6"
     end
   end
 
-  # =============================================================
-  #                      3b. SEPARATOR CLASSES
-  # =============================================================
-
-  # Returns Tailwind divide + child-padding classes for the configured
-  # separator orientation.
-  #
-  # divide-x / divide-y draw the line at the element boundary.
-  # [&>*]:px-4 / [&>*]:py-4 inject symmetric padding on every direct grid
-  # child without touching the child components themselves, ensuring the
-  # line has balanced breathing room on both sides.
-  #
-  # Returns an empty string when no separator is configured, leaving
-  # existing renders completely unaffected.
-  #
+  # Returns Tailwind 'divide' classes for internal borders.
   # @return [String]
   def separator_classes
     case @separator
@@ -113,39 +79,28 @@ class Blocks::SectionComponent < ApplicationComponent
     end
   end
 
-  # =============================================================
-  #                      3c. PRESENCE HELPERS
-  # =============================================================
+  # ==========================================================================
+  # QUERY METHODS
+  # ==========================================================================
 
-  # Indicates whether a title is present.
-  #
   # @return [Boolean]
   def title?
     @title.present?
   end
 
-  # Indicates whether a description is present.
-  #
   # @return [Boolean]
   def description?
     @description.present?
   end
 
-  # Indicates whether an action is present.
-  #
   # @return [Boolean]
   def action?
     @action.present?
   end
 
-  # =============================================================
-  #                      3d. DOM UTILITIES
-  # =============================================================
-
-  # Generates a DOM-safe identifier for the description element.
-  #
-  # @return [String] Parameterized DOM id derived from title.
+  # Generates a slug-based ID for accessibility relations.
+  # @return [String]
   def description_dom_id
-    "#{@title.parameterize}-desc"
+    "#{@title.parameterize}-desc" if title?
   end
 end

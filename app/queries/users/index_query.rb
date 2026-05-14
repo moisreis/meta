@@ -1,96 +1,79 @@
-# frozen_string_literal: true
-
-# app/queries/users/index_query.rb
+# Provides user index querying and pagination behavior.
 #
-# Encapsulates the filtering, searching, eager loading,
-# and pagination logic used by UsersController#index.
-#
-# Administrators can search and paginate all users,
-# while non-admin users receive an empty relation.
-#
-# @example
-#   result = Users::IndexQuery.call(
-#     params[:q],
-#     page: params[:page],
-#     actor: current_user
-#   )
-#
-#   @q     = result.search
-#   @users = result.records
+# This query object encapsulates search filtering, eager loading,
+# authorization scoping, and pagination logic for user index listings.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Executes searchable and paginated user index queries.
+  #
+  # This class isolates query composition and authorization-aware scope
+  # selection from controllers to improve maintainability and testability.
   class IndexQuery
 
-    # ===========================================================
-    #                        1. CONSTANTS
-    # ===========================================================
+    # ==========================================================================
+    # CONSTANTS
+    # ==========================================================================
 
-    # Default number of records displayed per page.
-    PER_PAGE = 14
+    # Number of records displayed per paginated page.
+    #
+    # @return [Integer] Pagination size for index results.
+    PER_PAGE = AppConstants::INDEX_PER_PAGE
 
-    # ===========================================================
-    #                     2. RESULT STRUCTURE
-    # ===========================================================
-
-    # Standardized query response object.
+    # Immutable query result object returned by {.call}.
     #
     # @!attribute [r] search
-    #   @return [Ransack::Search]
+    #   @return [Ransack::Search] Configured Ransack search object.
     #
     # @!attribute [r] records
-    #   @return [ActiveRecord::Relation<User>]
+    #   @return [ActiveRecord::Relation<User>] Paginated user records.
     Result = Struct.new(
       :search,
       :records,
       keyword_init: true
     )
 
-    # ===========================================================
-    #                         3. ENTRYPOINT
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # Executes the query workflow.
-    #
-    # @param q_params [ActionController::Parameters, Hash, nil]
-    #   Ransack search parameters.
-    #
-    # @param page [Integer, String, nil]
-    #   Current pagination page.
-    #
-    # @param actor [User]
-    #   The authenticated user performing the query.
-    #
-    # @return [Result]
-    def self.call(q_params, page:, actor:)
-      new(q_params, page: page, actor: actor).call
+    class << self
+
+      # Executes the query object.
+      #
+      # @param q_params [Hash] Ransack query parameters.
+      # @param page [Integer, String] Current pagination page number.
+      # @param actor [User] User executing the query.
+      # @return [Result] Structured query result containing search and records.
+      def call(q_params, page:, actor:)
+        new(q_params, page: page, actor: actor).call
+      end
     end
 
-    # ===========================================================
-    #                      4. INITIALIZATION
-    # ===========================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # Initializes query state.
+    # Initializes the query object.
     #
-    # @param q_params [ActionController::Parameters, Hash, nil]
-    # @param page [Integer, String, nil]
-    # @param actor [User]
-    #
-    # @return [void]
+    # @param q_params [Hash] Ransack query parameters.
+    # @param page [Integer, String] Current pagination page number.
+    # @param actor [User] User executing the query.
     def initialize(q_params, page:, actor:)
       @q_params = q_params
       @page     = page
       @actor    = actor
     end
 
-    # ===========================================================
-    #                       5. QUERY WORKFLOW
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Applies authorization scoping, filtering,
-    # eager loading, and pagination.
+    # Executes the search and pagination workflow.
     #
-    # @return [Result]
+    # @return [Result] Structured query result containing search and records.
     def call
       search = base_scope.ransack(@q_params)
 
@@ -108,16 +91,16 @@ module Users
 
     private
 
-    # ===========================================================
-    #                         6. BASE SCOPE
-    # ===========================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
-    # Defines the base relation available to the actor.
+    # Returns the base scope available to the current actor.
     #
-    # Administrators can access all users.
-    # Non-admin users receive an empty relation.
+    # Administrators may access all users, while non-admin users
+    # receive an empty relation.
     #
-    # @return [ActiveRecord::Relation<User>]
+    # @return [ActiveRecord::Relation<User>] Authorization-scoped base relation.
     def base_scope
       @actor.admin? ? User.all : User.none
     end

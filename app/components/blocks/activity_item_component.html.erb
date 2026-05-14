@@ -1,3 +1,16 @@
+<%#
+  PARTIAL: app/components/blocks/activity_item_component.html.erb
+  DESCRIPTION: Renders a single activity item with icon, title, date, value, and subtext, using color-coded styling.
+
+  LOCAL VARIABLES:
+  - @title:  [String] Primary label of the activity item.
+  - @value:  [String, Numeric] Main metric or value displayed.
+  - @sub:    [String] Secondary description or unit.
+  - @date:   [Date, Time, nil] Timestamp for the activity item.
+  - @color:  [Symbol] Color variant used for styling and icon context.
+%>
+
+<!-- Blocks::ActivityItem -->
 <div class="grid grid-cols-2 items-center gap-4 px-4 py-3.5 bg-white border border-border rounded-base">
 
   <div class="flex items-center gap-3 min-w-0">

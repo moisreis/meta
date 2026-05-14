@@ -1,3 +1,12 @@
+<%#
+  VIEW: edit.html.erb
+  ACTION: RedemptionsController#edit
+  DESCRIPTION: Form to edit an existing Redemption record.
+               Renders the shared _form partial with update button.
+  INSTANCE VARIABLES:
+    - @redemption: [Redemption] The record being edited.
+%>
+
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Editar Resgate ##{@redemption.id}",
            page_desc: "Atualize as informações do resgate conforme necessário." do

@@ -1,43 +1,48 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/state_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Provides helper methods responsible for transforming boolean
-# values into normalized UI presentation states.
-#
-# This presenter centralizes label and status formatting logic
-# used by visual components, badges, and state indicators.
-#
-# @example Boolean labels
-#   presenter.boolean_label(true)
-#   # => "Sim"
-#
-#   presenter.boolean_label(false)
-#   # => "Não"
-#
-# @example Boolean status mapping
-#   presenter.boolean_status(
-#     true,
-#     positive: :success,
-#     negative: :danger
-#   )
-#   # => :success
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
-module Ui
-  class StatePresenter < BasePresenter
-    # ===========================================================
-    #                    1. BOOLEAN LABELS
-    # ===========================================================
 
-    # Converts a boolean value into a human-readable label.
+module Ui
+
+  # Renders boolean and state-based presentation values.
+  #
+  # This presenter provides helper methods for:
+  # - localized boolean labels
+  # - visual state classification
+  #
+  # Unlike markup-oriented presenters, this object primarily returns
+  # primitive presentation values and symbolic state identifiers.
+  class StatePresenter < BasePresenter
+
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
+
+    # Resolves a human-readable boolean label.
     #
-    # Supports custom label mappings and fallback values.
+    # Default labels:
+    # - true  => "Sim"
+    # - false => "Não"
     #
-    # @param value [Boolean, nil]
-    # @param labels [Hash]
-    # @param zero_label [String]
-    # @return [String]
+    # Supported label aliases:
+    # - :true
+    # - :false
+    # - :positive
+    # - :negative
+    #
+    # @param value [Boolean, nil] Boolean value evaluated for labeling.
+    # @param labels [Hash] Optional custom label mapping.
+    # @option labels [String] :true Custom label used for true values.
+    # @option labels [String] :false Custom label used for false values.
+    # @option labels [String] :positive Alias label used for true values.
+    # @option labels [String] :negative Alias label used for false values.
+    # @param zero_label [String] Fallback label used for nil or unknown values.
+    # @return [String] Resolved boolean label.
     def boolean_label(value, labels: {}, zero_label: "-")
       return zero_label if value.nil?
 
@@ -51,20 +56,13 @@ module Ui
       end
     end
 
-    # ===========================================================
-    #                    2. BOOLEAN STATUS
-    # ===========================================================
-
-    # Converts a boolean value into a symbolic UI status.
+    # Resolves a symbolic visual status based on a boolean value.
     #
-    # Useful for determining component variants such as
-    # success, danger, warning, or neutral states.
-    #
-    # @param value [Boolean, nil]
-    # @param positive [Symbol]
-    # @param negative [Symbol]
-    # @param default [Symbol]
-    # @return [Symbol]
+    # @param value [Boolean, nil] Boolean value evaluated for status resolution.
+    # @param positive [Symbol] Status returned for true values.
+    # @param negative [Symbol] Status returned for false values.
+    # @param default [Symbol] Status returned for nil values.
+    # @return [Symbol] Resolved visual state identifier.
     def boolean_status(value, positive:, negative:, default: :default)
       return default if value.nil?
 

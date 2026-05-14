@@ -1,6 +1,23 @@
+# Configures Active Storage services for local and test environments.
+#
+# Defines filesystem-backed storage adapters used during development and
+# automated testing. Both services use the local disk through the Disk service
+# adapter, but isolate storage paths to prevent test artifacts from affecting
+# development uploads.
+#
+# @author Moisés Reis
+
+# ============================================================================
+# TEST STORAGE
+# ============================================================================
+
 test:
   service: Disk
   root: <%= Rails.root.join("tmp/storage") %>
+
+# ============================================================================
+# LOCAL DEVELOPMENT STORAGE
+# ============================================================================
 
 local:
   service: Disk

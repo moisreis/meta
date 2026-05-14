@@ -1,37 +1,43 @@
 <%#
-  # Partial: edit.html.erb
-  # Date: 11/20/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Renders the page for updating an existing Portfolio record. It displays the
-  #              edit form and incorporates a separate, irreversible action section for
-  #              deleting the entire portfolio and its associated data.
-  #
-  # Usage:: - What: Renders the full view dedicated to editing an existing Portfolio.
-  #                It provides the necessary form for updating attributes and a distinct
-  #                "Danger Zone" section for permanently deleting the resource.
-  #         - How: Renders the **_wrapper** for layout and uses the **_form** partial for input.
-  #         - Why: Provides the interface necessary to execute the 'Update' and 'Delete'
-  #                functions (U and D in CRUD) for the Portfolio resource.
-  %>
+  VIEW: app/views/portfolios/edit.html.erb
+  ACTION: PortfoliosController#edit
 
-<%# Explanation:: This layout wrapper organizes the entire page content into a clean
-  #               dashboard structure to ensure consistency; it is used as the main
-  #               container and works by setting the page title to the portfolio name.
-  %>
-<%= render 'partials/route/dashboard/wrapper',
-           page_title: "Editar #{@portfolio.name}",
-           page_desc: "Atualize as informações da carteira conforme necessário." do
+  DESCRIPTION:
+  Renders the portfolio update page, including the dashboard layout
+  wrapper and the shared portfolio form partial configured for
+  record updates.
+
+  INSTANCE VARIABLES:
+  - @portfolio: [Portfolio] The portfolio record being edited.
+  - @form: [ActiveModel] Form object responsible for update
+           attributes and validations.
+  - @normative_articles: [Enumerable] Collection used to populate
+                         normative article selection inputs.
 %>
 
-  <%# Explanation:: This helper renders the central input structure to modify
-    #               existing portfolio details; it is used to save changes and
-    #               works by passing the current record and a refresh icon button.
-    %>
-  <%= render "form",
-             portfolio: @form,
-             button_name: "Atualizar",
-             icon_name: "refresh-cw"
-  %>
+<%# ========================================================= %>
+<%#                    1. DASHBOARD WRAPPER                  %>
+<%# ========================================================= %>
+
+<%= render(
+      Layout::DashboardWrapperComponent.new(
+        page_title: "Editar #{@portfolio.name}",
+        page_desc: "Atualize as informações da carteira conforme necessário."
+      )
+    ) do %>
+
+  <%# ======================================================= %>
+  <%#                 2. PORTFOLIO FORM PARTIAL              %>
+  <%# ======================================================= %>
+
+  <%= render(
+        "form",
+        portfolio: @form,
+        form_url: user_path(@portfolio),
+        form_method: :patch,
+        button_name: "Atualizar carteira",
+        icon_name: "save",
+        normative_articles: @normative_articles
+      ) %>
+
 <% end %>

@@ -6,24 +6,18 @@
 # RuboCop configuration file into the CLI arguments, and delegates execution
 # to the RuboCop binary.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Dependency Boot
-# 2. CLI Configuration Injection
-# 3. Execution
-#
 # @author Moisés Reis
 
-# =============================================================
-#                     1. DEPENDENCY BOOT
-# =============================================================
+# ============================================================================
+# DEPENDENCY BOOT
+# ============================================================================
 
 require "rubygems"
 require "bundler/setup"
 
-# =============================================================
-#             2. CLI CONFIGURATION INJECTION
-# =============================================================
+# ============================================================================
+# CLI CONFIGURATION INJECTION
+# ============================================================================
 
 # Explicitly force project RuboCop configuration for consistency and performance.
 #
@@ -35,9 +29,9 @@ ARGV.unshift(
   File.expand_path("../.rubocop.yml", __dir__)
 )
 
-# =============================================================
-#                        3. EXECUTION
-# =============================================================
+# ============================================================================
+# EXECUTION
+# ============================================================================
 
 # Load and execute RuboCop CLI.
 load Gem.bin_path("rubocop", "rubocop")

@@ -1,18 +1,12 @@
 <%#
-  # Partial: new.html
-  # Date: 11/25/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Presents the form that allows an existing user to log in and establish an active session.
-  #              The view collects the user's email and password credentials for authentication.
-  #
-  # Usage: - What: Renders the interface for existing users to enter their credentials and access the application dashboard.
-  #                It handles the core process of session creation for authenticated access.
-  #        - How: Accessed via the Devise login route (GET /users/sign_in).
-  #               Submits the credentials using a POST request to the session path.
-  #        - Why: Provides the essential security gateway for authenticated users to reach their account and investment data.
-  %>
+  VIEW: new.html.erb
+  ACTION: Devise::SessionsController#new
+  DESCRIPTION: Login form for existing users.
+               Collects email and password to establish an authenticated session.
+  INSTANCE VARIABLES:
+    - resource: [User] The Devise resource instance.
+    - resource_name: [Symbol] The resource name (:user).
+%>
 <%= render 'partials/route/auth/wrapper' do %>
   <%= render 'partials/route/auth/container',
              welcome_message: "Bem-vindo de volta",

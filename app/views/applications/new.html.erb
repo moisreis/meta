@@ -1,33 +1,16 @@
 <%#
-  # Partial: new.html.erb
-  # Date: 11/24/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: This view provides the user interface for adding a new
-  #              application record into the system database.
-  #
-  # Usage: - What: It serves as the primary page for the application
-  #                creation process within the dashboard.
-  #        - How: It wraps a standardized form inside a dashboard layout
-  #               to maintain a consistent look and feel.
-  #        - Why: It separates the creation logic into its own space
-  #               to ensure users can focus on entering new data safely.
-  %>
-
-<%# Explanation:: This block renders the main dashboard wrapper to
-  #               ensure the page has the correct title, description,
-  #               and a consistent layout for the user.
-  %>
+  VIEW: new.html.erb
+  ACTION: ApplicationsController#new
+  DESCRIPTION: Renders the page for creating a new Application record.
+               Provides the form interface inside the dashboard wrapper.
+  INSTANCE VARIABLES:
+    - @application: [Application] A new (unsaved) Application instance.
+%>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Criar Aplicação",
            page_desc: "Preencha os campos abaixo para registrar uma nova aplicação no sistema." do
 %>
 
-  <%# Explanation:: This line includes the internal transaction form
-    #               into the page, passing the necessary data and
-    #               button settings to allow record creation.
-    %>
   <%= render "form",
              application: @application,
              button_name: "Adicionar",

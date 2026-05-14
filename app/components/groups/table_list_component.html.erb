@@ -1,7 +1,19 @@
+<%#
+  PARTIAL: app/components/groups/table_list_component.html.erb
+  DESCRIPTION: Renders a structured table list with dynamic columns, rows, and footer summary.
+
+  LOCAL VARIABLES:
+  - @title:       [String, nil] Section title.
+  - @description: [String, nil] Optional section description.
+  - @action:      [Object, nil] Optional section action element.
+  - @collection:  [Array] Source collection used for empty-state and counts.
+%>
+
+<!-- Groups::TableList -->
 <%= render(Blocks::SectionComponent.new(title: @title, description: @description, columns: 1, action: @action)) do %>
 
   <% if empty? %>
-    <%= content_tag :p, "Nenhum dado disponível.", class: "font-mono text-muted uppercase text-3xs tracking-widest" %>
+    <%= content_tag :p, "#{AppConstants::NO_AVAILABLE_DATA_MESSAGE}", class: "font-mono text-muted uppercase text-3xs tracking-widest" %>
   <% else %>
 
     <div class="p-3 rounded-base border border-border bg-white overflow-x-auto">

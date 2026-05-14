@@ -1,41 +1,45 @@
-# Builds standardized configuration for grouped column charts.
+# frozen_string_literal: true
+
+# Builds configuration options for grouped column chart rendering.
 #
-# This builder encapsulates chart formatting rules for grouped datasets,
-# enforcing consistent numeric formatting and color palettes across charts.
-#
-# TABLE OF CONTENTS:
-#   1. Public Methods
+# This service provides a standardized chart configuration for grouped
+# (non-stacked) column visualizations, typically used for comparative
+# financial datasets.
 #
 # @author Moisés Reis
+
 module Charts
+
+  # Constructs grouped column chart configuration options.
   class GroupedColumnChartOptionsBuilder
-    class << self
 
-      # =============================================================
-      #                      1. PUBLIC METHODS
-      # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-      # Builds the configuration hash for grouped column chart rendering.
-      #
-      # @param data [Array<Hash>] Dataset used for grouped visualization.
-      #
-      # @return [Hash] Chart configuration options.
-      def call(data)
-        {
-          data:      data,
-          stacked:   false,
-          prefix:    "R$ ",
-          thousands: ".",
-          decimal:   ",",
-          colors:    [
-            ChartPalettes.rgba(:green, 0.85),
-            ChartPalettes.rgba(:red, 0.85)
-          ],
-          dataset:   {
-            borderWidth: 0
-          }
-        }
-      end
+    # Builds a grouped column chart configuration.
+    #
+    # The configuration is intended for multi-series column charts where
+    # datasets are displayed side-by-side rather than stacked.
+    #
+    # @param data [Array] Chart data structure compatible with the target
+    #   charting library.
+    #
+    # @return [Hash] Chart configuration object including formatting,
+    #   color palette, and dataset options.
+    def self.call(data)
+      {
+        data:      data,
+        stacked:   false,
+        prefix:    "R$ ",
+        thousands: ".",
+        decimal:   ",",
+        colors: [
+          ChartPalettes.rgba(:green, 0.85),
+          ChartPalettes.rgba(:red, 0.85)
+        ],
+        dataset: { borderWidth: 0 }
+      }
     end
   end
 end

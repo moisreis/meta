@@ -1,42 +1,34 @@
-# app/forms/portfolio_form.rb
+# Handles validation, normalization, and transformation of portfolio input data
+# before persistence.
 #
-# Form object responsible for validating and normalizing
-# portfolio creation/update input before persistence.
-#
-# Encapsulates:
+# This form object encapsulates:
 # - attribute coercion
 # - validation rules
 # - nested normative allocation handling
-# - safe persistence payload generation
+# - persistence-safe attribute generation
 #
-# This object intentionally avoids direct persistence.
-# Persistence should remain delegated to service objects.
+# Persistence is explicitly excluded and delegated to service objects.
 #
 # @author Moisés Reis
+
 class PortfolioForm
   include ActiveModel::Model
   include ActiveModel::Attributes
 
-  # =============================================================
-  #                           MODEL NAME
-  # =============================================================
+  # ============================================================================
+  # MODEL NAME
+  # ============================================================================
 
-  # Makes Rails form builders treat this object as "Portfolio"
-  # instead of "PortfolioForm".
-  #
-  # Ensures compatibility with:
-  # - form_with
-  # - strong params
-  # - routing helpers
+  # Forces Rails form builders to treat this object as "Portfolio".
   #
   # @return [ActiveModel::Name]
   def self.model_name
     ActiveModel::Name.new(self, nil, "Portfolio")
   end
 
-  # =============================================================
-  #                           ATTRIBUTES
-  # =============================================================
+  # ============================================================================
+  # ATTRIBUTES
+  # ============================================================================
 
   attribute :name, :string
   attribute :user_id, :integer
@@ -44,14 +36,13 @@ class PortfolioForm
   attribute :shared_user_id, :integer
   attribute :grant_crud_permission, :string, default: "read"
 
-  # =============================================================
-  #                    NESTED FORM COLLECTIONS
-  # =============================================================
+  # ============================================================================
+  # NESTED FORM COLLECTIONS
+  # ============================================================================
 
   attr_accessor :portfolio_normative_articles_attributes
 
-  # Reader required by form.fields_for. Wraps raw attribute
-  # hashes into compatible objects.
+  # Reader required by form builders for nested attributes.
   #
   # @return [Array<NormativeArticleEntry>]
   def portfolio_normative_articles
@@ -66,32 +57,45 @@ class PortfolioForm
     end
   end
 
-  # Wraps a single normative article row for form builder compatibility.
+  # ============================================================================
+  # NESTED ENTRY OBJECT
+  # ============================================================================
+
+  # Represents a single normative allocation row in the form.
   class NormativeArticleEntry
     include ActiveModel::Model
-    attr_accessor :id, :normative_article_id, :benchmark_target,
-                  :minimum_target, :maximum_target, :_destroy
 
+    attr_accessor :id,
+                  :normative_article_id,
+                  :benchmark_target,
+                  :minimum_target,
+                  :maximum_target,
+                  :_destroy
+
+    # @return [Boolean]
     def persisted?
       id.present?
     end
 
+    # @return [Array(Integer), nil]
     def to_key
       persisted? ? [id] : nil
     end
 
+    # @return [NormativeArticleEntry]
     def to_model
       self
     end
 
+    # @return [Boolean]
     def marked_for_destruction?
       _destroy.present? && _destroy != "0" && _destroy != false
     end
   end
 
-  # =============================================================
-  #                          VALIDATIONS
-  # =============================================================
+  # ============================================================================
+  # VALIDATIONS
+  # ============================================================================
 
   validates :name,
             presence: true,
@@ -113,23 +117,21 @@ class PortfolioForm
 
   validate :validate_normative_allocations
 
-  # =============================================================
-  #                        INITIALIZATION
-  # =============================================================
+  # ============================================================================
+  # INITIALIZATION
+  # ============================================================================
 
   # @param attributes [Hash]
   def initialize(attributes = {})
     super
-
     self.portfolio_normative_articles_attributes ||= []
   end
 
-  # =============================================================
-  #                         SERIALIZATION
-  # =============================================================
+  # ============================================================================
+  # SERIALIZATION
+  # ============================================================================
 
-  # Returns persistence-safe attributes intended for the
-  # Portfolio ActiveRecord model.
+  # Returns persistence-safe attributes for the Portfolio model.
   #
   # @return [Hash]
   def to_model_attributes
@@ -137,16 +139,15 @@ class PortfolioForm
       name: name,
       user_id: user_id,
       annual_interest_rate: annual_interest_rate,
-      portfolio_normative_articles_attributes:
-        normalized_normative_attributes
+      portfolio_normative_articles_attributes: normalized_normative_attributes
     }
   end
 
-  # =============================================================
-  #                          FACTORIES
-  # =============================================================
+  # ============================================================================
+  # FACTORIES
+  # ============================================================================
 
-  # Hydrates a form object from an existing portfolio.
+  # Builds a form object from an existing Portfolio record.
   #
   # @param portfolio [Portfolio]
   # @return [PortfolioForm]
@@ -170,9 +171,9 @@ class PortfolioForm
 
   private
 
-  # =============================================================
-  #                    NORMATIVE NORMALIZATION
-  # =============================================================
+  # ============================================================================
+  # NORMATIVE NORMALIZATION
+  # ============================================================================
 
   # Removes fully blank nested rows.
   #
@@ -187,20 +188,15 @@ class PortfolioForm
     rows
       .map(&:to_h)
       .reject do |row|
-        row.except(
-          :id,
-          :_destroy,
-          "id",
-          "_destroy"
-        ).values.all?(&:blank?)
+        row.except(:id, :_destroy, "id", "_destroy").values.all?(&:blank?)
       end
   end
 
-  # =============================================================
-  #                     BUSINESS VALIDATIONS
-  # =============================================================
+  # ============================================================================
+  # BUSINESS VALIDATIONS
+  # ============================================================================
 
-  # Ensures normative allocation consistency.
+  # Ensures normative allocation consistency rules.
   #
   # @return [void]
   def validate_normative_allocations
@@ -210,34 +206,27 @@ class PortfolioForm
       maximum = decimal_value(row[:maximum_target] || row["maximum_target"])
 
       if minimum && maximum && minimum > maximum
-        errors.add(
-          :base,
-          "Linha #{index + 1}: mínimo não pode ser maior que o máximo"
-        )
+        errors.add(:base, "Linha #{index + 1}: mínimo não pode ser maior que o máximo")
       end
 
       next unless benchmark
 
       if minimum && benchmark < minimum
-        errors.add(
-          :base,
-          "Linha #{index + 1}: benchmark abaixo do mínimo"
-        )
+        errors.add(:base, "Linha #{index + 1}: benchmark abaixo do mínimo")
       end
 
       if maximum && benchmark > maximum
-        errors.add(
-          :base,
-          "Linha #{index + 1}: benchmark acima do máximo"
-        )
+        errors.add(:base, "Linha #{index + 1}: benchmark acima do máximo")
       end
     end
   end
 
-  # =============================================================
-  #                        TYPE COERCION
-  # =============================================================
+  # ============================================================================
+  # TYPE COERCION
+  # ============================================================================
 
+  # Converts input value into BigDecimal.
+  #
   # @param value [Object]
   # @return [BigDecimal, nil]
   def decimal_value(value)

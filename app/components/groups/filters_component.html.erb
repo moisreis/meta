@@ -1,8 +1,15 @@
-<%# frozen_string_literal: true %>
+<%#
+  PARTIAL: app/components/groups/filters_component.html.erb
+  DESCRIPTION: Renders a sidebar filter panel with dynamic field types and form submission controls.
 
-<%# =========================================================
-  #                  FILTER SIDEBAR
-  # ========================================================= %>
+  LOCAL VARIABLES:
+  - @q_object:       [Object] Ransack query object used for form binding.
+  - @search_url:     [String] URL used for applying and clearing filters.
+  - @turbo_frame_id: [String] Turbo frame target for asynchronous updates.
+  - @filters:        [Array<Hash>] Filter definitions (key, label, type, metadata).
+%>
+
+<!-- Groups::Filters -->
 <div id="sidebarFilters"
      class="fixed top-0 h-screen top-1/2 right-0 -translate-y-1/2 w-[50%] bg-background border-l border-border z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
 
@@ -12,9 +19,6 @@
                       html:   { id: "filter_form", class: "flex flex-col h-full" },
                       data:   { turbo_frame: @turbo_frame_id } do |f| %>
 
-    <%# -------------------------------------------------------
-      #                      HEADER
-      # ------------------------------------------------------- %>
     <div class="h-20 flex flex-row justify-between items-center px-16 !bg-white border-b border-border">
       <h3 class="font-heading capitalize font-medium text-3xl line-clamp-2">Filtros</h3>
 
@@ -25,9 +29,6 @@
       <% end %>
     </div>
 
-    <%# -------------------------------------------------------
-      #                   FILTER FIELDS
-      # ------------------------------------------------------- %>
     <div class="flex-grow px-16 space-y-8 overflow-y-auto">
       <% @filters.each do |filter| %>
         <% if date_filter?(filter) %>
@@ -40,22 +41,19 @@
               } %>
         <% else %>
           <%= render Forms::InputFieldComponent.new(
-                f:            f,
-                name:         filter[:key],
-                label:        filter[:label],
-                desc:         filter[:description],
-                placeholder:  filter[:placeholder],
-                field_type:   :text_field,
-                icon_name:    filter[:icon_name],
-                cnpj_mask:    filter[:cnpj_mask]    || false,
+                f:             f,
+                name:          filter[:key],
+                label:         filter[:label],
+                desc:          filter[:description],
+                placeholder:   filter[:placeholder],
+                field_type:    :text_field,
+                icon_name:     filter[:icon_name],
+                cnpj_mask:     filter[:cnpj_mask] || false,
                 currency_mask: filter[:currency_mask] || false
               ) %>
         <% end %>
       <% end %>
 
-      <%# -------------------------------------------------------
-        #                   ACTIONS
-        # ------------------------------------------------------- %>
       <div class="flex flex-row gap-1.5">
         <%= button_tag type:  :submit,
                        class: "button button-small button-accent",
@@ -76,8 +74,5 @@
   <% end %>
 </div>
 
-<%# =========================================================
-  #                   BACKDROP OVERLAY
-  # ========================================================= %>
 <div id="filterOverlay"
      class="h-screen w-screen bg-body/10 backdrop-blur-sm z-40 hidden fixed top-0 right-0"></div>

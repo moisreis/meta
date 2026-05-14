@@ -76,104 +76,13 @@ class Portfolio < ApplicationRecord
     fund_investments.sum(:total_invested_value) || BigDecimal("0")
   end
 
-  # == total_earnings_on
+  # Returns cached calculation progress for the given month.
   #
-  # @author Moisés Reis
-  #
-  # Aggregates the total financial earnings recorded for all funds in the portfolio.
-  # This method retrieves the sum of earnings from performance history records for a specific period.
-  #
-  # Parameters::
-  # - *date* - The reference date used to identify the specific performance period.
-  #
-  # Returns::
-  # - The total sum of earnings as a BigDecimal.
-
-  def total_earnings_on(date)
-    target_period = date.to_date.end_of_month
-
-    performance_histories.where(period: target_period).sum(:earnings)
-  end
-
-  # == compounded_yearly_return_on
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the compounded year-to-date return by chaining the monthly
-  # returns geometrically. Delegates to portfolio_return_percentage for each
-  # month to guarantee consistency between the monthly card and the YTD card.
-  #
-  # Parameters:: - *date* - The reference date defining the year and the final month.
-  #
-  # Returns:: - The compounded return as a percentage (e.g., 2.42) or 0.0 if no data exists.
-  def compounded_yearly_return_on(date)
-    periods = performance_histories
-                .where(period: date.beginning_of_year..date.end_of_month)
-                .pluck(:period)
-                .uniq
-                .sort
-
-    return 0.0 if periods.empty?
-
-    total_factor = periods.reduce(BigDecimal("1")) do |factor, period|
-      monthly = portfolio_return_percentage(period)
-      factor * (1 + monthly / 100)
-    end
-
-    ((total_factor - 1) * 100).round(2).to_f
-  end
-
-  # == total_balance_on
-  #
-  # @author Moisés Reis
-  #
-  # Reconstructs the total financial value of the portfolio for a specific date.
-  # It iterates through each fund investment, calculates the net quotas held
-  # on that date, and multiplies them by the closest available quota value.
-  #
-  # Parameters::
-  # - *date* - The specific date for which to calculate the total balance.
-  #
-  # Returns::
-  # - The total balance as a BigDecimal.
-
-  def total_balance_on(date)
-    fund_investments.sum do |fi|
-      quotas = reconstruct_quotas_at(fi, date)
-
-      price = closest_quota_value(fi.investment_fund.cnpj, date)
-
-      quotas * (price || 0)
-    end
-  end
-
-  # == yearly_profitability_on
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the percentage return for the current year. It ensures that
-  # the starting balance is strictly the opening value of January 1st
-  # to avoid interference from late-December transactions.
-  #
-  # Parameters::
-  # - *date* - The current reference date for the dashboard.
-  #
-  # Returns::
-  # - The percentage return as a rounded Float.
-
-  def yearly_profitability_on(date)
-    # Ensure we are looking at the start of the current calendar year
-    start_of_year = date.beginning_of_year
-
-    # The 'Opening Balance' of the year is the state of the portfolio
-    # at the very end of the previous year.
-    val_jan_1 = total_balance_on(start_of_year - 1.day)
-    val_now = total_balance_on(date)
-
-    return 0.0 if val_jan_1 <= 0
-
-    # Calculation: ((Current / Start) - 1) * 100
-    (((val_now / val_jan_1) - 1) * 100).to_f.round(2)
+  # @param month [String] Month string in "%Y-%m" format.
+  # @return [Hash] Progress data with percent, step, and done keys.
+  def calculation_progress_for(month)
+    Rails.cache.read("calc_progress_#{id}_#{month}") ||
+      { percent: 0, step: "Aguardando…", done: false }
   end
 
   # == total_quotas_held
@@ -187,70 +96,6 @@ class Portfolio < ApplicationRecord
     fund_investments.sum(:total_quotas_held) || BigDecimal("0")
   end
 
-  # == total_current_market_value
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the total current worth of the portfolio using a single SQL query
-  # that joins fund_valuations to avoid N+1 queries per fund.
-  #
-  # Returns:: - The current market value as a BigDecimal.
-  def total_current_market_value
-    result = fund_investments
-               .joins(investment_fund: :fund_valuations)
-               .where(
-                 "public.fund_valuations.date = (
-                   SELECT MAX(fv2.date)
-                   FROM public.fund_valuations fv2
-                   WHERE fv2.fund_cnpj = public.investment_funds.cnpj
-                     AND EXTRACT(DOW FROM fv2.date) NOT IN (0, 6)
-                     AND fv2.date <= ?
-                 )", Date.current
-               )
-               .sum("public.fund_investments.total_quotas_held * public.fund_valuations.quota_value")
-
-    BigDecimal(result.to_s)
-  rescue StandardError => e
-    Rails.logger.warn("[Portfolio#total_current_market_value] SQL optimisation failed, falling back: #{e.message}")
-    fund_investments.includes(:investment_fund).sum(&:current_market_value)
-  end
-
-  # == estimated_current_month_earnings
-  #
-  # @author Moisés Reis
-  #
-  # Estimates earnings for the current in-progress month using the same
-  # Modified Dietz logic as PerformanceCalculationJob, but reading live
-  # quota valuations instead of relying on persisted performance_histories.
-  #
-  # Returns:: - Estimated earnings as a BigDecimal, or zero if data is insufficient.
-  def estimated_current_month_earnings
-    period_start = Date.current.beginning_of_month
-    period_end = Date.current
-
-    fund_investments.includes(:investment_fund, :applications, :redemptions).sum do |fi|
-      fund = fi.investment_fund
-
-      quota_start = closest_quota_value(fund.cnpj, period_start)
-      quota_end = closest_quota_value(fund.cnpj, period_end)
-
-      next BigDecimal("0") unless quota_start && quota_end
-
-      quotas_at_start = reconstruct_quotas_at(fi, period_start - 1.day)
-      quotas_at_end = reconstruct_quotas_at(fi, period_end)
-
-      next BigDecimal("0") if quotas_at_start <= 0 && quotas_at_end <= 0
-
-      initial_balance = quotas_at_start * quota_start
-      final_balance = quotas_at_end * quota_end
-
-      net_cash_flow = fi.applications.where(cotization_date: period_start..period_end).sum(:financial_value) -
-                      fi.redemptions.where(cotization_date: period_start..period_end).sum(:redeemed_liquid_value)
-
-      final_balance - initial_balance - net_cash_flow
-    end
-  end
-
   # == total_gain
   #
   # @author Moisés Reis
@@ -262,261 +107,35 @@ class Portfolio < ApplicationRecord
     fund_investments.includes(:investment_fund, :applications, :redemptions).sum(&:total_gain)
   end
 
-  # == meta
-  #
-  # @author Moisés Reis
-  #
-  # Determines the portfolio benchmark target by adding the portfolio's interest rate
-  # to the current IPCA economic index value.
-  #
-  # Parameters:: - *reference_date* - The date used to fetch the current IPCA index.
-  #
-  # Returns:: - The target meta rate as a Decimal.
-  def meta(reference_date = Date.current)
-    ipca_index = EconomicIndex.find_by(abbreviation: "IPCA")
-    ipca_value = ipca_index&.value_on(reference_date.beginning_of_month) || BigDecimal("0")
-    annual_interest_rate.to_d + ipca_value
-  end
-
   # == valid_allocations?
   #
   # @author Moisés Reis
   #
-  # Verifies if the sum of all fund percentage allocations does not exceed 100%.
+  # Verifies if   # == total_applications
+  # @author Moisés Reis
   #
+  # Calculates the gross sum of all financial contributions made to this fund.
+  #
+  # Returns::
+  # - The total amount applied to the fund as a BigDecimal.
+  def total_applications
+    BigDecimal(applications.sum(:financial_value).to_s)
+  end
+
+  # == total_redemptions
+  # @author Moisés Reis
+  #
+  # Sums the total liquid value of all withdrawals performed by the user.
+  #
+  # Returns::
+  # - The total amount redeemed from the fund as a BigDecimal.
+  def total_redemptions
+    BigDecimal(redemptions.sum(:redeemed_liquid_value).to_s)
+  end
+
   # Returns:: - True if allocations are valid, false otherwise.
   def valid_allocations?
     fund_investments.sum(:percentage_allocation) <= BigDecimal("100")
-  end
-
-  def portfolio_twr_return_on(start_date, end_date)
-    start_date = start_date.to_date
-    end_date   = end_date.to_date
-
-    fis = fund_investments.includes(:investment_fund).to_a
-    return BigDecimal("0") if fis.empty?
-
-    fi_ids   = fis.map(&:id)
-    fi_cnpjs = fis.map { |fi| fi.investment_fund.cnpj }.uniq
-
-    # ── 1 query: todas as applications relevantes, indexadas por fi_id e data ──
-    apps_by_fi_date = Application
-                        .where(fund_investment_id: fi_ids)
-                        .where("cotization_date <= ?", end_date)
-                        .pluck(:fund_investment_id, :cotization_date, :number_of_quotas, :financial_value)
-                        .each_with_object(Hash.new { |h, k| h[k] = [] }) do |(fi_id, date, quotas, value), h|
-      h[fi_id] << { date: date, quotas: BigDecimal(quotas.to_s), value: BigDecimal(value.to_s) }
-    end
-
-    # ── 1 query: todas as redemptions relevantes, indexadas por fi_id e data ──
-    reds_by_fi_date = Redemption
-                        .where(fund_investment_id: fi_ids)
-                        .where("cotization_date <= ?", end_date)
-                        .pluck(:fund_investment_id, :cotization_date, :redeemed_quotas, :redeemed_liquid_value)
-                        .each_with_object(Hash.new { |h, k| h[k] = [] }) do |(fi_id, date, quotas, value), h|
-      h[fi_id] << { date: date, quotas: BigDecimal(quotas.to_s), value: BigDecimal(value.to_s) }
-    end
-
-    # ── 1 query: todos os fund_valuations do período, indexados por cnpj e data ──
-    valuations_by_cnpj_date = FundValuation
-                                .where(fund_cnpj: fi_cnpjs)
-                                .where("date <= ? AND EXTRACT(DOW FROM date) NOT IN (0, 6)", end_date)
-                                .pluck(:fund_cnpj, :date, :quota_value)
-                                .each_with_object(Hash.new { |h, k| h[k] = {} }) do |(cnpj, date, value), h|
-      h[cnpj][date] = BigDecimal(value.to_s)
-    end
-
-    # Helpers em memória (substituem reconstruct_quotas_at e closest_quota_value)
-    quota_at = ->(fi_id, date) {
-      apps = (apps_by_fi_date[fi_id] || []).select { |a| a[:date] <= date }.sum { |a| a[:quotas] }
-      reds = (reds_by_fi_date[fi_id] || []).select { |r| r[:date] <= date }.sum { |r| r[:quotas] }
-      BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
-    }
-
-    price_at = ->(cnpj, date) {
-      dates = valuations_by_cnpj_date[cnpj]
-      return nil if dates.nil? || dates.empty?
-      closest = dates.keys.select { |d| d <= date }.max
-      closest ? dates[closest] : nil
-    }
-
-    patrimonio_on = ->(date) {
-      fis.sum do |fi|
-        quotas = quota_at.(fi.id, date)
-        next BigDecimal("0") if quotas <= 0
-        price = price_at.(fi.investment_fund.cnpj, date)
-        next BigDecimal("0") unless price
-        quotas * price
-      end
-    }
-
-    # ── Loop TWR em memória: zero queries ──
-    prev_close = patrimonio_on.(start_date)
-    return BigDecimal("0") if prev_close <= 0
-
-    compounded_factor = BigDecimal("1")
-
-    (start_date + 1).upto(end_date) do |date|
-      next if date.saturday? || date.sunday?
-
-      day_close = patrimonio_on.(date)
-      next if day_close <= 0
-
-      # Cashflow cotizado neste dia (em memória)
-      day_cashflow = fis.sum do |fi|
-        apps_in = (apps_by_fi_date[fi.id] || [])
-                    .select { |a| a[:date] == date }
-                    .sum { |a| a[:value] }
-        reds_out = (reds_by_fi_date[fi.id] || [])
-                     .select { |r| r[:date] == date }
-                     .sum { |r| r[:value] }
-        apps_in - reds_out
-      end
-
-      day_open = day_close - day_cashflow
-      next if day_open <= 0
-
-      compounded_factor *= (day_open / prev_close)
-      prev_close = day_close
-    end
-
-    (compounded_factor - 1) * 100
-  end
-
-  def portfolio_return_percentage(reference_date = nil)
-    target = reference_date&.to_date&.end_of_month ||
-             performance_histories.maximum(:period)
-    return BigDecimal("0") unless target
-
-    perfs = performance_histories.where(period: target).includes(
-      fund_investment: [:applications, :redemptions]
-    )
-    return BigDecimal("0") if perfs.empty?
-
-    total_days = BigDecimal(target.day.to_s)
-    total_earnings = BigDecimal("0")
-    total_denominator = BigDecimal("0")
-
-    perfs.each do |perf|
-      fi = perf.fund_investment
-      period_start = target.beginning_of_month
-      period_end   = target
-
-      initial = perf.initial_balance.to_d
-
-      # Fluxos dentro do mês, ponderados pelo tempo restante (Modified Dietz W=1)
-      apps = fi.applications.where(cotization_date: period_start..period_end)
-      reds = fi.redemptions.where(cotization_date: period_start..period_end)
-
-      weighted_cf = apps.sum { |a| a.financial_value.to_d * (total_days - a.cotization_date.day) / total_days } -
-                    reds.sum { |r| r.redeemed_liquid_value.to_d * (total_days - r.cotization_date.day) / total_days }
-
-      denominator = initial + weighted_cf
-      next if denominator <= 0
-
-      total_earnings   += perf.earnings.to_d
-      total_denominator += denominator
-    end
-
-    return BigDecimal("0") if total_denominator.zero?
-
-    (total_earnings / total_denominator) * 100
-  end
-
-
-  # == portfolio_yearly_return_percentage
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the cumulative year-to-date performance, weighted by individual fund allocations.
-  #
-  # Parameters:: - *reference_date* - The period date used to define the year-to-date range.
-  #
-  # Returns:: - The weighted year-to-date return percentage.
-  def portfolio_yearly_return_percentage(reference_date = nil)
-    period = reference_date || performance_histories.maximum(:period)
-    return BigDecimal("0") unless period
-
-    perfs = performance_histories
-              .where(period: period.beginning_of_year..period)
-              .includes(:fund_investment)
-
-    return BigDecimal("0") if perfs.empty?
-
-    weighted = BigDecimal("0")
-    total_alloc = BigDecimal("0")
-
-    perfs.group_by(&:fund_investment_id).each do |_, fund_perfs|
-      fi = fund_perfs.first.fund_investment
-      alloc = fi.percentage_allocation.to_d
-      accumulated = fund_perfs.sum { |p| p.monthly_return.to_d }
-      weighted += accumulated * alloc
-      total_alloc += alloc
-    end
-
-    total_alloc > 0 ? weighted / total_alloc : BigDecimal("0")
-  end
-
-  # == value_timeline
-  #
-  # @author Moisés Reis
-  #
-  # Generates a timeline of the portfolio's cumulative value using SQL aggregation
-  # to avoid loading every individual transaction record into memory.
-  #
-  # Parameters:: - *months_back* - The number of months to include in the timeline.
-  #
-  # Returns:: - An array of [Date, BigDecimal] pairs representing monthly running totals.
-  def value_timeline(months_back = 12)
-    app_by_month = Application
-                     .joins(:fund_investment)
-                     .where(fund_investments: { portfolio_id: id })
-                     .where.not(cotization_date: nil)
-                     .group("DATE_TRUNC('month', cotization_date)")
-                     .sum(:financial_value)
-
-    red_by_month = Redemption
-                     .joins(:fund_investment)
-                     .where(fund_investments: { portfolio_id: id })
-                     .where.not(cotization_date: nil)
-                     .group("DATE_TRUNC('month', cotization_date)")
-                     .sum(:redeemed_liquid_value)
-
-    all_months = (app_by_month.keys + red_by_month.keys).uniq.sort
-
-    running_total = BigDecimal("0")
-    timeline = all_months.map do |month|
-      running_total += BigDecimal((app_by_month[month] || 0).to_s)
-      running_total -= BigDecimal((red_by_month[month] || 0).to_s)
-      [month.strftime("%b/%y"), running_total]
-    end
-
-    timeline.last(months_back)
-  end
-
-  # == quota_timeline_by_fund
-  #
-  # @author Moisés Reis
-  #
-  # Maps historical quota counts for each investment fund in the portfolio over time.
-  #
-  # Returns:: - A hash where keys are fund names and values are arrays of date/quota points.
-  def quota_timeline_by_fund
-    data = {}
-
-    fund_investments.includes(:investment_fund, :applications).each do |fi|
-      fund_name = fi.investment_fund.fund_name
-      data[fund_name] = []
-      running_quotas = 0
-
-      fi.applications.order(:cotization_date).each do |app|
-        next unless app.cotization_date.present? && app.number_of_quotas.present?
-        running_quotas += app.number_of_quotas
-        data[fund_name] << [app.cotization_date.strftime("%b/%y"), running_quotas]
-      end
-    end
-
-    data
   end
 
   # == self.ransackable_attributes
@@ -541,74 +160,6 @@ class Portfolio < ApplicationRecord
     %w[user]
   end
 
-  # == yearly_earnings
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the total earnings of the portfolio from the beginning of the
-  # year up to the end of the month of the given reference date.
-  #
-  # Parameters:: *reference_date* - The date used to determine the year and month range.
-  #                                 Defaults to Date.current.
-  #
-  # Returns:: - The sum of earnings as a Float, or 0.0 if no records are found.
-  def yearly_earnings(reference_date = Date.current)
-    beginning = reference_date.beginning_of_year
-    ending = reference_date.end_of_month
-
-    performance_histories
-      .where(period: beginning..ending)
-      .sum(:earnings)
-      .to_f
-  end
-
-  # == monthly_earnings_history
-  #
-  # @author Moisés Reis
-  #
-  # Generates a chronological dataset of total earnings for each month of a specific year.
-  # This method ensures every month is represented, defaulting to zero if no data exists.
-  #
-  # Parameters:: - year [Integer] - The calendar year to pull records for, defaulting to the current year.
-  #
-  # Returns:: - Array - A collection of pairs containing the formatted month name and its total earnings.
-  def monthly_earnings_history(year = Date.current.year)
-
-    # # Prepares an array of the first day of every month for the requested year.
-    # # This acts as the skeleton to ensure no months are missing from the result.
-    all_months = (1..12).map { |m| Date.new(year, m, 1) }
-
-    # # Aggregates earnings by grouping performance records into their respective months.
-    # # It calculates the sum of all earnings found within each monthly timeframe.
-    earnings_by_month = performance_histories
-                          .where(period: Date.new(year).beginning_of_year..Date.new(year).end_of_year)
-                          .group_by { |ph| ph.period.beginning_of_month }
-                          .transform_values { |phs| phs.sum(&:earnings) }
-
-    # # Maps the full year of months to the calculated earnings or zero if empty.
-    # # It formats the date into a short month/year string for chart display.
-    all_months.map { |month| [month.strftime("%b/%y"), earnings_by_month[month] || 0] }
-  end
-
-  # == monthly_earnings
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the total earnings of the portfolio within the month of the
-  # given reference date, by summing the earnings field of all performance
-  # history records whose period falls within that month.
-  #
-  # Parameters:: - *reference_date* - The date used to determine the month range.
-  #                                   Defaults to Date.current.
-  #
-  # Returns:: - The sum of earnings as a Float, or 0.0 if no records are found.
-  def monthly_earnings(reference_date = Date.current)
-    performance_histories
-      .where(period: reference_date.beginning_of_month..reference_date.end_of_month)
-      .sum(:earnings)
-      .to_f
-  end
-
   private
 
   # == reconstruct_quotas_at
@@ -627,28 +178,5 @@ class Portfolio < ApplicationRecord
     apps = fund_investment.applications.where("cotization_date <= ?", date).sum(:number_of_quotas)
     reds = fund_investment.redemptions.where("cotization_date <= ?", date).sum(:redeemed_quotas)
     BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
-  end
-
-  # == closest_quota_value
-  #
-  # @author Moisés Reis
-  #
-  # Attempts to retrieve the most recent quota value for a fund on or before
-  # a specific date, excluding weekends. Uses a single SQL query ordered by
-  # date descending instead of iterating day by day, which is more robust
-  # against gaps caused by holidays or missing import runs.
-  #
-  # Parameters:: - *cnpj*        - The fund's CNPJ identifier.
-  #              - *target_date* - The upper bound date for the quota valuation lookup.
-  #
-  # Returns:: - The quota value as a BigDecimal, or nil if no valuation is found.
-  def closest_quota_value(cnpj, target_date)
-    FundValuation
-      .where(fund_cnpj: cnpj)
-      .where("date <= ? AND EXTRACT(DOW FROM date) NOT IN (0, 6)", target_date)
-      .order(date: :desc)
-      .limit(1)
-      .pluck(:quota_value)
-      .first
   end
 end

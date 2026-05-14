@@ -5,24 +5,18 @@
 # This script initializes the application environment, conditionally injects
 # a configuration file, and delegates execution to the Bundler Audit CLI.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Environment Boot
-# 2. Argument Handling
-# 3. Execution
-#
 # @author Moisés Reis
 
-# =============================================================
-#                     1. ENVIRONMENT BOOT
-# =============================================================
+# ============================================================================
+# ENVIRONMENT BOOT
+# ============================================================================
 
 require_relative "../config/boot"
 require "bundler/audit/cli"
 
-# =============================================================
-#                   2. ARGUMENT HANDLING
-# =============================================================
+# ============================================================================
+# ARGUMENT HANDLING
+# ============================================================================
 
 # Inject default configuration file when:
 # - No arguments are provided, or
@@ -30,9 +24,9 @@ require "bundler/audit/cli"
 ARGV.concat %w[ --config config/bundler-audit.yml ] \
   if ARGV.empty? || ARGV.include?("check")
 
-# =============================================================
-#                         3. EXECUTION
-# =============================================================
+# ============================================================================
+# EXECUTION
+# ============================================================================
 
 # Start Bundler Audit CLI.
 Bundler::Audit::CLI.start

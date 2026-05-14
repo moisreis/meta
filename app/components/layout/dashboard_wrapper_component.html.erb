@@ -1,5 +1,16 @@
+<%#
+  VIEW: app/components/layout/dashboard_wrapper_component.html.erb
+  ACTION: Layout::DashboardWrapperComponent
+
+  INSTANCE VARIABLES:
+  - @page_title:   [String] Title displayed in the dashboard layout (required).
+  - @page_desc:    [String, nil] Optional page description.
+  - @current_view: [String] Current dashboard view mode ("form", "show", "index").
+%>
+
+<!-- Layout::DashboardWrapperComponent -->
 <% content_for :title do %>
-  Meta - <%= @page_title %>
+  <%= AppConstants::COMPANY_NAME_SHORT %> - <%= @page_title %>
 <% end %>
 
 <main class="grid grid-cols-16 justify-start w-screen no-scrollbar"

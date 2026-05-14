@@ -1,62 +1,82 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/financial_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing presenters responsible for formatting UI-level values.
-#
-# Handles currency, quota, percentage, numeric formatting, and trend visualization.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #              Ui::FinancialPresenter
-  # =============================================================
+
+  # Renders formatted financial and numeric presentation values.
   #
-  # Provides consistent formatting for monetary, percentage, numeric,
-  # and directional trend values used across UI components such as
-  # tables and dashboards.
+  # This presenter provides standardized formatting helpers for:
+  # - currency values
+  # - quotas
+  # - percentages
+  # - numeric values
+  # - financial trends
   #
+  # Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
   class FinancialPresenter < BasePresenter
 
-    # =============================================================
-    #                 1. CONSTANTS & CONFIGURATION
-    # =============================================================
+    # ==========================================================================
+    # CONSTANTS
+    # ==========================================================================
 
+    # Shared CSS utility classes applied to formatted financial values.
+    #
+    # @return [String] CSS class list used for financial rendering.
     BASE_CLASSES = "line-clamp-2 font-mono".freeze
 
-    # =============================================================
-    #                      2. INITIALIZATION
-    # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # @param view_context [ActionView::Base] Rails view context providing helper methods.
+    # Initializes the presenter.
+    #
+    # @param view_context [ActionView::Base] Rails view context instance.
     def initialize(view_context)
       super
+
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # =============================================================
-    #                        3a. CURRENCY
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Formats a monetary value in Brazilian currency format.
+    # Renders a formatted currency value.
     #
-    # @param value [Numeric, nil] Monetary value.
-    # @return [ActiveSupport::SafeBuffer] Formatted currency span or empty-state element.
+    # Values are formatted using Brazilian Real conventions.
+    #
+    # @param value [Numeric, nil] Monetary value to render.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def currency(value)
       return @empty.render if invalid?(value)
 
-      formatted = h.number_to_currency(value, unit: "R$", separator: ",", delimiter: ".")
-      h.content_tag(:span, formatted, class: BASE_CLASSES, scope: "row")
+      formatted = h.number_to_currency(
+        value,
+        unit: "R$",
+        separator: ",",
+        delimiter: "."
+      )
+
+      h.content_tag(
+        :span,
+        formatted,
+        class: BASE_CLASSES,
+        scope: "row"
+      )
     end
 
-    # =============================================================
-    #                          3b. QUOTA
-    # =============================================================
-
-    # Formats a high-precision monetary quota value.
+    # Renders a formatted quota value with high precision.
     #
-    # @param value [Numeric, nil] Quota value.
-    # @return [ActiveSupport::SafeBuffer] Formatted quota span or empty-state element.
+    # Values are formatted using six decimal places.
+    #
+    # @param value [Numeric, nil] Quota value to render.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def quota(value)
       return @empty.render if invalid?(value)
 
@@ -68,17 +88,20 @@ module Ui
         precision: 6
       )
 
-      h.content_tag(:span, formatted, class: BASE_CLASSES, scope: "row")
+      h.content_tag(
+        :span,
+        formatted,
+        class: BASE_CLASSES,
+        scope: "row"
+      )
     end
 
-    # =============================================================
-    #                         3c. NUMBER
-    # =============================================================
-
-    # Formats a generic numeric value with localization rules.
+    # Renders a formatted numeric value.
     #
-    # @param value [Numeric, nil] Numeric value.
-    # @return [ActiveSupport::SafeBuffer] Formatted numeric span or empty-state element.
+    # Insignificant trailing zeros are automatically removed.
+    #
+    # @param value [Numeric, nil] Numeric value to render.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def number(value)
       return @empty.render if invalid?(value)
 
@@ -90,18 +113,19 @@ module Ui
         strip_insignificant_zeros: true
       )
 
-      h.content_tag(:span, formatted, class: BASE_CLASSES, scope: "row")
+      h.content_tag(
+        :span,
+        formatted,
+        class: BASE_CLASSES,
+        scope: "row"
+      )
     end
 
-    # =============================================================
-    #                       3d. PERCENTAGE
-    # =============================================================
-
-    # Formats a numeric value as a percentage.
+    # Renders a formatted percentage value.
     #
-    # @param value [Numeric, nil] Percentage value.
-    # @param precision [Integer] Number of decimal places.
-    # @return [ActiveSupport::SafeBuffer] Formatted percentage span or empty-state element.
+    # @param value [Numeric, nil] Percentage value to render.
+    # @param precision [Integer] Decimal precision used for formatting.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def percentage(value, precision: 2)
       return @empty.render if invalid?(value)
 
@@ -112,28 +136,45 @@ module Ui
         delimiter: "."
       )
 
-      h.content_tag(:span, formatted, class: BASE_CLASSES, scope: "row")
+      h.content_tag(
+        :span,
+        formatted,
+        class: BASE_CLASSES,
+        scope: "row"
+      )
     end
 
-    # =============================================================
-    #                        3e. TREND
-    # =============================================================
-
-    # Renders a color-coded trend indicator with icon and formatted absolute value.
+    # Renders a financial trend indicator with directional styling.
     #
-    # @param value [Numeric, nil] Value used to determine trend direction.
-    # @param format [Symbol] Formatting mode (:currency or :percentage).
-    # @return [ActiveSupport::SafeBuffer] HTML trend component or empty-state element.
+    # Positive, negative, and stable values receive distinct visual
+    # representations and directional icons.
+    #
+    # Supported formats:
+    # - :currency
+    # - :percentage
+    #
+    # @param value [Numeric, nil] Financial value used for trend analysis.
+    # @param format [Symbol] Rendering format used for value presentation.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML trend component.
     def trend(value, format: :currency)
       return @empty.render if value.blank?
 
       trend_type = TrendClassifier.new.call(value)
 
       styles = {
-        up:    { color: "text-success-600 [&>span]:!text-success-600", icon: "trending-up" },
-        down:  { color: "text-danger-600 [&>span]:!text-danger-600", icon: "trending-down" },
-        stale: { color: "text-muted [&>svg]:hidden", icon: "minus" }
-      }[trend_type]
+        up: {
+          color: "text-success-600 [&>span]:!text-success-600",
+          icon: "trending-up"
+        },
+        down: {
+          color: "text-danger-600 [&>span]:!text-danger-600",
+          icon: "trending-down"
+        },
+        stale: {
+          color: "text-muted [&>svg]:hidden",
+          icon: "minus"
+        }
+      }.fetch(trend_type)
 
       formatted_value =
         if format == :percentage
@@ -142,22 +183,34 @@ module Ui
           currency(value.abs)
         end
 
-      h.content_tag(:div, class: "flex items-center [&>span]:!font-medium gap-1 #{styles[:color]}") do
-        h.concat h.inline_svg_tag("icons/#{styles[:icon]}.svg", class: "w-4 h-4 fill-current")
-        h.concat formatted_value
+      h.content_tag(
+        :div,
+        class: "flex items-center [&>span]:!font-medium gap-1 #{styles[:color]}"
+      ) do
+        h.concat(
+          h.inline_svg_tag(
+            "icons/#{styles[:icon]}.svg",
+            class: "w-4 h-4 fill-current"
+          )
+        )
+
+        h.concat(formatted_value)
       end
     end
 
     private
 
-    # =============================================================
-    #                    4a. VALIDATION LOGIC
-    # =============================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
-    # Determines whether a value is invalid for display purposes.
+    # Determines whether a value should be treated as visually empty.
     #
-    # @param value [Object] Input value.
-    # @return [Boolean] True if value is blank or numerically zero.
+    # Blank and zero-equivalent values are considered invalid for
+    # financial rendering purposes.
+    #
+    # @param value [Object] Value evaluated for rendering eligibility.
+    # @return [Boolean] True when the value should render as empty.
     def invalid?(value)
       value.blank? || (value.respond_to?(:zero?) && value.zero?)
     end

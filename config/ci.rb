@@ -3,33 +3,23 @@
 # This file orchestrates setup, code quality checks, security audits,
 # and automated test execution to ensure application integrity.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Setup
-# 2. Code Quality
-# 3. Security Audits
-# 4. Test Suite Execution
-#
 # @author Moisés Reis
 
-# =============================================================
-#                         1. SETUP
-# =============================================================
-
 CI.run do
+
   # Prepare the application environment without starting the server.
   step "Setup", "bin/setup --skip-server"
 
-  # =============================================================
-  #                     2. CODE QUALITY
-  # =============================================================
+  # ============================================================================
+  # CODE QUALITY
+  # ============================================================================
 
   # Enforce Ruby style guidelines.
   step "Style: Ruby", "bin/rubocop"
 
-  # =============================================================
-  #                    3. SECURITY AUDITS
-  # =============================================================
+  # ============================================================================
+  # SECURITY AUDITS
+  # ============================================================================
 
   # Check for vulnerable gem dependencies.
   step "Security: Gem audit", "bin/bundler-audit"
@@ -41,9 +31,9 @@ CI.run do
   step "Security: Brakeman code analysis",
        "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
 
-  # =============================================================
-  #                  4. TEST SUITE EXECUTION
-  # =============================================================
+  # ============================================================================
+  # TEST SUITE EXECUTION
+  # ============================================================================
 
   # Run unit and integration tests.
   step "Tests: Rails", "bin/rails test"

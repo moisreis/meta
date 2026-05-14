@@ -1,36 +1,21 @@
 <%#
-  VIEW: app/views/users/new.html.erb
-  ACTION: UsersController#new
-
-  DESCRIPTION:
-  Renders the user creation page, including the dashboard layout
-  wrapper and the shared user form partial configured for record creation.
-
-  INSTANCE VARIABLES:
-  - @form: [ActiveModel] Form object responsible for user creation attributes and validations.
+  PARTIAL: app/views/users/new.html.erb
+  DESCRIPTION: Renders the user creation page with dashboard wrapper and user form.
 %>
 
-<%# ========================================================= %>
-<%#                    1. DASHBOARD WRAPPER                  %>
-<%# ========================================================= %>
-
 <%= render(
-      Layout::DashboardWrapperComponent.new(
-        page_title: "Criar usuário",
-        page_desc: "Gerencie a criação de novos usuários."
-      )
-    ) do %>
-
-  <%# ======================================================= %>
-  <%#                   2. USER FORM PARTIAL                 %>
-  <%# ======================================================= %>
+  Layout::DashboardWrapperComponent.new(
+    page_title: "Criar usuário",
+    page_desc: "Gerencie a criação de novos usuários."
+  )
+) do %>
 
   <%= render(
-        "form",
-        form_url:    users_path,
-        form_method: :post,
-        button_name: "Criar usuário",
-        icon_name:   "user-plus"
-      ) %>
+    "form",
+    form_url:    users_path,
+    form_method: :post,
+    button_name: "Criar usuário",
+    icon_name:   "user-plus"
+  ) %>
 
 <% end %>

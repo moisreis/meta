@@ -1,13 +1,36 @@
+# Configures Solid Cache storage settings for all Rails environments.
+#
+# This file defines cache store behavior, memory allocation limits, and
+# environment-specific cache namespaces used by Solid Cache.
+#
+# @author Moisés Reis
+
+# ============================================================================
+# DEFAULT CACHE CONFIGURATION
+# ============================================================================
+
 default: &default
   store_options:
     max_size: <%= 256.megabytes %>
     namespace: <%= Rails.env %>
 
+# ============================================================================
+# DEVELOPMENT ENVIRONMENT
+# ============================================================================
+
 development:
   <<: *default
 
+# ============================================================================
+# TEST ENVIRONMENT
+# ============================================================================
+
 test:
   <<: *default
+
+# ============================================================================
+# PRODUCTION ENVIRONMENT
+# ============================================================================
 
 production:
   database: cache

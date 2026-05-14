@@ -1,18 +1,12 @@
 <%#
-  # Partial: new.html
-  # Date: 11/25/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Displays the view for a user to request a password reset email.
-  #              The page uses a series of nested partials to structure the authentication interface and form.
-  #
-  # Usage: - What: Renders the necessary form and interface for a user who has forgotten their password.
-  #                This allows the user to submit their email address to receive password recovery instructions.
-  #        - How: Accessed via the Devise /users/password/new route (GET request).
-  #               Submits the email to the password path (POST request) to initiate the reset process.
-  #        - Why: Provides the critical functionality for users to regain access to their accounts securely, reducing support overhead.
-  %>
+  VIEW: new.html.erb
+  ACTION: Devise::PasswordsController#new
+  DESCRIPTION: Displays the password reset request form.
+               Allows users to submit their email to receive recovery instructions.
+  INSTANCE VARIABLES:
+    - resource: [User] The Devise resource instance.
+    - resource_name: [Symbol] The resource name (:user).
+%>
 <%= render 'partials/route/auth/wrapper' do %>
   <%= render 'partials/route/auth/container',
              welcome_message: "Perdeu sua senha?",

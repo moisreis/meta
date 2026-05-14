@@ -1,3 +1,13 @@
+<%#
+  VIEW: show.html.erb
+  ACTION: EconomicIndicesController#show
+  DESCRIPTION: Displays detailed information for a single EconomicIndex.
+               Shows current metrics KPIs, charts (12 months, 30 days),
+               statistical analysis, related normative articles, and value history.
+  INSTANCE VARIABLES:
+    - @economic_index: [EconomicIndex] The index record being displayed.
+%>
+
 <%= render 'partials/route/dashboard/wrapper',
            page_title: @economic_index.abbreviation,
            page_desc: "#{@economic_index.name}",

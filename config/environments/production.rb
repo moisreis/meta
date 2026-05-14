@@ -9,9 +9,9 @@ require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
 
-  # =============================================================
-  #           1. CODE LOADING & PERFORMANCE
-  # =============================================================
+  # ============================================================================
+  # CODE LOADING & PERFORMANCE
+  # ============================================================================
 
   # Disable code reloading in production.
   config.enable_reloading = false
@@ -22,9 +22,9 @@ Rails.application.configure do
   # Disable full error reports.
   config.consider_all_requests_local = false
 
-  # =============================================================
-  #            2. CACHING & FILE SERVER
-  # =============================================================
+  # ============================================================================
+  # CACHING & FILE SERVER
+  # ============================================================================
 
   # Enable controller-level caching.
   config.action_controller.perform_caching = true
@@ -37,16 +37,16 @@ Rails.application.configure do
   # Use durable cache store.
   config.cache_store = :solid_cache_store
 
-  # =============================================================
-  #               3. ASSETS & STORAGE
-  # =============================================================
+  # ============================================================================
+  # ASSETS & STORAGE
+  # ============================================================================
 
   # Store uploaded files locally.
   config.active_storage.service = :local
 
-  # =============================================================
-  #                      4. LOGGING
-  # =============================================================
+  # ============================================================================
+  # LOGGING
+  # ============================================================================
 
   # Tag logs with request ID.
   config.log_tags = [:request_id]
@@ -54,9 +54,10 @@ Rails.application.configure do
   # Output logs to STDOUT.
   config.logger = ActiveSupport::TaggedLogging.logger(STDOUT)
 
-  # Log level (configurable via environment variable).
+  # Log level configuration via environment variable.
+  #
   # ENV:
-  # - RAILS_LOG_LEVEL: [String] Log verbosity (default: "info").
+  # - RAILS_LOG_LEVEL [String] Log verbosity (default: "info")
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
   # Silence health check endpoint logs.
@@ -65,39 +66,40 @@ Rails.application.configure do
   # Disable deprecation reporting.
   config.active_support.report_deprecations = false
 
-  # =============================================================
-  #                 5. BACKGROUND JOBS
-  # =============================================================
+  # ============================================================================
+  # BACKGROUND JOBS
+  # ============================================================================
 
   # Use Solid Queue for background processing.
   config.active_job.queue_adapter = :solid_queue
 
-  # Configure database connection for queue.
+  # Configure database connection for queue processing.
   config.solid_queue.connects_to = {
     database: { writing: :queue }
   }
 
-  # =============================================================
-  #                  6. ACTION MAILER
-  # =============================================================
+  # ============================================================================
+  # ACTION MAILER
+  # ============================================================================
 
   # Default host for URL generation.
   config.action_mailer.default_url_options = { host: "example.com" }
 
-  # =============================================================
-  #           7. INTERNATIONALIZATION (I18N)
-  # =============================================================
+  # ============================================================================
+  # INTERNATIONALIZATION (I18N)
+  # ============================================================================
 
   # Enable locale fallbacks.
   config.i18n.fallbacks = true
 
-  # =============================================================
-  #                  8. ACTIVE RECORD
-  # =============================================================
+  # ============================================================================
+  # ACTIVE RECORD
+  # ============================================================================
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
   # Limit inspected attributes in logs.
   config.active_record.attributes_for_inspect = [:id]
+
 end

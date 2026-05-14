@@ -1,95 +1,115 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/trend_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing presenters responsible for standardized UI rendering.
-#
-# Renders directional trend indicators with icons and semantic coloring.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #               Ui::TrendPresenter
-  # =============================================================
+
+  # Renders directional financial trend indicators.
   #
-  # Renders numeric values with directional icons (up/down/stale)
-  # and semantic coloring to indicate positive, negative, or neutral trends.
+  # This presenter combines:
+  # - trend classification
+  # - numeric formatting
+  # - directional iconography
+  # - semantic styling
   #
+  # Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
   class TrendPresenter < BasePresenter
 
-    # =============================================================
-    #                      1. INITIALIZATION
-    # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # @param view_context [ActionView::Base] Rails view context providing helper methods.
+    # Initializes the presenter and supporting rendering dependencies.
+    #
+    # @param view_context [ActionView::Base] Rails view context instance.
     def initialize(view_context)
       super
-      @empty = EmptyStatePresenter.new(view_context)
-      @financial = FinancialPresenter.new(view_context)
+
+      @empty      = EmptyStatePresenter.new(view_context)
+      @financial  = FinancialPresenter.new(view_context)
       @classifier = TrendClassifier.new
     end
 
-    # =============================================================
-    #                    2a. RENDER
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Renders a value with directional icon and semantic coloring.
+    # Renders a directional trend component.
     #
-    # @param value [Numeric, nil] The change value to evaluate
-    # @param format [Symbol] Output format: :currency or :percentage (default: :currency)
-    # @return [ActiveSupport::SafeBuffer] HTML flex container with icon and formatted value,
-    #                                      or empty-state placeholder if value is blank
+    # Supported formats:
+    # - :currency
+    # - :percentage
     #
-    # @example Positive trend with currency formatting
-    #   presenter = Ui::TrendPresenter.new(view_context)
-    #   presenter.render(250.50)
-    #   # => <div class="flex items-center [&>span]:!font-medium gap-1 text-success-600 [&>span]:!text-success-600">
-    #   #      <svg>...</svg>
-    #   #      <span>R$250,50</span>
-    #   #    </div>
+    # Positive, negative, and stable values receive distinct:
+    # - colors
+    # - icons
+    # - semantic styling
     #
-    # @example Negative trend with percentage formatting
-    #   presenter.render(-12.5, format: :percentage)
-    #   # => <div class="flex items-center [&>span]:!font-medium gap-1 text-danger-600 [&>span]:!text-danger-600">
-    #   #      <svg>...</svg>
-    #   #      <span>12,50%</span>
-    #   #    </div>
-    #
+    # @param value [Numeric, nil] Numeric value evaluated for trend rendering.
+    # @param format [Symbol] Formatting strategy used for value presentation.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML trend component.
     def render(value, format: :currency)
       return @empty.render if value.blank?
 
-      trend = @classifier.call(value)
-      styles = trend_styles[trend]
+      trend           = @classifier.call(value)
+      styles          = trend_styles.fetch(trend)
       formatted_value = format_value(value.abs, format)
 
-      h.content_tag(:div, class: "flex items-center [&>span]:!font-medium gap-1 #{styles[:color]}") do
-        h.concat h.inline_svg_tag("icons/#{styles[:icon]}.svg", class: "w-4 h-4 fill-current")
-        h.concat formatted_value
+      h.content_tag(
+        :div,
+        class: "flex items-center [&>span]:!font-medium gap-1 #{styles[:color]}"
+      ) do
+        h.concat(
+          h.inline_svg_tag(
+            "icons/#{styles[:icon]}.svg",
+            class: "w-4 h-4 fill-current"
+          )
+        )
+
+        h.concat(formatted_value)
       end
     end
 
     private
 
-    # =============================================================
-    #              3a. TREND CLASSIFICATION STYLES
-    # =============================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
-    # Returns styling configuration for each trend direction.
+    # Returns semantic style definitions for each trend type.
     #
-    # @return [Hash] Mapping of trend symbols to color and icon configuration
+    # @return [Hash<Symbol, Hash>] Trend style configuration map.
     def trend_styles
       {
-        up: { color: "text-success-600 [&>span]:!text-success-600", icon: "trending-up" },
-        down: { color: "text-danger-600 [&>span]:!text-danger-600", icon: "trending-down" },
-        stale: { color: "text-muted [&>svg]:hidden", icon: "minus" }
+        up: {
+          color: "text-success-600 [&>span]:!text-success-600",
+          icon: "trending-up"
+        },
+        down: {
+          color: "text-danger-600 [&>span]:!text-danger-600",
+          icon: "trending-down"
+        },
+        stale: {
+          color: "text-muted [&>svg]:hidden",
+          icon: "minus"
+        }
       }
     end
 
-    # Formats a numeric value according to the specified format.
+    # Formats a trend value according to the selected presentation strategy.
     #
-    # @param value [Numeric] The value to format (expected to be positive/absolute)
-    # @param format [Symbol] Output format: :currency or :percentage
-    # @return [ActiveSupport::SafeBuffer] Formatted value span element
+    # Supported formats:
+    # - :currency
+    # - :percentage
+    #
+    # @param value [Numeric] Absolute numeric value rendered for display.
+    # @param format [Symbol] Formatting strategy identifier.
+    # @return [ActiveSupport::SafeBuffer] Rendered formatted value.
     def format_value(value, format)
       case format
       when :percentage

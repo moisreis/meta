@@ -1,16 +1,30 @@
+<%#
+  PARTIAL: app/components/blocks/card_component.html.erb
+  DESCRIPTION: Renders a status-driven UI card with optional header icon, title, content slot, and badge footer.
+
+  LOCAL VARIABLES:
+  - status:        [Symbol] Card status used for color dot rendering.
+  - title:         [String, nil] Optional card title.
+  - header_icon:   [String, nil] Optional header icon.
+  - badge_text:    [String, nil] Optional footer badge text.
+  - badge_icon:    [String, nil] Optional badge icon.
+%>
+
+<!-- Blocks::Card [<%= @title %>] -->
 <div class="rounded-base border border-border bg-white flex flex-col gap-5 px-5 pt-5 pb-4">
 
   <div class="flex justify-between items-center gap-3">
 
     <div class="flex items-center gap-3">
-    <span class="relative -top-[1px] size-[5px] rounded-full flex-shrink-0 <%= dot_color %>"></span>
+      <span class="relative -top-[1px] size-[5px] rounded-full flex-shrink-0 <%= dot_color %>"></span>
 
-    <% if title.present? %>
-      <p class="font-mono text-muted uppercase text-xs tracking-widest font-medium">
-        <%= title %>
-      </p>
-    <% end %>
-</div>
+      <% if title.present? %>
+        <p class="font-mono text-muted uppercase text-xs tracking-widest font-medium">
+          <%= title %>
+        </p>
+      <% end %>
+    </div>
+
     <% if header_icon.present? %>
       <span class="[&>svg]:size-4 [&>svg]:stroke-muted">
         <%= render_icon(header_icon) %>

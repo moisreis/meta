@@ -314,16 +314,18 @@ class PortfolioMonthlyReportGenerator
                                .includes(fund_investment: :investment_fund)
     end
 
-    monthly_return = @portfolio.portfolio_twr_return_on(
-      @reference_date.beginning_of_month - 1.day,
-      @reference_date
+    monthly_return = Portfolios::TwrCalculator.call(
+      @portfolio,
+      start_date: @reference_date.beginning_of_month - 1.day,
+      end_date:   @reference_date
     )
-    yearly_return = @portfolio.portfolio_twr_return_on(
-      @reference_date.beginning_of_year - 1.day,
-      @reference_date
+    yearly_return = Portfolios::TwrCalculator.call(
+      @portfolio,
+      start_date: @reference_date.beginning_of_year - 1.day,
+      end_date:   @reference_date
     )
-    total_earnings = @portfolio.total_earnings_on(@reference_date)
-    yearly_earnings = @portfolio.yearly_earnings(@reference_date)
+    total_earnings = Portfolios::TotalEarningsQuery.call(@portfolio, @reference_date)
+    yearly_earnings = Portfolios::YearlyEarningsQuery.new(@portfolio, @reference_date).call
 
     total_value = @portfolio.fund_investments
                             .includes(:investment_fund, :applications, :redemptions)
@@ -556,7 +558,7 @@ class PortfolioMonthlyReportGenerator
     end
 
     if rows.any? && rows.last[:period] == @reference_date
-      rows.last[:earnings] = @portfolio.total_earnings_on(@reference_date).to_f
+      rows.last[:earnings] = Portfolios::TotalEarningsQuery.call(@portfolio, @reference_date).to_f
       rows.last[:balance] = @portfolio.fund_investments
                                       .includes(:investment_fund, :applications, :redemptions)
                                       .sum { |fi| fi.current_market_value_on(@reference_date) }.to_f
@@ -718,7 +720,7 @@ class PortfolioMonthlyReportGenerator
       articles = fi.investment_fund.investment_fund_articles
       raw_cat = articles.any? ? articles.first.normative_article&.category.to_s.strip : ''
       label = raw_cat.presence || 'Fundos ou ETF 100% TPF'
-      label = 'Fundos ou ETF 100% TPF' if label.match?(/renda fixa geral/i)
+      label = 'Renda Fixa' if label.match?(/renda fixa geral/i)
 
       groups[label][:value]    += fi.current_market_value_on(@reference_date).to_f
       groups[label][:earnings] += perf_by_fi[fi.id]&.earnings.to_f
@@ -3361,23 +3363,23 @@ class PortfolioMonthlyReportGenerator
   # records produce a zero value so the chart always renders 12 columns.
   #
   # @return [Array<Hash>] 12 elements, each with +:period+, +:value+, +:label+
-  def build_monthly_returns_series
-    start_date = (@reference_date - 11.months).beginning_of_month
+  # def build_monthly_returns_series
+  #   start_date = (@reference_date - 11.months).beginning_of_month
 
-    history_months = data[:monthly_history]
-                       .reject { |m| m[:balance] == 0.0 && m[:earnings] == 0.0 }
-                       .map { |m| m[:period].beginning_of_month }
-                       .to_set
+  #   history_months = data[:monthly_history]
+  #                      .reject { |m| m[:balance] == 0.0 && m[:earnings] == 0.0 }
+  #                      .map { |m| m[:period].beginning_of_month }
+  #                      .to_set
 
-    12.times.map do |i|
-      period = (start_date + i.months).beginning_of_month
-      ret = history_months.include?(period) ?
-              @portfolio.portfolio_return_percentage(period) :
-              BigDecimal("0")
+  #   12.times.map do |i|
+  #     period = (start_date + i.months).beginning_of_month
+  #     ret = history_months.include?(period) ?
+  #             @portfolio.portfolio_return_percentage(period) :
+  #             BigDecimal("0")
 
-      { period: period, value: ret, label: short_month(period) }
-    end
-  end
+  #     { period: period, value: ret, label: short_month(period) }
+  #   end
+  # end
 
   # Builds a 12-slot total patrimony series covering January through December
   # of the reference year, always in calendar order.
@@ -3444,10 +3446,11 @@ class PortfolioMonthlyReportGenerator
       end_date = [period.end_of_month, @reference_date].min
 
       ret = if history_months.include?(period)
-              @portfolio.portfolio_twr_return_on(
-                period - 1.day, # ← mesmo padrão dos cards
-                end_date
-              )
+            Portfolios::TwrCalculator.call(
+              @portfolio,
+              start_date: period - 1.day,
+              end_date:   end_date
+            )
             else
               BigDecimal("0")
             end

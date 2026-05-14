@@ -1,18 +1,13 @@
-# Boots the Rails application through Rack and exposes it to the server interface.
+# Boots the Rails application through the Rack interface.
 #
-# Rack configuration file used to initialize and start the Rails application.
-# This file is responsible for loading the environment and executing the
-# application entry point for Rack-based servers.
-#
-# TABLE OF CONTENTS:
-#
-# 1. Application Initialization
+# Rack configuration file responsible for loading the Rails environment and
+# exposing the application object to Rack-compatible web servers such as Puma.
 #
 # @author Moisés Reis
 
-# =============================================================
-#                1. APPLICATION INITIALIZATION
-# =============================================================
+# ============================================================================
+# APPLICATION INITIALIZATION
+# ============================================================================
 
 require_relative "config/environment"
 

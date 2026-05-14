@@ -1,9 +1,28 @@
+<%#
+  VIEW: index.html.erb
+  ACTION: DashboardController#index
+  DESCRIPTION: Main dashboard overview page showing consolidated investment metrics,
+               portfolio performance, charts, recent activity, and portfolio list.
+  INSTANCE VARIABLES:
+    - @total_invested: [Numeric]
+    - @total_quotas: [Numeric]
+    - @unique_funds: [Integer]
+    - @total_market_value: [Numeric]
+    - @total_gain_loss: [Numeric]
+    - @roi: [Numeric]
+    - @total_transactions: [Integer]
+    - @portfolio_allocation: [Hash]
+    - @monthly_flows: [Hash]
+    - @recent_applications_chart: [Hash]
+    - @recent_redemptions_chart: [Hash]
+%>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Visão Geral",
            page_desc: "Painel de #{current_user.full_name}",
            current_view: "index" do
 %>
 
+  <%# ====== INVESTMENT SUMMARY ====== %>
   <%= render "partials/route/dashboard/section",
              section_title: "Resumo de Investimentos",
              section_desc: "Métricas consolidadas de todas as suas carteiras",
@@ -40,6 +59,7 @@
     <% end %>
   <% end %>
 
+  <%# ====== CONSOLIDATED PERFORMANCE ====== %>
   <%= render "partials/route/dashboard/section",
              section_title: "Performance Consolidada",
              section_desc: "Análise de rentabilidade e posição atual",
@@ -75,6 +95,7 @@
     <% end %>
   <% end %>
 
+  <%# ====== CHARTS ====== %>
   <%= render "partials/route/dashboard/section",
              section_title: "Visualizações",
              columns: 2 do
@@ -118,6 +139,7 @@
     <% end %>
   <% end %>
 
+  <%# ====== PORTFOLIO TABLE ====== %>
   <%= render "partials/groups/table-list",
              section_title: "Suas Carteiras",
              collection: current_user.portfolios,
@@ -169,6 +191,7 @@
              ]
   %>
 
+  <%# ====== RECENT ACTIVITY ====== %>
   <%= render "partials/route/dashboard/section",
              columns: 2,
              section_title: "Atividades recentes",

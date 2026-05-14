@@ -1,3 +1,14 @@
+<%#
+  VIEW: show.html.erb
+  ACTION: RedemptionsController#show
+  DESCRIPTION: Displays full details for a single Redemption record.
+               Shows redemption info, financial values, classification,
+               transaction lifecycle, FIFO allocation analysis, charts,
+               and performance summary.
+  INSTANCE VARIABLES:
+    - @redemption: [Redemption] The record being displayed.
+%>
+
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Resgate ##{@redemption.id}",
            page_desc: "Retirada de #{@redemption.fund_investment.investment_fund.fund_name}",

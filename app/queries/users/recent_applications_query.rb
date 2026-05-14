@@ -1,58 +1,79 @@
-# app/queries/users/recent_applications_query.rb
+# Provides user-related query objects and data access operations.
 #
-# Returns the most recent applications for a given user.
-#
-# This query object encapsulates the retrieval of application records
-# associated with a user's portfolios. It isolates database querying logic
-# from controllers and views to improve maintainability and testability.
+# This namespace groups query services responsible for encapsulating
+# user-specific database querying and reporting logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Retrieves the most recent investment applications associated with a user.
+  #
+  # This query object loads recent application records through portfolio-linked
+  # fund investments while eager loading related associations to prevent
+  # N+1 query behavior in dashboards and reporting interfaces.
   class RecentApplicationsQuery
 
-  # =============================================================
-  #                      1. PUBLIC INTERFACE
-  # =============================================================
+    # ==========================================================================
+    # DEFAULT CONFIGURATION
+    # ==========================================================================
 
-  # Executes the query using a class-level interface.
-  #
-  # @param user [User] The user whose applications should be retrieved.
-  # @param limit [Integer] Maximum number of records to return (default: 5).
-  # @return [ActiveRecord::Relation<Application>] The filtered application records.
-  def self.call(user, limit: 5)
-    new(user, limit).call
-  end
+    # Default number of recent applications returned by the query.
+    #
+    # @return [Integer] Default query result limit.
+    DEFAULT_LIMIT = 5
 
-  # =============================================================
-  #                        2. INITIALIZATION
-  # =============================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-  # Initializes the query object.
-  #
-  # @param user [User] The target user.
-  # @param limit [Integer] Maximum number of records to return.
-  # @return [void]
-  def initialize(user, limit)
-    @user  = user
-    @limit = limit
-  end
+    class << self
 
-  public
+      # Executes the query object.
+      #
+      # @param user [User] User whose recent applications will be queried.
+      # @param limit [Integer] Maximum number of records to return.
+      # @return [ActiveRecord::Relation<Application>] Ordered recent application
+      #   records with eager-loaded associations.
+      def call(user, limit: DEFAULT_LIMIT)
+        new(user: user, limit: limit).call
+      end
+    end
 
-  # =============================================================
-  #                      3. QUERY EXECUTION
-  # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-  # Executes the database query.
-  #
-  # @return [ActiveRecord::Relation<Application>] The resulting applications.
-  def call
-    Application
-      .joins(fund_investment: :portfolio)
-      .where(portfolios: { user_id: @user.id })
-      .includes(fund_investment: [:portfolio, :investment_fund])
-      .order(request_date: :desc)
-      .limit(@limit)
-  end
+    # Initializes the query object.
+    #
+    # @param user [User] User whose recent applications will be queried.
+    # @param limit [Integer] Maximum number of records to return.
+    def initialize(user:, limit:)
+      @user  = user
+      @limit = limit
+    end
+
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
+
+    # Returns the most recent applications associated with the user.
+    #
+    # The query:
+    # - filters applications through portfolio ownership
+    # - eager loads investment relationships
+    # - orders results by request date descending
+    # - limits the number of returned records
+    #
+    # @return [ActiveRecord::Relation<Application>] Ordered recent application
+    #   records with eager-loaded associations.
+    def call
+      Application
+        .joins(fund_investment: :portfolio)
+        .where(portfolios: { user_id: @user.id })
+        .includes(fund_investment: %i[portfolio investment_fund])
+        .order(request_date: :desc)
+        .limit(@limit)
+    end
   end
 end

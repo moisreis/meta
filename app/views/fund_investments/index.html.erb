@@ -1,3 +1,13 @@
+<%#
+  VIEW: index.html.erb
+  ACTION: FundInvestmentsController#index
+  DESCRIPTION: Lists all fund investments (allocations) with a data table,
+               sorting, search, and filter panel. Exports are also available.
+  INSTANCE VARIABLES:
+    - @fund_investments: [ActiveRecord::Relation<FundInvestment>] Filtered collection.
+    - @q: [Ransack::Search] Search object for filtering/sorting.
+%>
+
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Lista de Alocações",
            page_desc: "Acompanhe como os fundos estão distribuídos entre as carteiras.",

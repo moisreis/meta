@@ -13,9 +13,9 @@ require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
 
-  # =============================================================
-  #                  1. DEVELOPMENT TOOLING
-  # =============================================================
+  # ============================================================================
+  # DEVELOPMENT TOOLING
+  # ============================================================================
 
   config.after_initialize do
     Bullet.enable        = true
@@ -26,9 +26,9 @@ Rails.application.configure do
     Bullet.add_footer    = true
   end
 
-  # =============================================================
-  #             2. CODE LOADING & PERFORMANCE
-  # =============================================================
+  # ============================================================================
+  # CODE LOADING & PERFORMANCE
+  # ============================================================================
 
   # Enable Semantic Logger lifecycle events.
   config.rails_semantic_logger.started    = true
@@ -47,9 +47,9 @@ Rails.application.configure do
   # Show detailed exception pages.
   config.consider_all_requests_local = true
 
-  # =============================================================
-  #                        3. LOGGING
-  # =============================================================
+  # ============================================================================
+  # LOGGING
+  # ============================================================================
 
   # Log application output to STDOUT.
   config.logger = ActiveSupport::Logger.new($stdout)
@@ -60,9 +60,9 @@ Rails.application.configure do
   # Silence framework deprecation warnings.
   config.active_support.deprecation = :silence
 
-  # =============================================================
-  #                         4. CACHING
-  # =============================================================
+  # ============================================================================
+  # CACHING
+  # ============================================================================
 
   # Toggle caching using tmp/caching-dev.txt.
   if Rails.root.join("tmp/caching-dev.txt").exist?
@@ -88,16 +88,16 @@ Rails.application.configure do
   # Use in-memory cache storage.
   config.cache_store = :memory_store
 
-  # =============================================================
-  #                    5. ACTIVE STORAGE
-  # =============================================================
+  # ============================================================================
+  # ACTIVE STORAGE
+  # ============================================================================
 
   # Store uploaded files locally.
   config.active_storage.service = :local
 
-  # =============================================================
-  #                    6. ACTION MAILER
-  # =============================================================
+  # ============================================================================
+  # ACTION MAILER
+  # ============================================================================
 
   # Do not raise delivery errors.
   config.action_mailer.raise_delivery_errors = false
@@ -111,9 +111,9 @@ Rails.application.configure do
     port: 3000
   }
 
-  # =============================================================
-  #              7. ACTIVE RECORD & DEBUGGING
-  # =============================================================
+  # ============================================================================
+  # ACTIVE RECORD & DEBUGGING
+  # ============================================================================
 
   # Raise an error when migrations are pending.
   config.active_record.migration_error = :page_load
@@ -130,19 +130,19 @@ Rails.application.configure do
   # Highlight redirect source locations.
   config.action_dispatch.verbose_redirect_logs = true
 
-  # =============================================================
-  #                   8. ASSETS & VIEWS
-  # =============================================================
+  # ============================================================================
+  # ASSETS & VIEWS
+  # ============================================================================
 
   # Suppress asset request logging.
   config.assets.quiet = true
 
   # Annotate rendered templates with file paths.
-  config.action_view.annotate_rendered_view_with_filenames = true
+  config.action_view.annotate_rendered_view_with_filenames = false
 
-  # =============================================================
-  #          9. CONTROLLER & FRAMEWORK SAFETY
-  # =============================================================
+  # ============================================================================
+  # CONTROLLER & FRAMEWORK SAFETY
+  # ============================================================================
 
   # Raise errors for invalid callback references.
   config.action_controller.raise_on_missing_callback_actions = true

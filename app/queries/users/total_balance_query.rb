@@ -1,56 +1,54 @@
-# frozen_string_literal: true
-
-# app/queries/users/total_balance_query.rb
+# Provides user-related query objects and data access operations.
 #
-# Calculates the aggregate checking account balance across all
-# portfolios belonging to a specific user.
-#
-# This query performs the aggregation directly at the database
-# level to avoid loading account records into memory.
-#
-# @example
-#   total_balance = Users::TotalBalanceQuery.call(user)
-#
-#   total_balance
-#   # => BigDecimal
+# This namespace groups query services responsible for encapsulating
+# user-specific database querying and reporting logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Calculates the total checking account balance for a user.
+  #
+  # This query object aggregates balances across all checking accounts
+  # associated with portfolios owned by the specified user.
   class TotalBalanceQuery
 
-    # ===========================================================
-    #                         1. ENTRYPOINT
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # Executes the query.
-    #
-    # @param user [User]
-    # @return [BigDecimal]
-    def self.call(user)
-      new(user).call
+    class << self
+
+      # Executes the query object.
+      #
+      # @param user [User] User whose total balance will be calculated.
+      # @return [BigDecimal] Sum of all associated checking account balances.
+      def call(user)
+        new(user: user).call
+      end
     end
 
-    private
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # ===========================================================
-    #                        2. INITIALIZATION
-    # ===========================================================
-
-    # @param user [User]
-    def initialize(user)
+    # Initializes the query object.
+    #
+    # @param user [User] User whose total balance will be calculated.
+    def initialize(user:)
       @user = user
     end
 
-    public
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # ===========================================================
-    #                           3. QUERY
-    # ===========================================================
-
-    # Returns the sum of all checking account balances associated
-    # with the user's portfolios.
+    # Calculates the total balance across all user checking accounts.
     #
-    # @return [BigDecimal]
+    # The query traverses portfolio ownership to ensure balances are limited
+    # to accounts associated with the specified user.
+    #
+    # @return [BigDecimal] Sum of all associated checking account balances.
     def call
       CheckingAccount
         .joins(:portfolio)

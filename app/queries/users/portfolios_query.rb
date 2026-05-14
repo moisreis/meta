@@ -1,56 +1,60 @@
-# frozen_string_literal: true
-
-# app/queries/users/portfolios_query.rb
+# Provides user-related query objects and data access operations.
 #
-# Returns all portfolios associated with a user while
-# preloading aggregated portfolio metrics at the database level.
-#
-# @example
-#   portfolios = Users::PortfoliosQuery.call(user)
-#
-#   portfolios.each do |portfolio|
-#     portfolio.fund_investments_count
-#     portfolio.total_invested_value
-#     portfolio.total_percentage_allocation
-#   end
+# This namespace groups query services responsible for encapsulating
+# user-specific database querying and reporting logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Builds aggregated portfolio data for a user.
+  #
+  # This query object retrieves portfolios associated with a user and
+  # calculates investment-related aggregate metrics used for reporting
+  # and dashboard presentation.
   class PortfoliosQuery
 
-    # ===========================================================
-    #                         1. ENTRYPOINT
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # Executes the portfolio aggregation query.
-    #
-    # @param user [User]
-    #
-    # @return [ActiveRecord::Relation<Portfolio>]
-    def self.call(user)
-      new(user: user).call
+    class << self
+
+      # Executes the query object.
+      #
+      # @param user [User] User whose portfolios will be queried.
+      # @return [ActiveRecord::Relation<Portfolio>] Aggregated portfolio relation.
+      def call(user)
+        new(user: user).call
+      end
     end
 
-    # ===========================================================
-    #                      2. INITIALIZATION
-    # ===========================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # Initializes the query state.
+    # Initializes the query object.
     #
-    # @param user [User]
-    #
-    # @return [void]
+    # @param user [User] User whose portfolios will be queried.
     def initialize(user:)
       @user = user
     end
 
-    # ===========================================================
-    #                        3. QUERY WORKFLOW
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Loads user portfolios with aggregated investment metrics.
+    # Returns aggregated portfolio investment metrics for the user.
     #
-    # @return [ActiveRecord::Relation<Portfolio>]
+    # The resulting relation includes:
+    # - investment count
+    # - total invested value
+    # - total allocation percentage
+    #
+    # Portfolios without investments are preserved through LEFT JOIN semantics.
+    #
+    # @return [ActiveRecord::Relation<Portfolio>] Aggregated portfolio relation
+    #   with computed investment metrics.
     def call
       @user
         .portfolios

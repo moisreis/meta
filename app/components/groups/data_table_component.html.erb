@@ -1,13 +1,22 @@
-<%# frozen_string_literal: true %>
+<%#
+  PARTIAL: app/components/groups/data_table_component.html.erb
+  DESCRIPTION: Renders a configurable data table with optional toolbar actions, search reset, export, and pagination.
 
+  LOCAL VARIABLES:
+  - @columns:        [Array<Hash>] Column definitions (label, icon, description).
+  - @rows:           [Enumerable] Table rows (supports pagination or plain arrays).
+  - @turbo_frame_id: [String] Turbo frame identifier for async updates.
+  - @search_url:     [String] URL used to reset filters/search state.
+  - @q_object:       [Object, nil] Query object enabling toolbar rendering.
+  - @new_path:       [String, nil] Optional path for creating new records.
+  - @export_url:     [String, nil] Optional export endpoint URL.
+%>
+
+<!-- Groups::DataTableComponent -->
 <% content_for :page_total, total_count.to_s %>
 
 <div class="flex flex-col gap-3">
 
-  <%# =========================================================
-    #                     TOOLBAR
-    # Only rendered when a Ransack q_object is provided.
-    # ========================================================= %>
   <% if toolbar? %>
     <div class="flex flex-row [&>div]:flex [&>div]:flex-row [&>div]:gap-1.5 [&>div]:items-center justify-between items-center gap-6">
 
@@ -53,38 +62,34 @@
     </div>
   <% end %>
 
-  <%# =========================================================
-    #                   TABLE (TURBO FRAME)
-    # ========================================================= %>
   <turbo-frame id="<%= @turbo_frame_id %>">
     <div class="p-3 rounded-base border border-border bg-white overflow-x-auto">
-    <table class="w-full text-sm table-auto border-separate border-spacing-y-1.5
-                    [&>thead]:w-full [&>tbody]:w-full
-                    [&>tbody>tr]:h-9 [&>tbody>tr]:w-full
-                    [&>thead>tr]:h-9">
-      <thead>
-        <tr class="[&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:text-xs [&>th]:text-body
-                     [&>th]:tracking-widest [&>th]:text-left [&>th]:uppercase
-                     [&>th]:font-medium [&>th]:font-mono">
-          <% @columns.each do |col| %>
-            <%= render Modules::TableColumnComponent.new(
-                  label:       col[:label],
-                  icon:        col[:icon],
-                  description: col[:description]
-                ) %>
-          <% end %>
-        </tr>
-      </thead>
-      <tbody>
-        <%= content %>
-      </tbody>
-    </table>
+      <table class="w-full text-sm table-auto border-separate border-spacing-y-1.5
+                      [&>thead]:w-full [&>tbody]:w-full
+                      [&>tbody>tr]:h-9 [&>tbody>tr]:w-full
+                      [&>thead>tr]:h-9">
+
+        <thead>
+          <tr class="[&>th]:whitespace-nowrap [&>th]:px-3 [&>th]:text-xs [&>th]:text-body
+                       [&>th]:tracking-widest [&>th]:text-left [&>th]:uppercase
+                       [&>th]:font-medium [&>th]:font-mono">
+            <% @columns.each do |col| %>
+              <%= render Modules::TableColumnComponent.new(
+                    label:       col[:label],
+                    icon:        col[:icon],
+                    description: col[:description]
+                  ) %>
+            <% end %>
+          </tr>
+        </thead>
+
+        <tbody>
+          <%= content %>
+        </tbody>
+      </table>
     </div>
   </turbo-frame>
 
-  <%# =========================================================
-    #                    PAGINATION
-    # ========================================================= %>
   <div class="flex justify-start px-3 mt-3">
     <%= helpers.paginate @rows %>
   </div>

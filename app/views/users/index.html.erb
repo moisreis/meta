@@ -1,111 +1,79 @@
 <%#
-  VIEW: app/views/users/index.html.erb
-  ACTION: UsersController#index
+  PARTIAL: app/views/users/index.html.erb
+  DESCRIPTION: Renders users listing page with dashboard wrapper, data table, and filter sidebar.
 
-  DESCRIPTION:
-  Displays the user listing page with searchable, filterable,
-  and paginated records using reusable table and filter
-  components.
-
-  INSTANCE VARIABLES:
-  - @users: [ActiveRecord::Relation<User>]
-    Paginated collection of users displayed in the table.
-
-  - @q: [Ransack::Search]
-    Search object used to filter and query users.
+  LOCAL VARIABLES:
+  - @users: [ActiveRecord::Relation<User>] Collection of users.
+  - @q:     [Ransack::Search] Search object for filtering users.
 %>
 
-<%# ========================================================= %>
-<%#                    1. DASHBOARD WRAPPER                  %>
-<%# ========================================================= %>
-
 <%= render(
-      Layout::DashboardWrapperComponent.new(
-        page_title:   "Lista de usuários",
-        page_desc:    "Lista de usuários cadastrados no sistema.",
-        current_view: "datatable"
-      )
-    ) do %>
-
-  <%# ======================================================= %>
-  <%#                    2. USERS DATA TABLE                 %>
-  <%# ======================================================= %>
+  Layout::DashboardWrapperComponent.new(
+    page_title:   "Lista de usuários",
+    page_desc:    "Lista de usuários cadastrados no sistema.",
+    current_view: "datatable"
+  )
+) do %>
 
   <%= render(
-        Groups::DataTableComponent.new(
-          columns: [
-            { label: "Nome",      icon: "user" },
-            { label: "E-mail",    icon: "at-sign" },
-            { label: "Nível",     icon: "shield-user" },
-            { label: "Carteiras", icon: "wallet" }
-          ],
-          rows:           @users,
-          turbo_frame_id: "users_table",
-          search_url:     users_path,
-          new_path:       new_user_path,
-          q_object:       @q
-        )
-      ) do %>
-
-    <%# ===================================================== %>
-    <%#                     2a. TABLE ROWS                   %>
-    <%# ===================================================== %>
+    Groups::DataTableComponent.new(
+      columns: [
+        { label: "Nome",      icon: "user" },
+        { label: "E-mail",    icon: "at-sign" },
+        { label: "Nível",     icon: "shield-user" },
+        { label: "Carteiras", icon: "wallet" }
+      ],
+      rows:           @users,
+      turbo_frame_id: "users_table",
+      search_url:     users_path,
+      new_path:       new_user_path,
+      q_object:       @q
+    )
+  ) do %>
 
     <% @users.each do |user| %>
-
-      <%# =================================================== %>
-      <%#                    2b. USER ROW                    %>
-      <%# =================================================== %>
-
       <%= render(
-            Modules::TableRowComponent.new(
-              cells: [
-                normalize_title(user.full_name),
-                normalize_text(user.email),
-                normalize_badge(
-                  user.admin? ? "Administrador" : "Usuário"
-                ),
-                user.portfolios.size.zero? ?
-                  normalize_no_data :
-                  normalize_number(user.portfolios.size)
-              ],
-              model_id:     user.id,
-              show_path:    user_path(user),
-              edit_path:    edit_user_path(user),
-              destroy_path: user_path(user)
-            )
-          ) %>
-
+        Modules::TableRowComponent.new(
+          cells: [
+            normalize_title(user.full_name),
+            normalize_text(user.email),
+            normalize_badge(user.admin? ? "Administrador" : "Usuário"),
+            user.portfolios.size.zero? ?
+              normalize_no_data :
+              normalize_number(user.portfolios.size)
+          ],
+          model_id:     user.id,
+          show_path:    user_path(user),
+          edit_path:    edit_user_path(user),
+          destroy_path: user_path(user)
+        )
+      ) %>
     <% end %>
 
   <% end %>
 
 <% end %>
 
-<%# ========================================================= %>
-<%#                      3. FILTERS PANEL                    %>
-<%# ========================================================= %>
-
 <%= render(
-      Groups::FiltersComponent.new(
-        q_object:       @q,
-        search_url:     users_path,
-        turbo_frame_id: "users_table",
-        filters: [
-          {
-            key:         :first_name_cont,
-            label:       "Nome",
-            description: "Mostra usuários cujo nome contém estes caracteres.",
-            placeholder: "Maria da Silva",
-            icon_name:   "user"
-          },
-          {
-            key:         :email_cont,
-            label:       "E-mail",
-            description: "Mostra usuários cujo e-mail contém estes caracteres.",
-            placeholder: "emaildousuario@email.com",
-            icon_name:   "at-sign"
-          }
-        ]
-      )
-    ) %>
+  Groups::FiltersComponent.new(
+    q_object:       @q,
+    search_url:     users_path,
+    turbo_frame_id: "users_table",
+    filters: [
+      {
+        key:         :first_name_cont,
+        label:       "Nome",
+        description: "Mostra usuários cujo nome contém estes caracteres.",
+        placeholder: "Maria da Silva",
+        icon_name:   "user"
+      },
+      {
+        key:         :email_cont,
+        label:       "E-mail",
+        description: "Mostra usuários cujo e-mail contém estes caracteres.",
+        placeholder: "emaildousuario@email.com",
+        icon_name:   "at-sign"
+      }
+    ]
+  )
+) %>

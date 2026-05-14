@@ -1,19 +1,52 @@
+# Configures Kamal deployment settings for the Rails application.
+#
+# This file defines container image configuration, deployment targets,
+# environment variables, persistent storage volumes, runtime aliases,
+# and build architecture settings used during application deployment.
+#
+# Environment Variables:
+# - RAILS_MASTER_KEY:   [String] Rails credentials encryption key.
+# - SOLID_QUEUE_IN_PUMA [Boolean] Enables Solid Queue integration within Puma.
+#
+# @author Moisés Reis
+
+# ============================================================================
+# APPLICATION & IMAGE CONFIGURATION
+# ============================================================================
+
 service: meta
 
 image: meta
+
+# ============================================================================
+# APPLICATION SERVERS
+# ============================================================================
 
 servers:
   web:
     - 192.168.0.1
 
+# ============================================================================
+# CONTAINER REGISTRY
+# ============================================================================
+
 registry:
   server: localhost:5555
+
+# ============================================================================
+# ENVIRONMENT VARIABLES
+# ============================================================================
 
 env:
   secret:
     - RAILS_MASTER_KEY
+
   clear:
     SOLID_QUEUE_IN_PUMA: true
+
+# ============================================================================
+# DEPLOYMENT COMMAND ALIASES
+# ============================================================================
 
 aliases:
   console: app exec --interactive --reuse "bin/rails console"
@@ -21,10 +54,22 @@ aliases:
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
 
+# ============================================================================
+# PERSISTENT STORAGE
+# ============================================================================
+
 volumes:
   - "meta_storage:/rails/storage"
 
+# ============================================================================
+# ASSET CONFIGURATION
+# ============================================================================
+
 asset_path: /rails/public/assets
+
+# ============================================================================
+# IMAGE BUILD SETTINGS
+# ============================================================================
 
 builder:
   arch: amd64

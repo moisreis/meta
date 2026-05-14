@@ -1,8 +1,20 @@
+<%#
+  PARTIAL: app/components/modules/table_column_component.html.erb
+  DESCRIPTION: Renders a table column header with optional icon and description.
+
+  LOCAL VARIABLES:
+  - @label:       [String] Column header label (required).
+  - @icon:        [String, nil] Optional icon identifier for the column.
+  - @description: [String, nil] Optional secondary descriptive text.
+%>
+
+<!-- Modules::TableColumnComponent [<%= @label %>] -->
 <th class="h-9">
   <div class="flex flex-col justify-start items-start h-9">
     <span class="font-mono text-xs text-body tracking-widest uppercase font-medium">
       <%= @label %>
     </span>
+
     <% if description? %>
       <%= content_tag :span, @description, class: "font-medium font-mono text-3xs uppercase text-muted" %>
     <% end %>

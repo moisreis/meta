@@ -1,3 +1,14 @@
+<%#
+  VIEW: error.html.erb
+  ACTION: ErrorsController (layout)
+  DESCRIPTION: Layout used for error pages (404, 500, etc.).
+               Displays a centered card with a label, title, description,
+               and a "Voltar" link. Uses shared/head for meta tags.
+  INSTANCE VARIABLES:
+    - @label: [String] The error badge label.
+    - @title: [String] The error heading.
+    - @description: [String] The error description text.
+%>
 <html>
 <head>
   <%= render "shared/head" %>

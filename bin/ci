@@ -5,34 +5,28 @@
 # This script initializes the Rails environment, exposes the CI interface,
 # and loads the CI pipeline definition from the application configuration.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Environment Boot
-# 2. CI Interface Setup
-# 3. CI Configuration Loading
-#
 # @author Moisés Reis
 
-# =============================================================
-#                     1. ENVIRONMENT BOOT
-# =============================================================
+# ============================================================================
+# ENVIRONMENT BOOT
+# ============================================================================
 
 require_relative "../config/boot"
 
-# =============================================================
-#                    2. CI INTERFACE SETUP
-# =============================================================
+# ============================================================================
+# CI INTERFACE SETUP
+# ============================================================================
 
 require "active_support/continuous_integration"
 
 # Reference to the ActiveSupport CI runner.
 #
-# @return [ActiveSupport::ContinuousIntegration] CI execution interface.
+# @return [ActiveSupport::ContinuousIntegration]
 CI = ActiveSupport::ContinuousIntegration
 
-# =============================================================
-#               3. CI CONFIGURATION LOADING
-# =============================================================
+# ============================================================================
+# CI CONFIGURATION LOADING
+# ============================================================================
 
 # Load CI pipeline definition.
 require_relative "../config/ci.rb"

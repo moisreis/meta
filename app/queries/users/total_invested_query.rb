@@ -1,55 +1,54 @@
-# frozen_string_literal: true
-
-# app/queries/users/total_invested_query.rb
+# Provides user-related query objects and data access operations.
 #
-# Calculates the aggregate invested value across all fund
-# investments associated with a user's portfolios.
-#
-# This query performs the aggregation directly in the database
-# to avoid unnecessary Active Record object loading.
-#
-# @example
-#   total_invested = Users::TotalInvestedQuery.call(user)
-#
-#   total_invested
-#   # => BigDecimal
+# This namespace groups query services responsible for encapsulating
+# user-specific database querying and reporting logic.
 #
 # @author Moisés Reis
-module Users
-  class TotalInvestedQuery
-    # ===========================================================
-    #                         1. ENTRYPOINT
-    # ===========================================================
 
-    # Executes the query.
-    #
-    # @param user [User]
-    # @return [BigDecimal]
-    def self.call(user)
-      new(user).call
+module Users
+
+  # Calculates the total invested value for a user.
+  #
+  # This query object aggregates investment totals across all fund investments
+  # associated with portfolios owned by the specified user.
+  class TotalInvestedQuery
+
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
+
+    class << self
+
+      # Executes the query object.
+      #
+      # @param user [User] User whose total invested value will be calculated.
+      # @return [BigDecimal] Sum of all associated invested values.
+      def call(user)
+        new(user: user).call
+      end
     end
 
-    private
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # ===========================================================
-    #                        2. INITIALIZATION
-    # ===========================================================
-
-    # @param user [User]
-    def initialize(user)
+    # Initializes the query object.
+    #
+    # @param user [User] User whose total invested value will be calculated.
+    def initialize(user:)
       @user = user
     end
 
-    public
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # ===========================================================
-    #                           3. QUERY
-    # ===========================================================
-
-    # Returns the total invested value across all portfolios
-    # owned by the user.
+    # Calculates the total invested value across all user fund investments.
     #
-    # @return [BigDecimal]
+    # The query traverses portfolio ownership to ensure investment totals
+    # are restricted to records associated with the specified user.
+    #
+    # @return [BigDecimal] Sum of all associated invested values.
     def call
       FundInvestment
         .joins(:portfolio)

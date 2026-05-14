@@ -1,23 +1,33 @@
-<%# frozen_string_literal: true %>
-<div class="relative flex flex-col justify-start gap-1.5">
+<%#
+  PARTIAL: app/components/forms/input_field_component.html.erb
+  DESCRIPTION: Renders a configurable form input field with optional masking, validation state, and icon support.
 
-  <%# ===================================================== %>
-  <%#                     LABEL                           %>
-  <%# ===================================================== %>
+  LOCAL VARIABLES:
+  - @f:                 [FormBuilder] Rails form builder instance.
+  - @name:             [Symbol] Attribute name bound to the form object.
+  - @label:            [String, nil] Optional field label.
+  - @field_type:       [Symbol] Input type (e.g., :text_field, :number_field).
+  - @placeholder:      [String, nil] Placeholder text.
+  - @desc:             [String, nil] Help or description text.
+  - @icon_name:        [String, nil] Optional trailing icon.
+  - @is_inactive:      [Boolean, nil] Disabled state flag.
+  - @is_half_width:    [Boolean] Layout width modifier.
+  - @is_small:         [Boolean] Compact sizing flag.
+  - @currency_mask:    [Boolean] Enables currency formatting mask.
+  - @cnpj_mask:        [Boolean] Enables CNPJ formatting mask.
+  - @bank_account_mask:[Boolean] Enables bank account formatting mask.
+  - @step:             [String, nil] HTML step attribute.
+  - @inputmode:        [String, nil] HTML inputmode attribute.
+%>
+
+<!-- Forms::InputField [<%= @label %>] -->
+<div class="relative flex flex-col justify-start gap-1.5">
 
   <% if @label.present? %>
     <%= @f.label @name, @label, class: LABEL_CLASSES %>
   <% end %>
 
-  <%# ===================================================== %>
-  <%#                  INPUT WRAPPER                      %>
-  <%# ===================================================== %>
-
   <div class="relative <%= wrapper_width_class %>">
-
-    <%# --------------------------------------------------- %>
-    <%#               CURRENCY MASK                        %>
-    <%# --------------------------------------------------- %>
 
     <% if @currency_mask %>
       <div data-controller="currency-mask">
@@ -34,10 +44,6 @@
         >
         <%= @f.hidden_field @name, data: { "currency-mask-target": "hidden" } %>
       </div>
-
-    <%# --------------------------------------------------- %>
-    <%#                 CNPJ MASK                          %>
-    <%# --------------------------------------------------- %>
 
     <% elsif @cnpj_mask %>
       <div data-controller="cnpj-mask">
@@ -56,10 +62,6 @@
         <%= @f.hidden_field @name, data: { "cnpj-mask-target": "hidden" } %>
       </div>
 
-    <%# --------------------------------------------------- %>
-    <%#              BANK ACCOUNT MASK                     %>
-    <%# --------------------------------------------------- %>
-
     <% elsif @bank_account_mask %>
       <div data-controller="bank-account-mask">
         <input
@@ -76,10 +78,6 @@
         >
         <%= @f.hidden_field @name, data: { "bank-account-mask-target": "hidden" } %>
       </div>
-
-    <%# --------------------------------------------------- %>
-    <%#               STANDARD INPUT                       %>
-    <%# --------------------------------------------------- %>
 
     <% else %>
       <%= @f.send(
@@ -98,10 +96,6 @@
       %>
     <% end %>
 
-    <%# --------------------------------------------------- %>
-    <%#                  ICON DECORATION                   %>
-    <%# --------------------------------------------------- %>
-
     <% if @icon_name.present? %>
       <div class="absolute right-0 top-1/2 -translate-y-1/2 w-9 rounded-tr-base rounded-tb-base bg-input h-full flex items-center justify-center border border-border border-l-0">
         <%= render_icon(@icon_name, class: "size-4 stroke-muted") %>
@@ -109,10 +103,6 @@
     <% end %>
 
   </div>
-
-  <%# ===================================================== %>
-  <%#              DESCRIPTION / ERROR TEXT               %>
-  <%# ===================================================== %>
 
   <% if has_error? %>
     <%= content_tag :p,

@@ -4,14 +4,10 @@
 # reducing the risk of exposing confidential information such as credentials,
 # tokens, and personal data.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Sensitive Parameter Filtering
-#
 # @author Moisés Reis
 
 # =============================================================
-#            1. SENSITIVE PARAMETER FILTERING
+# SENSITIVE PARAMETER FILTERING
 # =============================================================
 
 # Configure parameters to be partially matched and filtered from logs.

@@ -1,62 +1,66 @@
-# app/services/users/update_service.rb
+# Provides user-related service objects and business operations.
 #
-# Handles the update workflow for user accounts.
-#
-# This service validates submitted form data, updates the
-# target user record, and promotes persistence errors back
-# into the form object.
+# This namespace groups service classes responsible for orchestrating
+# user-related workflows, validation handling, and persistence logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Handles user update workflows through form-backed validation.
+  #
+  # This service validates incoming form data, updates an existing user
+  # record, and promotes persistence-layer validation errors back to the
+  # form object when necessary.
   class UpdateService < Users::BaseService
 
-    # ===========================================================
-    #                         1. ENTRYPOINT
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # Executes the user update workflow.
-    #
-    # @param user [User]
-    #   The user record being updated.
-    #
-    # @param params [ActionController::Parameters]
-    #
-    # @param actor [User]
-    #   The authenticated user performing the action.
-    #
-    # @return [Users::BaseService::Result]
-    def self.call(user, params, actor:)
-      instance = new(user, params, actor: actor)
+    class << self
 
-      instance.send(:call)
+      # Executes the user update workflow.
+      #
+      # @param user [User] User entity to be updated.
+      # @param params [Hash] Raw user form parameters.
+      # @param actor [User] User performing the update operation.
+      # @return [Users::BaseService::Result] Structured service result.
+      def call(user, params, actor:)
+        instance = new(user: user, params: params, actor: actor)
+        instance.send(:call)
+      end
     end
 
     private
 
-    # ===========================================================
-    #                        2. INITIALIZATION
-    # ===========================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # Initializes the service state and form object.
+    # Initializes the service object.
     #
-    # @param user [User]
-    # @param params [ActionController::Parameters]
-    # @param actor [User]
-    #
-    # @return [void]
-    def initialize(user, params, actor:)
+    # @param user [User] User entity to be updated.
+    # @param params [Hash] Raw user form parameters.
+    # @param actor [User] User performing the update operation.
+    def initialize(user:, params:, actor:)
       @user  = user
       @actor = actor
       @form  = ::UserForm.new(params)
     end
 
-    # ===========================================================
-    #                      3. UPDATE WORKFLOW
-    # ===========================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
-    # Validates the form and attempts to update the user.
+    # Executes the user update workflow.
     #
-    # @return [Users::BaseService::Result]
+    # The workflow:
+    # - validates the form object
+    # - updates the persisted user entity
+    # - promotes model validation errors back to the form when necessary
+    #
+    # @return [Users::BaseService::Result] Structured service result.
     def call
       return failure(@user) unless @form.valid?
 

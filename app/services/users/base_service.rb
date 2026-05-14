@@ -1,32 +1,35 @@
-# app/services/users/base_service.rb
+# Provides user-related service objects and business operations.
 #
-# Provides shared behavior and result handling for
-# user-related service objects.
-#
-# This abstract base class standardizes:
-# - Success and failure responses
-# - Form error propagation
-# - Result object structure
+# This namespace groups service classes responsible for orchestrating
+# user-related workflows, validation handling, and transactional logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Provides shared result handling and error propagation behavior
+  # for user service objects.
+  #
+  # This abstract base service standardizes service response structures
+  # and centralizes form error promotion logic across user workflows.
+  #
+  # @abstract Subclass and implement domain-specific service behavior.
   class BaseService
 
-    # ===========================================================
-    #                    1. RESULT STRUCTURE
-    # ===========================================================
+    # ==========================================================================
+    # RESULT OBJECTS
+    # ==========================================================================
 
-    # Standardized response object returned by
-    # user-related service objects.
+    # Immutable service result object returned by service operations.
     #
     # @!attribute [r] success?
-    #   @return [Boolean]
+    #   @return [Boolean] Indicates whether the service operation succeeded.
     #
     # @!attribute [r] user
-    #   @return [User, nil]
+    #   @return [User, nil] Persisted or processed user entity.
     #
     # @!attribute [r] form
-    #   @return [Object, nil]
+    #   @return [ActiveModel::Model] Form object containing validation state.
     Result = Struct.new(
       :success?,
       :user,
@@ -36,15 +39,14 @@ module Users
 
     private
 
-    # ===========================================================
-    #                    2. SUCCESS HELPERS
-    # ===========================================================
+    # ==========================================================================
+    # RESULT HELPERS
+    # ==========================================================================
 
-    # Builds a successful service response.
+    # Builds a successful service result.
     #
-    # @param user [User]
-    #
-    # @return [Result]
+    # @param user [User] Successfully processed user entity.
+    # @return [Result] Successful service result object.
     def success(user)
       Result.new(
         success?: true,
@@ -53,15 +55,10 @@ module Users
       )
     end
 
-    # ===========================================================
-    #                    3. FAILURE HELPERS
-    # ===========================================================
-
-    # Builds a failed service response.
+    # Builds a failed service result.
     #
-    # @param user [User, nil]
-    #
-    # @return [Result]
+    # @param user [User, nil] User entity associated with the failed operation.
+    # @return [Result] Failed service result object.
     def failure(user = nil)
       Result.new(
         success?: false,
@@ -70,15 +67,12 @@ module Users
       )
     end
 
-    # ===========================================================
-    #                     4. ERROR PROMOTION
-    # ===========================================================
-
-    # Copies validation errors from a model into the current
-    # form object.
+    # Promotes model validation errors onto the form object.
     #
-    # @param model [ActiveModel::Model]
+    # This method copies validation errors from a persistence model into
+    # the service form object to provide unified error presentation.
     #
+    # @param model [ActiveModel::Model] Model containing validation errors.
     # @return [void]
     def promote_errors(model)
       model.errors.each do |error|

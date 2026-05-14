@@ -1,51 +1,49 @@
-# Configures Git to ignore temporary, sensitive, and environment-specific files.
+# Configures Git ignore rules for temporary, generated, sensitive, and
+# environment-specific files.
 #
-# This file prevents development artifacts, logs, and security keys from being
-# committed to version control.
-#
-# TABLE OF CONTENTS:
-#
-# 1. Environment & Config
-# 2. Logs & Temp Files
-# 3. Storage & Assets
-# 4. Security Keys
+# This file prevents local development artifacts, runtime data, compiled assets,
+# and secret credentials from being committed to version control.
 #
 # @author Moisés Reis
 
-# =============================================================
-#                  1. ENVIRONMENT & CONFIG
-# =============================================================
+# ============================================================================
+# ENVIRONMENT & CONFIGURATION
+# ============================================================================
 
 /.bundle
 /.env*
 
-# =============================================================
-#                    2. LOGS & TEMP FILES
-# =============================================================
+# ============================================================================
+# LOGS & TEMPORARY FILES
+# ============================================================================
 
 /log/*
 /tmp/*
 !/log/.keep
 !/tmp/.keep
+
 /tmp/pids/*
 !/tmp/pids/
 !/tmp/pids/.keep
 
-# =============================================================
-#                     3. STORAGE & ASSETS
-# =============================================================
+# ============================================================================
+# STORAGE & GENERATED ASSETS
+# ============================================================================
 
 /storage/*
 !/storage/.keep
+
 /tmp/storage/*
 !/tmp/storage/
 !/tmp/storage/.keep
+
 /public/assets
+
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
-# =============================================================
-#                      4. SECURITY KEYS
-# =============================================================
+# ============================================================================
+# ENCRYPTION & SECRET KEYS
+# ============================================================================
 
 /config/*.key

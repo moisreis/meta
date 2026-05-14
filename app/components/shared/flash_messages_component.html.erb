@@ -1,3 +1,12 @@
+<%#
+  PARTIAL: app/components/shared/_flash_messages_component.html.erb
+  DESCRIPTION: Renders flash message container and icon mapping for toast notifications.
+
+  LOCAL VARIABLES:
+  - flash: [Hash] Rails flash hash containing message type => message pairs.
+%>
+
+<!-- Shared::FlashMessages -->
 <div id="toast-icons" class="hidden" aria-hidden="true">
   <% ICON_MAP.each do |type, icon| %>
     <span data-icon="<%= type %>">

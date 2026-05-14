@@ -1,28 +1,24 @@
-# Defines path-specific attributes and handling rules for Git.
+# Defines Git attribute rules for generated files, vendored dependencies,
+# and encrypted credentials.
 #
-# This file ensures generated files, vendored code, and encrypted credentials
-# are treated correctly by the version control system and repository linguists.
-#
-# TABLE OF CONTENTS:
-#
-# 1. Linguist Overrides
-# 2. Encrypted Credentials
+# This file configures repository behavior for diff handling and GitHub
+# Linguist classification to improve repository readability and tooling.
 #
 # @author Moisés Reis
 
-# =============================================================
-#                    1. LINGUIST OVERRIDES
-# =============================================================
+# ============================================================================
+# GITHUB LINGUIST OVERRIDES
+# ============================================================================
 
-# Mark the database schema as having been generated.
+# Treat the Rails schema file as generated code.
 db/schema.rb linguist-generated
 
-# Mark any vendored files as having been vendored.
+# Treat vendored dependencies as third-party code.
 vendor/* linguist-vendored
 
-# =============================================================
-#                  2. ENCRYPTED CREDENTIALS
-# =============================================================
+# ============================================================================
+# ENCRYPTED CREDENTIAL DIFF HANDLING
+# ============================================================================
 
 config/credentials/*.yml.enc diff=rails_credentials
 config/credentials.yml.enc diff=rails_credentials

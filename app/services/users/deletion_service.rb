@@ -1,57 +1,56 @@
-# frozen_string_literal: true
-
-# app/services/users/deletion_service.rb
+# Provides user-related service objects and business operations.
 #
-# Handles the deletion workflow for user accounts.
-#
-# This service encapsulates record destruction logic and
-# standardizes success and failure responses.
+# This namespace groups service classes responsible for orchestrating
+# user-related workflows, validation handling, and transactional logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Handles user deletion workflows.
+  #
+  # This service encapsulates user removal behavior and standardizes
+  # success and failure result handling for deletion operations.
   class DeletionService < Users::BaseService
 
-    # ===========================================================
-    #                         1. ENTRYPOINT
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # Executes the user deletion workflow.
-    #
-    # @param user [User]
-    #   The user record being deleted.
-    #
-    # @param actor [User]
-    #   The authenticated user performing the action.
-    #
-    # @return [Users::BaseService::Result]
-    def self.call(user, actor:)
-      new(user, actor: actor).send(:call)
+    class << self
+
+      # Executes the user deletion workflow.
+      #
+      # @param user [User] User entity to be deleted.
+      # @param actor [User] User performing the deletion operation.
+      # @return [Users::BaseService::Result] Structured service result.
+      def call(user, actor:)
+        new(user: user, actor: actor).send(:call)
+      end
     end
 
     private
 
-    # ===========================================================
-    #                        2. INITIALIZATION
-    # ===========================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # Initializes the service state.
+    # Initializes the service object.
     #
-    # @param user [User]
-    # @param actor [User]
-    #
-    # @return [void]
-    def initialize(user, actor:)
+    # @param user [User] User entity to be deleted.
+    # @param actor [User] User performing the deletion operation.
+    def initialize(user:, actor:)
       @user  = user
       @actor = actor
     end
 
-    # ===========================================================
-    #                     3. DELETION WORKFLOW
-    # ===========================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
-    # Attempts to permanently delete the user record.
+    # Executes the user deletion workflow.
     #
-    # @return [Users::BaseService::Result]
+    # @return [Users::BaseService::Result] Structured service result.
     def call
       return failure(@user) unless @user.destroy
 

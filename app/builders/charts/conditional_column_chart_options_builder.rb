@@ -1,52 +1,49 @@
-# Builds configuration options for conditional column charts with dynamic coloring
-# based on positive or negative values.
+# frozen_string_literal: true
+
+# Builds configuration options for conditional column chart rendering.
 #
-# This query object centralizes chart styling rules and applies consistent
-# color semantics for financial and performance visualizations.
+# This service generates Chart.js-compatible configuration with conditional
+# dataset coloring based on value polarity (positive/negative).
 #
-# TABLE OF CONTENTS:
-#   1. Constants & Configuration
-#   2. Public Methods
-#   3. Private Methods
+# It centralizes UI styling rules for financial bar/column visualizations.
 #
 # @author Moisés Reis
+
 module Charts
+
+  # Constructs a column chart configuration with conditional coloring rules.
   class ConditionalColumnChartOptionsBuilder
 
-    # =============================================================
-    #                 1. CONSTANTS & CONFIGURATION
-    # =============================================================
+    # ==========================================================================
+    # CONSTANTS
+    # ==========================================================================
 
     POSITIVE_COLOR = ChartPalettes.rgba(:green, 0.85)
     NEGATIVE_COLOR = ChartPalettes.rgba(:red, 0.85)
 
-    private_constant :POSITIVE_COLOR,
-                     :NEGATIVE_COLOR
+    private_constant :POSITIVE_COLOR, :NEGATIVE_COLOR
 
-    # =============================================================
-    #                      2. PUBLIC METHODS
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Builds chart configuration with conditional bar colors.
+    # Builds a conditional column chart configuration.
     #
-    # @param data [Array<Array, Numeric>] Dataset used to derive bar colors.
-    # @param overrides [Hash] Optional configuration overrides applied via deep_merge.
+    # Each dataset value is evaluated to determine its background color:
+    # - >= 0 → POSITIVE_COLOR
+    # - < 0  → NEGATIVE_COLOR
     #
-    # @return [Hash] Final chart configuration for rendering.
+    # @param data [Enumerable<Array>] Dataset in the form of [label, value] pairs.
+    # @param overrides [Hash] Optional Chart.js configuration overrides.
+    # @return [Hash] Final chart configuration object.
     def self.call(data, **overrides)
       {
         prefix: "R$ ",
         thousands: ".",
         decimal: ",",
         library: {
-          plugins: {
-            colorschemes: false
-          },
-          elements: {
-            bar: {
-              borderWidth: 0
-            }
-          }
+          plugins: { colorschemes: false },
+          elements: { bar: { borderWidth: 0 } }
         },
         dataset: {
           borderWidth: 0,
@@ -55,19 +52,16 @@ module Charts
       }.deep_merge(overrides)
     end
 
-    # =============================================================
-    #                      3. PRIVATE METHODS
-    # =============================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
-    # Derives background colors based on value sign.
+    # Generates an array of background colors based on value polarity.
     #
-    # @param data [Enumerable] Collection of [key, value] pairs.
-    #
-    # @return [Array<String>] Array of RGBA color strings.
+    # @param data [Enumerable<Array>] Dataset containing [key, value] pairs.
+    # @return [Array<String>] Color values aligned with dataset ordering.
     def self.background_colors(data)
-      data.map do |_, value|
-        value.to_f >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR
-      end
+      data.map { |_, value| value.to_f >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR }
     end
 
     private_class_method :background_colors

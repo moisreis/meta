@@ -1,24 +1,60 @@
-# frozen_string_literal: true
-
-# app/services/users/show_service.rb
+# Provides user-related service objects and business operations.
 #
-# Aggregates all data required to render the user show page.
-# Each query is delegated to a dedicated query object.
-#
-# Consolidations applied vs previous version:
-#   - portfolios_count is derived from the portfolios relation — no separate COUNT query.
-#   - total_invested is derived from portfolios aggregate — no separate SUM query.
-#   - portfolios_for_compliance is kept separate as it serves a different purpose.
-#   - User is never re-fetched; it is passed in from the controller.
+# This namespace groups service classes responsible for orchestrating
+# user-related workflows, validation handling, and dashboard aggregation logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Builds the complete user detail presentation payload.
+  #
+  # This service aggregates portfolio metrics, financial summaries,
+  # authentication metadata, and recent activity into a single structured
+  # result object used by user detail and dashboard interfaces.
   class ShowService
 
-    # =============================================================
-    #                          1. RESULT
-    # =============================================================
+    # ==========================================================================
+    # RESULT OBJECTS
+    # ==========================================================================
 
+    # Immutable service result object returned by {.call}.
+    #
+    # @!attribute [r] user
+    #   @return [User] User entity associated with the dashboard payload.
+    #
+    # @!attribute [r] portfolios
+    #   @return [ActiveRecord::Relation<Portfolio>] Aggregated user portfolios.
+    #
+    # @!attribute [r] portfolios_count
+    #   @return [Integer] Total number of associated portfolios.
+    #
+    # @!attribute [r] total_invested
+    #   @return [BigDecimal] Total invested value across all portfolios.
+    #
+    # @!attribute [r] total_balance
+    #   @return [BigDecimal] Total balance across all checking accounts.
+    #
+    # @!attribute [r] portfolios_for_compliance
+    #   @return [ActiveRecord::Relation<Portfolio>] Portfolios with eager-loaded
+    #     allocation data for compliance analysis.
+    #
+    # @!attribute [r] recent_applications
+    #   @return [ActiveRecord::Relation<Application>] Recent investment
+    #     applications associated with the user.
+    #
+    # @!attribute [r] recent_redemptions
+    #   @return [ActiveRecord::Relation<Redemption>] Recent redemption requests
+    #     associated with the user.
+    #
+    # @!attribute [r] last_sign_in_at
+    #   @return [Time, nil] Timestamp of the user's last successful login.
+    #
+    # @!attribute [r] created_at
+    #   @return [Time] Timestamp when the user account was created.
+    #
+    # @!attribute [r] sign_in_count
+    #   @return [Integer] Total successful authentication count.
     Result = Struct.new(
       :user,
       :portfolios,
@@ -36,38 +72,50 @@ module Users
 
     private_class_method :new
 
-    # =============================================================
-    #                      2. PUBLIC INTERFACE
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # @param user [User]
-    # @return [Result]
-    def self.call(user)
-      new(user).send(:call)
+    class << self
+
+      # Executes the user detail aggregation workflow.
+      #
+      # @param user [User] User whose dashboard and detail data will be loaded.
+      # @return [Result] Structured dashboard and detail presentation payload.
+      def call(user)
+        new(user: user).send(:call)
+      end
     end
 
-    # =============================================================
-    #                       3. INITIALIZATION
-    # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    def initialize(user)
+    # Initializes the service object.
+    #
+    # @param user [User] User whose dashboard and detail data will be loaded.
+    def initialize(user:)
       @user = user
     end
 
-    # =============================================================
-    #                        4. EXECUTION
-    # =============================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
+    # Builds the aggregated user detail payload.
+    #
+    # The workflow aggregates:
+    # - portfolio summaries
+    # - investment totals
+    # - account balances
+    # - compliance allocation data
+    # - recent investment activity
+    # - authentication metadata
+    #
+    # @return [Result] Structured dashboard and detail presentation payload.
     def call
-
-      # Load portfolios once with all aggregates pre-computed.
-      # total_invested_value and fund_investments_count are selected
-      # as SQL aggregates — no per-portfolio queries needed in the view.
       portfolios = Users::PortfoliosQuery.call(@user)
 
-      # Derive count and total from the already-loaded relation
-      # to avoid two extra round-trips (Users::PortfoliosCountQuery
-      # and Users::TotalInvestedQuery are no longer called separately).
       portfolios_count = portfolios.length
       total_invested   = portfolios.sum(&:total_invested_value)
 

@@ -1,3 +1,16 @@
+<%#
+  PARTIAL: app/components/modules/table_row_component.html.erb
+  DESCRIPTION: Renders a table row with dynamic cells and optional action menu (show, edit, destroy).
+
+  LOCAL VARIABLES:
+  - @cells:        [Array] List of cell values to render (required).
+  - @model_id:     [String, Integer] Unique identifier used for action menu targeting.
+  - @show_path:    [String, nil] Optional URL for "show" action.
+  - @edit_path:    [String, nil] Optional URL for "edit" action.
+  - @destroy_path: [String, nil] Optional URL for "destroy" action.
+%>
+
+<!-- Modules::TableRowComponent [<%= log_output %>] -->
 <tr class="odd:bg-neutral-50 hover:bg-neutral-100
            odd:[&>td]:border-none odd:[&>td]:border-border
            odd:[&>td:first-child]:border-l odd:[&>td:first-child]:rounded-l-base
@@ -63,5 +76,4 @@
   <% else %>
     <td></td>
   <% end %>
-
 </tr>

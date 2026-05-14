@@ -1,37 +1,24 @@
 <%#
-  VIEW: app/views/users/edit.html.erb
-  ACTION: UsersController#edit
+  PARTIAL: app/views/users/edit.html.erb
+  DESCRIPTION: Renders the user edit page with dashboard wrapper and user form.
 
-  DESCRIPTION:
-  Renders the user update page, including the dashboard layout
-  wrapper and the shared user form partial configured for record updates.
-
-  INSTANCE VARIABLES:
-  - @user: [User] The user record being edited.
-  - @form: [ActiveModel] Form object responsible for update attributes and validations.
+  LOCAL VARIABLES:
+  - @user: [User] Target user being edited.
 %>
 
-<%# ========================================================= %>
-<%#                    1. DASHBOARD WRAPPER                  %>
-<%# ========================================================= %>
-
 <%= render(
-      Layout::DashboardWrapperComponent.new(
-        page_title: "Editar #{@user.full_name}",
-        page_desc: "Atualize suas informações do usuário."
-      )
-    ) do %>
-
-  <%# ======================================================= %>
-  <%#                   2. USER FORM PARTIAL                 %>
-  <%# ======================================================= %>
+  Layout::DashboardWrapperComponent.new(
+    page_title: "Editar #{@user.full_name}",
+    page_desc: "Atualize suas informações do usuário."
+  )
+) do %>
 
   <%= render(
-        "form",
-        form_url:    user_path(@user),
-        form_method: :patch,
-        button_name: "Atualizar usuário",
-        icon_name:   "save"
-      ) %>
+    "form",
+    form_url:    user_path(@user),
+    form_method: :patch,
+    button_name: "Atualizar usuário",
+    icon_name:   "save"
+  ) %>
 
 <% end %>

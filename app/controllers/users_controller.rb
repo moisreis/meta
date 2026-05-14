@@ -1,29 +1,37 @@
-# app/controllers/users_controller.rb
+# Handles user management workflows and administrative user operations.
 #
-# Controls user management workflows, including listing, creation,
-# visualization, updates, and deletion of user accounts.
-#
-# This controller coordinates form objects, query layers, and service
-# objects responsible for encapsulating business rules related to users.
+# This controller coordinates user listing, detail presentation,
+# creation, updates, and deletion through dedicated query and service
+# objects while maintaining thin-controller architecture principles.
 #
 # @author Moisés Reis
+
 class UsersController < ApplicationController
 
-  # =============================================================
-  #                           1. FILTERS
-  # =============================================================
+  # ==========================================================================
+  # FILTERS
+  # ==========================================================================
 
+  # Ensures only authenticated users can access controller actions.
   before_action :authenticate_user!
+
+  # Loads the target user entity for member actions.
+  #
+  # Actions:
+  # - show
+  # - edit
+  # - update
+  # - destroy
   before_action :set_user, only: %i[show edit update destroy]
 
-  # =============================================================
-  #                        2a. INDEX
-  # =============================================================
+  # ==========================================================================
+  # INDEX & DETAIL ACTIONS
+  # ==========================================================================
 
-  # Displays the paginated user listing page.
+  # Displays the paginated user listing.
   #
-  # Delegates searching, filtering, authorization scoping,
-  # and pagination responsibilities to {Users::IndexQuery}.
+  # This action delegates filtering, searching, eager loading,
+  # and pagination behavior to {Users::IndexQuery}.
   #
   # @return [void]
   def index
@@ -37,40 +45,35 @@ class UsersController < ApplicationController
     @users = result.records
   end
 
-  # =============================================================
-  #                         2b. SHOW
-  # =============================================================
-
-  # Displays the detailed profile page for a specific user.
+  # Displays detailed user information and aggregated dashboard metrics.
   #
-  # Delegates data aggregation responsibilities to
-  # {Users::ShowService}, centralizing presentation-related
-  # queries and metrics outside the controller layer.
+  # This action delegates dashboard and portfolio aggregation behavior
+  # to {Users::ShowService}.
   #
   # @return [void]
   def show
     @data = Users::ShowService.call(@user)
   end
 
-  # =============================================================
-  #                          2c. NEW
-  # =============================================================
+  # ==========================================================================
+  # CREATION ACTIONS
+  # ==========================================================================
 
-  # Initializes the form object used to render the user creation form.
+  # Displays the user creation form.
   #
   # @return [void]
   def new
     @form = UserForm.new
   end
 
-  # =============================================================
-  #                        2d. CREATE
-  # =============================================================
-
-  # Creates a new user account using the submitted form data.
+  # Creates a new user record through the creation service workflow.
   #
-  # Delegates validation and persistence responsibilities to
-  # {Users::CreationService}.
+  # On success:
+  # - redirects to the created user
+  #
+  # On failure:
+  # - re-renders the form
+  # - exposes validation errors
   #
   # @return [void]
   def create
@@ -93,25 +96,25 @@ class UsersController < ApplicationController
     end
   end
 
-  # =============================================================
-  #                          2e. EDIT
-  # =============================================================
+  # ==========================================================================
+  # UPDATE ACTIONS
+  # ==========================================================================
 
-  # Initializes the form object used to edit an existing user.
+  # Displays the user edit form.
   #
   # @return [void]
   def edit
     @form = UserForm.from_user(@user)
   end
 
-  # =============================================================
-  #                         2f. UPDATE
-  # =============================================================
-
-  # Updates an existing user account using the submitted form data.
+  # Updates an existing user through the update service workflow.
   #
-  # Delegates update rules and persistence responsibilities to
-  # {Users::UpdateService}.
+  # On success:
+  # - redirects to the updated user
+  #
+  # On failure:
+  # - re-renders the form
+  # - exposes validation errors
   #
   # @return [void]
   def update
@@ -135,14 +138,18 @@ class UsersController < ApplicationController
     end
   end
 
-  # =============================================================
-  #                        2g. DESTROY
-  # =============================================================
+  # ==========================================================================
+  # DELETION ACTIONS
+  # ==========================================================================
 
-  # Permanently deletes the selected user account.
+  # Deletes an existing user through the deletion service workflow.
   #
-  # Delegates authorization and deletion responsibilities to
-  # {Users::DeletionService}.
+  # On success:
+  # - redirects to the user listing
+  #
+  # On failure:
+  # - redirects to the user listing
+  # - exposes an error flash message
   #
   # @return [void]
   def destroy
@@ -168,11 +175,11 @@ class UsersController < ApplicationController
 
   private
 
-  # =============================================================
-  #                     3a. USER LOOKUP
-  # =============================================================
+  # ==========================================================================
+  # PRIVATE METHODS
+  # ==========================================================================
 
-  # Finds the user associated with the provided route identifier.
+  # Loads the target user entity from the request parameters.
   #
   # @return [void]
   # @raise [ActiveRecord::RecordNotFound] If the user does not exist.
@@ -180,14 +187,9 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
   end
 
-  # =============================================================
-  #                   3b. STRONG PARAMETERS
-  # =============================================================
-
-  # Defines the permitted parameters accepted for user creation
-  # and update operations.
+  # Returns the permitted user parameters.
   #
-  # @return [ActionController::Parameters] Sanitized user parameters.
+  # @return [ActionController::Parameters] Strong parameter whitelist.
   def user_params
     params.require(:user).permit(
       :first_name,

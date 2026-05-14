@@ -1,20 +1,11 @@
 <%#
-  VIEW: app/views/users/show.html.erb
-  ACTION: UsersController#show
+  PARTIAL: app/views/users/show.html.erb
+  DESCRIPTION: Renders the user dashboard with account summary, financial metrics, portfolio table, and recent activity sections.
 
-  DESCRIPTION:
-  Displays a comprehensive user profile page, consolidating account
-  information, financial summaries, activity metrics, portfolios,
-  and recent investment movements.
-
-  INSTANCE VARIABLES:
-  - @user: [User] The user being displayed.
-  - @data: [UserShowService::Result] Aggregated result from UserShowService.
+  LOCAL VARIABLES:
+  - @user: [User] Current user instance.
+  - @data: [Object] Aggregated dashboard data (metrics, portfolios, activity).
 %>
-
-<%# ========================================================= %>
-<%#                    1. DASHBOARD WRAPPER                  %>
-<%# ========================================================= %>
 
 <%= render(Layout::DashboardWrapperComponent.new(
   page_title: @user.full_name,
@@ -22,21 +13,13 @@
   current_view: "show"
 )) do %>
 
-  <%# ======================================================= %>
-  <%#              2. ACCOUNT INFORMATION SECTION            %>
-  <%# ======================================================= %>
-
   <%= render(
     Blocks::SectionComponent.new(
       title: "Informações da Conta",
       description: "Dados gerais do usuário",
-      columns: 4,
+      columns: 4
     )
   ) do %>
-
-    <%# ===================================================== %>
-    <%#                 2a. USER IDENTITY CARD              %>
-    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -48,10 +31,6 @@
     ) do %>
       <%= normalize_text(@user.full_name) %>
     <% end %>
-
-    <%# ===================================================== %>
-    <%#            2b. OWNED PORTFOLIOS COUNT              %>
-    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -65,10 +44,6 @@
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#              3. FINANCIAL OVERVIEW SECTION            %>
-  <%# ======================================================= %>
-
   <%= render(
     Blocks::SectionComponent.new(
       title: "Visão Financeira Geral",
@@ -76,10 +51,6 @@
       columns: 3
     )
   ) do %>
-
-    <%# ===================================================== %>
-    <%#                 3a. TOTAL ASSETS                    %>
-    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -90,10 +61,6 @@
     ) do %>
       <%= normalize_currency(@data.total_invested) %>
     <% end %>
-
-    <%# ===================================================== %>
-    <%#                3b. ACCOUNT BALANCE                 %>
-    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -107,10 +74,6 @@
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#             4. ACTIVITY STATISTICS SECTION            %>
-  <%# ======================================================= %>
-
   <%= render(
     Blocks::SectionComponent.new(
       title: "Estatísticas de Atividade",
@@ -118,10 +81,6 @@
       columns: 4
     )
   ) do %>
-
-    <%# ===================================================== %>
-    <%#                 4a. TOTAL LOGINS                   %>
-    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -133,10 +92,6 @@
       <%= normalize_number(@data.sign_in_count) %>
     <% end %>
 
-    <%# ===================================================== %>
-    <%#                 4b. LAST ACCESS                   %>
-    <%# ===================================================== %>
-
     <%= render(
       Blocks::CardComponent.new(
         title: "Último Acesso",
@@ -146,10 +101,6 @@
     ) do %>
       <%= normalize_date(@data.last_sign_in_at) %>
     <% end %>
-
-    <%# ===================================================== %>
-    <%#            4c. ACCOUNT CREATION DATE              %>
-    <%# ===================================================== %>
 
     <%= render(
       Blocks::CardComponent.new(
@@ -162,10 +113,6 @@
     <% end %>
 
   <% end %>
-
-  <%# ======================================================= %>
-  <%#                  5. PORTFOLIO TABLE                   %>
-  <%# ======================================================= %>
 
   <%= render(Groups::TableListComponent.new(
     title: "Carteira",
@@ -196,10 +143,6 @@
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#              6. RECENT ACTIVITY SECTION                %>
-  <%# ======================================================= %>
-
   <%= render(
     Blocks::SectionComponent.new(
       title: "Atividade Recente",
@@ -208,10 +151,6 @@
       columns: 2
     )
   ) do %>
-
-    <%# ===================================================== %>
-    <%#                 6a. APPLICATIONS                    %>
-    <%# ===================================================== %>
 
     <%= render(Groups::RecentActivityComponent.new(
       title: "Aplicações"
@@ -226,10 +165,6 @@
         ) %>
       <% end %>
     <% end %>
-
-    <%# ===================================================== %>
-    <%#                 6b. REDEMPTIONS                    %>
-    <%# ===================================================== %>
 
     <%= render(Groups::RecentActivityComponent.new(
       title: "Resgates"

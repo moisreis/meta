@@ -4,93 +4,68 @@
 # for charts across the application, ensuring consistency and avoiding
 # repetition in view-level configuration.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Global Chartkick Options
-#   1a. Formatting & Dimensions
-#   1b. Color Palette
-# 2. Chart.js Library Configuration
-#   2a. Animation & Typography
-#   2b. Element Styling
-#   2c. Plugins
-#       2c1. Legend
-#       2c2. Tooltip
-#   2d. Scales
-#
 # @author Moisés Reis
 
 # =============================================================
-#              1. GLOBAL CHARTKICK OPTIONS
+# GLOBAL CHARTKICK OPTIONS
 # =============================================================
 
 Chartkick.options = {
 
   # =============================================================
-  #           1b. COLOR PALETTE
+  # COLOR PALETTE
   # =============================================================
 
-  # Defines default dataset colors for all charts.
   colors: [
     "rgb(34, 120, 87)",
     "rgb(185, 28, 28)",
     "rgb(37, 99, 235)",
     "rgb(180, 83, 9)",
     "rgb(109, 40, 217)",
-    "rgb(17, 94, 89)",
+    "rgb(17, 94, 89)"
   ],
 
   # =============================================================
-  #        1a. FORMATTING & DIMENSIONS
+  # FORMATTING & DIMENSIONS
   # =============================================================
 
-  # Currency prefix (empty for BR formatting handled elsewhere).
   prefix: "",
-
-  # Thousands separator (Brazilian format).
   thousands: ".",
-
-  # Decimal separator (Brazilian format).
   decimal: ",",
-
-  # Default chart height.
   height: "500px",
 
   # =============================================================
-  #        2. CHART.JS LIBRARY CONFIGURATION
+  # CHART.JS CONFIGURATION
   # =============================================================
 
   library: {
 
     # =============================================================
-    #          2a. ANIMATION & TYPOGRAPHY
+    # ANIMATION & TYPOGRAPHY
     # =============================================================
 
-    # Controls animation timing.
     animation: {
       duration: 750
     },
 
-    # Default font configuration.
     font: {
       family: "'Source Code Pro'",
       size: 12,
-      weight: '400'
+      weight: "400"
     },
 
     # =============================================================
-    #             2b. ELEMENT STYLING
+    # ELEMENT STYLING
     # =============================================================
 
     elements: {
 
-      # Bar chart appearance.
       bar: {
         borderRadius: 6,
         borderSkipped: false,
-        borderWidth: 0,
+        borderWidth: 0
       },
 
-      # Line chart points.
       point: {
         radius: 4,
         hoverRadius: 6,
@@ -98,13 +73,11 @@ Chartkick.options = {
         hoverBorderWidth: 3
       },
 
-      # Line chart curves.
       line: {
         borderWidth: 0,
         tension: 0.4
       },
 
-      # Pie/doughnut arcs.
       arc: {
         borderWidth: 2,
         borderRadius: 4,
@@ -113,44 +86,36 @@ Chartkick.options = {
     },
 
     # =============================================================
-    #                    2c. PLUGINS
+    # PLUGINS
     # =============================================================
 
     plugins: {
 
-      # =============================================================
-      #                     2c1. LEGEND
-      # =============================================================
-
       legend: {
-        position: 'bottom',
+        position: "bottom",
         labels: {
           padding: 12,
           usePointStyle: true,
-          pointStyle: 'rectRounded',
+          pointStyle: "rectRounded",
           borderSkipped: true,
           borderWidth: 0,
           font: {
             family: "'Source Code Pro'",
             size: 12,
-            weight: '400'
+            weight: "400"
           },
-          color: '#8a8a8a'
+          color: "#8a8a8a"
         }
       },
-
-      # =============================================================
-      #                     2c2. TOOLTIP
-      # =============================================================
 
       tooltip: {
         displayColors: true,
         usePointStyle: true,
-        pointStyle: 'rectRounded',
-        backgroundColor: '#ffffff',
-        titleColor: '#333333',
-        bodyColor: '#8a8a8a',
-        borderColor: '#e9e9e9',
+        pointStyle: "rectRounded",
+        backgroundColor: "#ffffff",
+        titleColor: "#333333",
+        bodyColor: "#8a8a8a",
+        borderColor: "#e9e9e9",
         caretSize: 0,
         borderWidth: 1,
         cornerRadius: 6,
@@ -159,19 +124,19 @@ Chartkick.options = {
         titleFont: {
           family: "'Source Code Pro'",
           size: 12,
-          weight: '400',
+          weight: "400"
         },
 
         bodyFont: {
           family: "'Source Code Pro'",
           size: 12,
-          weight: '400',
+          weight: "400"
         }
       }
     },
 
     # =============================================================
-    #                      2d. SCALES
+    # SCALES
     # =============================================================
 
     scales: {
@@ -181,11 +146,11 @@ Chartkick.options = {
             family: "'Source Code Pro'",
             size: 12
           },
-          color: '#8a8a8a',
+          color: "#8a8a8a"
         },
         grid: {
           display: true,
-          color: '#e9e9e9',
+          color: "#e9e9e9"
         }
       },
       y: {
@@ -194,11 +159,11 @@ Chartkick.options = {
             family: "'Source Code Pro'",
             size: 12
           },
-          color: '#8a8a8a'
+          color: "#8a8a8a"
         },
         grid: {
           display: true,
-          color: '#e9e9e9',
+          color: "#e9e9e9"
         }
       }
     }

@@ -1,50 +1,52 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/code_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing presenters responsible for standardized UI rendering.
-#
-# Renders identification codes with monospaced typography.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #               Ui::CodePresenter
-  # =============================================================
+
+  # Renders monospaced code-style textual values.
   #
-  # Provides consistent rendering of identification codes,
-  # system IDs, and reference numbers with monospaced styling.
-  #
+  # This presenter formats values using monospace styling and delegates
+  # blank-state rendering behavior to {EmptyStatePresenter}.
   class CodePresenter < BasePresenter
 
-    # =============================================================
-    #                      1. INITIALIZATION
-    # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # @param view_context [ActionView::Base] Rails view context providing helper methods.
+    # Initializes the presenter.
+    #
+    # @param view_context [ActionView::Base] Rails view context instance.
     def initialize(view_context)
       super
+
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # =============================================================
-    #                    2a. RENDER
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Renders an identification code with monospaced font styling.
+    # Renders a formatted monospaced textual value.
     #
-    # @param value [String, nil] The code string to display
-    # @return [ActiveSupport::SafeBuffer] HTML span element or empty-state fallback
+    # Blank values are delegated to {EmptyStatePresenter}.
     #
-    # @example
-    #   presenter = Ui::CodePresenter.new(view_context)
-    #   presenter.render("ABC-12345")
-    #   # => <span class="line-clamp-2 font-mono" scope="row">ABC-12345</span>
-    #
+    # @param value [String, #to_s, nil] Value rendered inside the code element.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def render(value)
       return @empty.render if value.blank?
 
-      h.content_tag(:span, value, class: "line-clamp-2 font-mono", scope: "row")
+      h.content_tag(
+        :span,
+        value,
+        class: "line-clamp-2 font-mono",
+        scope: "row"
+      )
     end
   end
 end

@@ -1,39 +1,21 @@
 <%#
-  # Partial: edit.html.erb
-  # Date: 02/22/2026
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Renderiza a página de edição de uma conta corrente existente.
-  #              Exibe o formulário de atualização e uma seção de zona de perigo
-  #              para exclusão permanente do registro.
-  #
-  # Usage:: - What: Renderiza a visão de edição para um CheckingAccount existente.
-  #         - How: Usa o wrapper do dashboard, delega os campos ao _form e
-  #                expõe a ação de exclusão em bloco separado para evitar cliques
-  #                acidentais.
-  #         - Why: Fornece a interface para o U e o D do CRUD de CheckingAccount
-  #                com estrutura de UI consistente com o restante do sistema.
-  %>
-
-<%# Explanation:: O wrapper define o título com o nome da conta sendo editada
-  #               para que o usuário sempre saiba qual registro está modificando,
-  #               reduzindo o risco de alterações inadvertidas.
-  %>
+  VIEW: edit.html.erb
+  ACTION: CheckingAccountsController#edit
+  DESCRIPTION: Renders the page for updating an existing CheckingAccount.
+               Displays the form inside the dashboard wrapper with a danger zone for deletion.
+  INSTANCE VARIABLES:
+    - @checking_account: [CheckingAccount] The account being edited.
+    - @portfolio: [Portfolio] The parent portfolio for nested routing.
+%>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Editar #{@checking_account.name}",
            page_desc: "Atualize as informações da conta corrente conforme necessário." do
 %>
 
-  <%# Explanation:: Delega todos os campos do formulário ao partial compartilhado,
-    #               configurando o botão de submit com ícone de atualização e texto
-    #               adequado para uma ação de edição.
-    %>
   <%= render "form",
              checking_account: @checking_account,
              portfolio: @portfolio,
              button_name: "Atualizar",
              icon_name: "refresh-cw"
   %>
-
 <% end %>

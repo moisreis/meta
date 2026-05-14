@@ -1,32 +1,26 @@
 # frozen_string_literal: true
 
-# == Modules::DataTableComponent
+# Component responsible for rendering a generic data table with optional
+# search, export, and creation toolbar actions.
 #
-# Renders a complete, filterable, paginated data table inside a Turbo Frame.
-# Encapsulates toolbar controls (clear filters, open filters, add item, export),
-# the turbo frame wrapper, column/row rendering, and pagination in one place.
+# This component abstracts common table behaviors such as pagination support,
+# row rendering, and auxiliary actions (export/new).
 #
-# @example Basic usage
-#   <%= render Modules::DataTableComponent.new(
-#         columns:        [{ label: "Nome", icon: "user" }, { label: "E-mail", icon: "at-sign" }],
-#         rows:           @users,
-#         turbo_frame_id: "users_table",
-#         search_url:     users_path,
-#         new_path:       new_user_path,
-#         q_object:       @q
-#       ) do |row, user| %>
-#     <%= row.cell { normalize_title(user.full_name) } %>
-#     <%= row.cell { normalize_text(user.email) }     %>
-#   <% end %>
-#
+# @author Moisés Reis
+
 class Groups::DataTableComponent < ApplicationComponent
-  # @param columns        [Array<Hash>] Each hash requires :label; accepts optional :icon and :description.
-  # @param rows           [ActiveRecord::Relation, Array] The collection to iterate over.
-  # @param turbo_frame_id [String] ID for the Turbo Frame wrapping the table body.
-  # @param search_url     [String] URL for filter/clear-filter actions.
-  # @param q_object       [Ransack::Search, nil] Ransack search object. Toolbar is hidden when nil.
-  # @param new_path       [String, nil] URL for the "Adicionar item" button. Hidden when nil.
-  # @param export_url     [String, nil] URL for the CSV/Excel export button. Hidden when nil.
+
+  # ==========================================================================
+  # INITIALIZATION
+  # ==========================================================================
+
+  # @param columns [Array<Modules::TableColumnComponent>] Column header definitions.
+  # @param rows [ActiveRecord::Relation, Array] The collection of records to render.
+  # @param turbo_frame_id [String] The ID for the Turbo Frame to enable partial updates.
+  # @param search_url [String] The destination URL for the search form.
+  # @param q_object [Ransack::Search, nil] The Ransack search object for the toolbar.
+  # @param new_path [String, nil] URL for the 'New Record' button.
+  # @param export_url [String, nil] URL for the 'Export to CSV/Excel' action.
   def initialize(
     columns:,
     rows:,
@@ -45,19 +39,30 @@ class Groups::DataTableComponent < ApplicationComponent
     @export_url     = export_url
   end
 
-  # @return [Integer] Total record count, compatible with Kaminari and plain arrays.
+  # ==========================================================================
+  # QUERY METHODS
+  # ==========================================================================
+
+  # Returns the total number of records, supporting Kaminari-paginated collections.
+  # @return [Integer]
   def total_count
     @rows.respond_to?(:total_count) ? @rows.total_count : @rows.size
   end
 
+  # Checks if the search toolbar should be rendered.
+  # @return [Boolean]
   def toolbar?
     @q_object.present?
   end
 
+  # Checks if the export action is available.
+  # @return [Boolean]
   def export?
     @export_url.present?
   end
 
+  # Checks if the 'New' record action is available.
+  # @return [Boolean]
   def new_path?
     @new_path.present?
   end

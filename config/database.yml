@@ -1,3 +1,25 @@
+# Configures PostgreSQL database connections for all Rails environments.
+#
+# This file defines Active Record database settings, connection pooling,
+# environment-specific databases, SSL requirements, and dedicated production
+# databases used by Solid Cache, Solid Queue, and Solid Cable.
+#
+# Environment Variables:
+# - SUPABASE_DB_URL:      [String] Full PostgreSQL connection URL.
+# - SUPABASE_DB_HOST:     [String] PostgreSQL server hostname.
+# - SUPABASE_DB_PORT:     [Integer] PostgreSQL server port.
+# - SUPABASE_DB_NAME:     [String] Database name.
+# - SUPABASE_DB_USER:     [String] Database username.
+# - SUPABASE_DB_PASSWORD: [String] Database password.
+# - RAILS_MAX_THREADS:    [Integer] Maximum Active Record connection pool size
+#                                     (default: 5).
+#
+# @author Moisés Reis
+
+# ============================================================================
+# DEFAULT DATABASE CONFIGURATION
+# ============================================================================
+
 default: &default
   adapter: postgresql
   encoding: unicode
@@ -10,23 +32,50 @@ default: &default
   password: <%= ENV.fetch("SUPABASE_DB_PASSWORD", nil) %>
   sslmode: require
 
+# ============================================================================
+# DEVELOPMENT ENVIRONMENT
+# ============================================================================
+
 development:
   <<: *default
   database: meta_development
+
+# ============================================================================
+# TEST ENVIRONMENT
+# ============================================================================
 
 test:
   <<: *default
   database: meta_test
 
+# ============================================================================
+# PRODUCTION ENVIRONMENT
+# ============================================================================
+
 production:
   primary: &primary_production
     <<: *default
+
+  # --------------------------------------------------------------------------
+  # SOLID CACHE DATABASE
+  # --------------------------------------------------------------------------
+
   cache:
     <<: *primary_production
     migrations_paths: db/cache_migrate
+
+  # --------------------------------------------------------------------------
+  # SOLID QUEUE DATABASE
+  # --------------------------------------------------------------------------
+
   queue:
     <<: *primary_production
     migrations_paths: db/queue_migrate
+
+  # --------------------------------------------------------------------------
+  # SOLID CABLE DATABASE
+  # --------------------------------------------------------------------------
+
   cable:
     <<: *primary_production
     migrations_paths: db/cable_migrate

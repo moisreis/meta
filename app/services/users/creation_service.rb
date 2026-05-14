@@ -1,55 +1,64 @@
-# app/services/users/creation_service.rb
+# Provides user-related service objects and business operations.
 #
-# Handles the creation workflow for user accounts.
-#
-# This service validates form input, persists the user record,
-# and promotes persistence errors back into the form object.
+# This namespace groups service classes responsible for orchestrating
+# user-related workflows, validation handling, and transactional logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Handles user creation workflows through form-backed validation.
+  #
+  # This service validates incoming form data, builds a user entity,
+  # persists the record, and promotes persistence-layer validation errors
+  # back to the form object when necessary.
   class CreationService < Users::BaseService
 
-    # ===========================================================
-    #                         1. ENTRYPOINT
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # Executes the user creation workflow.
-    #
-    # @param params [ActionController::Parameters]
-    # @param actor [User]
-    #   The authenticated user performing the action.
-    #
-    # @return [Users::BaseService::Result]
-    def self.call(params, actor:)
-      instance = new(params, actor: actor)
+    class << self
 
-      instance.send(:call)
+      # Executes the user creation workflow.
+      #
+      # @param params [Hash] Raw user form parameters.
+      # @param actor [User] User performing the creation operation.
+      # @return [Users::BaseService::Result] Structured service result.
+      def call(params, actor:)
+        instance = new(params, actor: actor)
+        instance.send(:call)
+      end
     end
 
     private
 
-    # ===========================================================
-    #                        2. INITIALIZATION
-    # ===========================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # Initializes the service state and form object.
+    # Initializes the service object.
     #
-    # @param params [ActionController::Parameters]
-    # @param actor [User]
-    #
-    # @return [void]
+    # @param params [Hash] Raw user form parameters.
+    # @param actor [User] User performing the creation operation.
     def initialize(params, actor:)
       @actor = actor
       @form  = ::UserForm.new(params)
     end
 
-    # ===========================================================
-    #                     3. CREATION WORKFLOW
-    # ===========================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
-    # Validates the form and attempts to persist the user.
+    # Executes the user creation workflow.
     #
-    # @return [Users::BaseService::Result]
+    # The workflow:
+    # - validates the form object
+    # - builds a user entity
+    # - persists the user record
+    # - promotes model validation errors back to the form when necessary
+    #
+    # @return [Users::BaseService::Result] Structured service result.
     def call
       return failure unless @form.valid?
 

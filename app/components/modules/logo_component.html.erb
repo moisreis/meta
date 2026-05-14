@@ -1,15 +1,13 @@
 <%#
-  Component: LogoComponent
-  Template:  logo_component.html.erb
-  Date:      11/12/2025
-  Author:    Moisés Reis
-  Package:   Meta
+  PARTIAL: app/components/modules/logo_component.html.erb
+  DESCRIPTION: Renders the application logo with configurable size and alt text.
 
-  Description: Renders the application logo image inside a flex container.
-               Receives all data from the component class — no local variable
-               assignments needed here.
+  LOCAL VARIABLES:
+  - @size: [String] Image size in format WIDTHxHEIGHT (required).
+  - @alt:  [String] Alternative text for accessibility (required).
 %>
 
+<!-- Modules::LogoComponent -->
 <div class="flex flex-row">
   <%= image_tag("logo.svg", size: @size, alt: @alt) %>
 </div>

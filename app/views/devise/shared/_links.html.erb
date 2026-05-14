@@ -1,48 +1,26 @@
 <%#
-  # Partial: _links.html.erb
-  # Date: 2026-03-12
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Renders contextual navigation links for authentication actions like
-  #              logging in, registering, or recovering passwords. This partial
-  #              ensures users can easily switch between different account states.
-  #
-  # Locals: @param resource_name [Symbol] - The name of the Devise resource (e.g., :user).
-  #         @param devise_mapping [Object] - Configuration object for the current resource.
-  #
-  # Usage: - What: Displays secondary action buttons that guide the user through the
-  #                identity flow, such as moving from "Sign Up" to "Log In."
-  #         - How: Uses conditional checks on the current controller name to hide
-  #                redundant links and only show relevant navigation options.
-  #         - Why: Reduces user friction by providing clear paths to alternative
-  #                actions without requiring the use of the browser's back button.
+  PARTIAL: _links.html.erb
+  DESCRIPTION: Renders contextual navigation links for Devise authentication actions.
+               Conditionally shows sign-in, registration, and password recovery links.
+  LOCAL VARIABLES:
+    - resource_name: [Symbol] The Devise resource name (:user).
+    - devise_mapping: [Devise::Mapping] Configuration object for the resource.
 %>
 
-<%# ============================================================= %>
-<%# Visual Separator & Text Label %>
-<%# ============================================================= %>
+<%# ====== VISUAL SEPARATOR ====== %>
 
 <div class="relative flex items-center justify-center w-full my-3">
 
-  <%# This helper generates a small text badge centered over a horizontal line.
-    # It provides a clear visual break between the primary form and secondary links.
-  %>
   <%= content_tag :p, "Ou", class: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white font-semibold font-body text-muted uppercase text-xs w-12 text-center" %>
 
   <div class="h-[1px] bg-border w-full"></div>
 
 </div>
 
-<%# ============================================================= %>
-<%# Navigation Action Links %>
-<%# ============================================================= %>
+<%# ====== NAVIGATION LINKS ====== %>
 
 <div class="flex flex-row items-center justify-between gap-3 w-full">
 
-  <%# This condition verifies if the user is currently outside of the login page.
-    # It prevents the "Already have an account" link from appearing to users who are already logging in.
-    %>
   <%- if controller_name != 'sessions' %>
 
     <%= link_to new_session_path(resource_name),
@@ -54,9 +32,6 @@
 
   <% end %>
 
-  <%# This check confirms that the system allows new registrations and that the user is not on the sign-up page.
-    # It ensures the "Create account" button only shows up when relevant and supported by the application.
-    %>
   <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
 
     <%= link_to new_registration_path(resource_name),

@@ -1,3 +1,11 @@
+<%#
+  VIEW: show.html.erb
+  ACTION: ApplicationsController#show
+  DESCRIPTION: Displays detailed information for a single Application record.
+               Shows fund details, financial values, lifecycle dates, and redemption allocations.
+  INSTANCE VARIABLES:
+    - @application: [Application] The application record with included associations.
+%>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Aplicação ##{@application.id}",
            page_desc: "Investimento em #{@application.fund_investment.investment_fund.fund_name}",
@@ -19,7 +27,6 @@
     %>
       <%= normalize_text(@application.fund_investment.investment_fund.fund_name) %>
     <% end %>
-
 
     <%= render "partials/route/dashboard/card",
                card_title: "Percentual Alocado",

@@ -1,62 +1,72 @@
-# frozen_string_literal: true
-
-# app/queries/users/recent_redemptions_query.rb
+# Provides user-related query objects and data access operations.
 #
-# Returns the most recent redemption requests associated with
-# portfolios owned by a specific user.
-#
-# This query eager loads all required associations to avoid N+1
-# queries when rendering redemption activity views.
-#
-# @example
-#   redemptions = Users::RecentRedemptionsQuery.call(user)
-#
-#   redemptions.each do |redemption|
-#     redemption.fund_investment.portfolio.name
-#     redemption.fund_investment.investment_fund.fund_name
-#   end]
+# This namespace groups query services responsible for encapsulating
+# user-specific database querying and reporting logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Retrieves the most recent redemption requests associated with a user.
+  #
+  # This query object loads recent redemption records through portfolio-linked
+  # fund investments while eager loading related associations to prevent
+  # N+1 query behavior in dashboards and reporting interfaces.
   class RecentRedemptionsQuery
+
+    # ==========================================================================
+    # DEFAULT CONFIGURATION
+    # ==========================================================================
+
+    # Default number of recent redemptions returned by the query.
+    #
+    # @return [Integer] Default query result limit.
     DEFAULT_LIMIT = 5
 
-    # ===========================================================
-    #                         1. ENTRYPOINT
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # Executes the query.
-    #
-    # @param user [User]
-    # @param limit [Integer]
-    # @return [ActiveRecord::Relation<Redemption>]
-    def self.call(user, limit: DEFAULT_LIMIT)
-      new(user, limit).call
+    class << self
+
+      # Executes the query object.
+      #
+      # @param user [User] User whose recent redemptions will be queried.
+      # @param limit [Integer] Maximum number of records to return.
+      # @return [ActiveRecord::Relation<Redemption>] Ordered recent redemption
+      #   records with eager-loaded associations.
+      def call(user, limit: DEFAULT_LIMIT)
+        new(user: user, limit: limit).call
+      end
     end
 
-    private
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # ===========================================================
-    #                        2. INITIALIZATION
-    # ===========================================================
-
-    # @param user [User]
-    # @param limit [Integer]
-    def initialize(user, limit)
+    # Initializes the query object.
+    #
+    # @param user [User] User whose recent redemptions will be queried.
+    # @param limit [Integer] Maximum number of records to return.
+    def initialize(user:, limit:)
       @user  = user
       @limit = limit
     end
 
-    public
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # ===========================================================
-    #                           3. QUERY
-    # ===========================================================
-
-    # Returns the latest redemption records associated with
-    # the user's portfolios.
+    # Returns the most recent redemptions associated with the user.
     #
-    # @return [ActiveRecord::Relation<Redemption>]
+    # The query:
+    # - filters redemptions through portfolio ownership
+    # - eager loads investment relationships
+    # - orders results by request date descending
+    # - limits the number of returned records
+    #
+    # @return [ActiveRecord::Relation<Redemption>] Ordered recent redemption
+    #   records with eager-loaded associations.
     def call
       Redemption
         .joins(fund_investment: :portfolio)

@@ -1,38 +1,43 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/empty_state_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing reusable presenter components for consistent UI rendering.
-#
-# Standardized empty-state renderer.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #                 Ui::EmptyStatePresenter
-  # =============================================================
+
+  # Renders standardized empty-state placeholder content.
   #
-  # Provides a standardized representation for empty or missing values
-  # across UI components.
-  #
+  # This presenter provides a centralized visual representation for
+  # missing, blank, or unavailable values throughout the UI layer.
   class EmptyStatePresenter < BasePresenter
 
-    # =============================================================
-    #                 1. CONSTANTS & CONFIGURATION
-    # =============================================================
+    # ==========================================================================
+    # CONSTANTS
+    # ==========================================================================
 
+    # Default placeholder text rendered for empty values.
+    #
+    # @return [String] Default empty-state display content.
     EMPTY_TEXT = "-".freeze
 
-    # =============================================================
-    #                        2a. RENDER
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Renders a standardized empty-state element.
+    # Renders empty-state placeholder content.
     #
-    # @param text [String] The text to display. Defaults to EMPTY_TEXT.
-    # @return [ActiveSupport::SafeBuffer] HTML span element with muted styling.
+    # @param text [String] Placeholder text rendered for empty values.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def render(text = EMPTY_TEXT)
-      h.content_tag(:span, text, class: "text-muted")
+      h.content_tag(
+        :span,
+        text,
+        class: "text-muted"
+      )
     end
   end
 end

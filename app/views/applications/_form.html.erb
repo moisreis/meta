@@ -1,25 +1,14 @@
 <%#
-  # Partial: _form.html.erb
-  # Date: 11/25/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: This file defines the structure for recording financial
-  #              transactions like applications or redemptions.
-  #              It collects amounts, quotas, and relevant dates.
-  #
-  # Usage: - What: Renders the core interface for users to input data
-  #               related to a specific investment operation.
-  #         - How: Uses **form_with** to gather data and nested modules
-  #               to ensure consistent input behavior across the app.
-  #         - Why: Provides a standardized way to track financial
-  #               movements and their impact on portfolio quotas.
-  %>
+  PARTIAL: _form.html.erb
+  DESCRIPTION: Form for recording financial transactions (applications/redemptions).
+               Collects amounts, quotas, and relevant dates via nested fieldset partials.
+  LOCAL VARIABLES:
+    - application: [Application] The application model instance bound to the form.
+    - button_name: [String] Label for the submit button.
+    - icon_name: [String] SVG icon filename for the submit button.
+%>
 
-<%# Explanation:: This helper starts a form that connects the user's
-  #               input to the application model and applies layout
-  #               styles to keep the contents organized.
-  %>
+<%# ====== ERROR DISPLAY ====== %>
 <%= form_with(model: application, class: "contents") do |form| %>
 
   <% if application.errors.any? %>
@@ -35,18 +24,11 @@
     </div>
   <% end %>
 
-  <%# Explanation:: This block creates a visual group for the
-    #               transaction destination, helping users identify
-    #               exactly where the investment is being placed.
-    %>
+  <%# ====== TRANSACTION DESTINATION ====== %>
   <%= render "partials/blocks/fieldset",
              fieldset_title: "Destino da Transação",
              fieldset_desc: "Identifique o fundo e a carteira específica que receberão esta movimentação." do %>
 
-    <%# Explanation:: This line displays a dropdown menu that lets
-      #               the user select a specific fund and portfolio
-      #               combination from a predefined list.
-      %>
     <%= render "partials/modules/select",
                f: form,
                name: :fund_investment_id,
@@ -57,18 +39,11 @@
     %>
   <% end %>
 
-  <%# Explanation:: This section groups the financial numbers of the
-    #               operation to ensure the user provides all the
-    #               necessary data for money calculations.
-    %>
+  <%# ====== FINANCIAL VALUES ====== %>
   <%= render "partials/blocks/fieldset",
              fieldset_title: "Valores Financeiros",
              fieldset_desc: "Informe o capital investido, a quantidade de cotas e o preço unitário da cota." do %>
 
-    <%# Explanation:: This field captures the total amount of money
-      #               involved in the transaction, allowing for decimal
-      #               values to represent cents accurately.
-      %>
     <%= render "partials/modules/input-field",
                f: form,
                name: :financial_value,
@@ -82,18 +57,11 @@
     %>
   <% end %>
 
-  <%# Explanation:: This grouping organizes the timeline of the
-    #               investment, showing exactly when each stage of
-    #               the financial process occurs.
-    %>
+  <%# ====== TRANSACTION SCHEDULE ====== %>
   <%= render "partials/blocks/fieldset",
              fieldset_title: "Cronograma da Operação",
              fieldset_desc: "Registre as datas importantes de solicitação, cotização e liquidação financeira." do %>
 
-    <%# Explanation:: This field tracks the specific day when the
-      #               fund price was officially applied to the
-      #               transaction for accounting purposes.
-      %>
     <%= render "partials/modules/date-field",
                f: form,
                name: :cotization_date,
@@ -103,10 +71,7 @@
                icon_name: "calendar" %>
   <% end %>
 
-  <%# Explanation:: This creates the final action button that
-    #               saves all the information entered by the user
-    #               into the application database.
-    %>
+  <%# ====== SUBMIT BUTTON ====== %>
   <%= form.button :submit,
                   name: nil,
                   class: "button button-primary w-fit flex items-center gap-2" do

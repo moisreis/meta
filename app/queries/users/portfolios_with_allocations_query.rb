@@ -1,58 +1,57 @@
-# frozen_string_literal: true
-
-# app/queries/users/portfolios_with_allocations_query.rb
+# Provides user-related query objects and data access operations.
 #
-# Loads all portfolios belonging to a specific user together with
-# their associated fund investments.
-#
-# This query exists to support allocation validation workflows
-# without triggering N+1 queries when calling methods such as
-# `valid_allocations?` across multiple portfolios.
-#
-# @example
-#   portfolios = Users::PortfoliosWithAllocationsQuery.call(user)
-#
-#   portfolios.each do |portfolio|
-#     portfolio.valid_allocations?
-#   end
+# This namespace groups query services responsible for encapsulating
+# user-specific database querying and reporting logic.
 #
 # @author Moisés Reis
+
 module Users
+
+  # Retrieves portfolios and associated investment allocations for a user.
+  #
+  # This query object loads user portfolios together with their associated
+  # fund investments to avoid N+1 queries during allocation rendering and
+  # reporting workflows.
   class PortfoliosWithAllocationsQuery
 
-    # ===========================================================
-    #                         1. ENTRYPOINT
-    # ===========================================================
+    # ==========================================================================
+    # PUBLIC CLASS METHODS
+    # ==========================================================================
 
-    # Executes the query.
-    #
-    # @param user [User]
-    # @return [ActiveRecord::Relation<Portfolio>]
-    def self.call(user)
-      new(user).call
+    class << self
+
+      # Executes the query object.
+      #
+      # @param user [User] User whose portfolios will be queried.
+      # @return [ActiveRecord::Relation<Portfolio>] Portfolios with eager-loaded
+      #   fund investments.
+      def call(user)
+        new(user).call
+      end
     end
 
-    private
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # ===========================================================
-    #                        2. INITIALIZATION
-    # ===========================================================
-
-    # @param user [User]
+    # Initializes the query object.
+    #
+    # @param user [User] User whose portfolios will be queried.
     def initialize(user)
       @user = user
     end
 
-    public
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # ===========================================================
-    #                           3. QUERY
-    # ===========================================================
-
-    # Returns all portfolios for the provided user with
-    # fund investments eager loaded.
+    # Returns portfolios with preloaded fund investment allocations.
     #
-    # @return [ActiveRecord::Relation<Portfolio>]
+    # Eager loading is used to prevent N+1 query behavior when accessing
+    # associated fund investments.
+    #
+    # @return [ActiveRecord::Relation<Portfolio>] Portfolios with eager-loaded
+    #   fund investments.
     def call
       Portfolio
         .where(user_id: @user.id)

@@ -1,14 +1,23 @@
-# app/components/dashboard/chart_component.rb
+# frozen_string_literal: true
+
+# Component responsible for rendering a chart container with title, data source,
+# optional metadata, and empty-state awareness.
 #
-# Renders a chart card with a header and a body.
-# The chart itself is passed as a block and only rendered when data is present.
-# When the collection is empty, a fallback message is shown instead.
+# This component acts as a structural wrapper around chart rendering helpers
+# and external chart builders.
+#
+# @author Moisés Reis
+
 class Blocks::ChartComponent < ApplicationComponent
 
-  # @param title       [String]           Chart heading displayed in the header.
-  # @param data_source [#any?]            Collection used to determine if data exists.
-  # @param id          [String, nil]      Optional value for the data-chart-id attribute.
-  # @param meta        [String, nil]      Optional secondary label (e.g. "2026", "Últ. 3 meses").
+  # ==========================================================================
+  # INITIALIZATION
+  # ==========================================================================
+
+  # @param title [String] The heading for the chart section.
+  # @param data_source [Enumerable] The collection of data to be visualized.
+  # @param id [String, nil] Unique identifier for the chart container.
+  # @param meta [String, nil] Optional metadata or subtitle information.
   def initialize(title:, data_source:, id: nil, meta: nil)
     @title       = title
     @data_source = data_source
@@ -16,8 +25,14 @@ class Blocks::ChartComponent < ApplicationComponent
     @meta        = meta
   end
 
+  # ==========================================================================
+  # QUERY METHODS
+  # ==========================================================================
+
   private
 
+  # Checks if the data source contains any records to render.
+  # @return [Boolean]
   def data?
     @data_source.any?
   end

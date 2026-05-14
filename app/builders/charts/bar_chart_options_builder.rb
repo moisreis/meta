@@ -1,22 +1,31 @@
+# frozen_string_literal: true
+
 # Builds configuration options for bar chart rendering.
 #
-# This query object provides a default chart configuration and allows
-# selective overrides for customization of visualization behavior.
+# This service provides a standardized baseline configuration for charting
+# components and allows controlled overrides through deep merging.
 #
 # @author Moisés Reis
+
 module Charts
+
+  # Constructs Chart.js-compatible bar chart configuration options.
   class BarChartOptionsBuilder
+
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
+
     class << self
 
-      # =============================================================
-      #                      1. PUBLIC METHODS
-      # =============================================================
-
-      # Builds a merged configuration hash for bar chart rendering.
+      # Builds a bar chart configuration hash with optional overrides.
       #
-      # @param overrides [Hash] Optional configuration overrides applied via deep_merge.
+      # The returned configuration is compatible with Chart.js-style libraries
+      # and includes sensible defaults for legends, dataset styling, and suffix formatting.
       #
-      # @return [Hash] Final chart configuration including defaults and overrides.
+      # @param overrides [Hash] Optional configuration overrides.
+      #   These values are deeply merged into the base configuration.
+      # @return [Hash] Final chart configuration object.
       def call(**overrides)
         {
           suffix: "%",

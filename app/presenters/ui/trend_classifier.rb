@@ -1,34 +1,41 @@
 # app/services/ui/trend_classifier.rb
+# frozen_string_literal: true
 
-# app/services/ui/trend_classifier.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing service objects responsible for UI-related logic.
-#
-# Determines trend direction from numeric input.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #               Ui::TrendClassifier
-  # =============================================================
+
+  # Classifies numeric values into directional trend states.
   #
-  # Encapsulates business logic for classifying numeric values into
-  # UI-friendly trend indicators.
+  # This service object converts numeric values into semantic trend
+  # classifications used by UI presentation components.
   #
+  # Supported trend states:
+  # - :up
+  # - :down
+  # - :stale
   class TrendClassifier
 
-    # =============================================================
-    #                        1a. CALL
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Determines the directional trend of a numeric value.
+    # Resolves the directional trend classification for a numeric value.
     #
-    # @param value [Numeric, String, nil] Input value to classify.
-    # @return [Symbol] One of :up, :down, or :stale.
+    # Values equal to zero are considered stable.
+    #
+    # @param value [Numeric, #to_f] Numeric value evaluated for trend direction.
+    # @return [Symbol] Trend classification identifier.
     def call(value)
       numeric = value.to_f
 
       return :stale if numeric.zero?
+
       numeric.positive? ? :up : :down
     end
   end

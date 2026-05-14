@@ -1,5 +1,16 @@
-<%# app/components/groups/chart_list_component.html.erb %>
+<%#
+  PARTIAL: app/components/groups/chart_list_component.html.erb
+  DESCRIPTION: Renders a chart block with validated type rendering and palette-driven configuration.
 
+  LOCAL VARIABLES:
+  - @chart_type:    [String] Type of chart to render (must be in PERMITTED_TYPES).
+  - @data_source:   [Object] Dataset used for chart rendering.
+  - @chart_title:   [String] Title displayed above the chart.
+  - @chart_options: [Hash] Additional chart configuration options.
+  - @chart_id:      [String] Unique DOM identifier for the chart container.
+%>
+
+<!-- Groups::ChartListComponent -->
 <%= render Blocks::ChartComponent.new(
       title:       @chart_title,
       data_source: @data_source,

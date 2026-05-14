@@ -1,25 +1,40 @@
-# Defines application-wide constant values used across the system.
+# Defines application-wide immutable constants shared across the system.
 #
-# This module centralizes static configuration values to avoid duplication
-# and ensure consistency. It is intended to be referenced by views,
-# services, and other layers that require globally consistent labels.
-#
-# TABLE OF CONTENTS:
-#   1.  Company Identification
+# This module centralizes static business and interface constants used by
+# multiple application layers to avoid duplication and maintain consistency.
 #
 # @author Moisés Reis
 module AppConstants
-  # =============================================================
-  #                  1. COMPANY IDENTIFICATION
-  # =============================================================
 
-  # Full legal name of the company used in formal documents and contracts.
+  # ==========================================================================
+  # COMPANY INFORMATION
+  # ==========================================================================
+
+  # Official registered company name used in legal and formal contexts.
   #
-  # @return [String]
+  # @return [String] Immutable full company name.
   COMPANY_NAME_LONG = "Meta Consultoria de Investimentos Institucionais Ltda".freeze
 
-  # Shortened company name used in UI elements and informal contexts.
+  # Shortened company name used in interfaces and general presentation contexts.
   #
-  # @return [String]
+  # @return [String] Immutable abbreviated company name.
   COMPANY_NAME_SHORT = "Meta Investimentos".freeze
+
+  # ==========================================================================
+  # PAGINATION SETTINGS
+  # ==========================================================================
+
+  # Default number of records displayed per paginated index page.
+  #
+  # @return [Integer] Immutable pagination size used across index views.
+  INDEX_PER_PAGE = 14
+
+  # ==========================================================================
+  # DEFAULT MESSAGES
+  # ==========================================================================
+
+  # Message displayed when no data is available to present in a view.
+  #
+  # @return [String] Immutable default message for empty datasets.
+  NO_AVAILABLE_DATA_MESSAGE = "Nenhum dado disponível.".freeze
 end

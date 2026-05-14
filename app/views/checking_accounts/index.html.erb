@@ -1,35 +1,24 @@
 <%#
-  # Partial: index.html.erb
-  # Date: 02/22/2026
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Constrói a página de listagem das contas correntes de um portfólio.
-  #              Exibe uma tabela de dados com seletor de mês de referência e filtros
-  #              por instituição e nome de conta.
-  #
-  # Usage:: - What: Renderiza a visão de índice para o recurso CheckingAccount,
-  #                escopado ao @portfolio corrente, com suporte a filtro por período.
-  #         - How: Usa o wrapper do dashboard, o partial data-table e o partial filters.
-  #               O mês de referência é controlado via parâmetro `?month=YYYY-MM`.
-  #         - Why: Centraliza a visualização de disponibilidades em conta corrente
-  #                do portfólio, permitindo análise mês a mês.
-  %>
+  VIEW: index.html.erb
+  ACTION: CheckingAccountsController#index
+  DESCRIPTION: Displays the listing of checking accounts for a portfolio.
+               Includes month selector, total balance KPI, data table, and filters.
+  INSTANCE VARIABLES:
+    - @checking_accounts: [ActiveRecord::Relation<CheckingAccount>] Filtered collection.
+    - @portfolio: [Portfolio] The parent portfolio.
+    - @reference_date: [Date] The selected reference month.
+    - @available_months: [Array<Date>] Months with available data.
+    - @total_balance: [Numeric] Sum of all account balances for the period.
+    - @q: [Ransack::Search] Search object for filtering.
+%>
 
-<%# Explanation:: Este wrapper organiza o conteúdo da página no layout padrão do
-  #               dashboard, definindo o título com o nome do portfólio e uma
-  #               descrição contextual do período exibido.
-  %>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Contas Correntes",
            page_desc: "#{@portfolio.name} — #{l(@reference_date, format: :month_year)}",
            current_view: "datatable" do
 %>
 
-  <%# Explanation:: Este seletor de mês permite ao usuário navegar entre os períodos
-    #               disponíveis sem recarregar a página inteira, filtrando os saldos
-    #               exibidos na tabela abaixo.
-    %>
+  <%# ====== MONTH SELECTOR ====== %>
   <%= render "partials/route/dashboard/section",
              section_title: "Período de Referência",
              columns: 1 do
@@ -53,10 +42,7 @@
     <% end %>
   <% end %>
 
-  <%# Explanation:: Esta seção exibe um KPI de destaque com o saldo total consolidado
-    #               de todas as contas correntes no mês selecionado, permitindo ao
-    #               gestor visualizar o total de disponibilidades de forma imediata.
-    %>
+  <%# ====== TOTAL BALANCE KPI ====== %>
   <%= render "partials/route/dashboard/section",
              section_title: "Total de Disponibilidades",
              columns: 4 do
@@ -72,14 +58,9 @@
     <% end %>
   <% end %>
 
-  <%# Explanation:: Esta tabela lista todas as contas correntes do portfólio para
-    #               o mês selecionado, com colunas de instituição, nome, número e
-    #               saldo. A tabela é integrada ao Turbo Frame para atualizações
-    #               parciais sem reload completo.
-    %>
+  <%# ====== DATA TABLE ====== %>
   <%= render partial: "partials/blocks/data-table", locals: {
 
-    # Explanation:: Cabeçalhos descrevendo cada coluna da tabela de contas correntes.
     columns_header: [
       "Instituição",
       "Nome",
@@ -87,8 +68,6 @@
       "Saldo",
     ],
 
-    # Explanation:: Ícones Material Symbols associados a cada coluna para
-    #               facilitar o reconhecimento visual do tipo de dado.
     columns_icons: [
       "landmark",
       "tag",
@@ -97,20 +76,13 @@
       "file-text"
     ],
 
-    # Explanation:: Lambdas responsáveis por extrair e formatar cada campo
-    #               de uma CheckingAccount para exibição na linha da tabela.
     columns_body: [
       ->(ca) { normalize_code(ca.institution_label) },
-
       ->(ca) { normalize_title(ca.name) },
-
       ->(ca) { normalize_number(ca.account_number) },
-
       ->(ca) { normalize_currency(ca.balance) },
     ],
 
-    # Explanation:: Coleção de contas correntes do mês filtrado, já ordenada
-    #               por instituição e nome para facilitar a leitura.
     models: @checking_accounts,
 
     new_path: new_portfolio_checking_account_path(@portfolio),
@@ -118,8 +90,6 @@
     sort_options: [],
     q_object: @q,
 
-    # Explanation:: URL base para busca e paginação, mantendo o parâmetro de
-    #               portfólio e mês de referência no contexto correto.
     search_url: portfolio_checking_accounts_path(@portfolio, month: params[:month]),
 
     turbo_frame_id: "checking_accounts_table",
@@ -128,9 +98,7 @@
   } %>
 <% end %>
 
-<%# Explanation:: Filtros laterais por instituição e nome de conta, permitindo
-  #               refinamento rápido da listagem sem recarregar a página inteira.
-  %>
+<%# ====== FILTERS ====== %>
 <%= render partial: "partials/route/dashboard/filters",
            locals: {
              q_object: @q,

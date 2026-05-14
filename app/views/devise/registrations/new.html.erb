@@ -1,50 +1,29 @@
 <%#
-  # Partial: new.html.erb
-  # Date: 2026-03-12
-  # Author: Moisés Reis
-  # Package: Devise/Registrations
-  #
-  # Description: Renders the user registration form within a specialized layout wrapper.
-  #              It collects essential user details like name, email, and password
-  #              to create a new account in the system.
-  #
-  # Locals: @param resource [Object] - The user model instance being created.
-  #         @param resource_name [Symbol] - The name of the resource (usually :user).
-  #
-  # Usage: - What: Provides a structured interface for new users to sign up for
-  #                the Meta platform.
-  #         - How: Utilizes shared layout partials and modular input components
-  #                to maintain a consistent UI across the authentication flow.
-  #         - Why: Simplifies the account creation process by breaking down
-  #                the required data into clear, guided input fields.
+  VIEW: new.html.erb
+  ACTION: Devise::RegistrationsController#new
+  DESCRIPTION: User registration form within the authentication layout.
+               Collects email, name, and password to create a new account.
+  INSTANCE VARIABLES:
+    - resource: [User] The new user instance.
+    - resource_name: [Symbol] The resource name (:user).
 %>
 
-<%# ============================================================= %>
-<%# Main Page Layout & Welcome Message %>
-<%# ============================================================= %>
+<%# ====== MAIN PAGE LAYOUT ====== %>
 
 <%= render 'partials/route/auth/wrapper' do %>
 
-  <%# This container organizes the layout with a welcoming title and a
-    # helpful description to guide the user through the registration.
-    %>
   <%= render 'partials/route/auth/container',
              welcome_message: "Seja bem-vindo à Meta",
              welcome_feedback: "Crie sua conta em poucos minutos e desbloqueie o potencial máximo da sua carteira de investimentos" do
   %>
 
-    <%# ============================================================= %>
-    <%# Registration Form Content %>
-    <%# ============================================================= %>
+    <%# ====== REGISTRATION FORM ====== %>
 
     <%= form_for(resource,
                  as: resource_name,
                  url: registration_path(resource_name)) do |f|
     %>
 
-      <%# This input field captures the user's email address, which serves as
-        # their primary identifier and contact point for the account.
-        %>
       <%= render "partials/modules/input-field",
                  f: f,
                  name: :email,
@@ -57,9 +36,6 @@
 
       <%= render 'partials/modules/separator' %>
 
-      <%# These fields collect the user's full name to personalize the
-        # dashboard and communication within the application.
-        %>
       <%= render "partials/modules/input-field",
                  f: f,
                  name: :first_name,
@@ -82,9 +58,6 @@
 
       <%= render 'partials/modules/separator' %>
 
-      <%# These password fields ensure the user creates a secure credential
-        # and confirms it to prevent typing errors during setup.
-        %>
       <%= render "partials/modules/input-field",
                  f: f,
                  name: :password,
@@ -105,9 +78,6 @@
                  icon_name: "key"
       %>
 
-      <%# This button submits the registration form to the server to
-        # process the creation of the new user account.
-        %>
       <%= button_tag type: "submit",
                      class: "button" do %>
         <%= inline_svg_tag "icons/arrow-up-right.svg" %>

@@ -1,82 +1,104 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/date_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing presenters responsible for standardized UI rendering.
-#
-# Handles date formatting and temporal display.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #                 Ui::DatePresenter
-  # =============================================================
+
+  # Renders formatted date and time-related presentation values.
   #
-  # Provides consistent formatting and aggregation logic for date-based
-  # UI presentation concerns.
+  # This presenter provides standardized formatting helpers for:
+  # - calendar dates
+  # - relative timestamps
+  # - latest collection dates
   #
+  # Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
   class DatePresenter < BasePresenter
 
-    # =============================================================
-    #                 1. CONSTANTS & CONFIGURATION
-    # =============================================================
+    # ==========================================================================
+    # CONSTANTS
+    # ==========================================================================
 
+    # Shared CSS utility classes applied to formatted date values.
+    #
+    # @return [String] CSS class list used for formatted date rendering.
     BASE_CLASSES = "line-clamp-2 font-mono".freeze
 
-    # =============================================================
-    #                      2. INITIALIZATION
-    # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # @param view_context [ActionView::Base] Rails view context providing helper methods.
+    # Initializes the presenter.
+    #
+    # @param view_context [ActionView::Base] Rails view context instance.
     def initialize(view_context)
       super
+
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # =============================================================
-    #                      3a. DATE RENDERING
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Renders a formatted date value.
+    # Renders a formatted calendar date.
     #
-    # @param value [Date, Time, DateTime, nil] The date-like value to render.
-    # @return [ActiveSupport::SafeBuffer] HTML span element or empty-state fallback.
+    # Dates are formatted using the Brazilian DD/MM/YYYY standard.
+    #
+    # @param value [Date, Time, DateTime, nil] Value converted into a date.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def date(value)
       return @empty.render if value.blank?
 
       formatted = value.to_date.strftime("%d/%m/%Y")
-      h.content_tag(:span, formatted, class: BASE_CLASSES, scope: "row")
-    end
 
-    # =============================================================
-    #                  3b. LATEST DATE RENDERING
-    # =============================================================
+      h.content_tag(
+        :span,
+        formatted,
+        class: BASE_CLASSES,
+        scope: "row"
+      )
+    end
 
     # Renders the most recent date from a collection.
     #
-    # @param collection [ActiveRecord::Relation, Enumerable] Collection of records.
-    # @param attribute [Symbol] Attribute name containing the date value.
-    # @return [ActiveSupport::SafeBuffer] HTML span element or empty-state fallback.
+    # The collection is ordered descending by the specified attribute and
+    # the latest available value is rendered through {#date}.
+    #
+    # @param collection [ActiveRecord::Relation] Collection queried for dates.
+    # @param attribute [Symbol] Attribute used for ordering and rendering.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML date element.
     def latest_date(collection, attribute: :date)
       record = collection.order(attribute => :desc).first
+
       return @empty.render if record.blank? || record.send(attribute).blank?
 
       date(record.send(attribute))
     end
 
-    # =============================================================
-    #                 3c. RELATIVE TIME RENDERING
-    # =============================================================
-
-    # Renders a relative time string (e.g., "há 2 meses").
+    # Renders a relative time expression.
     #
-    # @param value [Date, Time, DateTime, nil] The date-like value to evaluate.
-    # @return [ActiveSupport::SafeBuffer] HTML span element or empty-state fallback.
+    # Example outputs:
+    # - "5 minutes"
+    # - "2 days"
+    # - "about 1 month"
+    #
+    # @param value [Time, DateTime, nil] Timestamp used for relative formatting.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML span element.
     def relative(value)
       return @empty.render if value.blank?
 
       content = h.time_ago_in_words(value)
-      h.content_tag(:span, content, class: "text-xs text-muted italic")
+
+      h.content_tag(
+        :span,
+        content,
+        class: "text-xs text-muted italic"
+      )
     end
   end
 end

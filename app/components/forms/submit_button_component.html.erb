@@ -1,3 +1,15 @@
+<%#
+  PARTIAL: app/components/forms/submit_button_component.html.erb
+  DESCRIPTION: Renders a contextual submit button for forms, adapting label and icon based on HTTP method.
+
+  LOCAL VARIABLES:
+  - @builder: [Object] Form builder instance used to generate the submit button (required).
+  - @method:   [Symbol, String] HTTP method used to determine create vs update state (required).
+  - @label:    [String] Button label (derived if not explicitly provided).
+  - @icon:     [String] Icon name (derived if not explicitly provided).
+%>
+
+<!-- Forms::SubmitButton -->
 <%= @builder.button class: "button button-primary w-fit flex items-center gap-2" do %>
   <%= render_icon(@icon) %>
   <%= content_tag :span, @label %>

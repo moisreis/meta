@@ -1,65 +1,65 @@
-# Configures Docker to ignore specific files and directories during the build process.
+# Defines Docker build context exclusion rules for the Rails application.
 #
-# This file ensures that sensitive keys, logs, and development-only artifacts
-# are excluded from the Docker image to improve security and reduce build size.
-#
-# TABLE OF CONTENTS:
-#
-# 1. Version Control & Environment
-# 2. Security Keys
-# 3. Logs & Temp Files
-# 4. Storage & Assets
-# 5. Tooling & Deployment
+# This file prevents unnecessary, sensitive, or development-only files from
+# being sent to the Docker daemon during image builds, improving build
+# performance, reducing image size, and limiting exposure of local artifacts.
 #
 # @author Moisés Reis
 
-# =============================================================
-#                1. VERSION CONTROL & ENVIRONMENT
-# =============================================================
+# ============================================================================
+# VERSION CONTROL & ENVIRONMENT
+# ============================================================================
 
 /.git/
 /.gitignore
 /.bundle
 /.env*
 
-# =============================================================
-#                       2. SECURITY KEYS
-# =============================================================
+# ============================================================================
+# ENCRYPTION & SECRET KEYS
+# ============================================================================
 
 /config/master.key
 /config/credentials/*.key
 
-# =============================================================
-#                     3. LOGS & TEMP FILES
-# =============================================================
+# ============================================================================
+# LOGS & TEMPORARY FILES
+# ============================================================================
 
 /log/*
 /tmp/*
 !/log/.keep
 !/tmp/.keep
+
 /tmp/pids/*
 !/tmp/pids/.keep
 
-# =============================================================
-#                      4. STORAGE & ASSETS
-# =============================================================
+# ============================================================================
+# STORAGE & GENERATED ASSETS
+# ============================================================================
 
 /storage/*
 !/storage/.keep
+
 /tmp/storage/*
 !/tmp/storage/.keep
+
 /node_modules/
+
 /app/assets/builds/*
 !/app/assets/builds/.keep
+
 /public/assets
 
-# =============================================================
-#                    5. TOOLING & DEPLOYMENT
-# =============================================================
+# ============================================================================
+# TOOLING & DEPLOYMENT CONFIGURATION
+# ============================================================================
 
 /.github
-/config/deploy*.yml
 /.kamal
 /.devcontainer
+
+/config/deploy*.yml
+
 /.dockerignore
 /Dockerfile*

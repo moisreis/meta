@@ -1,3 +1,17 @@
+<%#
+  PARTIAL: _info-card.html.erb
+  DESCRIPTION: Renders an info card with an icon, title, subtitle, main value,
+               and sub value. Supports a configurable accent color.
+  LOCAL VARIABLES:
+    - icon_name: [String] SVG icon filename (without extension).
+    - title: [String] Card title text.
+    - subtitle: [String] Card subtitle text.
+    - main_value: [String] Primary display value.
+    - sub_value: [String] Secondary display value.
+    - main_color: [String] (optional) Accent color key ("primary", "success", etc.).
+  CONSTANTS:
+    - INFO_CARD_COLORS: [Hash<String, Hash>] Color mappings by accent key.
+%>
 <% main_color ||= "primary" %>
 <% c = INFO_CARD_COLORS.fetch(main_color, INFO_CARD_COLORS["primary"]) %>
 

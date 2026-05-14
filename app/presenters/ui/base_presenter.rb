@@ -1,33 +1,38 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/base_presenter.rb
+# Provides the foundational behavior shared across UI presenter objects.
 #
-# Ui namespace containing base infrastructure for presenter objects.
-#
-# Base class for UI presenters.
-# Provides access to Rails view helpers via a consistent interface.
+# This base presenter encapsulates access to the Rails view context and
+# exposes helper delegation utilities for subclasses responsible for
+# presentation-layer rendering behavior.
 #
 # @author Moisés Reis
+
 class Ui::BasePresenter
 
-  # =============================================================
-  #                      1. INITIALIZATION
-  # =============================================================
+  # ==========================================================================
+  # INITIALIZATION
+  # ==========================================================================
 
-  # @param view_context [ActionView::Base] Rails view context providing helper methods.
+  # Initializes the presenter with the current Rails view context.
+  #
+  # @param view_context [ActionView::Base] Rails view context instance.
   def initialize(view_context)
     @view = view_context
   end
 
   protected
 
-  # =============================================================
-  #                  2a. VIEW HELPER ACCESSOR
-  # =============================================================
+  # ==========================================================================
+  # VIEW HELPERS
+  # ==========================================================================
 
-  # Provides access to Rails view helpers through a consistent interface.
+  # Returns the Rails view context helper proxy.
   #
-  # @return [ActionView::Base] The wrapped view context.
+  # This helper method provides convenient delegated access to Rails
+  # rendering helpers and view utilities inside presenter subclasses.
+  #
+  # @return [ActionView::Base] Rails view context instance.
   def h
     @view
   end

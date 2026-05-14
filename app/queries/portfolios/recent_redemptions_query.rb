@@ -19,7 +19,7 @@ module Portfolios
         .joins(:fund_investment)
         .where(fund_investments: { portfolio_id: @portfolio.id })
         .where(request_date: year_range)
-        .includes(:fund_investment)
+        .includes(fund_investment: :investment_fund)
         .order(request_date: :desc)
         .limit(LIMIT)
     end

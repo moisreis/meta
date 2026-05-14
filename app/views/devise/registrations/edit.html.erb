@@ -1,18 +1,12 @@
 <%#
-  # Partial: edit.html
-  # Date: 11/25/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Presents the form for the current user to update their account details, including email, name, and password.
-  #              The view also provides a separate action block for account deletion.
-  #
-  # Usage: - What: Renders the interface where an authenticated user modifies their profile information (email, name, password).
-  #                This page requires the user's current password to authorize any changes for security purposes.
-  #        - How: Accessed via the Devise edit registration path (e.g., /users/edit).
-  #               Submits updates using a PUT request to the registration path.
-  #        - Why: Enables user management of their personal data and security credentials, fulfilling common application requirements.
-  %>
+  VIEW: edit.html.erb
+  ACTION: Devise::RegistrationsController#edit
+  DESCRIPTION: Presents the account settings page for the current user.
+               Allows updating email, name, password, and account deletion.
+  INSTANCE VARIABLES:
+    - resource: [User] The current user record.
+    - resource_name: [Symbol] The resource name (:user).
+%>
 <%= render 'partials/route/dashboard/wrapper',
            page_title: "Editar perfil",
            page_desc: "Faça alterações nos seus dados de usuário" do

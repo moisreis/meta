@@ -1,13 +1,20 @@
-# app/components/groups/chart_list_component.rb
+# frozen_string_literal: true
+
+# Component responsible for rendering chart groups with validated chart types
+# and standardized palette application.
 #
-# Renders a specific chart type inside a Groups::ChartComponent container.
-# Delegates the actual chart markup to the appropriate helper method dynamically.
+# This component acts as a safety layer over chart rendering helpers, ensuring
+# only permitted chart types are executed and consistent styling is applied.
 #
-# Security: chart_type is validated against PERMITTED_TYPES before dispatch.
-# Only helpers that are explicitly listed may be called.
+# @author Moisés Reis
+
 class Groups::ChartListComponent < ApplicationComponent
 
-  # Extend this list as new chart helper methods are added.
+  # ==========================================================================
+  # CONSTANTS
+  # ==========================================================================
+
+  # List of Chartkick-compatible helper methods allowed for execution.
   PERMITTED_TYPES = %w[
     bar_chart
     line_chart
@@ -16,32 +23,42 @@ class Groups::ChartListComponent < ApplicationComponent
     column_chart
   ].freeze
 
-# @param chart_type    [String]      Name of the helper method that renders the chart.
-# @param data_source   [#any?]       Collection or URL providing the chart data.
-# @param chart_title   [String]      Heading text displayed in the chart header.
-# @param chart_options [Hash]        Optional visual customization passed to the helper.
-# @param chart_id      [String, nil] Stable DOM id. Auto-generated when omitted.
-# After
-# In Groups::ChartListComponent#initialize
-def initialize(chart_type:, data_source:, chart_title:,
-               palette: :default, chart_options: {}, chart_id: nil)
-  @chart_type    = chart_type.to_s
-  @data_source   = data_source
-  @chart_title   = chart_title
-  @chart_options = palette ? chart_options.merge(colors: ChartPalettes.css(palette)) : chart_options
-  @chart_id      = chart_id || "chart-#{SecureRandom.hex(6)}"
-end
+  # ==========================================================================
+  # INITIALIZATION
+  # ==========================================================================
+
+  # @param chart_type [String, Symbol] The helper method to call (e.g., :pie_chart).
+  # @param data_source [Object] The data payload for the chart.
+  # @param chart_title [String] Title displayed above the chart.
+  # @param palette [Symbol] The color theme from ChartPalettes.
+  # @param chart_options [Hash] Additional Chartkick library options.
+  # @param chart_id [String, nil] Unique HTML ID; generates a random hex if nil.
+  def initialize(chart_type:, data_source:, chart_title:,
+                 palette: :default, chart_options: {}, chart_id: nil)
+    @chart_type    = chart_type.to_s
+    @data_source   = data_source
+    @chart_title   = chart_title
+    @chart_options = palette ? chart_options.merge(colors: ChartPalettes.css(palette)) : chart_options
+    @chart_id      = chart_id || "chart-#{SecureRandom.hex(6)}"
+  end
+
+  # ==========================================================================
+  # PRIVATE METHODS
+  # ==========================================================================
 
   private
 
-  # @return [String] The rendered chart HTML from the resolved helper.
-  # @raise  [ArgumentError] When chart_type is not in PERMITTED_TYPES.
+  # Executes the dynamic helper call after validation.
+  #
+  # @raise [ArgumentError] If the requested chart_type is not in PERMITTED_TYPES.
+  # @return [ActiveSupport::SafeBuffer] The rendered chart HTML.
   def chart_output
     raise ArgumentError, "Unpermitted chart type: #{@chart_type}" unless permitted_type?
 
     helpers.public_send(@chart_type, @data_source, id: @chart_id, **@chart_options)
   end
 
+  # @return [Boolean]
   def permitted_type?
     PERMITTED_TYPES.include?(@chart_type)
   end

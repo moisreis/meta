@@ -5,17 +5,11 @@
 # This script ensures the required `foreman` gem is installed, configures
 # environment variables, and launches the application using the Procfile.dev.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Dependency Check & Installation
-# 2. Environment Configuration
-# 3. Process Execution
-#
 # @author Moisés Reis
 
-# =============================================================
-#         1. DEPENDENCY CHECK & INSTALLATION
-# =============================================================
+# ============================================================================
+# DEPENDENCY CHECK & INSTALLATION
+# ============================================================================
 
 # Ensure foreman is installed.
 if ! gem list foreman -i --silent; then
@@ -23,9 +17,9 @@ if ! gem list foreman -i --silent; then
   gem install foreman
 fi
 
-# =============================================================
-#           2. ENVIRONMENT CONFIGURATION
-# =============================================================
+# ============================================================================
+# ENVIRONMENT CONFIGURATION
+# ============================================================================
 
 # Default port fallback.
 export PORT="${PORT:-3000}"
@@ -34,9 +28,9 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
-# =============================================================
-#               3. PROCESS EXECUTION
-# =============================================================
+# ============================================================================
+# PROCESS EXECUTION
+# ============================================================================
 
 # Start application processes defined in Procfile.dev.
 exec foreman start -f Procfile.dev "$@"

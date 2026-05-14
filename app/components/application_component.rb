@@ -1,66 +1,46 @@
 # frozen_string_literal: true
 
-# app/components/application_component.rb
+# Base component for ViewComponent-based UI elements.
 #
-# Base component class shared across the entire ViewComponent layer.
+# This component provides shared helper integration and presenter construction
+# utilities for reusable UI components across the application.
 #
-# All application components inherit from this class instead of
-# {ViewComponent::Base}, allowing shared helpers, presenter
-# integration, and reusable rendering utilities to be centralized
-# in a single location.
-#
-# Responsibilities:
-# - Shared presenter instantiation
-# - Shared helper delegation
-# - Common SVG icon rendering helpers
-#
-# @example
-#   class Users::CardComponent < ApplicationComponent
-#   end
-#
+# @author Moisés Reis
+
 class ApplicationComponent < ViewComponent::Base
+
+  # ==========================================================================
+  # DELEGATIONS
+  # ==========================================================================
+
   delegate :formatted_timestamp, to: :helpers
+
+  # ==========================================================================
+  # PRIVATE HELPERS
+  # ==========================================================================
 
   private
 
-  # ===========================================================
-  #                 1. PRESENTER INTEGRATION
-  # ===========================================================
-
-  # Instantiates a presenter with access to the current
-  # Rails view context and helper methods.
+  # Builds a presenter instance bound to Rails view helpers.
   #
-  # This allows presenters to use helpers such as:
-  # - number_to_currency
-  # - link_to
-  # - image_tag
-  # - content_tag
+  # This method standardizes presenter instantiation by injecting the
+  # view context helpers, ensuring consistent rendering behavior across
+  # components.
   #
-  # @param presenter_class [Class]
-  # @param subject [Object]
-  # @return [Object]
+  # @param presenter_class [Class] Presenter class to instantiate.
+  # @param subject [Object] Domain object passed to the presenter.
+  #
+  # @return [Object] Instantiated presenter.
   def build_presenter(presenter_class, subject)
     presenter_class.new(subject, helpers)
   end
 
-  # ===========================================================
-  #                    2. ICON RENDERING
-  # ===========================================================
-
-  # Renders an inline SVG icon from the application's icon set.
+  # Renders an inline SVG icon from the asset pipeline.
   #
-  # Icons are resolved relative to:
-  #   app/assets/images/icons/
+  # @param name [String, Symbol, nil] Icon filename (without extension).
+  # @param options [Hash] HTML/SVG options passed to the renderer.
   #
-  # @param name [String, Symbol]
-  # @param options [Hash]
-  # @return [String, nil]
-  #
-  # @example
-  #   render_icon("user")
-  #
-  #   render_icon("wallet", class: "size-4")
-  #
+  # @return [ActiveSupport::SafeBuffer, nil] Rendered SVG markup or nil if no name provided.
   def render_icon(name, **options)
     return unless name.present?
 

@@ -1,6 +1,16 @@
+<%#
+  PARTIAL: app/components/groups/recent_activity_component.html.erb
+  DESCRIPTION: Renders a recent activity section with optional action header and empty-state handling.
+
+  LOCAL VARIABLES:
+  - @title:   [String] Section title (required).
+  - @action:  [Object, nil] Optional action element rendered in the section header.
+  - @columns: [Integer] Column layout configuration (default: 1).
+%>
+
 <%= render(Blocks::SectionComponent.new(title: @title, columns: 1, action: @action)) do %>
   <% if empty? %>
-    <%= content_tag :p, "Nenhum dado disponível.", class: "font-mono text-muted uppercase text-3xs tracking-widest" %>
+    <%= content_tag :p, "#{AppConstants::NO_AVAILABLE_DATA_MESSAGE}", class: "font-mono text-muted uppercase text-3xs tracking-widest" %>
   <% else %>
     <% items.each do |item| %>
       <%= item %>

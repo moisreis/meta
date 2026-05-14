@@ -1,33 +1,34 @@
-# Builds standardized configuration for pie and donut charts.
+# frozen_string_literal: true
+
+# Builds configuration options for pie chart rendering.
 #
-# This builder defines consistent formatting rules for circular charts,
-# including percentage suffixing and default legend positioning.
-#
-# TABLE OF CONTENTS:
-#   1. Public Methods
+# This service provides a standardized configuration for pie/donut charts,
+# typically used for proportional distribution visualization.
 #
 # @author Moisés Reis
+
 module Charts
+
+  # Constructs pie (donut) chart configuration options.
   class PieChartOptionsBuilder
-    class << self
 
-      # =============================================================
-      #                      1. PUBLIC METHODS
-      # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-      # Builds the configuration hash for pie/donut chart rendering.
-      #
-      # @param data [Array<Hash>] Dataset used for pie chart visualization.
-      #
-      # @return [Hash] Chart configuration options.
-      def call(data)
-        {
-          data:    data,
-          suffix:  "%",
-          donut:   true,
-          legend:  "left"
-        }
-      end
+    # Builds a pie/donut chart configuration.
+    #
+    # @param data [Array] Dataset used for pie chart rendering. Expected to be
+    #   in a format compatible with the charting library (e.g., label/value pairs).
+    #
+    # @return [Hash] Chart configuration object.
+    def self.call(data)
+      {
+        data:   data,
+        suffix: "%",
+        donut:  true,
+        legend: "left"
+      }
     end
   end
 end

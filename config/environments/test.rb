@@ -4,23 +4,13 @@
 # isolation, and deterministic behavior. Data persistence is temporary and
 # reset between test runs.
 #
-# TABLE OF CONTENTS:
-#
-# 1. Code Loading & Reloading
-# 2. File Server & Caching
-# 3. Error Handling
-# 4. Security Settings
-# 5. Active Storage
-# 6. Action Mailer
-# 7. Logging & Diagnostics
-#
 # @author Moisés Reis
 
 Rails.application.configure do
 
-  # =============================================================
-  #               1. CODE LOADING & RELOADING
-  # =============================================================
+  # ============================================================================
+  # CODE LOADING & RELOADING
+  # ============================================================================
 
   # Disable code reloading for faster test execution.
   config.enable_reloading = false
@@ -28,9 +18,9 @@ Rails.application.configure do
   # Enable eager loading only in CI environments to validate boot integrity.
   config.eager_load = ENV["CI"].present?
 
-  # =============================================================
-  #               2. FILE SERVER & CACHING
-  # =============================================================
+  # ============================================================================
+  # FILE SERVER & CACHING
+  # ============================================================================
 
   # Configure static file server headers for test performance.
   config.public_file_server.headers = {
@@ -40,9 +30,9 @@ Rails.application.configure do
   # Disable caching.
   config.cache_store = :null_store
 
-  # =============================================================
-  #                  3. ERROR HANDLING
-  # =============================================================
+  # ============================================================================
+  # ERROR HANDLING
+  # ============================================================================
 
   # Show full error reports.
   config.consider_all_requests_local = true
@@ -50,9 +40,9 @@ Rails.application.configure do
   # Render templates for known exceptions, raise others.
   config.action_dispatch.show_exceptions = :rescuable
 
-  # =============================================================
-  #                  4. SECURITY SETTINGS
-  # =============================================================
+  # ============================================================================
+  # SECURITY SETTINGS
+  # ============================================================================
 
   # Disable CSRF protection in test environment.
   config.action_controller.allow_forgery_protection = false
@@ -60,16 +50,16 @@ Rails.application.configure do
   # Raise error for invalid callback configurations.
   config.action_controller.raise_on_missing_callback_actions = true
 
-  # =============================================================
-  #                    5. ACTIVE STORAGE
-  # =============================================================
+  # ============================================================================
+  # ACTIVE STORAGE
+  # ============================================================================
 
   # Store uploads in a temporary test location.
   config.active_storage.service = :test
 
-  # =============================================================
-  #                    6. ACTION MAILER
-  # =============================================================
+  # ============================================================================
+  # ACTION MAILER
+  # ============================================================================
 
   # Prevent real email delivery; store emails in memory.
   config.action_mailer.delivery_method = :test
@@ -77,14 +67,11 @@ Rails.application.configure do
   # Default host for URL generation in mailers.
   config.action_mailer.default_url_options = { host: "example.com" }
 
-  # =============================================================
-  #               7. LOGGING & DIAGNOSTICS
-  # =============================================================
+  # ============================================================================
+  # LOGGING & DIAGNOSTICS
+  # ============================================================================
 
   # Output deprecation warnings to stderr.
   config.active_support.deprecation = :stderr
 
-  # Optional diagnostics (disabled by default)
-  # config.i18n.raise_on_missing_translations = true
-  # config.action_view.annotate_rendered_view_with_filenames = true
 end

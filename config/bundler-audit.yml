@@ -1,2 +1,9 @@
+# Bundler Audit vulnerability ignore list.
+#
+# Entries defined here are excluded from security audit failures when the
+# vulnerability is confirmed to be non-applicable to the project.
+#
+# @author Moisés Reis
+
 ignore:
   - CVE-THAT-DOES-NOT-APPLY

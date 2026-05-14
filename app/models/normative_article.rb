@@ -116,6 +116,13 @@ class NormativeArticle < ApplicationRecord
     benchmark_target.present?
   end
 
+  # Returns all normative articles formatted for select helpers.
+  #
+  # @return [Array<Array(String, Integer)>] Display names and IDs.
+  def self.for_select
+    all.map { |article| [article.display_name, article.id] }
+  end
+
   # == self.ransackable_attributes
   #
   # @author Moisés Reis

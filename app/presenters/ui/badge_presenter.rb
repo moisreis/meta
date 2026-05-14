@@ -1,66 +1,85 @@
 # frozen_string_literal: true
 
-# app/presenters/ui/badge_presenter.rb
+# Provides UI presentation helpers and reusable rendering abstractions.
 #
-# Ui namespace containing presenters responsible for standardized UI rendering.
-#
-# Styled badge renderer with deterministic type selection.
+# This namespace groups presenter objects responsible for encapsulating
+# reusable view rendering logic and presentation-specific formatting behavior.
 #
 # @author Moisés Reis
+
 module Ui
-  # =============================================================
-  #                 Ui::BadgePresenter
-  # =============================================================
+
+  # Renders styled badge components for textual content.
   #
-  # Provides consistent badge rendering with optional explicit styling
-  # or deterministic type assignment based on content hashing.
-  #
+  # This presenter generates deterministic or explicitly selected badge
+  # variants and delegates blank-state rendering to {EmptyStatePresenter}.
   class BadgePresenter < BasePresenter
 
-    # =============================================================
-    #                 1. CONSTANTS & CONFIGURATION
-    # =============================================================
+    # ==========================================================================
+    # CONSTANTS
+    # ==========================================================================
 
-    TYPES = %w[inchworm indigo teal primary honeysuckle].freeze
+    # Available badge style variants.
+    #
+    # @return [Array<String>] Supported badge type identifiers.
+    TYPES = %w[
+      inchworm
+      indigo
+      teal
+      primary
+      honeysuckle
+    ].freeze
 
-    # =============================================================
-    #                      2. INITIALIZATION
-    # =============================================================
+    # ==========================================================================
+    # INITIALIZATION
+    # ==========================================================================
 
-    # @param view_context [ActionView::Base] Rails view context providing helper methods.
+    # Initializes the presenter.
+    #
+    # @param view_context [ActionView::Base] Rails view context instance.
     def initialize(view_context)
       super
+
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # =============================================================
-    #                        3a. RENDER
-    # =============================================================
+    # ==========================================================================
+    # PUBLIC METHODS
+    # ==========================================================================
 
-    # Renders a styled badge element.
+    # Renders a styled badge component.
     #
-    # @param content [String, nil] Text displayed inside the badge.
-    # @param type [String, nil] Optional explicit badge type override.
-    # @return [ActiveSupport::SafeBuffer] HTML span element or empty-state fallback.
+    # When no explicit type is provided, a deterministic badge variant
+    # is selected based on the content hash.
+    #
+    # @param content [String, #to_s, nil] Content rendered inside the badge.
+    # @param type [String, nil] Explicit badge type override.
+    # @return [ActiveSupport::SafeBuffer] Rendered HTML badge element.
     def render(content, type: nil)
       return @empty.render if content.blank?
 
       selected = type || deterministic_type(content)
-      h.content_tag(:span, content, class: "badge badge-#{selected}")
+
+      h.content_tag(
+        :span,
+        content,
+        class: "badge badge-#{selected}"
+      )
     end
 
     private
 
-    # =============================================================
-    #               4a. DETERMINISTIC TYPE SELECTION
-    # =============================================================
+    # ==========================================================================
+    # PRIVATE METHODS
+    # ==========================================================================
 
-    # Selects a deterministic badge type based on CRC32 hashing.
+    # Selects a deterministic badge type based on content hashing.
     #
-    # Ensures stable visual distribution of badge colors for identical inputs.
+    # This ensures visually stable badge coloring for identical content
+    # across requests and render cycles.
     #
-    # @param content [String] Input used to derive deterministic type.
-    # @return [String] Selected badge type.
+    # @param content [String, #to_s] Content used for deterministic hashing.
+    # @return [String] Deterministically selected badge type.
     def deterministic_type(content)
       TYPES[Zlib.crc32(content.to_s) % TYPES.size]
     end

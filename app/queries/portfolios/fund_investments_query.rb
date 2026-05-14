@@ -10,11 +10,7 @@ module Portfolios
       # @param portfolio [Portfolio]
       # @return [ActiveRecord::Relation<FundInvestment>]
       def call(portfolio)
-        portfolio.fund_investments.includes(
-          :applications,
-          :redemptions,
-          investment_fund: :fund_valuations
-        )
+        portfolio.fund_investments.includes(:investment_fund)
       end
     end
   end

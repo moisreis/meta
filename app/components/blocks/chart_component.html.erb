@@ -1,9 +1,18 @@
-<%# app/components/blocks/chart_component.html.erb %>
+<%#
+  PARTIAL: app/components/blocks/chart_component.html.erb
+  DESCRIPTION: Renders a chart container with title, optional metadata, and empty-state fallback handling.
 
+  LOCAL VARIABLES:
+  - @title: [String] Chart title.
+  - @data_source: [Array] Data set used to determine render state.
+  - @id: [String, nil] Optional DOM identifier for chart targeting.
+  - @meta: [String, nil] Optional metadata displayed in header.
+%>
+
+<!-- Blocks::Chart [<%= @title %>] [<%= @id %>] -->
 <div class="bg-white border border-border rounded-base flex flex-col overflow-hidden"
      data-chart-id="<%= @id %>">
 
-  <%# Header %>
   <div class="flex items-center justify-between px-6 py-3 flex-shrink-0">
     <div class="flex items-center gap-3">
       <span class="size-[5px] rounded-full bg-neutral-300 flex-shrink-0"></span>
@@ -19,14 +28,13 @@
     <% end %>
   </div>
 
-  <%# Body %>
   <div class="flex items-center justify-center h-full p-5">
     <% if data? %>
       <%= content %>
     <% else %>
-      <p class="font-mono text-muted uppercase text-3xs tracking-widest py-16">
-        Nenhum dado disponível
-      </p>
+      <%= content_tag :p,
+                      "#{AppConstants::NO_AVAILABLE_DATA_MESSAGE}",
+                      class: "font-mono text-muted uppercase text-3xs tracking-widest py-16" %>
     <% end %>
   </div>
 
