@@ -107,11 +107,8 @@ class Portfolio < ApplicationRecord
     fund_investments.includes(:investment_fund, :applications, :redemptions).sum(&:total_gain)
   end
 
-  # == valid_allocations?
+  # == total_applications
   #
-  # @author Moisés Reis
-  #
-  # Verifies if   # == total_applications
   # @author Moisés Reis
   #
   # Calculates the gross sum of all financial contributions made to this fund.
@@ -133,7 +130,13 @@ class Portfolio < ApplicationRecord
     BigDecimal(redemptions.sum(:redeemed_liquid_value).to_s)
   end
 
-  # Returns:: - True if allocations are valid, false otherwise.
+  # == valid_allocations?
+  #
+  # @author Moisés Reis
+  #
+  # Returns::
+  # - True if allocations are valid, false otherwise.
+  #
   def valid_allocations?
     fund_investments.sum(:percentage_allocation) <= BigDecimal("100")
   end

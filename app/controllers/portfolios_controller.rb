@@ -112,6 +112,7 @@ class PortfoliosController < ApplicationController
 
     @new_application = Application.new
     @new_redemption  = Redemption.new
+
     @reference_date = @data.reference_date
     @reference_period = @data.reference_period
   end

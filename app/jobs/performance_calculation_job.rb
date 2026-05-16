@@ -83,8 +83,17 @@ class PerformanceCalculationJob < ApplicationJob
 
     return unless quota_start && quota_end
 
-    quotas_at_start = reconstruct_quotas_at(fund_investment, period_start - 1.day)
-    quotas_at_end = reconstruct_quotas_at(fund_investment, period_end)
+    quotas_at_start =
+      Performance::QuotaReconstructionCalculator.call(
+        fund_investment:,
+        date: period_start - 1.day
+      )
+
+    quotas_at_end =
+      Performance::QuotaReconstructionCalculator.call(
+        fund_investment:,
+        date: period_end
+      )
 
     return if quotas_at_start <= 0 && quotas_at_end <= 0
 
@@ -155,24 +164,6 @@ class PerformanceCalculationJob < ApplicationJob
     end
   rescue StandardError => e
     Rails.logger.warn("[PerformanceCalculationJob] Could not consolidate checking accounts: #{e.message}")
-  end
-
-  # == reconstruct_quotas_at
-  #
-  # @author Moisés Reis
-  #
-  # Calculates the total number of quotas held at a specific point in time.
-  #
-  # Returns:: - The total quota balance as a BigDecimal.
-  def reconstruct_quotas_at(fund_investment, date)
-    apps = fund_investment.applications
-                          .where("cotization_date <= ?", date)
-                          .sum(:number_of_quotas)
-    reds = fund_investment.redemptions
-                          .where("cotization_date <= ?", date)
-                          .sum(:redeemed_quotas)
-
-    BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
   end
 
   # == calculate_yearly_return
