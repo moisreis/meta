@@ -84,18 +84,13 @@ delegate :name,      to: :portfolio, prefix: true  # produces portfolio_name
 def investment_fund = fund_investment.investment_fund
 def portfolio       = fund_investment.portfolio
 
-  def recalculate_performance
-    return unless cotization_date
-
-    affected_period = cotization_date.end_of_month
-    PerformanceHistory
-      .where(fund_investment_id: fund_investment_id, period: affected_period)
-      .destroy_all
-
-    RecalculatePerformanceJob.perform_later(
-      fund_investment_id: fund_investment_id,
-      reference_date: cotization_date
-    )
+  def performance_relevant_attribute_names
+    %w[
+      cotization_date
+      liquidation_date
+      redeemed_liquid_value
+      redeemed_quotas
+    ]
   end
 
   def cotization_after_request

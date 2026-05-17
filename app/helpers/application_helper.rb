@@ -435,14 +435,15 @@ end
 #
 # @return [Hash<String, Hash>] The color mapping configuration
 #
-INFO_CARD_COLORS = {
-  "primary" => {
-    bg: "bg-primary-50",
-    icon_bg: "bg-primary-600",
-    border: "border-primary-200",
-    text: "text-primary-600",
-    stroke: "stroke-primary-600"
-  },
+unless defined?(INFO_CARD_COLORS)
+  INFO_CARD_COLORS = {
+    "primary" => {
+      bg: "bg-primary-50",
+      icon_bg: "bg-primary-600",
+      border: "border-primary-200",
+      text: "text-primary-600",
+      stroke: "stroke-primary-600"
+    },
   "success" => {
     bg: "bg-success-50",
     icon_bg: "bg-success-600",
@@ -472,3 +473,4 @@ INFO_CARD_COLORS = {
     stroke: "stroke-danger-600"
   }
 }.freeze
+end

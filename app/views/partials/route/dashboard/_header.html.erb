@@ -174,7 +174,6 @@
                      class: "button button-outline button-small",
                      data: { action: "reference-date#view" } do %>
         <%= inline_svg_tag "icons/calendar.svg" %>
-        <%= content_tag :span, "Visualizar" %>
       <% end %>
 
       <% if @portfolio.present? && @portfolio.persisted? %>
@@ -184,7 +183,6 @@
                        class: "button button-secondary button-small",
                        data: { action: "reference-date#calculate" } do %>
           <%= inline_svg_tag "icons/refresh-cw.svg" %>
-          <%= content_tag :span, "Calcular Performance" %>
         <% end %>
 
         <%# Requests the system to compile and export a PDF report
@@ -193,7 +191,6 @@
                        class: "button button-accent button-small",
                        data: { action: "reference-date#report" } do %>
           <%= inline_svg_tag "icons/file-attachment.svg" %>
-          <%= content_tag :span, "Gerar Relatório" %>
         <% end %>
       <% end %>
     </div>
