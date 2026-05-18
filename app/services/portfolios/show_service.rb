@@ -372,7 +372,7 @@ module Portfolios
     # @return [Hash]
     def fund_fields
       {
-        fund_investments:     Portfolios::FundInvestmentsQuery.call(@portfolio),
+        fund_investments:     Portfolios::FundInvestmentsQuery.call(@portfolio, reference_date: @reference_date),
         net_movement_by_fund: Portfolios::NetMovementQuery.call(@portfolio, @reference_date),
         fund_quota_value:     Portfolios::FundQuotaValueQuery.call(@portfolio, @reference_date),
         market_value_by_fund: Portfolios::MarketValueByFundQuery.call(@portfolio, @reference_date)

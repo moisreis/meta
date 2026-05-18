@@ -270,6 +270,7 @@ class PortfolioMonthlyReportGenerator
   # @return [ActiveRecord::AssociationRelation<FundInvestment>]
   def fund_investments_with_data
     @portfolio.fund_investments
+              .active_for_period(@reference_date)
               .includes(
                 :investment_fund,
                 investment_fund: { investment_fund_articles: :normative_article }
@@ -615,7 +616,7 @@ class PortfolioMonthlyReportGenerator
   #   * +:allocation+ [Float] percentage weight in the portfolio
   #   * +:value+      [Float] invested value in currency
   def calculate_allocation_data
-    @portfolio.fund_investments.includes(:investment_fund).map do |fi|
+    @portfolio.fund_investments.active_for_period(@reference_date).includes(:investment_fund).map do |fi|
       {
         fund_name: fi.investment_fund.fund_name,
         allocation: fi.percentage_allocation.to_f,
@@ -634,6 +635,7 @@ class PortfolioMonthlyReportGenerator
   def calculate_article_groups
     groups = Hash.new(0.0)
     @portfolio.fund_investments
+              .active_for_period(@reference_date)
               .includes(investment_fund: { investment_fund_articles: :normative_article })
               .each do |fi|
       articles = fi.investment_fund.investment_fund_articles
@@ -663,7 +665,7 @@ class PortfolioMonthlyReportGenerator
     perf_by_fi = (@performance_data[:performances] || [])
                    .index_by(&:fund_investment_id)
 
-    @portfolio.fund_investments.includes(:investment_fund).each do |fi|
+    @portfolio.fund_investments.active_for_period(@reference_date).includes(:investment_fund).each do |fi|
       ref = fi.investment_fund.benchmark_index.presence || '-'
       groups[ref][:allocation] += fi.percentage_allocation.to_f
       groups[ref][:value] += fi.current_market_value_on(@reference_date).to_f
@@ -680,7 +682,7 @@ class PortfolioMonthlyReportGenerator
   def calculate_institution_groups
     groups = Hash.new { |h, k| h[k] = { value: 0.0, allocation: 0.0 } }
 
-    @portfolio.fund_investments.includes(:investment_fund).each do |fi|
+    @portfolio.fund_investments.active_for_period(@reference_date).includes(:investment_fund).each do |fi|
       inst = fi.investment_fund.administrator_name.presence || 'Outros'
       groups[inst][:value] += fi.current_market_value_on(@reference_date).to_f
       groups[inst][:allocation] += fi.percentage_allocation.to_f

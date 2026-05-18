@@ -73,6 +73,32 @@ class FundInvestment < ApplicationRecord
   # Filters investments that currently hold a positive balance of quotas.
   scope :active, -> { where("total_quotas_held > 0 OR total_invested_value > 0") }
 
+  # Filters investments that had any activity or value in the given reference period.
+  # Includes funds that had initial balance, earnings, applications, or redemptions.
+  scope :active_for_period, ->(date) {
+    where(
+      PerformanceHistory
+        .where("fund_investment_id = fund_investments.id")
+        .where(period: date)
+        .where("initial_balance > 0 OR earnings != 0")
+        .arel.exists
+    ).or(
+      where(
+        Application
+          .where("fund_investment_id = fund_investments.id")
+          .where(cotization_date: date.beginning_of_month..date)
+          .arel.exists
+      )
+    ).or(
+      where(
+        Redemption
+          .where("fund_investment_id = fund_investments.id")
+          .where(cotization_date: date.beginning_of_month..date)
+          .arel.exists
+      )
+    )
+  }
+
   # Organizes the investment list based on the highest percentage of allocation.
   scope :by_allocation, -> { order(percentage_allocation: :desc) }
 
