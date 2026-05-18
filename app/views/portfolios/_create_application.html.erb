@@ -1,0 +1,51 @@
+<%# app/views/partials/route/dashboard/create_application.html.erb %>
+<%= render Layout::DrawerComponent.new(name: "application", title: "Nova Aplicação") do %>
+  <%= form_with(model: @new_application, class: "flex flex-col h-full") do |form| %>
+
+    <%= form.hidden_field :portfolio_id, value: @portfolio.id %>
+
+    <%= render Forms::FieldsetComponent.new(
+          title: "Destino da Transação",
+          description: "Selecione o fundo pelo CNPJ que receberá a aplicação.") do %>
+      <%= render Forms::SelectComponent.new(
+            f: form,
+            name: :investment_fund_id,
+            label: "Fundo alvo",
+            desc: "Busque pelo CNPJ ou nome do fundo.",
+            rich: true,
+            options_collection: @data.investment_fund_options ) %>
+    <% end %>
+
+    <%= render Forms::FieldsetComponent.new(
+          title: "Valores Financeiros",
+          description: "Informe o capital investido.") do %>
+      <%= render Forms::InputFieldComponent.new(
+            f: form,
+            name: :financial_value,
+            label: "Valor aplicado",
+            placeholder: "0,00",
+            icon_name: "banknote",
+            currency_mask: true,
+            desc: "O valor total (R$) investido na transação.") %>
+    <% end %>
+
+    <%= render Forms::FieldsetComponent.new(
+          title: "Cronograma da Operação",
+          description: "Registre as datas importantes da transação."
+        ) do %>
+
+      <%= render Forms::DateFieldComponent.new(
+            f: form,
+            name: :cotization_date,
+            label: "Data de Cotização",
+            desc: "Data em que a cota foi calculada e a transação efetivada.",
+            icon_name: "calculator",
+            is_half_width: false
+          ) %>
+
+    <% end %>
+
+      <%= render Forms::SubmitButtonComponent.new(builder: form, method: :post) %>
+
+  <% end %>
+<% end %>

@@ -1,0 +1,87 @@
+<%# app/views/partials/route/dashboard/create_checkingaccount.html.erb %>
+<%= render Layout::DrawerComponent.new(name: "checking-account", title: "Nova Conta Corrente") do %>
+  <%= form_with model: [@portfolio, CheckingAccount.new], class: "flex flex-col h-full" do |form| %>
+
+    <%= render Forms::FieldsetComponent.new(
+          title: "Identificação",
+          description: "Nomeie a conta e informe a instituição financeira responsável.") do %>
+      <%= render Forms::InputFieldComponent.new(
+            f: form,
+            name: :name,
+            label: "Nome",
+            placeholder: "CC Principal, Conta Reserva",
+            field_type: :text_field,
+            icon_name: "tag",
+            desc: "Escolha um nome descritivo para identificar esta conta.") %>
+      <%= render Forms::InputFieldComponent.new(
+            f: form,
+            name: :institution,
+            label: "Instituição Financeira",
+            placeholder: "Bradesco, Caixa Econômica Federal",
+            field_type: :text_field,
+            icon_name: "bank",
+            desc: "Informe o banco ou cooperativa de crédito da conta.") %>
+    <% end %>
+
+    <%= render Forms::FieldsetComponent.new(
+          title: "Saldo e Período",
+          description: "Informe o saldo da conta e o mês de competência deste registro.") do %>
+      <%= render Forms::InputFieldComponent.new(
+            f: form,
+            name: :balance,
+            label: "Saldo",
+            placeholder: "0,00",
+            field_type: :number_field,
+            icon_name: "banknote",
+            step: :any,
+            currency_mask: true,
+            desc: "Saldo da conta no encerramento do mês de referência.") %>
+            <%= render Forms::DateFieldComponent.new(
+                  f: form,
+                  name: :reference_date,
+                  label: "Data de Referência",
+                  desc: "Mês de competência deste saldo. Será ajustado para o último dia do mês.",
+                  icon_name: "calendar",
+                  is_half_width: false
+            ) %>
+    <% end %>
+
+    <%= render Forms::FieldsetComponent.new(
+          title: "Dados Bancários",
+          description: "Campos opcionais para identificação precisa da conta.") do %>
+      <%= render Forms::InputFieldComponent.new(
+            f: form,
+            name: :account_number,
+            label: "Número da Conta",
+            placeholder: "00012345-6",
+            field_type: :text_field,
+            icon_name: "hash",
+            desc: "Facilita a identificação quando há múltiplas contas.") %>
+      <%= render Forms::InputFieldComponent.new(
+            f: form,
+            name: :currency,
+            label: "Moeda",
+            placeholder: "BRL",
+            field_type: :text_field,
+            icon_name: "dollar",
+            desc: "Código ISO da moeda.") %>
+    <% end %>
+
+    <%= render Forms::FieldsetComponent.new(
+          title: "Observações",
+          description: "Informações adicionais sobre esta conta. Campo opcional.") do %>
+            <%= render(Forms::TextareaComponent.new(
+            form: form,
+            name: :notes,
+            label: "Observações",
+            placeholder: "Conta vinculada ao RPPS para pagamento de benefícios.",
+            desc: "Opcional. Máximo de 500 caracteres.",
+            rows: 3
+            )) %>
+    <% end %>
+
+   
+      <%= render Forms::SubmitButtonComponent.new(builder: form, method: :post) %>
+
+  <% end %>
+<% end %>

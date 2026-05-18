@@ -46,7 +46,7 @@ module Portfolios
       :indices_data,
       :normative_data,
       :monthly_flows,
-      :equity_evolution,
+      :equity_evolution,      
       :monthly_earnings_history,
       :recent_performance,
       :performance_by_fund,
@@ -76,6 +76,8 @@ module Portfolios
       :benchmark_deviation_by_pna,
       :benchmark_comparison_series,
       :checking_accounts,
+      :investment_fund_options,
+      :fund_investment_options,
       keyword_init: true
     )
 
@@ -127,6 +129,7 @@ module Portfolios
         **financial_fields,
         **flow_fields,
         **fund_fields,
+        **form_fields,
         **compliance_fields,
         **transaction_fields
       )
@@ -233,6 +236,46 @@ module Portfolios
         end_date:   @reference_date
       )
     end
+
+    # ---  5f. FORM OPTIONS  --------------------------------------
+
+    # Cached select options for investment fund form inputs.
+    #
+    # @return [Array<Array>]
+    def investment_fund_options
+      @investment_fund_options ||= InvestmentFund.order(:fund_name).map do |fund|
+        [
+          fund.fund_name,
+          fund.id,
+          {
+            data: {
+              subtitle: fund.cnpj
+            }
+          }
+        ]
+      end
+    end    
+
+    # Cached select options for portfolio fund investments.
+    #
+    # @return [Array<Array>]
+    def fund_investment_options
+      @fund_investment_options ||= @portfolio.fund_investments
+                                            .joins(:investment_fund)
+                                            .includes(:investment_fund)
+                                            .order("investment_funds.cnpj ASC")
+                                            .map do |fi|
+        [
+          fi.investment_fund.fund_name,
+          fi.id,
+          {
+            data: {
+              subtitle: fi.investment_fund.cnpj
+            }
+          }
+        ]
+      end
+    end    
 
     # =============================================================
     #               6. RESULT FIELD BUILDERS
@@ -361,6 +404,18 @@ module Portfolios
         checking_accounts:   Portfolios::CheckingAccountsQuery.call(@portfolio)
       }
     end
+
+    # ---  6i. FORM FIELDS  ---------------------------------------
+
+    # Returns preformatted select options for forms/components.
+    #
+    # @return [Hash]
+    def form_fields
+      {
+        investment_fund_options: investment_fund_options,
+        fund_investment_options: fund_investment_options
+      }
+    end    
 
   end
 end

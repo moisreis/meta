@@ -135,17 +135,17 @@
     /* Neutral
      * Structural colors for surfaces, borders, and backgrounds.
      * Scale: 50 (near-white) → 950 (near-black). */
-    --color-neutral-50: oklch(98.48% 0.0037 151.825);
-    --color-neutral-100: oklch(96.8% 0.0067 115.705);
-    --color-neutral-200: oklch(92.44% 0.0139 107.95);
-    --color-neutral-300: oklch(86.94% 0.0227 113.461);
-    --color-neutral-400: oklch(70.97% 0.0395 114.154);
-    --color-neutral-500: oklch(55.6% 0.0468 115.705);
-    --color-neutral-600: oklch(44.71% 0.0414 127.908);
-    --color-neutral-700: oklch(37.57% 0.0391 123.089);
-    --color-neutral-800: oklch(27.26% 0.0321 97.429);
-    --color-neutral-900: oklch(21.69% 0.0302 115.68);
-    --color-neutral-950: oklch(14.51% 0.0262 110.117);
+  --color-neutral-50: oklch(98.5% 0 0);
+  --color-neutral-100: oklch(97% 0 0);
+  --color-neutral-200: oklch(92.2% 0 0);
+  --color-neutral-300: oklch(87% 0 0);
+  --color-neutral-400: oklch(70.8% 0 0);
+  --color-neutral-500: oklch(55.6% 0 0);
+  --color-neutral-600: oklch(43.9% 0 0);
+  --color-neutral-700: oklch(37.1% 0 0);
+  --color-neutral-800: oklch(26.9% 0 0);
+  --color-neutral-900: oklch(20.9% 0 0);
+  --color-neutral-950: oklch(14.5% 0 0);
 
     /* Surface & Structural
      * Single-purpose tokens for layout and component backgrounds.
@@ -155,7 +155,7 @@
      * --color-input       → Input field background tint.
      * --color-accent      → Subtle hover/active surface highlight. */
     --color-white: oklch(100% 0 0);
-    --color-background: oklch(96.8% 0.0067 115.705);
+    --color-background: var(--color-neutral-50);
     --color-transparent: transparent;
     --color-border: oklch(92.44% 0.0139 107.95);
     --color-input: #fcfcfe;
@@ -305,7 +305,7 @@
      * --radius-base → 4px. Default for buttons, inputs, cards.
      * --radius-full → 999px. Fully rounded pills, avatar rings, badges.
      */
-    --radius-base: 4px;
+    --radius-base: 0px;
     --radius-full: 999px;
 }
 
@@ -345,6 +345,26 @@
         -webkit-appearance: none;
         margin: 0;
     }
+
+    /* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-700);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-600);
+}
 }
 
 /* =============================================================================
@@ -377,11 +397,40 @@
      *   <button class="button button-secondary button-small">Cancel</button>
      *   <button class="button button-danger">Delete</button>
      */
-    input[type="submit"],
-    button,
-    .button {
-        @apply h-9 inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-base [&>span]:!text-2xs text-neutral-50 font-mono uppercase transition-all disabled:pointer-events-none disabled:opacity-50 focus:border-neutral-100 focus:outline-neutral-100/50 outline-offset-2 focus:outline-offset-2 focus-visible:border-neutral-100 focus-visible:outline-offset-2 focus-visible:outline-neutral-100/50 focus-visible:outline-[3px] aria-invalid:outline-danger-600/20 aria-invalid:border-danger-600 bg-neutral-600 hover:bg-neutral-600/90 active:bg-neutral-600/80 active:outline-offset-1 px-3 py-1.5 has-[>svg]:px-3 [&>svg]:stroke-neutral-50 [&>svg]:!size-3.5 [&>span>svg]:!size-4 [&>svg]:relative [&>svg]:-top-[1px] cursor-pointer select-none;
-    }
+input[type="submit"],
+button,
+.button {
+  /* Layout */
+  @apply h-9 px-3 py-1.5 inline-flex items-center justify-center gap-1.5 whitespace-nowrap;
+
+  /* Typography — tight tracking amplifies the mono + uppercase pairing */
+  @apply font-mono font-medium text-2xs uppercase tracking-tight;
+  @apply text-neutral-50;
+
+  /* Shape — square corners for editorial precision */
+  @apply rounded-none;
+
+  /* Surface — slightly darker base, with a hairline border for depth */
+  @apply bg-neutral-800 border border-neutral-700;
+
+  /* Interaction */
+  @apply transition-all duration-100 cursor-pointer select-none;
+  @apply hover:bg-neutral-700 hover:border-neutral-600;
+  @apply active:bg-neutral-900 active:border-neutral-800 active:outline-offset-1;
+  @apply disabled:pointer-events-none disabled:opacity-40;
+
+  /* Focus */
+  @apply focus:border-neutral-100 focus:outline-neutral-100/50 focus:outline-offset-2;
+  @apply focus-visible:border-neutral-100 focus-visible:outline-[3px] focus-visible:outline-neutral-100/50 focus-visible:outline-offset-2;
+
+  /* Validation */
+  @apply aria-invalid:border-danger-600 aria-invalid:outline-danger-600/20;
+
+  /* Icon slots */
+  @apply has-[>svg]:px-3;
+  @apply [&>svg]:stroke-neutral-50 [&>svg]:!size-3.5 [&>svg]:relative;
+  @apply [&>span>svg]:!size-4 [&>span]:!text-2xs;
+}
 
     /**
      * .button-small
@@ -435,7 +484,7 @@
      * and visual consistency with the sidebar layout.
      */
     .button-sidebar {
-        @apply !h-7 !px-2.5 !py-0.75 text-neutral-50 bg-neutral-800 hover:!bg-neutral-800 !shadow-none [&>svg]:!stroke-neutral-50;
+        @apply !h-7 !px-2.5 !py-0.75 text-neutral-50 bg-neutral-800 !border-none hover:!bg-neutral-700 hover:!border-none !shadow-none [&>svg]:!stroke-neutral-50;
     }
 
     /**

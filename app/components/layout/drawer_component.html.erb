@@ -1,0 +1,37 @@
+<%# app/components/ui/sidebar_component.html.erb %>
+<div data-controller="drawer"
+     data-drawer-name-value="<%= @name %>"
+     class="contents">
+
+  <%# ── Panel ──────────────────────────────────────────────────────── %>
+  <div data-drawer-target="panel"
+       class="fixed inset-y-0 right-0 flex flex-col w-1/2 h-screen
+              bg-background border-l border-border overflow-hidden
+              z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
+
+    <%# Header %>
+    <div class="shrink-0 h-20 flex items-center justify-between
+                px-16 bg-white border-b border-border">
+      <h3 class="font-heading font-medium text-3xl capitalize line-clamp-2">
+        <%= @title %>
+      </h3>
+
+      <button type="button"
+              data-action="click->drawer#close"
+              class="button button-danger button-icon button-small">
+        <%= render_icon('x') %>
+      </button>
+    </div>
+
+    <%# Scrollable body – content is responsible for its own padding/spacing %>
+    <div class="flex-grow px-16 py-6 mb-4 space-y-8 overflow-y-auto">
+      <%= content %>
+    </div>
+  </div>
+
+  <%# ── Overlay ────────────────────────────────────────────────────── %>
+  <div data-drawer-target="overlay"
+       data-action="click->drawer#close"
+       class="hidden fixed inset-0 backdrop-blur-sm bg-body/10 z-40">
+  </div>
+</div>

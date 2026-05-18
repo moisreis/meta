@@ -80,3 +80,9 @@ application.register("nested-normative-articles", NestedNormativeArticles);
 
 import SidebarController from "controllers/sidebar_controller"
 application.register("sidebar", SidebarController)
+
+import DrawerController from "controllers/drawer_controller"
+application.register("drawer", DrawerController)
+
+import DrawerOpenerController from "controllers/drawer_opener_controller"
+application.register("drawer-opener", DrawerOpenerController)

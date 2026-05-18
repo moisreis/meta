@@ -1,0 +1,21 @@
+<div class="relative flex flex-col justify-start gap-1.5">
+
+  <% if label.present? %>
+    <%= form.label name, label, class: label_classes %>
+  <% end %>
+
+  <div class="relative <%= half_width_class %>">
+    <%= form.text_area name,
+          rows: rows,
+          placeholder: placeholder,
+          class: textarea_classes,
+          aria: { describedby: describedby_id } %>
+  </div>
+
+  <% if desc.present? %>
+    <p class="<%= desc_classes %>" id="<%= describedby_id %>">
+      <%= desc %>
+    </p>
+  <% end %>
+
+</div>

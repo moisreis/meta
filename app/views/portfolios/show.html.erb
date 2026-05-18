@@ -465,21 +465,12 @@
   <%#                12. CHECKING ACCOUNTS TABLE             %>
   <%# ======================================================= %>
 
-  <%= render "partials/route/dashboard/create_checkingaccount" %>
-  <%= render(Groups::TableListComponent.new(
-      title:      "Contas Correntes",
-      collection: @data.checking_accounts,
-      action: {
-        label: "Nova",
-        path: "#",
-        icon: "plus",
-        data: {
-          action: "click",
-          turbo: false
-        },
-        id: "openCheckingAccountBtn"
-      }
-    )) do |table| %>
+  <%= render "portfolios/create_checking_account" %>
+<%= render(Groups::TableListComponent.new(
+  title:      "Contas Correntes",
+  collection: @data.checking_accounts,
+  action:     { label: "Nova", icon: "plus", sidebar: "checking-account" }
+)) do |table| %>
 
     <% table.with_column(label: "Instituição", icon: "building") %>
     <% table.with_column(label: "Conta",       icon: "hash") %>
@@ -522,19 +513,10 @@
     <%#                    13a. APPLICATIONS                 %>
     <%# ===================================================== %>
 
-    <%= render "partials/route/dashboard/create_application" %>
+    <%= render "portfolios/create_application" %>
     <%= render(Groups::RecentActivityComponent.new(
       title: "Aplicações",
-      action: {
-        label: "Nova",
-        path: "#",
-        icon: "plus",
-        data: {
-          action: "click",
-          turbo: false
-        },
-        id: "openApplicationBtn"
-      }
+      action: { label: "Nova", icon: "plus", sidebar: "application" }
     )) do |component| %>
 
       <% @data.recent_applications.each do |app| %>
@@ -555,19 +537,10 @@
     <%#                     13b. REDEMPTIONS                 %>
     <%# ===================================================== %>
 
-    <%= render "partials/route/dashboard/create_redemption" %>
+    <%= render "portfolios/create_redemption" %>
     <%= render(Groups::RecentActivityComponent.new(
       title: "Resgates",
-      action: {
-        label: "Novo",
-        path: "#",
-        icon: "plus",
-        data: {
-          action: "click",
-          turbo: false
-        },
-        id: "openRedemptionBtn"
-      }
+      action: { label: "Novo", icon: "plus", sidebar: "redemption" }
     )) do |component| %>
 
       <% @data.recent_redemptions.each do |red| %>

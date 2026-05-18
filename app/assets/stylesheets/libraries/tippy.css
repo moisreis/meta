@@ -42,5 +42,6 @@
 .tippy-box[data-theme~='meta'] {
     background-color: var(--color-white);
     color: var(--color-body);
+    border-radius: var(--radius-base);
     border: 1px solid var(--color-border) !important;
 }
