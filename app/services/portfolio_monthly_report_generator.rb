@@ -268,14 +268,13 @@ class PortfolioMonthlyReportGenerator
   # by the report preloaded to prevent N+1 queries.
   #
   # @return [ActiveRecord::AssociationRelation<FundInvestment>]
-  def fund_investments_with_data
-    @portfolio.fund_investments
-              .active_for_period(@reference_date)
-              .includes(
-                :investment_fund,
-                investment_fund: { investment_fund_articles: :normative_article }
-              )
-  end
+def fund_investments_with_data
+  Portfolios::FundInvestmentsQuery.call(@portfolio, reference_date: @reference_date)
+    .includes(
+      :investment_fund,
+      investment_fund: { investment_fund_articles: :normative_article }
+    )
+end
 
   # Collects and computes all performance metrics for the reporting period.
   #

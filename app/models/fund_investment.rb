@@ -75,29 +75,33 @@ class FundInvestment < ApplicationRecord
 
   # Filters investments that had any activity or value in the given reference period.
   # Includes funds that had initial balance, earnings, applications, or redemptions.
-  scope :active_for_period, ->(date) {
+# Filters investments that had any activity or value in the given reference period.
+# Includes funds that had initial balance, earnings, applications, or redemptions.
+scope :active_for_period, ->(date) {
+  period_start = date.beginning_of_month
+
+  where(
+    PerformanceHistory
+      .where("fund_investment_id = fund_investments.id")
+      .where(period: period_start..date)
+      .where("initial_balance > 0.01 OR ABS(earnings::numeric) > 0.01")
+      .arel.exists
+  ).or(
     where(
-      PerformanceHistory
+      Application
         .where("fund_investment_id = fund_investments.id")
-        .where(period: date)
-        .where("initial_balance > 0 OR earnings != 0")
+        .where(cotization_date: period_start..date)
         .arel.exists
-    ).or(
-      where(
-        Application
-          .where("fund_investment_id = fund_investments.id")
-          .where(cotization_date: date.beginning_of_month..date)
-          .arel.exists
-      )
-    ).or(
-      where(
-        Redemption
-          .where("fund_investment_id = fund_investments.id")
-          .where(cotization_date: date.beginning_of_month..date)
-          .arel.exists
-      )
     )
-  }
+  ).or(
+    where(
+      Redemption
+        .where("fund_investment_id = fund_investments.id")
+        .where(cotization_date: period_start..date)
+        .arel.exists
+    )
+  )
+}
 
   # Organizes the investment list based on the highest percentage of allocation.
   scope :by_allocation, -> { order(percentage_allocation: :desc) }
