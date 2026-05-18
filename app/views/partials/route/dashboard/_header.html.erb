@@ -171,6 +171,7 @@
       <%# Executes the view update action through the Stimulus controller
           to reload the page data for the chosen date. %>
       <%= button_tag type: "button",
+                    title: "Atualizar visualização para a data selecionada",
                      class: "button button-outline button-small",
                      data: { action: "reference-date#view" } do %>
         <%= inline_svg_tag "icons/view.svg" %>
@@ -180,6 +181,7 @@
         <%# Initiates the performance recalculation logic for the
             selected portfolio and specific reference month. %>
         <%= button_tag type: "button",
+                        title: "Recalcular métricas para a data selecionada",
                        class: "button button-secondary button-small",
                        data: { action: "reference-date#calculate" } do %>
           <%= inline_svg_tag "icons/calculate.svg" %>
@@ -188,6 +190,7 @@
         <%# Requests the system to compile and export a PDF report
             containing the portfolio's financial status and history. %>
         <%= button_tag type: "button",
+                        title: "Exportar relatório mensal em PDF para a data selecionada",
                        class: "button button-accent button-small",
                        data: { action: "reference-date#report" } do %>
           <%= inline_svg_tag "icons/file-export.svg" %>

@@ -148,10 +148,8 @@
  */
 .flatpickr-months .flatpickr-prev-month:hover svg,
 .flatpickr-months .flatpickr-next-month:hover svg {
-	stroke: var(--color-body);
+	stroke: var(--color-muted);
 	fill: transparent !important;
-	background-color: var(--color-accent);
-	border-radius: var(--radius-base);
 }
 
 /* --- 2d. Year Number Input ------------------------------------------------ */
@@ -282,9 +280,16 @@
  * and a subtle indigo border. Clearly distinct from hover and selected states.
  */
 .flatpickr-day.today {
-	background-color: var(--color-indigo-900);
+	background-color: var(--color-accent);
 	border-radius: var(--radius-base) !important;
-	color: var(--color-indigo-50);
+	color: var(--color-body);
+	border-color: transparent;
+}
+
+.flatpickr-day.today:hover {
+	background-color: var(--color-accent);
+	border-radius: var(--radius-base) !important;
+	color: var(--color-body);
 	border-color: transparent;
 }
 
@@ -296,7 +301,13 @@
  * for maximum contrast and clear differentiation from hover and today.
  */
 .flatpickr-day.selected {
-	background-color: var(--color-indigo-900) !important;
-	color: var(--color-indigo-50);
+	background-color: var(--color-neutral-900) !important;
+	color: var(--color-neutral-50);
+	border-color: transparent;
+}
+
+.flatpickr-day.selected:hover {
+	background-color: var(--color-neutral-900) !important;
+	color: var(--color-neutral-50);
 	border-color: transparent;
 }

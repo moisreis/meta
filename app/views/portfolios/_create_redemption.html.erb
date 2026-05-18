@@ -1,10 +1,32 @@
-<%# app/views/partials/route/dashboard/create_redemption.html.erb %>
-<%= render Layout::DrawerComponent.new(name: "redemption", title: "Novo Resgate") do %>
-  <%= form_with(model: @new_redemption, class: "flex flex-col h-full") do |form| %>
+<%#
+  PARTIAL: app/views/partials/route/dashboard/create_redemption.html.erb
+  DESCRIPTION: Renders the redemption creation drawer form used to register
+  a capital withdrawal from an existing portfolio fund allocation.
+
+  INSTANCE VARIABLES:
+  - @new_redemption: [Redemption] Form-backed redemption transaction instance.
+  - @data: [Object] View data object containing select option collections.
+%>
+
+<%= render Layout::DrawerComponent.new(
+      name: "redemption",
+      title: "Novo Resgate"
+    ) do %>
+
+  <%= form_with(
+        model: @new_redemption,
+        class: "flex flex-col h-full"
+      ) do |form| %>
+
+    <%# ==================================================================== %>
+    <%#                         REDEMPTION SOURCE                            %>
+    <%# ==================================================================== %>
 
     <%= render Forms::FieldsetComponent.new(
           title: "Origem do Resgate",
-          description: "Selecione o fundo desta carteira de onde o capital será retirado.") do %>
+          description: "Selecione o fundo desta carteira de onde o capital será retirado."
+        ) do %>
+
       <%= render Forms::SelectComponent.new(
             f: form,
             name: :fund_investment_id,
@@ -15,11 +37,18 @@
             is_half_width: false,
             is_inactive: false
           ) %>
+
     <% end %>
+
+    <%# ==================================================================== %>
+    <%#                           FINANCIAL DATA                             %>
+    <%# ==================================================================== %>
 
     <%= render Forms::FieldsetComponent.new(
           title: "Dados Financeiros",
-          description: "Informe o valor líquido recebido.") do %>
+          description: "Informe o valor líquido recebido."
+        ) do %>
+
       <%= render Forms::InputFieldComponent.new(
             f: form,
             name: :redeemed_liquid_value,
@@ -28,9 +57,16 @@
             is_half_width: false,
             icon_name: "banknote-arrow-down",
             currency_mask: true,
-            desc: "O valor total (R$) recebido no resgate após cotização.") %>
+            desc: "O valor total (R$) recebido no resgate após cotização."
+          ) %>
+
       <%= form.hidden_field :redemption_yield, value: 0 %>
+
     <% end %>
+
+    <%# ==================================================================== %>
+    <%#                        TIMELINE AND SCHEDULING                       %>
+    <%# ==================================================================== %>
 
     <%= render Forms::FieldsetComponent.new(
           title: "Prazos e Natureza",
@@ -51,26 +87,41 @@
 
     <% end %>
 
+    <%# ==================================================================== %>
+    <%#                      REDEMPTION CONFIGURATION                        %>
+    <%# ==================================================================== %>
+
     <%= render Forms::FieldsetComponent.new(
           title: "Configuração do Resgate",
-          description: "Informe os detalhes sobre a retirada.") do %>
-        <%= render Forms::SelectComponent.new(
-          f: form,
-          name: :redemption_type,
-          label: "Tipo de Resgate",
-          desc: "Escolha o tipo de resgate conforme a operação.",
-          options_collection: [
-            ["Parcial", "partial"],
-            ["Total", "total"],
-            ["Emergencial", "emergency"],
-            ["Programado", "scheduled"]
-          ],
-          is_half_width: false,
-          is_inactive: false
-      ) %>
+          description: "Informe os detalhes sobre a retirada."
+        ) do %>
+
+      <%= render Forms::SelectComponent.new(
+            f: form,
+            name: :redemption_type,
+            label: "Tipo de Resgate",
+            desc: "Escolha o tipo de resgate conforme a operação.",
+            options_collection: [
+              ["Parcial", "partial"],
+              ["Total", "total"],
+              ["Emergencial", "emergency"],
+              ["Programado", "scheduled"]
+            ],
+            is_half_width: false,
+            is_inactive: false
+          ) %>
+
     <% end %>
 
-      <%= render Forms::SubmitButtonComponent.new(builder: form, method: :post) %>
+    <%# ==================================================================== %>
+    <%#                               SUBMISSION                             %>
+    <%# ==================================================================== %>
+
+    <%= render Forms::SubmitButtonComponent.new(
+          builder: form,
+          method: :post
+        ) %>
 
   <% end %>
+
 <% end %>

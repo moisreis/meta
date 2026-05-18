@@ -1,15 +1,40 @@
-<%# app/components/ui/sidebar_component.html.erb %>
+<%#
+  VIEW: app/views/shared/_drawer.html.erb
+
+  DESCRIPTION: Renders a slide-over side drawer panel animated via a Stimulus controller. 
+  Includes a header with a dynamic title, a close action trigger, a scrollable 
+  content viewport, and a dim backdrop overlay that closes the drawer upon clicking.
+
+  INSTANCE VARIABLES:
+   - @name: [String] Unique identifying name for the drawer instance, utilized by the Stimulus target listener.
+   - @title: [String] Headline text rendered within the top navigation block of the drawer container.
+
+  LOCAL VARIABLES:
+   - content: [String/HTML] The captured inner HTML payload or component block injected into the scrollable body.
+%>
+
+<%# ========================================================= %>
+<%#                    DRAWER CONTAINER                       %>
+<%# ========================================================= %>
+
+<!-- Layout::Drawer [<%= @name %>] -->
 <div data-controller="drawer"
      data-drawer-name-value="<%= @name %>"
      class="contents">
 
-  <%# ── Panel ──────────────────────────────────────────────────────── %>
+  <%# ========================================================= %>
+  <%#                      SLIDE-IN PANEL                       %>
+  <%# ========================================================= %>
+
   <div data-drawer-target="panel"
        class="fixed inset-y-0 right-0 flex flex-col w-1/2 h-screen
               bg-background border-l border-border overflow-hidden
               z-50 transition-opacity ease-in-out opacity-0 pointer-events-none">
 
-    <%# Header %>
+    <%# ========================================================= %>
+    <%#                      HEADER ACTIONS                       %>
+    <%# ========================================================= %>
+    
     <div class="shrink-0 h-20 flex items-center justify-between
                 px-16 bg-white border-b border-border">
       <h3 class="font-heading font-medium text-3xl capitalize line-clamp-2">
@@ -23,13 +48,19 @@
       </button>
     </div>
 
-    <%# Scrollable body – content is responsible for its own padding/spacing %>
+    <%# ========================================================= %>
+    <%#                      VIEWPORT BODY                        %>
+    <%# ========================================================= %>
+
     <div class="flex-grow px-16 py-6 mb-4 space-y-8 overflow-y-auto">
       <%= content %>
     </div>
   </div>
 
-  <%# ── Overlay ────────────────────────────────────────────────────── %>
+  <%# ========================================================= %>
+  <%#                     BACKDROP OVERLAY                      %>
+  <%# ========================================================= %>
+
   <div data-drawer-target="overlay"
        data-action="click->drawer#close"
        class="hidden fixed inset-0 backdrop-blur-sm bg-body/10 z-40">

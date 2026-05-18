@@ -71,7 +71,7 @@ class FundInvestment < ApplicationRecord
   # =============================================================
 
   # Filters investments that currently hold a positive balance of quotas.
-  scope :active, -> { where("total_quotas_held > 0") }
+  scope :active, -> { where("total_quotas_held > 0 OR total_invested_value > 0") }
 
   # Organizes the investment list based on the highest percentage of allocation.
   scope :by_allocation, -> { order(percentage_allocation: :desc) }

@@ -63,7 +63,10 @@ module Portfolios
 
         day_open = day_close - day_cashflow
 
-        next if day_open <= 0
+        if day_open <= 0
+          previous_close = day_close  # anchor the chain before skipping
+          next
+        end
 
         compounded_factor *= (day_open / previous_close)
 
@@ -85,6 +88,7 @@ module Portfolios
     def fund_investments
       @fund_investments ||= portfolio
                               .fund_investments
+                              .active
                               .includes(:investment_fund)
                               .to_a
     end

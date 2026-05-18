@@ -1,24 +1,20 @@
-# app/components/ui/sidebar_component.rb
 # frozen_string_literal: true
 
-# Generic slide-over sidebar shell. Wraps any form content with a consistent
-# header, close behaviour, and overlay — driven by SidebarController (Stimulus).
+# Renders a side slide-over drawer panel container component that manages
+# its open/close presentation state via client-side Stimulus behaviors.
 #
-# The close/cancel buttons *inside* the yielded content should carry:
-#   data-action="click->sidebar#close"
-# They will bubble up to this component's controller automatically.
-#
-# @example
-#   <%= render Ui::SidebarComponent.new(name: "application", title: "Nova Aplicação") do %>
-#     <%= form_with(model: @new_application) do |f| %>
-#       ...
-#       <button data-action="click->sidebar#close">Cancelar</button>
-#     <% end %>
-#   <% end %>
-
+# @author Moisés Reis
 class Layout::DrawerComponent < ApplicationComponent
-  # @param name  [String] Unique key matching the sidebar-opener's name value.
-  # @param title [String] Text shown in the panel header.
+
+  # =============================================================
+  # INITIALIZATION
+  # =============================================================
+
+  # Initializes the drawer component with targeting and header display metrics.
+  #
+  # @param name [String] Unique identifying name for the drawer instance, utilized by the Stimulus target listener.
+  # @param title [String] Headline text rendered within the top navigation block of the drawer container.
+  # @return [Layout::DrawerComponent]
   def initialize(name:, title:)
     @name  = name
     @title = title

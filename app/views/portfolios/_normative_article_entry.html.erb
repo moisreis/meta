@@ -40,7 +40,7 @@
   # Stimulus controller responsible for toggling target inputs
   # and managing nested-form interactions.
 %>
-<div class="flex flex-col gap-6 p-6 border border-border rounded-base bg-background w-full"
+<div class="flex flex-col gap-6 p-6 border border-border rounded-base bg-white w-full"
      data-nested-normative-articles-target="entry"
      data-action="change->nested-normative-articles#onSelectChange">
 
@@ -79,13 +79,14 @@
     <%# ===================================================== %>
 
     <div class="w-full">
-      <%= render "partials/modules/select",
-                 f: f,
-                 name: :normative_article_id,
-                 label: "Artigo Normativo",
-                 desc: "Selecione o artigo a ser aplicado a esta carteira.",
-                 options_collection: [["Escolha um artigo normativo", ""]] + normative_articles,
-                 selected: f.object.normative_article_id
+      <%= render Forms::SelectComponent.new(
+            f: f,
+            name: :normative_article_id,
+            label: "Artigo Normativo",
+            desc: "Selecione o artigo a ser aplicado a esta carteira.",
+            options_collection: [["Escolha um artigo normativo", ""]] + normative_articles,
+            selected: f.object.normative_article_id
+          )
       %>
     </div>
 

@@ -1,24 +1,55 @@
-<%# app/views/partials/route/dashboard/create_application.html.erb %>
-<%= render Layout::DrawerComponent.new(name: "application", title: "Nova Aplicação") do %>
-  <%= form_with(model: @new_application, class: "flex flex-col h-full") do |form| %>
+<%#
+  PARTIAL: app/views/partials/route/dashboard/create_application.html.erb
+  DESCRIPTION: Renders the application creation drawer form used to register
+  a new portfolio investment transaction.
+
+  INSTANCE VARIABLES:
+  - @new_application: [Application] Form-backed application transaction instance.
+  - @portfolio: [Portfolio] Portfolio receiving the new application transaction.
+  - @data: [Object] View data object containing select option collections.
+%>
+
+<%= render Layout::DrawerComponent.new(
+      name: "application",
+      title: "Nova Aplicação"
+    ) do %>
+
+  <%= form_with(
+        model: @new_application,
+        class: "flex flex-col h-full"
+      ) do |form| %>
 
     <%= form.hidden_field :portfolio_id, value: @portfolio.id %>
 
+    <%# ==================================================================== %>
+    <%#                        TRANSACTION DESTINATION                       %>
+    <%# ==================================================================== %>
+
     <%= render Forms::FieldsetComponent.new(
           title: "Destino da Transação",
-          description: "Selecione o fundo pelo CNPJ que receberá a aplicação.") do %>
+          description: "Selecione o fundo pelo CNPJ que receberá a aplicação."
+        ) do %>
+
       <%= render Forms::SelectComponent.new(
             f: form,
             name: :investment_fund_id,
             label: "Fundo alvo",
             desc: "Busque pelo CNPJ ou nome do fundo.",
             rich: true,
-            options_collection: @data.investment_fund_options ) %>
+            options_collection: @data.investment_fund_options
+          ) %>
+
     <% end %>
+
+    <%# ==================================================================== %>
+    <%#                           FINANCIAL VALUES                           %>
+    <%# ==================================================================== %>
 
     <%= render Forms::FieldsetComponent.new(
           title: "Valores Financeiros",
-          description: "Informe o capital investido.") do %>
+          description: "Informe o capital investido."
+        ) do %>
+
       <%= render Forms::InputFieldComponent.new(
             f: form,
             name: :financial_value,
@@ -26,8 +57,14 @@
             placeholder: "0,00",
             icon_name: "banknote",
             currency_mask: true,
-            desc: "O valor total (R$) investido na transação.") %>
+            desc: "O valor total (R$) investido na transação."
+          ) %>
+
     <% end %>
+
+    <%# ==================================================================== %>
+    <%#                          OPERATION TIMELINE                          %>
+    <%# ==================================================================== %>
 
     <%= render Forms::FieldsetComponent.new(
           title: "Cronograma da Operação",
@@ -45,7 +82,15 @@
 
     <% end %>
 
-      <%= render Forms::SubmitButtonComponent.new(builder: form, method: :post) %>
+    <%# ==================================================================== %>
+    <%#                               SUBMISSION                             %>
+    <%# ==================================================================== %>
+
+    <%= render Forms::SubmitButtonComponent.new(
+          builder: form,
+          method: :post
+        ) %>
 
   <% end %>
+
 <% end %>
