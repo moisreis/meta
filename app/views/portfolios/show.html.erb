@@ -74,7 +74,7 @@
         badge_text: "Ref. #{l(@reference_date, format: :default)}",
       )
     ) do %>
-      <%= normalize_trend(@data.total_earnings) %>
+      <%= normalize_trend(@data.monthly_total_earnings) %>
     <% end %>
 
     <%# ===================================================== %>

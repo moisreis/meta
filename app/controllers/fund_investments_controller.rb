@@ -134,8 +134,14 @@ class FundInvestmentsController < ApplicationController
   # @author Moisés Reis
   #
   # Placeholder for updating an existing investment record.
-  def update
+def update
+  if @fund_investment.update(fund_investment_params)
+    redirect_to @fund_investment.portfolio, notice: "Investimento atualizado com sucesso."
+  else
+    load_form_dependencies
+    render :edit, status: :unprocessable_entity
   end
+end
 
   # == destroy
   #
