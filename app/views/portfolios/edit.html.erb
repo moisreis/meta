@@ -16,7 +16,7 @@
 %>
 
 <%# ========================================================= %>
-<%#                    1. DASHBOARD WRAPPER                  %>
+<%#                    DASHBOARD WRAPPER                      %>
 <%# ========================================================= %>
 
 <%= render(
@@ -27,7 +27,7 @@
     ) do %>
 
   <%# ======================================================= %>
-  <%#                 2. PORTFOLIO FORM PARTIAL              %>
+  <%#                 PORTFOLIO FORM PARTIAL                  %>
   <%# ======================================================= %>
 
   <%= render(
@@ -35,8 +35,8 @@
         portfolio: @form,
         form_url: user_path(@portfolio),
         form_method: :patch,
-        button_name: "Atualizar carteira",
-        icon_name: "save",
+        button_name: "Atualizar",
+        icon_name: "refresh-cw",
         normative_articles: @normative_articles
       ) %>
 

@@ -192,6 +192,7 @@ class UsersController < ApplicationController
   # @return [ActionController::Parameters] Strong parameter whitelist.
   def user_params
     params.require(:user).permit(
+      :avatar,
       :first_name,
       :last_name,
       :email,

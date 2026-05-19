@@ -1,33 +1,37 @@
 <%#
-  # Partial: edit.html.erb
-  # Date: 11/23/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Renders the edit view for a specific **InvestmentFund** record, allowing the user
-  #              to update the fund's details and providing an option to delete the fund.
-  #
-  # Usage:: - What: Provides the interface for modifying or removing an existing investment fund record.
-  #         - How: Wraps the content in a dashboard layout, renders the common **form** partial, and displays action buttons.
-  #         - Why: Enables administrators or authorized users to maintain the accuracy of fund data and manage the lifecycle of records.
-  %>
+  VIEW: app/views/fund_investments/edit.html.erb
+  ACTION: FundInvestmentsController#edit
 
-<%# Explanation:: This layout wrapper organizes the entire page content into a clean
-  #               dashboard structure to ensure consistency; it is used as the main
-  #               container and works by setting the page title to the fund's name.
-  %>
-<%= render 'partials/route/dashboard/wrapper',
-           page_title: "Editar #{@fund_investment.id}",
-           page_desc: "Atualize as informações da alocação conforme necessário." do
+  DESCRIPTION:
+  Renders the fund investment update page using the dashboard layout
+  wrapper and the shared fund investment form partial configured for
+  record updates.
+
+  INSTANCE VARIABLES:
+  - @fund_investment: [FundInvestment] The fund investment record being edited.
 %>
 
-  <%# Explanation:: This helper renders the central input structure to modify
-    #               existing fund details; it is used to save changes and
-    #               works by passing the current record and a refresh icon button.
-    %>
-  <%= render "form",
-             fund_investment: @fund_investment,
-             button_name: "Atualizar",
-             icon_name: "refresh-cw"
-  %>
+<%# ========================================================= %>
+<%#                    DASHBOARD WRAPPER                      %>
+<%# ========================================================= %>
+
+<%= render(
+      Layout::DashboardWrapperComponent.new(
+        page_title: "Editar alocação ##{@fund_investment.id}",
+        page_desc: "Atualize as informações da alocação conforme necessário."
+      )
+    ) do %>
+
+  <%# ======================================================= %>
+  <%#               FUND INVESTMENT FORM PARTIAL              %>
+  <%# ======================================================= %>
+
+  <%= render(
+        "form",
+        fund_investment: @fund_investment,
+        form_method: :patch,
+        button_name: "Atualizar",
+        icon_name: "refresh-cw"
+      ) %>
+
 <% end %>

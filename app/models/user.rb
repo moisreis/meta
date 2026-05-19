@@ -40,6 +40,8 @@ class User < ApplicationRecord
          :validatable,
          :trackable
 
+  has_one_attached :avatar
+
   # ==========================================================================
   # ASSOCIATIONS
   # ==========================================================================

@@ -1,94 +1,155 @@
 <%#
   PARTIAL: app/views/users/_form.html.erb
-  DESCRIPTION: Renders user form with fieldsets for email, personal data, and password.
+  DESCRIPTION: Renders the user form with fieldsets for avatar upload, email,
+  personal data, and password. Used for both creation and editing.
 
   LOCAL VARIABLES:
-  - form: [ActionView::Helpers::FormBuilder] Form builder instance.
-  - form_url: [String] Target URL for form submission.
-  - form_method: [Symbol] HTTP method for submission (:post or :patch).
+  - form_url:    [String] Target URL for form submission. (required)
+  - form_method: [Symbol] HTTP method for submission (:post or :patch). (required)
+
+  INSTANCE VARIABLES:
+  - @form: [UserForm] Form object carrying user attributes and validation state.
+
+  TABLE OF CONTENTS:
+  1.  Profile Avatar
+  2.  Email
+  3.  User Data
+  4.  Password
+  5.  Submission
 %>
 
 <%= form_with(
-  model:  @form,
-  url:    form_url,
-  method: form_method,
-  class:  "contents"
-) do |form| %>
+      model:     @form,
+      url:       form_url,
+      method:    form_method,
+      multipart: true,
+      class:     "contents"
+    ) do |form| %>
+
+  <%# ==================================================================== %>
+  <%#                        1. PROFILE AVATAR                            %>
+  <%# ==================================================================== %>
 
   <%= render Forms::FieldsetComponent.new(
-    title: "E-mail",
-    description: "Informe seu endereço de contato principal."
-  ) do %>
+        title: "Foto de perfil",
+        description: "Envie uma imagem para personalizar sua conta."
+      ) do %>
 
-    <%= render Forms::InputFieldComponent.new(
-      f:           form,
-      name:        :email,
-      label:       "Informe seu e-mail",
-      field_type:  :email_field,
-      placeholder: "seuemail@email.com",
-      desc:        "Informe um e-mail válido",
-      icon_name:   "at-sign"
-    ) %>
+    <div class="flex flex-col gap-2">
+
+      <% if @form.avatar.respond_to?(:attached?) && @form.avatar.attached? %>
+        <%= image_tag(
+              @form.avatar.variant(resize_to_fill: [96, 96]),
+              class: "size-24 object-cover border border-border"
+            ) %>
+      <% end %>
+
+      <%= form.file_field(
+            :avatar,
+            accept: "image/png,image/jpeg,image/webp",
+            class:  "block w-full text-sm text-body file:mr-4 file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:font-mono file:text-2xs file:uppercase file:text-neutral-50 hover:file:bg-neutral-700"
+          ) %>
+
+      <p class="text-2xs text-muted">
+        Formatos permitidos são PNG, JPG e WEBP.
+      </p>
+
+    </div>
 
   <% end %>
 
+  <%# ==================================================================== %>
+  <%#                            2. EMAIL                                 %>
+  <%# ==================================================================== %>
+
   <%= render Forms::FieldsetComponent.new(
-    title: "Dados do usuário",
-    description: "Utilizamos esses nomes para personalizar sua experiência."
-  ) do %>
+        title: "E-mail",
+        description: "Informe seu endereço de contato principal."
+      ) do %>
 
     <%= render Forms::InputFieldComponent.new(
-      f:           form,
-      name:        :first_name,
-      label:       "Primeiro nome",
-      field_type:  :text_field,
-      placeholder: "Maria",
-      desc:        "Informe seu primeiro nome",
-      icon_name:   "user-round-pen"
-    ) %>
-
-    <%= render Forms::InputFieldComponent.new(
-      f:           form,
-      name:        :last_name,
-      label:       "Último nome",
-      field_type:  :text_field,
-      placeholder: "Silva",
-      desc:        "Informe seu último nome",
-      icon_name:   "user-round-pen"
-    ) %>
+          f:           form,
+          name:        :email,
+          label:       "Informe seu e-mail",
+          field_type:  :email_field,
+          placeholder: "seuemail@email.com",
+          desc:        "Informe um e-mail válido",
+          icon_name:   "at-sign"
+        ) %>
 
   <% end %>
 
+  <%# ==================================================================== %>
+  <%#                          3. USER DATA                               %>
+  <%# ==================================================================== %>
+
   <%= render Forms::FieldsetComponent.new(
-    title: "Senha",
-    description: "Sua senha deve ser mantida em segredo."
-  ) do %>
+        title: "Dados do usuário",
+        description: "Utilizamos esses nomes para personalizar sua experiência."
+      ) do %>
 
     <%= render Forms::InputFieldComponent.new(
-      f:           form,
-      name:        :password,
-      label:       "Crie uma senha",
-      field_type:  :password_field,
-      placeholder: "SuaSenha123@",
-      desc:        "Crie uma senha segura com, pelo menos, 6 caracteres",
-      icon_name:   "key"
-    ) %>
+          f:           form,
+          name:        :first_name,
+          label:       "Primeiro nome",
+          field_type:  :text_field,
+          placeholder: "Maria",
+          desc:        "Informe seu primeiro nome",
+          icon_name:   "user-round-pen"
+        ) %>
 
     <%= render Forms::InputFieldComponent.new(
-      f:           form,
-      name:        :password_confirmation,
-      label:       "Confirme sua senha",
-      field_type:  :password_field,
-      placeholder: "SuaSenha123@",
-      desc:        "Repita sua senha",
-      icon_name:   "key"
-    ) %>
+          f:           form,
+          name:        :last_name,
+          label:       "Último nome",
+          field_type:  :text_field,
+          placeholder: "Silva",
+          desc:        "Informe seu último nome",
+          icon_name:   "user-round-pen"
+        ) %>
 
   <% end %>
+
+  <%# ==================================================================== %>
+  <%#                           4. PASSWORD                               %>
+  <%# ==================================================================== %>
+
+  <%= render Forms::FieldsetComponent.new(
+        title: "Senha",
+        description: "Sua senha deve ser mantida em segredo."
+      ) do %>
+
+    <%= render Forms::InputFieldComponent.new(
+          f:           form,
+          name:        :password,
+          label:       "Crie uma senha",
+          field_type:  :password_field,
+          placeholder: "SuaSenha123@",
+          desc:        "Crie uma senha segura com, pelo menos, 6 caracteres",
+          icon_name:   "key"
+        ) %>
+
+    <%= render Forms::InputFieldComponent.new(
+          f:           form,
+          name:        :password_confirmation,
+          label:       "Confirme sua senha",
+          field_type:  :password_field,
+          placeholder: "SuaSenha123@",
+          desc:        "Repita sua senha",
+          icon_name:   "key"
+        ) %>
+
+  <% end %>
+
+  <%# ==================================================================== %>
+  <%#                          5. SUBMISSION                              %>
+  <%# ==================================================================== %>
 
   <%= render Forms::SubmitButtonComponent.new(
-    builder: form,
-    method:  form_method
-  ) %>
+        builder: form,
+        method: form_method,
+        label: button_name,
+        icon: icon_name
+      ) %>
 
 <% end %>

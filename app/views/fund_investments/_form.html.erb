@@ -1,60 +1,96 @@
-<%# # Partial: _form.html
-    # Date: 11/23/2025
-    # Author: Moisés Reis
-    # Package: Meta
-    #
-    # Description: This file renders the structured form fields for
-    #              recording how capital is allocated to specific funds.
-    #              It links investments to portfolios and fund records.
-    #
-    # Usage: - What: Displays the required inputs to record allocation
-    #               details like percentages and monetary values.
-    #         - How: Uses **form_with** and modular UI partials to
-    #               maintain a consistent look and feel.
-    #         - Why: It centralizes the logic for investment data
-    #               entry, ensuring valid associations in the database.
+<%#
+  PARTIAL: app/views/fund_investments/_form.html.erb
+  DESCRIPTION: Renders the structured form fields for recording how capital
+  is allocated to specific funds, linking investments to portfolios and
+  fund records.
+
+  LOCAL VARIABLES:
+  - fund_investment: [FundInvestment] Form-backed fund investment instance. (required)
+  - icon_name:       [String]         Icon identifier rendered inside the submit button. (required)
+  - button_name:     [String]         Label text rendered inside the submit button. (required)
+  - form_method:     [Symbol]         HTTP method forwarded to the submit button component. (default: :post)
+
+  INSTANCE VARIABLES:
+  - @investment_funds: [ActiveRecord::Relation] Collection of available investment funds.
+  - @portfolios:       [ActiveRecord::Relation] Collection of portfolios available for selection.
 %>
+
 <%= form_with(model: fund_investment, class: "contents") do |form| %>
-  <%= render "partials/blocks/fieldset",
-             fieldset_title: "Destino do Investimento",
-             fieldset_desc: "Selecione o fundo de destino e a carteira onde o ativo será armazenado." do %>
-      <%= render "partials/modules/select",
-                 f: form,
-                 name: :investment_fund_id,
-                 label: "Fundo de investimento",
-                 options_collection: @investment_funds.map { |fund| [fund.fund_name, fund.id] },
-                 desc: "Escolha o fundo que está sendo alocado.",
-                 is_inactive: false
-      %>
-      <%= render "partials/modules/select",
-                 f: form,
-                 name: :portfolio_id,
-                 label: "Carteira",
-                 options_collection: @portfolios.map { |p| [p.name, p.id] },
-                 desc: "Escolha a carteira que receberá a alocação.",
-                 is_inactive: false
-      %>
+
+  <%# ==================================================================== %>
+  <%#                     INVESTMENT DESTINATION                           %>
+  <%# ==================================================================== %>
+
+  <%= render Forms::FieldsetComponent.new(
+        title: "Destino do Investimento",
+        description: "Selecione o fundo de destino e a carteira onde o ativo será armazenado."
+      ) do %>
+
+    <%= render Forms::SelectComponent.new(
+          f: form,
+          name: :investment_fund_id,
+          label: "Fundo de investimento",
+          options_collection: Shared::InvestmentFundOptionsQuery.call,
+          rich: true,
+          desc: "Escolha o fundo que está sendo alocado.",
+          is_inactive: false
+        ) %>
+
+    <%= render Forms::SelectComponent.new(
+          f: form,
+          name: :portfolio_id,
+          label: "Carteira",
+          options_collection: @portfolios.map { |p| [p.name, p.id] },
+          desc: "Escolha a carteira que receberá a alocação.",
+          is_inactive: false
+        ) %>
+
   <% end %>
-  <%= render "partials/blocks/fieldset",
-             fieldset_title: "Valores e Cotas",
-             fieldset_desc: "Informe os detalhes financeiros e a quantidade de participação no fundo." do %>
-      <%= render "partials/modules/input-field",
-                 f: form,
-                 name: :percentage_allocation,
-                 label: "Alocação",
-                 placeholder: "12.5",
-                 desc: "Percentual da carteira alocado neste fundo.",
-                 field_type: :number_field,
-                 icon_name: "badge-percent",
-                 step: :any
-      %>
+
+  <%# ==================================================================== %>
+  <%#                        VALUES & QUOTAS                               %>
+  <%# ==================================================================== %>
+
+  <%= render Forms::FieldsetComponent.new(
+        title: "Valores e Cotas",
+        description: "Informe os detalhes financeiros e a quantidade de participação no fundo."
+      ) do %>
+
+    <%= render Forms::InputFieldComponent.new(
+          f: form,
+          name: :percentage_allocation,
+          label: "Alocação",
+          placeholder: "12.5",
+          desc: "Percentual da carteira alocado neste fundo.",
+          field_type: :number_field,
+          icon_name: "badge-percent",
+          step: :any
+        ) %>
+
+    <%= render Forms::InputFieldComponent.new(
+          f: form,
+          name: :total_quotas_held,
+          label: "Cotas detidas",
+          placeholder: "0.000000",
+          desc: "Quantidade total de cotas mantidas neste fundo.",
+          field_type: :number_field,
+          icon_name: "layers",
+          step: :any
+        ) %>
+
     <%= form.hidden_field :total_invested_value, value: 0 %>
-    <%= form.hidden_field :total_quotas_held, value: 0 %>
+
   <% end %>
-  <%= form.button :submit,
-                  name: nil,
-                  class: "button button-primary w-fit flex items-center gap-2" do %>
-    <%= inline_svg_tag "icons/#{icon_name}.svg" %>
-    <%= content_tag :span, button_name %>
-  <% end %>
+
+  <%# ==================================================================== %>
+  <%#                           SUBMISSION                                 %>
+  <%# ==================================================================== %>
+
+  <%= render Forms::SubmitButtonComponent.new(
+        builder: form,
+        method: local_assigns.fetch(:form_method, :post),
+        label: button_name,
+        icon: icon_name
+      ) %>
+
 <% end %>

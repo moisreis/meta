@@ -1,9 +1,10 @@
 <%#
   PARTIAL: app/components/modules/avatar_component.html.erb
-  DESCRIPTION: Renders a user avatar using initials inside a circular UI container.
+  DESCRIPTION: Renders a user avatar image when available, falling back
+  to generated initials when no avatar attachment exists.
 
   LOCAL VARIABLES:
-  - initials: [String] Precomputed user initials (required).
+  - initials: [String] Precomputed user initials fallback.
 %>
 
 <!-- Modules::AvatarComponent [<%= initials %>] -->
@@ -12,15 +13,27 @@
   class="relative flex justify-center items-center h-7 w-7 shrink-0 overflow-hidden rounded-full bg-honeysuckle-300"
 >
 
-  <div
-    class="flex flex-row items-center justify-center gap-0
-           [&>span]:uppercase
-           [&>span]:font-mono
-           [&>span]:font-semibold
-           [&>span]:text-3xs
-           [&>span]:text-mono"
-  >
-    <span><%= initials %></span>
-  </div>
+  <% if avatar_attached? %>
+
+    <%= image_tag(
+          avatar_variant,
+          alt: initials,
+          class: "h-full w-full object-cover"
+        ) %>
+
+  <% else %>
+
+    <div
+      class="flex flex-row items-center justify-center gap-0
+             [&>span]:uppercase
+             [&>span]:font-mono
+             [&>span]:font-semibold
+             [&>span]:text-3xs
+             [&>span]:text-mono"
+    >
+      <span><%= initials %></span>
+    </div>
+
+  <% end %>
 
 </span>

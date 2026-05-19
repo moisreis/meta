@@ -1,46 +1,35 @@
 /* =============================================================================
- * Application Stylesheet
- * =============================================================================
+ * application.css
  *
- * File         : application.css
- * Author       : Moisés Reis
- * Created      : 11/12/2025
- * Last Updated : 11/14/2025
- * Version      : 1.0.0
+ * Main application stylesheet. Defines all design tokens, base element
+ * resets, reusable component classes, and utility overrides for the project.
  *
- * -----------------------------------------------------------------------------
- * TABLE OF CONTENTS
- * -----------------------------------------------------------------------------
+ * Built on Tailwind CSS v4. All spacing, color, and typography values are
+ * declared as @theme tokens and must never be hardcoded elsewhere. Dark mode
+ * is scoped to the [data-theme=dark] attribute via a custom variant.
  *
+ * TABLE OF CONTENTS:
  *   1.  Tailwind Imports
  *   2.  Custom Variants
- *   3.  Theme Tokens  (@theme)
+ *   3.  Theme Tokens
  *       3a. Spacing
  *       3b. Typography — Families & Sizes
  *       3c. Colors — Brand & Palette
  *       3d. Radius
- *   4.  Base Styles  (@layer base)
+ *   4.  Base Styles
  *       4a. Body
  *       4b. Form
  *       4c. Number Input
- *   5.  Components  (@layer components)
+ *       4d. Scrollbar
+ *   5.  Components
  *       5a. Buttons — Base & Variants
- *       5b. Badges  — Base & Variants
- *   6.  Utilities  (@layer utilities)
- *       6a. Scrollbar
+ *       5b. Badges — Base & Variants
+ *   6.  Utilities
+ *       6a. Scrollbar Suppression
+ *       6b. Sidebar Collapse
+ *       6c. Number Input (Firefox)
  *
- * -----------------------------------------------------------------------------
- * NOTES
- * -----------------------------------------------------------------------------
- *
- *   - Spacing base unit: 4px. All spacing values are multiples of this.
- *   - Colors are defined exclusively in @theme and must never be hardcoded.
- *   - Buttons use the `.button` class. Variants stack on top: `.button-primary`.
- *   - Badges use the `.badge` class. Variants stack on top: `.badge-success`.
- *   - Z-index scale is managed at the component level, not defined here.
- *
- * =============================================================================
- * © 2025 Meta. All rights reserved.
+ * @author Moisés Reis
  * ============================================================================= */
 
 /* =============================================================================
@@ -57,6 +46,7 @@
 
 /**
  * dark
+ *
  * Enables the dark mode variant scoped to [data-theme=dark].
  * Apply via: dark:bg-neutral-900, dark:text-white, etc.
  */
@@ -72,6 +62,7 @@
  * Never hardcode values — always reference a token.
  */
 @theme {
+
     /**
      * Resets all color and radius tokens to their initial (empty) values.
      * Prevents Tailwind defaults from leaking into the custom palette.
@@ -79,149 +70,165 @@
     --color-*: initial;
     --radius-*: initial;
 
-    /* --- 3a. Spacing ------------------------------------------------------- */
-    /**
+    /* -------------------------------------------------------------------------
+     * 3a. SPACING
+     * -------------------------------------------------------------------------
+     *
      * --spacing
      * Base unit for all margin, padding, and gap calculations.
      * Every spacing value in the app is a multiple of 4px.
-     */
+     * ------------------------------------------------------------------------- */
     --spacing: 4px;
 
-    /* --- 3b. Typography — Families & Sizes --------------------------------- */
-    /**
-     * Font families.
-     * --font-body     → Default text for all UI content.
-     * --font-heading  → Display and heading elements.
-     * --font-mono     → Code, keys, labels, and button text.
-     */
+    /* -------------------------------------------------------------------------
+     * 3b. TYPOGRAPHY — FAMILIES & SIZES
+     * -------------------------------------------------------------------------
+     *
+     * Font families:
+     *   --font-body     → Default text for all UI content.
+     *   --font-heading  → Display and heading elements.
+     *   --font-mono     → Code, keys, labels, and button text.
+     *
+     * Extended sizes below Tailwind's default `xs` (0.75rem):
+     *   --text-3xs → 10px.    Reserved for the tightest labels or fine print.
+     *   --text-2xs → 11.6px.  Used for badge text, table meta, and captions.
+     * ------------------------------------------------------------------------- */
     --font-body: "Source Sans 3", sans-serif;
     --font-heading: "Source Serif 4", serif;
     --font-mono: "Source Code Pro", monospace;
 
-    /**
-     * Extended text sizes below Tailwind's default `xs` (0.75rem).
-     * --text-3xs → 10px. Reserved for the tightest labels or legal fine print.
-     * --text-2xs → 11.6px. Used for badge text, table meta, and captions.
-     */
     --text-3xs: 0.625rem;
     --text-2xs: 0.725rem;
 
-    /* --- 3c. Colors -------------------------------------------------------- */
-    /* Primary
-     * The main brand color driving CTAs, links, and interactive states.
-     * Scale: 50 (lightest tint) → 950 (deepest shade).
-     * Use 600 for default, 50 for backgrounds, 900/950 for text on light. */
-    --color-primary-50: oklch(98.4% 0.0087 185.262);
+    /* -------------------------------------------------------------------------
+     * 3c. COLORS — BRAND & PALETTE
+     * -------------------------------------------------------------------------
+     *
+     * Primary — Main brand color driving CTAs, links, and interactive states.
+     *   Scale: 50 (lightest tint) → 950 (deepest shade).
+     *   Use 600 for default, 50 for backgrounds, 900/950 for text on light.
+     * ------------------------------------------------------------------------- */
+    --color-primary-50:  oklch(98.4%  0.0087 185.262);
     --color-primary-100: oklch(95.57% 0.0309 185.391);
-    --color-primary-200: oklch(91.3% 0.0582 183.18);
+    --color-primary-200: oklch(91.3%  0.0582 183.18);
     --color-primary-300: oklch(85.76% 0.0841 183.818);
     --color-primary-400: oklch(76.53% 0.0944 185.057);
     --color-primary-500: oklch(67.91% 0.0878 185.786);
-    --color-primary-600: oklch(57.12% 0.074 185.786);
-    --color-primary-700: oklch(48.8% 0.0614 189.57);
+    --color-primary-600: oklch(57.12% 0.074  185.786);
+    --color-primary-700: oklch(48.8%  0.0614 189.57);
     --color-primary-800: oklch(41.03% 0.0503 189.757);
     --color-primary-900: oklch(35.69% 0.0414 191.74);
     --color-primary-950: oklch(25.37% 0.0313 194.658);
 
-    /* Text Colors
-     * Semantic tokens for typographic hierarchy.
-     * --color-heading  → Darkest. Page and section titles.
-     * --color-body     → Default running text.
-     * --color-muted    → Supporting text, hints, placeholders. */
+    /**
+     * Text Colors — Semantic tokens for typographic hierarchy.
+     *   --color-heading  → Darkest. Page and section titles.
+     *   --color-body     → Default running text.
+     *   --color-muted    → Supporting text, hints, placeholders.
+     */
     --color-heading: oklch(14.5% 0 0);
-    --color-body: oklch(26.9% 0 0);
-    --color-muted: oklch(63.3% 0 0);
+    --color-body:    oklch(26.9% 0 0);
+    --color-muted:   oklch(63.3% 0 0);
 
-    /* Neutral
-     * Structural colors for surfaces, borders, and backgrounds.
-     * Scale: 50 (near-white) → 950 (near-black). */
-  --color-neutral-50: oklch(98.5% 0 0);
-  --color-neutral-100: oklch(97% 0 0);
-  --color-neutral-200: oklch(92.2% 0 0);
-  --color-neutral-300: oklch(87% 0 0);
-  --color-neutral-400: oklch(70.8% 0 0);
-  --color-neutral-500: oklch(55.6% 0 0);
-  --color-neutral-600: oklch(43.9% 0 0);
-  --color-neutral-700: oklch(37.1% 0 0);
-  --color-neutral-800: oklch(26.9% 0 0);
-  --color-neutral-900: oklch(20.9% 0 0);
-  --color-neutral-950: oklch(14.5% 0 0);
+    /**
+     * Neutral — Structural colors for surfaces, borders, and backgrounds.
+     *   Scale: 50 (near-white) → 950 (near-black).
+     */
+    --color-neutral-50:  oklch(98.5% 0 0);
+    --color-neutral-100: oklch(97%   0 0);
+    --color-neutral-200: oklch(92.2% 0 0);
+    --color-neutral-300: oklch(87%   0 0);
+    --color-neutral-400: oklch(70.8% 0 0);
+    --color-neutral-500: oklch(55.6% 0 0);
+    --color-neutral-600: oklch(43.9% 0 0);
+    --color-neutral-700: oklch(37.1% 0 0);
+    --color-neutral-800: oklch(26.9% 0 0);
+    --color-neutral-900: oklch(20.9% 0 0);
+    --color-neutral-950: oklch(14.5% 0 0);
 
-    /* Surface & Structural
-     * Single-purpose tokens for layout and component backgrounds.
-     * --color-white       → Pure white surfaces.
-     * --color-transparent → Fully transparent layer.
-     * --color-border      → Default border color for cards, inputs, dividers.
-     * --color-input       → Input field background tint.
-     * --color-accent      → Subtle hover/active surface highlight. */
-    --color-white: oklch(100% 0 0);
-    --color-background: var(--color-neutral-50);
+    /**
+     * Surface & Structural — Single-purpose tokens for layout and backgrounds.
+     *   --color-white       → Pure white surfaces.
+     *   --color-transparent → Fully transparent layer.
+     *   --color-border      → Default border color for cards, inputs, dividers.
+     *   --color-input       → Input field background tint.
+     *   --color-accent      → Subtle hover/active surface highlight.
+     */
+    --color-white:       oklch(100% 0 0);
+    --color-background:  var(--color-neutral-50);
     --color-transparent: transparent;
-    --color-border: oklch(92.44% 0.0139 107.95);
-    --color-input: #fcfcfe;
-    --color-accent: oklch(97% 0 0);
+    --color-border:      oklch(92.44% 0.0139 107.95);
+    --color-input:       #fcfcfe;
+    --color-accent:      oklch(97% 0 0);
 
-    /* Success
-     * Positive feedback, confirmation states, healthy indicators.
-     * Use 50–100 for backgrounds, 600–700 for text and icons. */
-    --color-success-50: oklch(98.2% 0.0143 156.201);
-    --color-success-100: oklch(96.2% 0.0348 157.118);
-    --color-success-200: oklch(92.5% 0.0665 156.37);
-    --color-success-300: oklch(87.1% 0.1188 154.824);
+    /**
+     * Success — Positive feedback, confirmation states, healthy indicators.
+     *   Use 50–100 for backgrounds, 600–700 for text and icons.
+     */
+    --color-success-50:  oklch(98.2%  0.0143 156.201);
+    --color-success-100: oklch(96.2%  0.0348 157.118);
+    --color-success-200: oklch(92.5%  0.0665 156.37);
+    --color-success-300: oklch(87.1%  0.1188 154.824);
     --color-success-400: oklch(77.24% 0.1677 149.954);
-    --color-success-500: oklch(72.3% 0.1734 149.954);
-    --color-success-600: oklch(62.7% 0.1536 149.589);
-    --color-success-700: oklch(52.7% 0.1219 150.444);
-    --color-success-800: oklch(44.8% 0.0942 151.703);
-    --color-success-900: oklch(39.3% 0.0752 152.91);
-    --color-success-950: oklch(26.6% 0.0515 153.309);
+    --color-success-500: oklch(72.3%  0.1734 149.954);
+    --color-success-600: oklch(62.7%  0.1536 149.589);
+    --color-success-700: oklch(52.7%  0.1219 150.444);
+    --color-success-800: oklch(44.8%  0.0942 151.703);
+    --color-success-900: oklch(39.3%  0.0752 152.91);
+    --color-success-950: oklch(26.6%  0.0515 153.309);
 
-    /* Alert
-     * Warnings and cautionary information requiring user review.
-     * Use 50–100 for soft banners, 600–700 for icons and labels. */
-    --color-alert-50: oklch(98.7% 0.0219 101.388);
+    /**
+     * Alert — Warnings and cautionary information requiring user review.
+     *   Use 50–100 for soft banners, 600–700 for icons and labels.
+     */
+    --color-alert-50:  oklch(98.7%  0.0219 101.388);
     --color-alert-100: oklch(97.29% 0.0598 102.363);
     --color-alert-200: oklch(94.48% 0.1088 100.727);
     --color-alert-300: oklch(90.48% 0.1535 97.291);
     --color-alert-400: oklch(84.17% 0.1657 85.139);
     --color-alert-500: oklch(79.48% 0.1553 85.139);
     --color-alert-600: oklch(68.09% 0.1369 74.912);
-    --color-alert-700: oklch(55.4% 0.1142 65.52);
-    --color-alert-800: oklch(47.6% 0.0964 61.002);
+    --color-alert-700: oklch(55.4%  0.1142 65.52);
+    --color-alert-800: oklch(47.6%  0.0964 61.002);
     --color-alert-900: oklch(42.09% 0.0803 56.839);
     --color-alert-950: oklch(28.59% 0.0558 52.978);
 
-    /* Danger
-     * Destructive actions, critical errors, irreversible states.
-     * High contrast by design — use 50–100 for backgrounds only. */
-    --color-danger-50: oklch(96.94% 0.0131 14.252);
+    /**
+     * Danger — Destructive actions, critical errors, irreversible states.
+     *   High contrast by design — use 50–100 for backgrounds only.
+     */
+    --color-danger-50:  oklch(96.94% 0.0131 14.252);
     --color-danger-100: oklch(93.99% 0.0273 14.449);
     --color-danger-200: oklch(89.05% 0.0529 12.573);
     --color-danger-300: oklch(80.96% 0.1045 14.122);
     --color-danger-400: oklch(71.19% 0.1726 19.134);
     --color-danger-500: oklch(64.32% 0.2192 19.134);
-    --color-danger-600: oklch(58.4% 0.2257 20.467);
-    --color-danger-700: oklch(51.2% 0.1977 20.002);
+    --color-danger-600: oklch(58.4%  0.2257 20.467);
+    --color-danger-700: oklch(51.2%  0.1977 20.002);
     --color-danger-800: oklch(45.26% 0.1667 17.34);
     --color-danger-900: oklch(40.69% 0.1393 14.41);
     --color-danger-950: oklch(26.81% 0.0918 15.901);
 
-    /* Secondary — Cool slate-blue supporting palette. */
-    --color-secondary-50: oklch(97.77% 0.0068 236.232);
+    /**
+     * Secondary — Cool slate-blue supporting palette.
+     */
+    --color-secondary-50:  oklch(97.77% 0.0068 236.232);
     --color-secondary-100: oklch(95.28% 0.0136 236.418);
     --color-secondary-200: oklch(90.39% 0.0301 231.737);
     --color-secondary-300: oklch(83.23% 0.0574 230.968);
     --color-secondary-400: oklch(75.37% 0.0798 237.703);
     --color-secondary-500: oklch(67.11% 0.0882 237.703);
-    --color-secondary-600: oklch(57.3% 0.0825 241.886);
+    --color-secondary-600: oklch(57.3%  0.0825 241.886);
     --color-secondary-700: oklch(48.65% 0.0704 242.569);
-    --color-secondary-800: oklch(42.56% 0.058 241.003);
-    --color-secondary-900: oklch(37.17% 0.048 241.732);
+    --color-secondary-800: oklch(42.56% 0.058  241.003);
+    --color-secondary-900: oklch(37.17% 0.048  241.732);
     --color-secondary-950: oklch(27.57% 0.0358 243.643);
 
-    /* Tertiary — Cyan-leaning accent for data visualization or highlights. */
-    --color-tertiary-50: oklch(98.4% 0.0149 194.196);
-    --color-tertiary-100: oklch(95.54% 0.038 196.259);
+    /**
+     * Tertiary — Cyan-leaning accent for data visualization or highlights.
+     */
+    --color-tertiary-50:  oklch(98.4%  0.0149 194.196);
+    --color-tertiary-100: oklch(95.54% 0.038  196.259);
     --color-tertiary-200: oklch(91.57% 0.0685 197.535);
     --color-tertiary-300: oklch(86.31% 0.1065 199.314);
     --color-tertiary-400: oklch(78.68% 0.1268 203.095);
@@ -232,13 +239,17 @@
     --color-tertiary-900: oklch(39.58% 0.0567 217.218);
     --color-tertiary-950: oklch(29.74% 0.0447 219.856);
 
-    /* Container — Responsive configuration for bigger screens. */
+    /**
+     * Container — Responsive configuration for bigger screens.
+     */
     --container-3xl: 1530px;
 
-    /* Quaternary — Deep violet for charts, tags, and decorative elements. */
-    --color-quaternary-50: oklch(96.32% 0.0129 277.337);
+    /**
+     * Quaternary — Deep violet for charts, tags, and decorative elements.
+     */
+    --color-quaternary-50:  oklch(96.32% 0.0129 277.337);
     --color-quaternary-100: oklch(93.22% 0.0242 277.871);
-    --color-quaternary-200: oklch(87.4% 0.0465 278.695);
+    --color-quaternary-200: oklch(87.4%  0.0465 278.695);
     --color-quaternary-300: oklch(78.93% 0.0836 279.304);
     --color-quaternary-400: oklch(67.78% 0.1332 281.15);
     --color-quaternary-500: oklch(58.85% 0.1724 281.164);
@@ -246,23 +257,27 @@
     --color-quaternary-700: oklch(46.27% 0.1791 281.063);
     --color-quaternary-800: oklch(40.37% 0.1471 281.379);
     --color-quaternary-900: oklch(36.25% 0.1108 282.652);
-    --color-quaternary-950: oklch(26.13% 0.072 284.367);
+    --color-quaternary-950: oklch(26.13% 0.072  284.367);
 
-    /* Indigo — Rich purple-blue. Used for nav highlights and focus rings. */
-    --color-indigo-50: oklch(96.2% 0.018 272.314);
-    --color-indigo-100: oklch(93% 0.034 272.788);
-    --color-indigo-200: oklch(87% 0.065 274.039);
-    --color-indigo-300: oklch(78.5% 0.115 274.713);
-    --color-indigo-400: oklch(67.3% 0.182 276.935);
-    --color-indigo-500: oklch(58.5% 0.233 277.117);
-    --color-indigo-600: oklch(51.1% 0.262 276.966);
-    --color-indigo-700: oklch(45.7% 0.24 277.023);
-    --color-indigo-800: oklch(39.8% 0.195 277.366);
-    --color-indigo-900: oklch(35.9% 0.144 278.697);
-    --color-indigo-950: oklch(25.7% 0.09 281.288);
+    /**
+     * Indigo — Rich purple-blue. Used for nav highlights and focus rings.
+     */
+    --color-indigo-50:  oklch(96.2% 0.018  272.314);
+    --color-indigo-100: oklch(93%   0.034  272.788);
+    --color-indigo-200: oklch(87%   0.065  274.039);
+    --color-indigo-300: oklch(78.5% 0.115  274.713);
+    --color-indigo-400: oklch(67.3% 0.182  276.935);
+    --color-indigo-500: oklch(58.5% 0.233  277.117);
+    --color-indigo-600: oklch(51.1% 0.262  276.966);
+    --color-indigo-700: oklch(45.7% 0.24   277.023);
+    --color-indigo-800: oklch(39.8% 0.195  277.366);
+    --color-indigo-900: oklch(35.9% 0.144  278.697);
+    --color-indigo-950: oklch(25.7% 0.09   281.288);
 
-    /* Inchworm — Vivid yellow-green. Used for growth indicators and charts. */
-    --color-inchworm-50: oklch(98.6% 0.0342 117.618);
+    /**
+     * Inchworm — Vivid yellow-green. Used for growth indicators and charts.
+     */
+    --color-inchworm-50:  oklch(98.6%  0.0342 117.618);
     --color-inchworm-100: oklch(96.71% 0.0743 119.178);
     --color-inchworm-200: oklch(93.81% 0.1407 121.103);
     --color-inchworm-300: oklch(89.71% 0.2167 123.34);
@@ -274,25 +289,29 @@
     --color-inchworm-900: oklch(40.53% 0.1117 126.904);
     --color-inchworm-950: oklch(27.42% 0.0796 127.858);
 
-    /* Teal — Balanced blue-green. Used for tags, data, and secondary charts. */
-    --color-teal-50: oklch(98.4% 0.014 180.72);
-    --color-teal-100: oklch(95.3% 0.051 180.801);
-    --color-teal-200: oklch(91% 0.096 180.426);
-    --color-teal-300: oklch(85.5% 0.138 181.071);
-    --color-teal-400: oklch(77.7% 0.152 181.912);
-    --color-teal-500: oklch(70.4% 0.14 182.503);
-    --color-teal-600: oklch(60% 0.118 184.704);
-    --color-teal-700: oklch(51.1% 0.096 186.391);
-    --color-teal-800: oklch(43.7% 0.078 188.216);
-    --color-teal-900: oklch(38.6% 0.063 188.416);
-    --color-teal-950: oklch(27.7% 0.046 192.524);
+    /**
+     * Teal — Balanced blue-green. Used for tags, data, and secondary charts.
+     */
+    --color-teal-50:  oklch(98.4% 0.014  180.72);
+    --color-teal-100: oklch(95.3% 0.051  180.801);
+    --color-teal-200: oklch(91%   0.096  180.426);
+    --color-teal-300: oklch(85.5% 0.138  181.071);
+    --color-teal-400: oklch(77.7% 0.152  181.912);
+    --color-teal-500: oklch(70.4% 0.14   182.503);
+    --color-teal-600: oklch(60%   0.118  184.704);
+    --color-teal-700: oklch(51.1% 0.096  186.391);
+    --color-teal-800: oklch(43.7% 0.078  188.216);
+    --color-teal-900: oklch(38.6% 0.063  188.416);
+    --color-teal-950: oklch(27.7% 0.046  192.524);
 
-    /* Honeysuckle — Warm yellow. Used for highlights, earnings, and callouts. */
-    --color-honeysuckle-50: oklch(98.56% 0.0609 111.587);
+    /**
+     * Honeysuckle — Warm yellow. Used for highlights, earnings, and callouts.
+     */
+    --color-honeysuckle-50:  oklch(98.56% 0.0609 111.587);
     --color-honeysuckle-100: oklch(96.69% 0.1538 112.884);
     --color-honeysuckle-200: oklch(94.23% 0.2467 114.169);
     --color-honeysuckle-300: oklch(90.99% 0.2377 113.942);
-    --color-honeysuckle-400: oklch(85.7% 0.219 111.079);
+    --color-honeysuckle-400: oklch(85.7%  0.219  111.079);
     --color-honeysuckle-500: oklch(78.91% 0.1985 108.774);
     --color-honeysuckle-600: oklch(66.96% 0.1616 100.626);
     --color-honeysuckle-700: oklch(54.79% 0.1295 92.161);
@@ -300,11 +319,13 @@
     --color-honeysuckle-900: oklch(41.64% 0.0982 88.155);
     --color-honeysuckle-950: oklch(28.22% 0.0667 84.996);
 
-    /* --- 3d. Radius -------------------------------------------------------- */
-    /**
-     * --radius-base → 4px. Default for buttons, inputs, cards.
-     * --radius-full → 999px. Fully rounded pills, avatar rings, badges.
-     */
+    /* -------------------------------------------------------------------------
+     * 3d. RADIUS
+     * -------------------------------------------------------------------------
+     *
+     *   --radius-base → 0px.    Default for buttons, inputs, and cards.
+     *   --radius-full → 999px.  Fully rounded pills, avatar rings, badges.
+     * ------------------------------------------------------------------------- */
     --radius-base: 0px;
     --radius-full: 999px;
 }
@@ -314,57 +335,64 @@
  * ============================================================================= */
 
 @layer base {
-    /* --- 4a. Body ---------------------------------------------------------- */
-    /**
-     * body
+
+    /* -------------------------------------------------------------------------
+     * 4a. BODY
+     * -------------------------------------------------------------------------
+     *
      * Global defaults for the document surface.
      * White background + body font applied universally to every layout.
-     */
+     * ------------------------------------------------------------------------- */
     body {
         @apply bg-background font-body font-normal;
     }
 
-    /* --- 4b. Form ---------------------------------------------------------- */
-    /**
-     * form
+    /* -------------------------------------------------------------------------
+     * 4b. FORM
+     * -------------------------------------------------------------------------
+     *
      * Default form layout: vertical flex column with consistent gap.
      * Ensures all forms are full-width and uniformly spaced without extra markup.
-     */
+     * ------------------------------------------------------------------------- */
     form {
         @apply flex flex-col gap-6 w-full;
     }
 
-    /* --- 4c. Number Input -------------------------------------------------- */
-    /**
-     * input (number) — spinner removal
+    /* -------------------------------------------------------------------------
+     * 4c. NUMBER INPUT
+     * -------------------------------------------------------------------------
+     *
      * Strips WebKit's native increment/decrement arrows from number inputs.
      * Keeps inputs visually clean and consistent with custom UI controls.
-     */
+     * ------------------------------------------------------------------------- */
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
     }
 
-    /* width */
-::-webkit-scrollbar {
-  width: 10px;
-}
+    /* -------------------------------------------------------------------------
+     * 4d. SCROLLBAR
+     * -------------------------------------------------------------------------
+     *
+     * Global scrollbar styling applied to all scrollable elements.
+     * Transparent track with a neutral-700 thumb; darkens slightly on hover.
+     * ------------------------------------------------------------------------- */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
 
-/* Track */
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
 
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: var(--color-neutral-700);
-}
+    ::-webkit-scrollbar-thumb {
+        background: var(--color-neutral-700);
+    }
 
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-neutral-600);
-}
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--color-neutral-600);
+    }
 }
 
 /* =============================================================================
@@ -372,9 +400,11 @@
  * ============================================================================= */
 
 @layer components {
-    
-    /* --- 5a. Buttons ------------------------------------------------------- */
-    /**
+
+    /* -------------------------------------------------------------------------
+     * 5a. BUTTONS — BASE & VARIANTS
+     * -------------------------------------------------------------------------
+     *
      * .button  (also: button, input[type=submit])
      * Base button. Always required — variants stack on top of this class.
      * Sets height, typography, spacing, color, and all interactive states
@@ -387,50 +417,32 @@
      *   .button-outline      → Bordered, white bg. For low-emphasis actions.
      *   .button-ghost        → Transparent. For minimal tertiary actions.
      *   .button-link         → Transparent, no border. For inline text-level actions.
+     *   .button-sidebar      → Dark compact variant for sidebar navigation.
+     *   .button-sidebar--active → Light variant for the active sidebar item.
      *
      * Sizes (add alongside .button):
-     *   .button-small        → Reduced height (h-7) and padding. For dense UIs.
-     *   .button-icon         → Square, icon-only variant (h-9 × w-9).
-     *
-     * Usage:
-     *   <button class="button">Primary</button>
-     *   <button class="button button-secondary button-small">Cancel</button>
-     *   <button class="button button-danger">Delete</button>
-     */
-input[type="submit"],
-button,
-.button {
-  /* Layout */
-  @apply h-9 px-3 py-1.5 inline-flex items-center justify-center gap-1.5 whitespace-nowrap;
-
-  /* Typography — tight tracking amplifies the mono + uppercase pairing */
-  @apply font-mono font-medium text-2xs uppercase tracking-tight;
-  @apply text-neutral-50;
-
-  /* Shape — square corners for editorial precision */
-  @apply rounded-none;
-
-  /* Surface — slightly darker base, with a hairline border for depth */
-  @apply bg-neutral-800 border border-neutral-700;
-
-  /* Interaction */
-  @apply transition-all duration-100 cursor-pointer select-none;
-  @apply hover:bg-neutral-700 hover:border-neutral-600;
-  @apply active:bg-neutral-900 active:border-neutral-800 active:outline-offset-1;
-  @apply disabled:pointer-events-none disabled:opacity-40;
-
-  /* Focus */
-  @apply focus:border-neutral-100 focus:outline-neutral-100/50 focus:outline-offset-2;
-  @apply focus-visible:border-neutral-100 focus-visible:outline-[3px] focus-visible:outline-neutral-100/50 focus-visible:outline-offset-2;
-
-  /* Validation */
-  @apply aria-invalid:border-danger-600 aria-invalid:outline-danger-600/20;
-
-  /* Icon slots */
-  @apply has-[>svg]:px-3;
-  @apply [&>svg]:stroke-neutral-50 [&>svg]:!size-3.5 [&>svg]:relative;
-  @apply [&>span>svg]:!size-4 [&>span]:!text-2xs;
-}
+     *   .button-small  → Reduced height (h-7) and padding. For dense UIs.
+     *   .button-icon   → Square, icon-only variant (h-9 × w-9).
+     * ------------------------------------------------------------------------- */
+    input[type="submit"],
+    button,
+    .button {
+        @apply h-9 px-3 py-1.5 inline-flex items-center justify-center gap-1.5 whitespace-nowrap;
+        @apply font-mono font-medium text-2xs uppercase tracking-tight;
+        @apply text-neutral-50;
+        @apply rounded-none;
+        @apply bg-neutral-800 border border-neutral-700;
+        @apply transition-all duration-100 cursor-pointer select-none;
+        @apply hover:bg-neutral-700 hover:border-neutral-600;
+        @apply active:bg-neutral-900 active:border-neutral-800 active:outline-offset-1;
+        @apply disabled:pointer-events-none disabled:opacity-40;
+        @apply focus:border-neutral-100 focus:outline-neutral-100/50 focus:outline-offset-2;
+        @apply focus-visible:border-neutral-100 focus-visible:outline-[3px] focus-visible:outline-neutral-100/50 focus-visible:outline-offset-2;
+        @apply aria-invalid:border-danger-600 aria-invalid:outline-danger-600/20;
+        @apply has-[>svg]:px-3;
+        @apply [&>svg]:stroke-neutral-50 [&>svg]:!size-3.5 [&>svg]:relative;
+        @apply [&>span>svg]:!size-4 [&>span]:!text-2xs;
+    }
 
     /**
      * .button-small
@@ -479,20 +491,18 @@ button,
 
     /**
      * .button-sidebar
-     * Compact button variant designed for use inside sidebar navigation areas.
-     * Uses the primary dark background with light text to maintain contrast
-     * and visual consistency with the sidebar layout.
+     * Compact variant for sidebar navigation areas. Dark background with
+     * light text maintains contrast against the sidebar surface.
      */
     .button-sidebar {
         @apply !h-7 !px-2.5 !py-0.75 text-neutral-50 bg-neutral-800 !border-none hover:!bg-neutral-700 hover:!border-none !shadow-none [&>svg]:!stroke-neutral-50;
     }
 
     /**
- * .button-sidebar
- * Compact button variant designed for use inside sidebar navigation areas.
- * Uses the primary dark background with light text to maintain contrast
- * and visual consistency with the sidebar layout.
- */
+     * .button-sidebar--active
+     * Active-state companion to .button-sidebar. Light background with dark
+     * text to visually distinguish the currently selected sidebar item.
+     */
     .button-sidebar--active {
         @apply !h-7 !px-2.5 !py-0.75 text-neutral-900 bg-background hover:!bg-background !shadow-none [&>svg]:!stroke-neutral-900;
     }
@@ -508,9 +518,9 @@ button,
 
     /**
      * .button-ghost
-     * Borderless, transparent button.
-     * Minimal visual weight — for tertiary actions, nav items, or icon buttons.
-     * Reveals a subtle border and background on hover to confirm interactivity.
+     * Borderless, transparent button. Minimal visual weight — for tertiary
+     * actions, nav items, or icon buttons. Reveals a subtle border and
+     * background on hover to confirm interactivity.
      */
     .button-ghost {
         @apply bg-transparent border border-transparent shadow-none text-body hover:!bg-neutral-100 hover:!border-border [&>svg]:!stroke-body;
@@ -518,16 +528,18 @@ button,
 
     /**
      * .button-link
-     * Transparent button styled like an inline link.
-     * No shadow or border by default; shows an accent background on hover.
-     * Use for in-context navigation or soft inline actions.
+     * Transparent button styled like an inline link. No shadow or border by
+     * default; shows an accent background on hover. Use for in-context
+     * navigation or soft inline actions.
      */
     .button-link {
         @apply bg-transparent border !border-transparent shadow-none text-body hover:!bg-accent hover:!border-accent [&>svg]:!stroke-body;
     }
 
-    /* --- 5b. Badges -------------------------------------------------------- */
-    /**
+    /* -------------------------------------------------------------------------
+     * 5b. BADGES — BASE & VARIANTS
+     * -------------------------------------------------------------------------
+     *
      * .badge
      * Base badge/tag component. Always required — color variants stack on top.
      * Renders as a small inline pill with monospaced uppercase text.
@@ -545,11 +557,7 @@ button,
      *   .badge-alert        → Yellow-orange tint. For warnings or cautions.
      *   .badge-success      → Green tint. For completed or healthy states.
      *   .badge-inchworm     → Bright green tint. For growth or gain indicators.
-     *
-     * Usage:
-     *   <span class="badge badge-success">Completed</span>
-     *   <span class="badge badge-danger">Failed</span>
-     */
+     * ------------------------------------------------------------------------- */
     .badge {
         @apply px-2 py-0.5 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-base uppercase font-mono text-2xs font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-primary-50 text-primary-700 h-fit w-fit [&>svg]:stroke-primary-700 [&>svg]:size-3 border;
     }
@@ -604,12 +612,15 @@ button,
  * ============================================================================= */
 
 @layer utilities {
-    /* --- 6a. Scrollbar ----------------------------------------------------- */
-    /**
+
+    /* -------------------------------------------------------------------------
+     * 6a. SCROLLBAR SUPPRESSION
+     * -------------------------------------------------------------------------
+     *
      * .no-scrollbar
      * Hides the scrollbar visually while keeping the element scrollable.
      * Use on overflow containers where scrollbar chrome is undesirable.
-     */
+     * ------------------------------------------------------------------------- */
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
@@ -619,7 +630,15 @@ button,
         scrollbar-width: none;
     }
 
-    /* ── Sidebar collapse ─────────────────────────────────────── */
+    /* -------------------------------------------------------------------------
+     * 6b. SIDEBAR COLLAPSE
+     * -------------------------------------------------------------------------
+     *
+     * Controls sidebar open/closed state via data attributes.
+     *   aside[data-collapsed="true"]              → hides the sidebar panel.
+     *   [data-sidebar-collapsed="true"] container → spans full 16 columns.
+     *   .icon-sidebar-close / .icon-sidebar-open  → toggle collapse icons.
+     * ------------------------------------------------------------------------- */
     aside[data-collapsed="true"] {
         display: none;
     }
@@ -627,47 +646,36 @@ button,
     div[data-sidebar-target="container"][data-sidebar-collapsed="true"] {
         grid-column: span 16;
     }
-    /* Sidebar open → show collapse icon, hide expand icon */
+
     .icon-sidebar-close {
         display: none;
     }
+
     .icon-sidebar-open {
         display: flex;
     }
 
-    /* Sidebar closed → flip them */
     [data-sidebar-collapsed="true"] .icon-sidebar-open {
         display: none;
     }
+
     [data-sidebar-collapsed="true"] .icon-sidebar-close {
         display: flex;
     }
 
-    /**
-     * Global custom scrollbar styling.
-     * Applies to all scrollable elements except those using .no-scrollbar.
-     * Thin 4px track, indigo-300 thumb, base border-radius.
-     */
-    /*::-webkit-scrollbar {*/
-    /*    height: calc(var(--spacing) * 1);*/
-    /*    width: calc(var(--spacing) * 1);*/
-    /*}*/
-    /*::-webkit-scrollbar-track {*/
-    /*    box-shadow: none;*/
-    /*    border-radius: 0;*/
-    /*}*/
-    /*::-webkit-scrollbar-thumb {*/
-    /*    background: var(--color-indigo-300);*/
-    /*    border-radius: var(--radius-base);*/
-    /*}*/
-
+    /* -------------------------------------------------------------------------
+     * 6c. NUMBER INPUT (FIREFOX)
+     * -------------------------------------------------------------------------
+     *
+     * Removes native spinner arrows from number inputs in Firefox.
+     * WebKit equivalent is handled in section 4c (base layer).
+     * ------------------------------------------------------------------------- */
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
     }
 
-    /* Firefox */
     input[type="number"] {
         -moz-appearance: textfield;
     }
