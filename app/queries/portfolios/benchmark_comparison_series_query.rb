@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # app/queries/portfolios/benchmark_comparison_series_query.rb
 #
 # Builds a multi-series dataset comparing the portfolio's cumulative return
@@ -48,10 +50,6 @@ module Portfolios
       [portfolio_series] + benchmark_series_list
     end
 
-    # =============================================================
-    #                         PRIVATE
-    # =============================================================
-
     private
 
     # ── date window ──────────────────────────────────────────────
@@ -59,10 +57,15 @@ module Portfolios
     def periods
       @periods ||= PerformanceHistory
         .where(portfolio: @portfolio)
+        .where(period: current_year_range)
         .where(period: ..@reference_date)
         .order(:period)
         .pluck(:period)
         .uniq
+    end
+
+    def current_year_range
+      @reference_date.beginning_of_year..@reference_date.end_of_year
     end
 
     def start_date
@@ -75,8 +78,6 @@ module Portfolios
 
     # ── portfolio series ─────────────────────────────────────────
 
-    # Aggregates all fund monthly returns into a single portfolio return
-    # using a simple earnings-weighted approach, then cumulates.
     def portfolio_monthly_returns
       @portfolio_monthly_returns ||= begin
         rows = PerformanceHistory
@@ -85,16 +86,12 @@ module Portfolios
           .order(:period)
           .pluck(:period, :monthly_return, :earnings, :initial_balance)
 
-        # Group by period and compute a portfolio-level return via
-        # weighted average (weight = initial_balance when available,
-        # otherwise equal-weight fallback).
         rows.group_by { |period, *| period }.transform_values do |group|
           total_balance = group.sum { |_, _, _, ib| ib.to_f }
 
           if total_balance > 0
             group.sum { |_, ret, _, ib| ret.to_f * ib.to_f } / total_balance
           else
-            # Equal-weight fallback (e.g. first period with zero initial_balance)
             returns = group.map { |_, ret, *| ret.to_f }
             returns.sum / returns.size
           end
@@ -137,7 +134,7 @@ module Portfolios
       end
     end
 
-    # ── cumulation helper ─────────────────────────────────────────
+    # ── cumulation helper ────────────────────────────────────────
 
     # Converts a Hash of { Date => monthly_return_pct } into a cumulative
     # growth series rebased to 0 at the first period.
@@ -145,21 +142,25 @@ module Portfolios
     # Formula: cumulative[t] = (1 + r1/100) * (1 + r2/100) * … * (1 + rt/100) - 1
     # Result is expressed as percentage points (×100).
     #
-    # @param monthly_returns [Hash<Date, Float>] keyed by period date
-    # @return [Hash<String, Float>] keyed by formatted label "Mmm/YY"
+    # @param monthly_returns [Hash<Date, Float>]
+    # @return [Hash<String, Float>]
     def cumulate(monthly_returns)
       cumulative = 1.0
+
       monthly_returns
         .sort
         .each_with_object({}) do |(date, ret), acc|
           cumulative *= (1 + ret / 100.0)
-          acc[format_period(date)] = ((cumulative - 1) * 100).round(4)
+
+          acc[format_period(date)] = (
+            (cumulative - 1) * 100
+          ).round(4)
         end
     end
 
     def format_period(date)
       I18n.l(date.to_date, format: "%b/%y").capitalize
-    rescue
+    rescue StandardError
       date.to_date.strftime("%b/%y")
     end
   end
