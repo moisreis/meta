@@ -428,16 +428,16 @@
     button,
     .button {
         @apply h-9 px-3 py-1.5 inline-flex items-center justify-center gap-1.5 whitespace-nowrap;
-        @apply font-mono font-medium text-2xs uppercase tracking-tight;
+        @apply font-mono font-semibold text-2xs uppercase tracking-tight;
         @apply text-neutral-50;
         @apply rounded-none;
         @apply bg-neutral-800 border border-neutral-700;
         @apply transition-all duration-100 cursor-pointer select-none;
-        @apply hover:bg-neutral-700 hover:border-neutral-600;
-        @apply active:bg-neutral-900 active:border-neutral-800 active:outline-offset-1;
+        @apply hover:border-neutral-600;
+        @apply active:border-neutral-600 active:ring-neutral-600 active:outline-offset-1 active:outline-neutral-600;
         @apply disabled:pointer-events-none disabled:opacity-40;
-        @apply focus:border-neutral-100 focus:outline-neutral-100/50 focus:outline-offset-2;
-        @apply focus-visible:border-neutral-100 focus-visible:outline-[3px] focus-visible:outline-neutral-100/50 focus-visible:outline-offset-2;
+        @apply focus:border-border focus:outline-1 focus:ring-neutral-600 focus:outline-offset-2 focus:outline-neutral-600;
+        @apply focus-visible:outline-neutral-600;
         @apply aria-invalid:border-danger-600 aria-invalid:outline-danger-600/20;
         @apply has-[>svg]:px-3;
         @apply [&>svg]:stroke-neutral-50 [&>svg]:!size-3.5 [&>svg]:relative;

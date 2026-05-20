@@ -76,7 +76,8 @@ module Shared
     #   quota values are unavailable for the calculation period.
     #
     def call
-      return unless quota_start && quota_end
+      return unless quota_end
+      return unless quota_start
 
       Result.new(
         initial_balance: initial_balance,
@@ -236,7 +237,7 @@ module Shared
     # @return [BigDecimal, nil] The starting quota value.
     #
     def quota_start
-      @quota_start ||= quota_value_on(period_start - 1.day)
+      @quota_start ||= quota_value_on(period_start - 1.day) || first_quota_in_period
     end
 
     # Returns the quota value at the end of the reference month.
@@ -246,6 +247,16 @@ module Shared
     def quota_end
       @quota_end ||= quota_value_on(period_end)
     end
+
+    def first_quota_in_period
+      fund_investment.investment_fund
+        .fund_valuations
+        .where("date >= ? AND date <= ?", period_start, period_end)
+        .where("EXTRACT(DOW FROM date) NOT IN (0, 6)")
+        .order(date: :asc)
+        .limit(1)
+        .pick(:quota_value)
+    end    
 
     # Calculates the compounded yearly return up to the reference month.
     #
