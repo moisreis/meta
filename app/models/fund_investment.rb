@@ -73,35 +73,20 @@ class FundInvestment < ApplicationRecord
   # Filters investments that currently hold a positive balance of quotas.
   scope :active, -> { where("total_quotas_held > 0 OR total_invested_value > 0") }
 
-  # Filters investments that had any activity or value in the given reference period.
-  # Includes funds that had initial balance, earnings, applications, or redemptions.
-# Filters investments that had any activity or value in the given reference period.
-# Includes funds that had initial balance, earnings, applications, or redemptions.
-scope :active_for_period, ->(date) {
-  period_start = date.beginning_of_month
+  scope :active_during, ->(start_date, end_date) {
+    had_application_ids = Application
+                            .where("cotization_date <= ?", end_date)
+                            .select(:fund_investment_id)
 
-  where(
-    PerformanceHistory
-      .where("fund_investment_id = fund_investments.id")
-      .where(period: period_start..date)
-      .where("initial_balance > 0.01 OR ABS(earnings::numeric) > 0.01")
-      .arel.exists
-  ).or(
-    where(
-      Application
-        .where("fund_investment_id = fund_investments.id")
-        .where(cotization_date: period_start..date)
-        .arel.exists
-    )
-  ).or(
-    where(
-      Redemption
-        .where("fund_investment_id = fund_investments.id")
-        .where(cotization_date: period_start..date)
-        .arel.exists
-    )
-  )
-}
+    redeemed_during_or_after_ids = Redemption
+                                    .where("cotization_date >= ?", start_date)
+                                    .select(:fund_investment_id)
+
+    where(id: had_application_ids)
+      .where(
+        "total_quotas_held > 0 OR id IN (#{redeemed_during_or_after_ids.to_sql})"
+      )
+  }
 
   # Organizes the investment list based on the highest percentage of allocation.
   scope :by_allocation, -> { order(percentage_allocation: :desc) }

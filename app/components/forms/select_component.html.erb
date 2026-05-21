@@ -5,29 +5,27 @@
 
   <% if @label.present? %>
     <%= @f.label @name, @label,
-          class: LABEL_CLASSES,
+          class: FormStyles::LABEL_CLASSES,
           id: "#{@f.object_name}_#{@name}-ts-label" %>
   <% end %>
 
   <div class="relative <%= wrapper_width_class %>">
-<%= @f.select @name,
-      @options_collection,
-      { selected: @selected },
-      class:    (@is_small ? "input-small" : nil),
-      disabled: @is_inactive,
-      data:     { controller: "tom-select", tom_select_rich_value: @rich },
-      aria:     { describedby: aria_describedby, invalid: has_error? } %>
+    <%= @f.select @name,
+          @options_collection,
+          { selected: @selected },
+          class:    (@is_small ? "input-small" : nil),
+          disabled: @is_inactive,
+          data:     { controller: "tom-select", tom_select_rich_value: @rich },
+          aria:     { describedby: aria_describedby, invalid: has_error? } %>
 
     <%= helpers.inline_svg_tag "icons/chevron-down.svg",
           class: "size-3.5 z-10 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 stroke-muted" %>
   </div>
 
   <% if has_error? %>
-    <%= content_tag :span, error_message, class: desc_classes %>
-  <% end %>
-
-  <% if @desc.present? %>
-    <%= content_tag :p, @desc, class: DESC_BASE_CLASSES, id: aria_describedby %>
+    <%= content_tag :p, error_message, class: desc_classes, id: aria_describedby %>
+  <% elsif @desc.present? %>
+    <%= content_tag :p, @desc, class: desc_classes, id: aria_describedby %>
   <% end %>
 
 </div>

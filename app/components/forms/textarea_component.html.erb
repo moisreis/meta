@@ -1,21 +1,26 @@
+<!-- Forms::Textarea [<%= name %>] -->
 <div class="relative flex flex-col justify-start gap-1.5">
 
   <% if label.present? %>
-    <%= form.label name, label, class: label_classes %>
+    <%= form.label name, label, class: FormStyles::LABEL_CLASSES %>
   <% end %>
 
-  <div class="relative <%= half_width_class %>">
+  <div class="relative <%= wrapper_width_class %>">
     <%= form.text_area name,
           rows: rows,
           placeholder: placeholder,
+          disabled: is_inactive,
           class: textarea_classes,
-          aria: { describedby: describedby_id } %>
+          aria: {
+            describedby: aria_describedby,
+            invalid: has_error?
+          } %>
   </div>
 
-  <% if desc.present? %>
-    <p class="<%= desc_classes %>" id="<%= describedby_id %>">
-      <%= desc %>
-    </p>
+  <% if has_error? %>
+    <%= content_tag :p, error_message, class: desc_classes, id: aria_describedby %>
+  <% elsif desc.present? %>
+    <%= content_tag :p, desc, class: desc_classes, id: aria_describedby %>
   <% end %>
 
 </div>

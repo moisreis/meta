@@ -55,6 +55,9 @@ module Meta
     config.autoload_paths << Rails.root.join("app/queries")
     config.eager_load_paths << Rails.root.join("app/queries")
 
+    config.autoload_paths  << Rails.root.join("app/components/concerns")
+    config.eager_load_paths << Rails.root.join("app/components/concerns")
+
     config.autoload_paths << Rails.root.join("app/forms")
     config.eager_load_paths << Rails.root.join("app/forms")
 

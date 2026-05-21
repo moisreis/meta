@@ -1,30 +1,12 @@
 <%#
   PARTIAL: app/components/forms/input_field_component.html.erb
-  DESCRIPTION: Renders a configurable form input field with optional masking, validation state, and icon support.
-
-  LOCAL VARIABLES:
-  - @f:                 [FormBuilder] Rails form builder instance.
-  - @name:             [Symbol] Attribute name bound to the form object.
-  - @label:            [String, nil] Optional field label.
-  - @field_type:       [Symbol] Input type (e.g., :text_field, :number_field).
-  - @placeholder:      [String, nil] Placeholder text.
-  - @desc:             [String, nil] Help or description text.
-  - @icon_name:        [String, nil] Optional trailing icon.
-  - @is_inactive:      [Boolean, nil] Disabled state flag.
-  - @is_half_width:    [Boolean] Layout width modifier.
-  - @is_small:         [Boolean] Compact sizing flag.
-  - @currency_mask:    [Boolean] Enables currency formatting mask.
-  - @cnpj_mask:        [Boolean] Enables CNPJ formatting mask.
-  - @bank_account_mask:[Boolean] Enables bank account formatting mask.
-  - @step:             [String, nil] HTML step attribute.
-  - @inputmode:        [String, nil] HTML inputmode attribute.
 %>
 
 <!-- Forms::InputField [<%= @label %>] -->
 <div class="relative flex flex-col justify-start gap-1.5">
 
   <% if @label.present? %>
-    <%= @f.label @name, @label, class: LABEL_CLASSES %>
+    <%= @f.label @name, @label, class: FormStyles::LABEL_CLASSES %>
   <% end %>
 
   <div class="relative <%= wrapper_width_class %>">
@@ -83,17 +65,16 @@
       <%= @f.send(
             @field_type,
             @name,
-            placeholder: @placeholder,
-            class:       full_input_classes,
-            step:        @step,
-            inputmode:   @inputmode,
+            placeholder:  @placeholder,
+            class:        full_input_classes,
+            step:         @step,
+            inputmode:    @inputmode,
             autocomplete: "off",
             aria: {
               describedby: aria_describedby,
               invalid:     has_error?
             }
-          )
-      %>
+          ) %>
     <% end %>
 
     <% if @icon_name.present? %>
@@ -105,15 +86,9 @@
   </div>
 
   <% if has_error? %>
-    <%= content_tag :p,
-                    error_message,
-                    class: desc_classes,
-                    id:    aria_describedby %>
+    <%= content_tag :p, error_message, class: desc_classes, id: aria_describedby %>
   <% elsif @desc.present? %>
-    <%= content_tag :p,
-                    @desc,
-                    class: desc_classes,
-                    id:    aria_describedby %>
+    <%= content_tag :p, @desc, class: desc_classes, id: aria_describedby %>
   <% end %>
 
 </div>

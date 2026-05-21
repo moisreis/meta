@@ -3,9 +3,7 @@
 <div class="relative flex flex-col justify-start gap-1.5">
 
   <% if @label.present? %>
-    <%= @f.label @name,
-                 @label,
-                 class: LABEL_CLASSES %>
+    <%= @f.label @name, @label, class: FormStyles::LABEL_CLASSES %>
   <% end %>
 
   <div class="relative <%= wrapper_width_class %>">
@@ -13,18 +11,14 @@
     <%= @f.send(
           @field_type,
           @name,
-          value: @value,
-          placeholder: @placeholder,
-          class: input_classes,
-          disabled: @is_inactive,
-          data: @data.merge(controller: "datepicker"),
-          aria: {
-            describedby: aria_describedby,
-            invalid: has_error?
-          },
+          value:        @value,
+          placeholder:  @placeholder,
+          class:        input_classes,
+          disabled:     @is_inactive,
+          data:         @data.merge(controller: "datepicker"),
+          aria:         { describedby: aria_describedby, invalid: has_error? },
           autocomplete: "off"
-        )
-    %>
+        ) %>
 
     <% if @icon_name.present? %>
       <%= helpers.inline_svg_tag(
@@ -36,14 +30,9 @@
   </div>
 
   <% if has_error? %>
-    <%= content_tag :span, error_message, class: desc_classes %>
-  <% end %>
-
-  <% if @desc.present? %>
-    <%= content_tag :p,
-                    @desc,
-                    class: DESC_BASE_CLASSES,
-                    id: aria_describedby %>
+    <%= content_tag :p, error_message, class: desc_classes, id: aria_describedby %>
+  <% elsif @desc.present? %>
+    <%= content_tag :p, @desc, class: desc_classes, id: aria_describedby %>
   <% end %>
 
 </div>

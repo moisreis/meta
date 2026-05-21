@@ -88,7 +88,7 @@ module Portfolios
     def fund_investments
       @fund_investments ||= portfolio
                               .fund_investments
-                              .active
+                              .active_during(start_date, end_date)
                               .includes(:investment_fund)
                               .to_a
     end
