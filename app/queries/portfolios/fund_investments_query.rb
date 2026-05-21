@@ -4,7 +4,7 @@
 module Portfolios
   ##
   # Retrieves optimized fund investments for portfolio views.
-  # Filters by +active_for_period+ when a +reference_date+ is provided
+  # Filters by +active_during+ when a +reference_date+ is provided
   # so that stale fund investments are excluded from the current report.
   #
   class FundInvestmentsQuery
@@ -15,7 +15,7 @@ module Portfolios
       # @return [ActiveRecord::Relation<FundInvestment>]
       def call(portfolio, reference_date: nil)
         rel = portfolio.fund_investments.includes(:investment_fund)
-        rel = rel.active_for_period(reference_date) if reference_date
+        rel = rel.active_during(reference_date.beginning_of_month, reference_date) if reference_date
         rel
       end
     end
