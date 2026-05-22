@@ -273,34 +273,18 @@ class RedemptionsController < ApplicationController
     end
   end
 
-  # == destroy
-  #
-  # @author Moisés Reis
-  #
-  # Deletes a redemption, restores the consumed quotas, and recalculates balances.
-  # It effectively reverses the financial impact of the redemption record.
   def destroy
-
-    # Identifies the fund investment to update after the record is removed.
-    # This reference is held to ensure the balances are corrected post-deletion.
     fund_investment = @redemption.fund_investment
 
-    # Wraps the deletion and restoration in a transaction for data safety.
-    # This prevents partial deletions where quotas are lost but the record is gone.
     ActiveRecord::Base.transaction do
-
-      # Restores the quotas to the specific applications they were taken from.
-      # This maintains the historical accuracy of the FIFO allocation chain.
       revert_quotas_on_destroy(fund_investment)
-
-      # Permanently removes the redemption record from the database.
-      # This action cannot be undone once the transaction is committed.
       @redemption.destroy!
-
-      # Forces a recalculation of the portfolio to reflect the restored values.
-      # This ensures that the user sees the updated balance immediately.
       PortfolioAllocationCalculator.recalculate!(fund_investment.portfolio)
     end
+
+    PerformanceCalculationJob.perform_later(
+      target_date: Date.current.end_of_month
+    )
 
     respond_to do |format|
       format.html { redirect_to fund_investment_path(fund_investment), notice: "Resgate deletado com sucesso.", status: :see_other }
@@ -308,22 +292,17 @@ class RedemptionsController < ApplicationController
     end
 
   rescue ActiveRecord::RecordInvalid => e
-
-    # Handles cases where the database cannot safely remove or update records.
-    # It provides feedback to the user if the deletion process is blocked.
     respond_to do |format|
       format.html { redirect_to redemption_path(@redemption), alert: "Falha ao deletar resgate." }
       format.json { render json: { status: "Error", errors: e.record.errors.full_messages }, status: :unprocessable_entity }
     end
   rescue CanCan::AccessDenied => e
-
-    # Ensures that only authorized users can delete redemption records.
-    # This prevents malicious or accidental deletions by unauthorized accounts.
     respond_to do |format|
       format.html { redirect_to portfolios_path, alert: e.message }
       format.json { render json: { status: "Error", message: e.message }, status: :forbidden }
     end
   end
+
 
   # =============================================================
   #                       PRIVATE METHODS

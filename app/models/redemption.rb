@@ -4,8 +4,6 @@
 #
 class Redemption < ApplicationRecord
 
-  after_commit :recalculate_performance, on: [:create, :destroy]
-
 delegate :fund_name, to: :investment_fund
 delegate :name,      to: :portfolio, prefix: true  # produces portfolio_name
 

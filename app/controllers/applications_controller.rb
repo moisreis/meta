@@ -334,8 +334,6 @@ class ApplicationsController < ApplicationController
   def destroy
     fund_investment = @application.fund_investment
 
-    # This performs the deletion and balance adjustment inside
-    # a transaction to ensure no money is "lost" or "doubled."
     ActiveRecord::Base.transaction do
       fund_investment.update_balances!(
         quotas_delta: -(@application.number_of_quotas || 0),
@@ -344,6 +342,10 @@ class ApplicationsController < ApplicationController
       @application.destroy!
       PortfolioAllocationCalculator.recalculate!(fund_investment.portfolio)
     end
+
+    PerformanceCalculationJob.perform_later(
+      target_date: Date.current.end_of_month
+    )
 
     flash[:notice] = "Investimento deletado com sucesso."
     redirect_to fund_investment_path(fund_investment.id), status: :see_other
