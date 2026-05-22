@@ -83,7 +83,7 @@ class ApplicationsController < ApplicationController
   rescue_from StandardError do |e|
     Rails.logger.error("[ApplicationsController] #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
     respond_to do |format|
-      format.html { redirect_to portfolios_path, alert: "Ocorreu um erro inesperado." }
+      format.html { redirect_to portfolios_path, alert: "Erro: #{e.class} — #{e.message}" }
       format.json { render json: { error: "Internal server error" }, status: :internal_server_error }
     end
   end
