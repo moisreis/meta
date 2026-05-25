@@ -53,8 +53,6 @@ module FundInvestments
         .redemptions
         .sum(:redeemed_liquid_value)
     end
-  end
-end
 
     # =============================================================
     #                       PRIVATE METHODS
