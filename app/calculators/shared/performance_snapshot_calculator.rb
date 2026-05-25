@@ -96,7 +96,7 @@ module Shared
     private
 
     # =============================================================
-    #                         ATTRIBUTES
+    #                        ATTRIBUTES
     # =============================================================
 
     # @!attribute [r] fund_investment
@@ -108,7 +108,7 @@ module Shared
     attr_reader :fund_investment, :reference_date
 
     # =============================================================
-    #                         PERIOD BOUNDARIES
+    #                      PERIOD BOUNDARIES
     # =============================================================
 
     # Returns the first day of the reference month.
@@ -128,7 +128,7 @@ module Shared
     end
 
     # =============================================================
-    #                         QUOTA RECONSTRUCTION
+    #                     QUOTA RECONSTRUCTION
     # =============================================================
 
     # Reconstructs the quantity of quotas held before the reference month.
@@ -157,7 +157,7 @@ module Shared
     end
 
     # =============================================================
-    #                         PERIOD CASH FLOWS
+    #                      PERIOD CASH FLOWS
     # =============================================================
 
     # Returns all applications cotized within the reference period.
