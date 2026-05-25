@@ -4,17 +4,26 @@
 # authentication flows, RESTful resources, dashboard routing, exports,
 # asynchronous operations, and application-wide error handling.
 #
+# Responsibilities:
+# - Define authentication routes for Devise with custom path names.
+# - Declare RESTful resources for all domain models.
+# - Configure member and collection routes for non-standard actions.
+# - Route error status codes and unknown paths to the errors controller.
+# - Set authenticated and unauthenticated application root paths.
+#
+# This file does not define controller logic, authorization rules,
+# or request validation. Those concerns belong in controllers,
+# policies, and form objects respectively.
+#
 # @author Moisés Reis
 
 Rails.application.routes.draw do
 
-  # ==========================================================================
-  # AUTHENTICATION & USER MANAGEMENT
-  # ==========================================================================
+  # =============================================================
+  #               AUTHENTICATION & USER MANAGEMENT
+  # =============================================================
 
-  devise_for :users,
-             path: "auth",
-             path_names: {
+  devise_for :users, path: "auth", path_names: {
                sign_in: "login",
                sign_out: "logout",
                sign_up: "register"
@@ -23,17 +32,19 @@ Rails.application.routes.draw do
   resources :users
   resources :user_portfolio_permissions
 
-  # ==========================================================================
-  # ECONOMIC DATA & PERFORMANCE TRACKING
-  # ==========================================================================
+  # =============================================================
+  #               ECONOMIC DATA & PERFORMANCE TRACKING
+  # =============================================================
 
   resources :economic_index_histories, only: %i[index new create]
   resources :economic_indices
   resources :performance_histories, only: %i[index new create]
 
-  # ==========================================================================
-  # FUND OPERATIONS
-  # ==========================================================================
+  # =============================================================
+  #                        FUND OPERATIONS
+  # =============================================================
+
+  # --- FUND VALUATIONS -----------------------------------------
 
   resources :fund_valuations, only: %i[index new create] do
     collection do
@@ -43,20 +54,23 @@ Rails.application.routes.draw do
     end
   end
 
+  # --- REDEMPTIONS ---------------------------------------------
+
   resources :redemption_allocations
 
-  resources :redemptions,
-            only: %i[index edit update new create show destroy] do
+  resources :redemptions, only: %i[index edit update new create show destroy] do
     collection do
       get :export
     end
   end
 
+  # --- APPLICATIONS --------------------------------------------
+
   resources :applications
 
-  # ==========================================================================
-  # PORTFOLIO MANAGEMENT
-  # ==========================================================================
+  # =============================================================
+  #                      PORTFOLIO MANAGEMENT
+  # =============================================================
 
   resources :portfolios do
     member do
@@ -72,12 +86,16 @@ Rails.application.routes.draw do
     resources :checking_accounts
   end
 
-  # ==========================================================================
-  # INVESTMENT FUNDS & RELATED DATA
-  # ==========================================================================
+  # =============================================================
+  #                INVESTMENT FUNDS & RELATED DATA
+  # =============================================================
+
+  # --- ARTICLES & NORMATIVES -----------------------------------
 
   resources :investment_fund_articles, only: %i[index new create]
   resources :normative_articles
+
+  # --- INVESTMENT FUNDS ----------------------------------------
 
   resources :investment_funds do
     collection do
@@ -85,25 +103,25 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :fund_investments,
-            only: %i[index edit update destroy new create show] do
+  # --- FUND INVESTMENTS ----------------------------------------
+
+  resources :fund_investments, only: %i[index edit update destroy new create show] do
     collection do
       get :export
     end
   end
 
-  # Non-RESTful endpoint used for historical market value lookup.
-  get "fund_investments/:id/market_value_on",
-      to: "fund_investments#market_value_on"
+  # --- HISTORICAL LOOKUPS --------------------------------------
 
-  # ==========================================================================
-  # ERROR HANDLING & FALLBACK ROUTES
-  # ==========================================================================
+  get "fund_investments/:id/market_value_on", to: "fund_investments#market_value_on"
+
+  # =============================================================
+  #                ERROR HANDLING & FALLBACK ROUTES
+  # =============================================================
 
   get "errors/not_found"
 
-  match "*path",
-        to: "errors#show",
+  match "*path", to: "errors#show",
         via: :all,
         constraints: lambda { |request|
           !request.path.start_with?("/rails/") &&
@@ -116,9 +134,9 @@ Rails.application.routes.draw do
 
   get "/error/:code", to: "errors#show", as: :error
 
-  # ==========================================================================
-  # APPLICATION ROOT ROUTES
-  # ==========================================================================
+  # =============================================================
+  #                    APPLICATION ROOT ROUTES
+  # =============================================================
 
   devise_scope :user do
     authenticated :user do

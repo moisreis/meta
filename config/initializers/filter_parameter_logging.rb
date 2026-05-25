@@ -1,17 +1,12 @@
-# Configures parameter filtering to prevent sensitive data from being logged.
+# Registers parameter keys to be filtered from Rails logs.
 #
-# This file defines a list of parameter keys that should be masked in logs,
-# reducing the risk of exposing confidential information such as credentials,
-# tokens, and personal data.
+# Prevents sensitive data — passwords, tokens, secrets, and
+# personal identifiers — from appearing in log output.
+#
+# This file does not configure encryption, authentication,
+# or network-level request filtering.
 #
 # @author Moisés Reis
-
-# =============================================================
-# SENSITIVE PARAMETER FILTERING
-# =============================================================
-
-# Configure parameters to be partially matched and filtered from logs.
-# Supports partial matching (e.g., :passw matches :password).
 Rails.application.config.filter_parameters += [
   :passw,
   :email,

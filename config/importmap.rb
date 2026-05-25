@@ -1,43 +1,71 @@
-# Defines JavaScript module import mappings for the Rails application using Importmap.
+# frozen_string_literal: true
+
+# Defines JavaScript module resolution rules for the Rails
+# Importmap system.
 #
-# This file maps frontend dependencies to their corresponding asset paths,
-# enabling module-based JavaScript without a bundler.
+# This configuration maps logical module identifiers to asset
+# paths, enabling native ES module loading in the browser
+# without a build step.
+#
+# Responsibilities:
+# - Register application entrypoint module.
+# - Map third-party JavaScript dependencies to asset files.
+# - Register Hotwire and Stimulus framework modules.
+# - Auto-register Stimulus controllers from the controllers directory.
+#
+# This file does NOT:
+# - Bundle or transpile JavaScript assets.
+# - Manage CSS or asset pipeline configuration.
 #
 # @author Moisés Reis
 
-# ============================================================================
-# CORE APPLICATION
-# ============================================================================
+# =============================================================
+#                        APPLICATION ENTRY
+# =============================================================
 
-# Main application entry point.
+# Main application JavaScript entrypoint.
+#
+# @return [void]
 pin "application"
 
-# ============================================================================
-# VISUALIZATION LIBRARIES
-# ============================================================================
+# =============================================================
+#                      VISUALIZATION LIBRARIES
+# =============================================================
 
-# Chartkick wrapper for data visualization.
+# Chart rendering library for data visualization.
+#
+# @return [void]
 pin "chartkick", to: "chartkick.js"
 
-# Chart.js bundled dependency required by Chartkick.
+# Chart.js bundle used as the underlying rendering engine.
+#
+# @return [void]
 pin "Chart.bundle", to: "Chart.bundle.js"
 
-# ============================================================================
-# HOTWIRE FRAMEWORK
-# ============================================================================
+# =============================================================
+#                        HOTWIRE STACK
+# =============================================================
 
-# Turbo for SPA-like navigation.
+# Turbo Rails integration for SPA-like navigation.
+#
+# @return [void]
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 
-# Stimulus core framework.
+# Stimulus JavaScript framework for lightweight interactivity.
+#
+# @return [void]
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 
-# Lazy-loading helper for Stimulus controllers.
+# Stimulus loading helper for automatic controller discovery.
+#
+# @return [void]
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 
-# ============================================================================
-# STIMULUS CONTROLLERS
-# ============================================================================
+# =============================================================
+#                    APPLICATION CONTROLLERS
+# =============================================================
 
-# Auto-load all Stimulus controllers from the controllers directory.
+# Auto-registers all Stimulus controllers in the specified directory.
+#
+# @return [void]
 pin_all_from "app/javascript/controllers", under: "controllers"

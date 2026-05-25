@@ -1,14 +1,10 @@
-# Configures asset pipeline versioning and load paths for the Rails application.
+# Sets the asset pipeline version string.
 #
-# This initializer defines the asset version used for cache invalidation and
-# extends the asset lookup paths for additional resources.
+# Bumping this value forces all assets to be recompiled
+# and invalidates browser caches.
+#
+# This file does not configure asset precompilation paths
+# or digest behaviour.
 #
 # @author Moisés Reis
-
-# ============================================================================
-# ASSET VERSIONING
-# ============================================================================
-
-# Version used for asset cache invalidation.
-# Increment this value to force client-side cache refresh of all assets.
 Rails.application.config.assets.version = "1.0"

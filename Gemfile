@@ -1,26 +1,39 @@
+# Declares all gem dependencies for the application.
+# Gems are organized into the default group (runtime) and
+# environment-specific groups.
+#
+# Responsibilities:
+# - Declare runtime gems organized by functional category.
+# - Declare development and test gems in isolated Bundler groups.
+# - Constrain versions using pessimistic (~>) or minimum (>=)
+#   strategies for stability with patch updates.
+#
+# This file does not define application logic. It is a
+# declarative dependency manifest consumed solely by Bundler.
+#
+# @author Moisés Reis
+
 source "https://rubygems.org"
 
-# ===============================================================
-#                        CORE FRAMEWORK
-# ===============================================================
+# =============================================================
+#                       RUNTIME DEPENDENCIES
+# =============================================================
+
+# --- CORE FRAMEWORK ------------------------------------------
 
 gem "rails", "~> 8.1.1"
 gem "pg", "~> 1.1"
 gem "tzinfo-data", platforms: %i[windows jruby]
 gem "bootsnap", require: false
 
-# ===============================================================
-#              AUTHENTICATION & AUTHORIZATION
-# ===============================================================
+# --- AUTHENTICATION & AUTHORIZATION ---------------------------
 
 gem "devise"
 gem "cancancan"
 gem "bcrypt", "~> 3.1.7"
 gem "dotenv-rails"
 
-# ===============================================================
-#                     FRONTEND STACK
-# ===============================================================
+# --- FRONTEND PIPELINE ----------------------------------------
 
 gem "propshaft"
 gem "importmap-rails"
@@ -33,26 +46,20 @@ gem "chartkick"
 gem "groupdate"
 gem "inputmask-rails"
 
-# ===============================================================
-#               BACKGROUND & INFRASTRUCTURE
-# ===============================================================
+# --- SOLID STACK ----------------------------------------------
 
 gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 gem "image_processing", "~> 1.2"
 
-# ===============================================================
-#                    APPLICATION SERVER
-# ===============================================================
+# --- SERVER & DEPLOYMENT --------------------------------------
 
 gem "puma", ">= 5.0"
 gem "kamal", require: false
 gem "thruster", require: false
 
-# ===============================================================
-#                 DATA / SERIALIZATION / REPORTING
-# ===============================================================
+# --- DATA & EXPORT --------------------------------------------
 
 gem "jbuilder"
 gem "ransack"
@@ -61,18 +68,14 @@ gem "rails-i18n"
 gem "rubyzip"
 gem "csv"
 
-# ===============================================================
-#                   PDF & GRAPHICS TOOLING
-# ===============================================================
+# --- PDF GENERATION -------------------------------------------
 
 gem "prawn"
 gem "prawn-table"
 gem "prawn-svg"
 gem "victor"
 
-# ===============================================================
-#                    VIEW / UI ARCHITECTURE
-# ===============================================================
+# --- OBSERVABILITY & UTILITIES --------------------------------
 
 gem "view_component"
 gem "bullet"
@@ -80,9 +83,9 @@ gem "rails_semantic_logger"
 gem "ruby-progressbar"
 gem "amazing_print"
 
-# ===============================================================
-#                   DEVELOPMENT & TESTING
-# ===============================================================
+# =============================================================
+#                     DEVELOPMENT & TEST
+# =============================================================
 
 group :development, :test do
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
@@ -92,12 +95,20 @@ group :development, :test do
   gem "faker"
 end
 
+# =============================================================
+#                         DEVELOPMENT
+# =============================================================
+
 group :development do
   gem "yard"
   gem "annotate"
   gem "web-console"
   gem "rack-mini-profiler"
 end
+
+# =============================================================
+#                              TEST
+# =============================================================
 
 group :test do
   gem "capybara"

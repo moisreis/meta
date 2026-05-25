@@ -1,105 +1,79 @@
-# Configures the production environment for the Rails application.
+# Configures the Rails application for the production
+# environment.
 #
-# This environment prioritizes performance, security, and stability by enabling
-# caching, eager loading, background processing, and optimized logging behavior.
+# Enables eager loading, Solid Cache, Solid Queue, and
+# production-safe settings for performance and reliability.
+#
+# Responsibilities:
+# - Disable code reloading and enable eager loading.
+# - Configure Solid Cache as the cache store.
+# - Set up Solid Queue as the job backend.
+# - Apply production logging format and level.
+# - Silence healthcheck paths and deprecation warnings.
+#
+# This file does not configure development-only features
+# such as N+1 detection or verbose query logs.
 #
 # @author Moisés Reis
-
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
 
-  # ============================================================================
-  # CODE LOADING & PERFORMANCE
-  # ============================================================================
+  # =============================================================
+  #                      GENERAL SETTINGS
+  # =============================================================
 
-  # Disable code reloading in production.
   config.enable_reloading = false
-
-  # Eager load all application code on boot.
   config.eager_load = true
-
-  # Disable full error reports.
   config.consider_all_requests_local = false
 
-  # ============================================================================
-  # CACHING & FILE SERVER
-  # ============================================================================
+  config.silence_healthcheck_path = "/up"
+  config.active_support.report_deprecations = false
 
-  # Enable controller-level caching.
+  # =============================================================
+  #                      CACHING & STORAGE
+  # =============================================================
+
   config.action_controller.perform_caching = true
 
-  # Configure static file caching headers.
   config.public_file_server.headers = {
     "cache-control" => "public, max-age=#{1.year.to_i}"
   }
 
-  # Use durable cache store.
   config.cache_store = :solid_cache_store
 
-  # ============================================================================
-  # ASSETS & STORAGE
-  # ============================================================================
-
-  # Store uploaded files locally.
   config.active_storage.service = :local
 
-  # ============================================================================
-  # LOGGING
-  # ============================================================================
+  # =============================================================
+  #                          LOGGING
+  # =============================================================
 
-  # Tag logs with request ID.
   config.log_tags = [:request_id]
-
-  # Output logs to STDOUT.
   config.logger = ActiveSupport::TaggedLogging.logger(STDOUT)
-
-  # Log level configuration via environment variable.
-  #
-  # ENV:
-  # - RAILS_LOG_LEVEL [String] Log verbosity (default: "info")
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
-  # Silence health check endpoint logs.
-  config.silence_healthcheck_path = "/up"
+  # =============================================================
+  #                         JOB QUEUE
+  # =============================================================
 
-  # Disable deprecation reporting.
-  config.active_support.report_deprecations = false
-
-  # ============================================================================
-  # BACKGROUND JOBS
-  # ============================================================================
-
-  # Use Solid Queue for background processing.
   config.active_job.queue_adapter = :solid_queue
 
-  # Configure database connection for queue processing.
   config.solid_queue.connects_to = {
     database: { writing: :queue }
   }
 
-  # ============================================================================
-  # ACTION MAILER
-  # ============================================================================
+  # =============================================================
+  #                     MAILER & INTERNATIONALIZATION
+  # =============================================================
 
-  # Default host for URL generation.
   config.action_mailer.default_url_options = { host: "example.com" }
 
-  # ============================================================================
-  # INTERNATIONALIZATION (I18N)
-  # ============================================================================
-
-  # Enable locale fallbacks.
   config.i18n.fallbacks = true
 
-  # ============================================================================
-  # ACTIVE RECORD
-  # ============================================================================
+  # =============================================================
+  #                       ACTIVE RECORD
+  # =============================================================
 
-  # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-
-  # Limit inspected attributes in logs.
   config.active_record.attributes_for_inspect = [:id]
-
 end

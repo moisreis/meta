@@ -1,14 +1,3 @@
-# Configures Active Storage service backends for non-production environments.
-#
-# This file defines disk-based storage services used for file uploads,
-# attachment handling, and test isolation within the application.
-#
-# Responsibilities:
-# - Define storage backend for test environment.
-# - Define local development storage backend.
-# - Isolate temporary test uploads from persistent development data.
-# - Provide consistent Active Storage service configuration across environments.
-
 test:
   service: Disk
   root: <%= Rails.root.join("tmp/storage") %>

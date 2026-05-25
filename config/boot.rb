@@ -1,28 +1,16 @@
-# Bootstraps Bundler and initializes boot-time performance optimizations.
+# Sets the Bundler environment and loads bootsnap for
+# application boot acceleration.
 #
-# This file configures the application Gemfile path, loads all Bundler-managed
-# gem dependencies, and enables Bootsnap to cache expensive filesystem and
-# load path operations during application startup.
+# This file runs before Rails is loaded to ensure the correct
+# Gemfile is resolved and to enable bootsnap's caching for
+# load path, require, and bytecode.
 #
-# Environment Variables:
-# - BUNDLE_GEMFILE: [String] Absolute path to the Gemfile used by Bundler.
-#                                Defaults to ../Gemfile relative to this file.
+# This file does not configure application behaviour or
+# initialize any framework components.
 #
 # @author Moisés Reis
-
-# ============================================================================
-# BUNDLER SETUP
-# ============================================================================
-
-# Ensure Bundler uses the correct Gemfile path.
 ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../Gemfile", __dir__)
 
-# Load gems declared in the Gemfile.
 require "bundler/setup"
 
-# ============================================================================
-# BOOT PERFORMANCE OPTIMIZATION
-# ============================================================================
-
-# Improve boot performance through filesystem and load path caching.
 require "bootsnap/setup"

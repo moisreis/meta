@@ -1,21 +1,28 @@
-# Provides centralized color palette utilities for chart rendering.
+# Provides named color palettes used by Chartkick chart rendering.
 #
-# This module defines reusable chart color palettes and helper methods for
-# converting hexadecimal color definitions into CSS-compatible RGB and RGBA
-# formats used throughout the application's data visualizations.
+# Maps semantic palette names (e.g. :compliance, :performance)
+# to ordered sequences of CSS color values. Serves as the
+# single source of truth for chart colouring across the
+# application.
+#
+# Responsibilities:
+# - Define named color constants in hex format.
+# - Group colours into semantic palettes for different chart types.
+# - Resolve palette names to CSS rgb(...) or rgba(...) strings.
+#
+# This module does not configure Chartkick itself. Chartkick
+# option configuration lives in config/initializers/chartkick.rb.
 #
 # @author Moisés Reis
-
 module ChartPalettes
 
-  # ==========================================================================
-  # COLOR DEFINITIONS
-  # ==========================================================================
+  # =============================================================
+  #                          CONSTANTS
+  # =============================================================
 
-  # Maps semantic color names to hexadecimal RGB color values.
+  # Named colour values in hex format (without leading #).
   #
-  # @return [Hash<Symbol, String>] Immutable mapping of color identifiers
-  #   to six-character hexadecimal RGB values without the leading '#'.
+  # @return [Hash<Symbol, String>]
   COLORS = {
     navy:       "1E3A5F",
     slate:      "334155",
@@ -27,14 +34,10 @@ module ChartPalettes
     red:        "991B1B"
   }.freeze
 
-  # ==========================================================================
-  # PALETTE DEFINITIONS
-  # ==========================================================================
-
-  # Defines reusable semantic chart palettes composed of color identifiers.
+  # Semantic palette definitions mapping a logical name to
+  # an ordered sequence of {COLORS} keys.
   #
-  # @return [Hash<Symbol, Array<Symbol>>] Immutable mapping of palette names
-  #   to ordered color key collections.
+  # @return [Hash<Symbol, Array<Symbol>>]
   PALETTES = {
     compliance:   %i[navy emerald slate].freeze,
     performance:  %i[steel_blue charcoal].freeze,
@@ -44,34 +47,40 @@ module ChartPalettes
     risk:         %i[crimson charcoal].freeze
   }.freeze
 
-  # ==========================================================================
-  # PUBLIC API
-  # ==========================================================================
+  # =============================================================
+  #                       PUBLIC INTERFACE
+  # =============================================================
 
-  # Converts a chart palette into CSS RGB color strings.
+  # Resolves a palette key to an array of CSS rgb(...) strings.
   #
-  # @param key [Symbol] Palette identifier defined in {PALETTES}.
-  # @return [Array<String>] CSS-compatible RGB color strings.
-  # @raise [KeyError] If the palette key does not exist.
+  # @param key [Symbol] A key in {PALETTES}.
+  #
+  # @return [Array<String>]
+  #   CSS colour strings, e.g. ["rgb(30, 58, 95)", ...].
   def self.css(key)
     resolve(key).map { |hex| hex_to_css(hex) }
   end
 
-  # Returns hexadecimal color values for a chart palette.
+  # Resolves a palette key to an array of hex colour strings.
   #
-  # @param key [Symbol] Palette identifier defined in {PALETTES}.
-  # @return [Array<String>] Hexadecimal RGB color values without '#'.
-  # @raise [KeyError] If the palette key does not exist.
+  # @param key [Symbol] A key in {PALETTES}.
+  #
+  # @return [Array<String>]
+  #   Hex colour strings without leading #, e.g. ["1E3A5F", ...].
   def self.hex(key)
     resolve(key)
   end
 
-  # Converts a named color into a CSS RGBA color string.
+  # Resolves a palette key to an array of rgba(...) strings
+  # with a uniform opacity.
   #
-  # @param key [Symbol] Color identifier defined in {COLORS}.
+  # @param key [Symbol] A key in {PALETTES}.
   # @param opacity [Float] Opacity value between 0.0 and 1.0.
-  # @return [String] CSS-compatible RGBA color string.
-  # @raise [KeyError] If the color key does not exist.
+  #
+  # @return [Array<String>]
+  #   CSS rgba strings, e.g. ["rgba(30, 58, 95, 0.8)", ...].
+  #
+  # @raise [KeyError] If key is not present in {COLORS}.
   def self.rgba(key, opacity = 1.0)
     hex = COLORS.fetch(key) do
       raise KeyError, "Unknown color: #{key.inspect}"
@@ -82,17 +91,19 @@ module ChartPalettes
     "rgba(#{r}, #{g}, #{b}, #{opacity})"
   end
 
+  # =============================================================
+  #                          PRIVATE
+  # =============================================================
+
   private_class_method
 
-  # ==========================================================================
-  # PRIVATE METHODS
-  # ==========================================================================
-
-  # Resolves a palette key into its associated hexadecimal color values.
+  # Resolves a palette key to an array of hex colour values.
   #
-  # @param key [Symbol] Palette identifier defined in {PALETTES}.
-  # @return [Array<String>] Ordered hexadecimal RGB color values.
-  # @raise [KeyError] If the palette key does not exist.
+  # @param key [Symbol] A key in {PALETTES}.
+  #
+  # @return [Array<String>] Hex colour strings.
+  #
+  # @raise [KeyError] If the palette key is not defined.
   def self.resolve(key)
     palette = PALETTES.fetch(key) do
       raise KeyError,
@@ -103,10 +114,11 @@ module ChartPalettes
     palette.map { |color_key| COLORS.fetch(color_key) }
   end
 
-  # Converts a hexadecimal RGB value into a CSS RGB color string.
+  # Converts a hex colour string to a CSS rgb(...) string.
   #
-  # @param hex [String] Six-character hexadecimal RGB value without '#'.
-  # @return [String] CSS-compatible RGB color string.
+  # @param hex [String] Hex colour without leading #, e.g. "1E3A5F".
+  #
+  # @return [String] CSS rgb string, e.g. "rgb(30, 58, 95)".
   def self.hex_to_css(hex)
     r, g, b = hex.scan(/../).map { |component| component.to_i(16) }
 

@@ -1,16 +1,14 @@
-# Boots and initializes the Rails application environment.
+# Loads the Rails application and initializes it.
 #
-# This file loads the application configuration and triggers the
-# initialization process required to prepare the framework for execution.
+# This is the entry point that bootstraps the full Rails
+# framework. It must be required before any application
+# code runs.
+#
+# This file does not define application logic, routing,
+# or configuration overrides.
 #
 # @author Moisés Reis
 
-# ============================================================================
-# APPLICATION BOOT & INITIALIZATION
-# ============================================================================
-
-# Load the Rails application configuration.
 require_relative "application"
 
-# Initialize the Rails application.
 Rails.application.initialize!

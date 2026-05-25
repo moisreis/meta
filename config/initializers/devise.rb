@@ -1,47 +1,47 @@
-# Configures Devise authentication settings for the Rails application.
+# Configures Devise authentication for the application.
 #
-# This initializer defines authentication behavior, security policies,
-# email handling, password rules, and response formats used by Devise.
+# Sets the mailer sender, ORM adapter, and all auth behaviour
+# flags — password policy, session storage, confirmation,
+# reset timeouts, navigation formats, and HTTP response codes.
+#
+# Responsibilities:
+# - Define the mailer sender address for auth emails.
+# - Configure password length policy and email format regex.
+# - Set session, confirmation, and remember-me behaviour.
+# - Define navigational formats and sign-out HTTP method.
+# - Configure responder status codes for Turbo Streams.
+#
+# This file does not define routes, controllers, or views.
+# Those belong in config/routes.rb and the Devise views folder.
 #
 # @author Moisés Reis
-
 Devise.setup do |config|
 
-  # =============================================================
-  # MAILER CONFIGURATION
-  # =============================================================
+  # --- MAILER SENDER -------------------------------------------
 
   config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
 
-  # =============================================================
-  # ORM & AUTHENTICATION KEYS
-  # =============================================================
+  # --- ORM ------------------------------------------------------
 
   require 'devise/orm/active_record'
 
+  # --- AUTHENTICATION BEHAVIOUR --------------------------------
+
   config.case_insensitive_keys = [:email]
   config.strip_whitespace_keys = [:email]
-
-  # =============================================================
-  # SESSION & SECURITY SETTINGS
-  # =============================================================
 
   config.skip_session_storage = [:http_auth]
   config.stretches = Rails.env.test? ? 1 : 12
   config.reconfirmable = true
   config.expire_all_remember_me_on_sign_out = true
 
-  # =============================================================
-  # PASSWORD & RECOVERY
-  # =============================================================
+  # --- PASSWORD POLICY -----------------------------------------
 
   config.password_length = 6..128
   config.email_regexp = /\A[^@\s]+@[^@\s]+\z/
   config.reset_password_within = 6.hours
 
-  # =============================================================
-  # NAVIGATION & RESPONSE BEHAVIOR
-  # =============================================================
+  # --- NAVIGATION & RESPONSE -----------------------------------
 
   config.navigational_formats = ['*/*', :html, :turbo_stream]
   config.sign_out_via = :delete

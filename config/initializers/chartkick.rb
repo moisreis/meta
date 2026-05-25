@@ -1,19 +1,24 @@
-# Configures global Chartkick and Chart.js defaults for all charts.
+# Configures default options for Chartkick chart rendering.
 #
-# This initializer defines visual styling, formatting rules, and behavior
-# for charts across the application, ensuring consistency and avoiding
-# repetition in view-level configuration.
+# Sets the application-wide colour palette, locale formatting
+# for number display (thousands separator, decimal mark),
+# default chart height, and a full Chart.js library override
+# covering animation, typography, element styles, plugin
+# configuration (legend, tooltip), and axis scales.
+#
+# Responsibilities:
+# - Define the default colour palette for all chart types.
+# - Set Brazilian locale formatting (dot as thousands, comma as decimal).
+# - Configure Chart.js animation, font, elements, plugins, and scales.
+#
+# This file does not define chart data queries or view-level
+# chart options. Those belong in the controller and view layer.
 #
 # @author Moisés Reis
-
-# =============================================================
-# GLOBAL CHARTKICK OPTIONS
-# =============================================================
-
 Chartkick.options = {
 
   # =============================================================
-  # COLOR PALETTE
+  #                        COLOUR PALETTE
   # =============================================================
 
   colors: [
@@ -26,7 +31,7 @@ Chartkick.options = {
   ],
 
   # =============================================================
-  # FORMATTING & DIMENSIONS
+  #                       GENERAL OPTIONS
   # =============================================================
 
   prefix: "",
@@ -35,18 +40,18 @@ Chartkick.options = {
   height: "500px",
 
   # =============================================================
-  # CHART.JS CONFIGURATION
+  #                      CHART.JS LIBRARY
   # =============================================================
 
   library: {
 
-    # =============================================================
-    # ANIMATION & TYPOGRAPHY
-    # =============================================================
+    # --- ANIMATION -----------------------------------------------
 
     animation: {
       duration: 750
     },
+
+    # --- TYPOGRAPHY ----------------------------------------------
 
     font: {
       family: "'Source Code Pro'",
@@ -54,17 +59,19 @@ Chartkick.options = {
       weight: "400"
     },
 
-    # =============================================================
-    # ELEMENT STYLING
-    # =============================================================
+    # --- ELEMENTS ------------------------------------------------
 
     elements: {
+
+      # --- BAR ---
 
       bar: {
         borderRadius: 6,
         borderSkipped: false,
         borderWidth: 0
       },
+
+      # --- POINT ---
 
       point: {
         radius: 4,
@@ -73,10 +80,14 @@ Chartkick.options = {
         hoverBorderWidth: 3
       },
 
+      # --- LINE ---
+
       line: {
         borderWidth: 0,
         tension: 0.4
       },
+
+      # --- ARC ---
 
       arc: {
         borderWidth: 2,
@@ -85,11 +96,11 @@ Chartkick.options = {
       }
     },
 
-    # =============================================================
-    # PLUGINS
-    # =============================================================
+    # --- PLUGINS -------------------------------------------------
 
     plugins: {
+
+      # --- LEGEND ---
 
       legend: {
         position: "bottom",
@@ -107,6 +118,8 @@ Chartkick.options = {
           color: "#8a8a8a"
         }
       },
+
+      # --- TOOLTIP ---
 
       tooltip: {
         displayColors: true,
@@ -135,11 +148,12 @@ Chartkick.options = {
       }
     },
 
-    # =============================================================
-    # SCALES
-    # =============================================================
+    # --- SCALES --------------------------------------------------
 
     scales: {
+
+      # --- X AXIS ---
+
       x: {
         ticks: {
           font: {
@@ -153,6 +167,9 @@ Chartkick.options = {
           color: "#e9e9e9"
         }
       },
+
+      # --- Y AXIS ---
+
       y: {
         ticks: {
           font: {
