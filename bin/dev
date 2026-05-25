@@ -1,2 +1,36 @@
-#!/usr/bin/env ruby.exe
-exec "./bin/rails", "server", *ARGV
+#!/usr/bin/env sh
+
+# Entry point script for starting the development process manager.
+#
+# This script ensures the required `foreman` gem is installed, configures
+# environment variables, and launches the application using the Procfile.dev.
+#
+# @author Moisés Reis
+
+# =============================================================
+#            DEPENDENCY CHECK & INSTALLATION
+# =============================================================
+
+# Ensure foreman is installed.
+if ! gem list foreman -i --silent; then
+  echo "Installing foreman..."
+  gem install foreman
+fi
+
+# =============================================================
+#              ENVIRONMENT CONFIGURATION
+# =============================================================
+
+# Default port fallback.
+export PORT="${PORT:-3000}"
+
+# Enable remote debugging (lazy-loaded).
+export RUBY_DEBUG_OPEN="true"
+export RUBY_DEBUG_LAZY="true"
+
+# =============================================================
+#                  PROCESS EXECUTION
+# =============================================================
+
+# Start application processes defined in Procfile.dev.
+exec foreman start -f Procfile.dev "$@"

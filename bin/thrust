@@ -1,5 +1,31 @@
 #!/usr/bin/env ruby.exe
+
+# Entry point script for executing the Thruster application server CLI.
+#
+# This script initializes the Ruby bundler environment and delegates execution
+# to the Thruster binary (thrust), which manages application server runtime.
+#
+# @author Moisés Reis
+
+# =============================================================
+#                      ENVIRONMENT SETUP
+# =============================================================
+
 require "rubygems"
 require "bundler/setup"
 
+# =============================================================
+#                   DEPENDENCY INITIALIZATION
+# =============================================================
+
+# Bundler is initialized to ensure gem dependencies are available
+# before executing the application server.
+
+# =============================================================
+#                          EXECUTION
+# =============================================================
+
+# Launch Thruster CLI (thrust binary).
+#
+# This replaces the current process with the server runtime.
 load Gem.bin_path("thruster", "thrust")

@@ -8,28 +8,8 @@
 # Follows the Result + thin-call pattern: {.call} is the only public
 # entry point; all computation is isolated in private methods.
 #
-# @author <Team>
-#
-# TABLE OF CONTENTS:
-#   1.  Result
-#   2.  Public Interface
-#   3.  Initialization
-#   4.  Execution
-#   5.  Memoized Intermediates
-#       5a. Recent Performance
-#       5b. Returns
-#       5c. Benchmark Series
-#       5d. Normative Allocation
-#       5e. Time-Weighted Returns
-#   6.  Result Field Builders
-#       6a. Performance Fields
-#       6b. Benchmark Fields
-#       6c. Allocation Fields
-#       6d. Financial Fields
-#       6e. Flow Fields
-#       6f. Fund Fields
-#       6g. Compliance Fields
-#       6h. Transaction Fields
+# @author Moisés Reis
+
 module Portfolios
   class ShowService
 

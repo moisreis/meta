@@ -64,7 +64,9 @@ class DashboardController < ApplicationController
 
     # Calculates the current value by checking the latest available share prices.
     @total_market_value = current_user.portfolios.sum do |portfolio|
-      portfolio.fund_investments.sum(&:current_market_value)
+      portfolio.fund_investments.sum do |fi|
+        FundInvestments::CurrentMarketValueQuery.call(fi, Date.current)
+      end
     end
 
     # Determines the absolute money gained or lost compared to the starting cost.

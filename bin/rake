@@ -1,4 +1,29 @@
 #!/usr/bin/env ruby.exe
+
+# Entry point script for executing Rake tasks within the Rails application.
+#
+# This script boots the Rails environment, loads the Rake framework,
+# and delegates execution to the Rake application runner.
+#
+# @author Moisés Reis
+
+# =============================================================
+#                        ENVIRONMENT BOOT
+# =============================================================
+
 require_relative "../config/boot"
+
+# =============================================================
+#                    RAKE INITIALIZATION
+# =============================================================
+
 require "rake"
+
+# =============================================================
+#                      TASK EXECUTION
+# =============================================================
+
+# Execute Rake with the current CLI arguments.
+#
+# @return [void]
 Rake.application.run

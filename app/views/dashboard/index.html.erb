@@ -174,7 +174,11 @@
                end,
 
                ->(portfolio) do
-                 normalize_currency(portfolio.fund_investments.sum(&:current_market_value))
+                normalize_currency(
+                  portfolio.fund_investments.sum do |fi|
+                    FundInvestments::CurrentMarketValueQuery.call(fi, Date.current)
+                  end
+                )
                end,
 
                ->(portfolio) do
