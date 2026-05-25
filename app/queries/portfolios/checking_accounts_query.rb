@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Returns checking accounts for a portfolio, ordered by reference date
+# descending.
+#
+# @author Moisés Reis
+
 module Portfolios
   class CheckingAccountsQuery
 

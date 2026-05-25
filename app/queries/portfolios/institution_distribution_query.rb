@@ -1,6 +1,13 @@
-# institution_distribution_query.rb
+# frozen_string_literal: true
+
+# Groups allocation percentages by fund administrator.
+#
+# @author Moisés Reis
+
 module Portfolios
   class InstitutionDistributionQuery
+    # @param portfolio [Portfolio]
+    # @return [Array<Array(String, Numeric)>]
     def self.call(portfolio)
       portfolio.fund_investments
                .includes(:investment_fund)

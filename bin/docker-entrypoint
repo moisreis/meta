@@ -1,24 +1,5 @@
-#!/bin/bash -e
-
-# Entry point script for container or process execution.
-#
-# This script conditionally runs database migrations when starting the Rails
-# server and then delegates execution to the provided command.
-#
-# @author Moisés Reis
-
-# ============================================================================
-# DATABASE PREPARATION
-# ============================================================================
-
-# If the command is `./bin/rails server`, run pending migrations.
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:migrate
 fi
 
-# ============================================================================
-# COMMAND EXECUTION
-# ============================================================================
-
-# Execute the provided command.
 exec "${@}"

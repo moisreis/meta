@@ -1,29 +1,23 @@
-# app/services/ui/trend_classifier.rb
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Classifies numeric values into directional trend states.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This service object converts numeric values into semantic trend
+# classifications used by UI presentation components.
+#
+# Supported trend states:
+# - :up
+# - :down
+# - :stale
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Classifies numeric values into directional trend states.
-  #
-  # This service object converts numeric values into semantic trend
-  # classifications used by UI presentation components.
-  #
-  # Supported trend states:
-  # - :up
-  # - :down
-  # - :stale
   class TrendClassifier
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Resolves the directional trend classification for a numeric value.
     #

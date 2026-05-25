@@ -1,23 +1,18 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders monospaced code-style textual values.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter formats values using monospace styling and delegates
+# blank-state rendering behavior to {EmptyStatePresenter}.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders monospaced code-style textual values.
-  #
-  # This presenter formats values using monospace styling and delegates
-  # blank-state rendering behavior to {EmptyStatePresenter}.
   class CodePresenter < BasePresenter
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the presenter.
     #
@@ -28,9 +23,9 @@ module Ui
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Renders a formatted monospaced textual value.
     #

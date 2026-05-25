@@ -1,10 +1,17 @@
 # frozen_string_literal: true
 
+# Retrieves the most recent redemptions for a portfolio within a given year.
+#
+# @author Moisés Reis
+
 module Portfolios
   class RecentRedemptionsQuery
 
     LIMIT = 5
 
+    # @param portfolio [Portfolio]
+    # @param year [Integer] defaults to current year
+    # @return [ActiveRecord::Relation<Redemption>]
     def self.call(portfolio, year: Date.current.year)
       new(portfolio, year).call
     end

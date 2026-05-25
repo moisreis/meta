@@ -7,18 +7,12 @@
 # delegated to dedicated service and query objects under the
 # FundInvestments namespace.
 #
-# Responsibilities:
-# - Coordinate fund investment CRUD operations.
-# - Enforce authentication and authorization boundaries.
-# - Delegate business workflows to services and queries.
-# - Handle standardized HTML and JSON error responses.
-# - Prepare supporting form dependencies for rendering.
-#
 # This controller does NOT implement financial calculations
 # directly. Valuation logic belongs to specialized query
 # objects such as {FundInvestments::MarketValueOnQuery}.
 #
 # @author Moisés Reis
+
 class FundInvestmentsController < ApplicationController
 
   # =============================================================

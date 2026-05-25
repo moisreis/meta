@@ -4,17 +4,11 @@
 # Enables eager loading, Solid Cache, Solid Queue, and
 # production-safe settings for performance and reliability.
 #
-# Responsibilities:
-# - Disable code reloading and enable eager loading.
-# - Configure Solid Cache as the cache store.
-# - Set up Solid Queue as the job backend.
-# - Apply production logging format and level.
-# - Silence healthcheck paths and deprecation warnings.
-#
 # This file does not configure development-only features
 # such as N+1 detection or verbose query logs.
 #
 # @author Moisés Reis
+
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do

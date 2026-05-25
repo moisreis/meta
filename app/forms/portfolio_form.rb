@@ -1,23 +1,26 @@
-# Handles validation, normalization, and transformation of portfolio input data
-# before persistence.
+# frozen_string_literal: true
+
+# Form object responsible for validating and normalizing portfolio
+# input data before persistence.
 #
-# This form object encapsulates:
-# - attribute coercion
-# - validation rules
-# - nested normative allocation handling
-# - persistence-safe attribute generation
-#
-# Persistence is explicitly excluded and delegated to service objects.
+# Encapsulates attribute coercion, validation rules, nested
+# normative allocation handling, and persistence-safe attribute
+# generation used by service objects.
 #
 # @author Moisés Reis
+#
+# ATTRIBUTE GROUPS:
+#   - Portfolio Details
+#   - Permissions & Sharing
+#   - Normative Allocations
 
 class PortfolioForm
   include ActiveModel::Model
   include ActiveModel::Attributes
 
-  # ============================================================================
-  # MODEL NAME
-  # ============================================================================
+  # =============================================================
+  #                          MODEL NAME
+  # =============================================================
 
   # Forces Rails form builders to treat this object as "Portfolio".
   #
@@ -26,9 +29,9 @@ class PortfolioForm
     ActiveModel::Name.new(self, nil, "Portfolio")
   end
 
-  # ============================================================================
-  # ATTRIBUTES
-  # ============================================================================
+  # =============================================================
+  #                          ATTRIBUTES
+  # =============================================================
 
   attribute :name, :string
   attribute :user_id, :integer
@@ -36,9 +39,9 @@ class PortfolioForm
   attribute :shared_user_id, :integer
   attribute :grant_crud_permission, :string, default: "read"
 
-  # ============================================================================
-  # NESTED FORM COLLECTIONS
-  # ============================================================================
+  # =============================================================
+  #                     NESTED FORM COLLECTIONS
+  # =============================================================
 
   attr_accessor :portfolio_normative_articles_attributes
 
@@ -57,9 +60,9 @@ class PortfolioForm
     end
   end
 
-  # ============================================================================
-  # NESTED ENTRY OBJECT
-  # ============================================================================
+  # =============================================================
+  #                       NESTED ENTRY OBJECT
+  # =============================================================
 
   # Represents a single normative allocation row in the form.
   class NormativeArticleEntry
@@ -93,9 +96,9 @@ class PortfolioForm
     end
   end
 
-  # ============================================================================
-  # VALIDATIONS
-  # ============================================================================
+  # =============================================================
+  #                          VALIDATIONS
+  # =============================================================
 
   validates :name,
             presence: true,
@@ -117,9 +120,9 @@ class PortfolioForm
 
   validate :validate_normative_allocations
 
-  # ============================================================================
-  # INITIALIZATION
-  # ============================================================================
+  # =============================================================
+  #                         INITIALIZATION
+  # =============================================================
 
   # @param attributes [Hash]
   def initialize(attributes = {})
@@ -127,9 +130,9 @@ class PortfolioForm
     self.portfolio_normative_articles_attributes ||= []
   end
 
-  # ============================================================================
-  # SERIALIZATION
-  # ============================================================================
+  # =============================================================
+  #                         SERIALIZATION
+  # =============================================================
 
   # Returns persistence-safe attributes for the Portfolio model.
   #
@@ -143,9 +146,9 @@ class PortfolioForm
     }
   end
 
-  # ============================================================================
-  # FACTORIES
-  # ============================================================================
+  # =============================================================
+  #                           FACTORIES
+  # =============================================================
 
   # Builds a form object from an existing Portfolio record.
   #
@@ -171,9 +174,9 @@ class PortfolioForm
 
   private
 
-  # ============================================================================
-  # NORMATIVE NORMALIZATION
-  # ============================================================================
+  # =============================================================
+  #                      NORMATIVE NORMALIZATION
+  # =============================================================
 
   # Removes fully blank nested rows.
   #
@@ -192,9 +195,9 @@ class PortfolioForm
       end
   end
 
-  # ============================================================================
-  # BUSINESS VALIDATIONS
-  # ============================================================================
+  # =============================================================
+  #                       BUSINESS VALIDATIONS
+  # =============================================================
 
   # Ensures normative allocation consistency rules.
   #
@@ -221,9 +224,9 @@ class PortfolioForm
     end
   end
 
-  # ============================================================================
-  # TYPE COERCION
-  # ============================================================================
+  # =============================================================
+  #                          TYPE COERCION
+  # =============================================================
 
   # Converts input value into BigDecimal.
   #

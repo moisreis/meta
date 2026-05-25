@@ -1,23 +1,18 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders styled badge components for textual content.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter generates deterministic or explicitly selected badge
+# variants and delegates blank-state rendering to {EmptyStatePresenter}.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders styled badge components for textual content.
-  #
-  # This presenter generates deterministic or explicitly selected badge
-  # variants and delegates blank-state rendering to {EmptyStatePresenter}.
   class BadgePresenter < BasePresenter
 
-    # ==========================================================================
-    # CONSTANTS
-    # ==========================================================================
+    # =============================================================
+    #                          CONSTANTS
+    # =============================================================
 
     # Available badge style variants.
     #
@@ -30,9 +25,9 @@ module Ui
       honeysuckle
     ].freeze
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the presenter.
     #
@@ -43,9 +38,9 @@ module Ui
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Renders a styled badge component.
     #
@@ -69,9 +64,9 @@ module Ui
 
     private
 
-    # ==========================================================================
-    # PRIVATE METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PRIVATE METHODS
+    # =============================================================
 
     # Selects a deterministic badge type based on content hashing.
     #

@@ -20,9 +20,9 @@ class FundInvestmentForm
   include ActiveModel::Model
   include ActiveModel::Attributes
 
-  # ===========================================================
-  #                        MODEL NAME
-  # ===========================================================
+  # =============================================================
+  #                          MODEL NAME
+  # =============================================================
 
   # Overrides the default ActiveModel naming behavior so the
   # form behaves like {FundInvestment} inside Rails form helpers.
@@ -36,9 +36,9 @@ class FundInvestmentForm
     )
   end
 
-  # ===========================================================
-  #                         ATTRIBUTES
-  # ===========================================================
+  # =============================================================
+  #                          ATTRIBUTES
+  # =============================================================
 
   # --- INVESTMENT REFERENCES -------------------------------
 
@@ -71,9 +71,9 @@ class FundInvestmentForm
   # @return [BigDecimal, nil]
   attribute :total_quotas_held, :decimal
 
-  # ===========================================================
-  #                         VALIDATIONS
-  # ===========================================================
+  # =============================================================
+  #                          VALIDATIONS
+  # =============================================================
 
   validates :investment_fund_id,
             presence: true
@@ -102,9 +102,9 @@ class FundInvestmentForm
 
   validate :validate_associations_exist
 
-  # ===========================================================
-  #                     ATTRIBUTE EXPORT
-  # ===========================================================
+  # =============================================================
+  #                        ATTRIBUTE EXPORT
+  # =============================================================
 
   # Converts form attributes into a persistence-compatible
   # hash used by ActiveRecord models and service objects.
@@ -120,9 +120,9 @@ class FundInvestmentForm
     }
   end
 
-  # ===========================================================
-  #                    FACTORY CONSTRUCTORS
-  # ===========================================================
+  # =============================================================
+  #                       FACTORY CONSTRUCTORS
+  # =============================================================
 
   # Builds a form instance from an existing fund investment.
   #
@@ -143,9 +143,9 @@ class FundInvestmentForm
 
   private
 
-  # ===========================================================
-  #                 ASSOCIATION VALIDATIONS
-  # ===========================================================
+  # =============================================================
+  #                       ASSOCIATION VALIDATIONS
+  # =============================================================
 
   # Validates referenced association existence.
   #

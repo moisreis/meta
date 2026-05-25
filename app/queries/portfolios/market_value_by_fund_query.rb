@@ -1,5 +1,14 @@
+# frozen_string_literal: true
+
+# Computes per-fund market values based on net quotas and quota prices.
+#
+# @author Moisés Reis
+
 module Portfolios
   class MarketValueByFundQuery
+    # @param portfolio [Portfolio]
+    # @param date [Date]
+    # @return [Hash{Integer => Float}]
     def self.call(portfolio, date)
       quotas_by_fund = Application
         .joins(:fund_investment)

@@ -9,14 +9,6 @@ Bundler.require(*Rails.groups)
 # locale settings, asset configuration, exception routing,
 # and time zone defaults.
 #
-# Responsibilities:
-# - Route exceptions through the application's error controller.
-# - Enable the asset pipeline and include custom font paths.
-# - Configure Brazilian Portuguese as the default locale.
-# - Register custom autoload and eager load directories for
-#   services, queries, concerns, forms, calculators, and builders.
-# - Set the application time zone to Brasilia.
-#
 # This class does not define environment-specific behaviour.
 # Environment overrides belong in config/environments/*.rb.
 #

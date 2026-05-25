@@ -2,12 +2,6 @@
 # Gems are organized into the default group (runtime) and
 # environment-specific groups.
 #
-# Responsibilities:
-# - Declare runtime gems organized by functional category.
-# - Declare development and test gems in isolated Bundler groups.
-# - Constrain versions using pessimistic (~>) or minimum (>=)
-#   strategies for stability with patch updates.
-#
 # This file does not define application logic. It is a
 # declarative dependency manifest consumed solely by Bundler.
 #

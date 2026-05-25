@@ -7,6 +7,7 @@
 # or network-level request filtering.
 #
 # @author Moisés Reis
+
 Rails.application.config.filter_parameters += [
   :passw,
   :email,

@@ -1,12 +1,17 @@
-# app/queries/portfolios/benchmark_series_query.rb
-#
+# frozen_string_literal: true
+
 # Builds the cumulative benchmark and portfolio yield series for the current
 # year up to the reference date, used for the performance comparison chart.
 #
-# @return [Array(Array, Array, String)]
-#   [benchmark_series, portfolio_yield_series, benchmark_label]
+# @author Moisés Reis
+
 module Portfolios
   class BenchmarkSeriesQuery
+    # @param portfolio [Portfolio]
+    # @param reference_date [Date]
+    #
+    # @return [Array(Array, Array, String)]
+    #   [benchmark_series, portfolio_yield_series, benchmark_label]
     def self.call(portfolio, reference_date)
       new(portfolio, reference_date).call
     end

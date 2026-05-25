@@ -1,36 +1,29 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders formatted date and time-related presentation values.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter provides standardized formatting helpers for
+# calendar dates, relative timestamps, and latest collection dates.
+#
+# Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders formatted date and time-related presentation values.
-  #
-  # This presenter provides standardized formatting helpers for:
-  # - calendar dates
-  # - relative timestamps
-  # - latest collection dates
-  #
-  # Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
   class DatePresenter < BasePresenter
 
-    # ==========================================================================
-    # CONSTANTS
-    # ==========================================================================
+    # =============================================================
+    #                          CONSTANTS
+    # =============================================================
 
     # Shared CSS utility classes applied to formatted date values.
     #
     # @return [String] CSS class list used for formatted date rendering.
     BASE_CLASSES = "line-clamp-2 font-mono".freeze
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the presenter.
     #
@@ -41,9 +34,9 @@ module Ui
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Renders a formatted calendar date.
     #

@@ -4,13 +4,6 @@
 # authentication flows, RESTful resources, dashboard routing, exports,
 # asynchronous operations, and application-wide error handling.
 #
-# Responsibilities:
-# - Define authentication routes for Devise with custom path names.
-# - Declare RESTful resources for all domain models.
-# - Configure member and collection routes for non-standard actions.
-# - Route error status codes and unknown paths to the errors controller.
-# - Set authenticated and unauthenticated application root paths.
-#
 # This file does not define controller logic, authorization rules,
 # or request validation. Those concerns belong in controllers,
 # policies, and form objects respectively.

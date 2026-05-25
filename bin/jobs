@@ -1,31 +1,4 @@
-#!/usr/bin/env ruby
-
-# Entry point script for executing Solid Queue CLI commands.
-#
-# This script loads the Rails environment and starts the Solid Queue
-# command-line interface for managing background job processing.
-#
-# @author Moisés Reis
-
-# ============================================================================
-# ENVIRONMENT BOOT
-# ============================================================================
-
 require_relative "../config/environment"
-
-# ============================================================================
-# CLI LOADING
-# ============================================================================
-
-# Load Solid Queue command-line interface.
 require "solid_queue/cli"
 
-# ============================================================================
-# EXECUTION
-# ============================================================================
-
-# Start Solid Queue CLI with provided arguments.
-#
-# @param argv [Array<String>] Command-line arguments passed to the script.
-# @return [void]
 SolidQueue::Cli.start(ARGV)

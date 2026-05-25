@@ -21,6 +21,7 @@ module FundInvestments
   #
   # @author Moisés Reis
   # @abstract Subclass and implement service-specific workflows.
+  
   class BaseService
 
     # =============================================================

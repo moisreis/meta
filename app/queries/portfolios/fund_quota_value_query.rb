@@ -1,5 +1,15 @@
+# frozen_string_literal: true
+
+# Retrieves the latest available quota value per fund investment
+# on or before a given date.
+#
+# @author Moisés Reis
+
 module Portfolios
   class FundQuotaValueQuery
+    # @param portfolio [Portfolio]
+    # @param date [Date]
+    # @return [Hash{Integer => BigDecimal}]
     def self.call(portfolio, date)
       subquery = FundValuation
         .select("DISTINCT ON (fund_cnpj) fund_cnpj, quota_value")

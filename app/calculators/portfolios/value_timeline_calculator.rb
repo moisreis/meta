@@ -1,36 +1,53 @@
-# app/calculators/portfolios/value_timeline_calculator.rb
-#
+# frozen_string_literal: true
+
 # Computes the cumulative portfolio equity evolution timeline
 # based on monthly applications and redemptions.
 #
-# Returns an array suitable for charts and reporting:
+# Returns an array of [month_label, cumulative_value] pairs suitable
+# for chart rendering and historical reporting.
 #
-# [
-#   ["Jan/26", 100000.0],
-#   ["Feb/26", 125000.0]
-# ]
-#
+# @author Moisés Reis
+
 module Portfolios
   class ValueTimelineCalculator
+
     ZERO = BigDecimal("0")
 
     private_constant :ZERO
 
-    # @param portfolio [Portfolio]
-    # @param months_back [Integer]
-    # @return [Array<Array(String, BigDecimal)>]
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
+
+    # Shortcut class method to instantiate and execute the calculator.
+    #
+    # @param portfolio [Portfolio] The portfolio being evaluated.
+    # @param months_back [Integer] Number of trailing months to return.
+    # @return [Array<Array(String, BigDecimal)>] Timeline series.
     def self.call(portfolio, months_back: 12)
       new(portfolio, months_back).call
     end
 
-    # @param portfolio [Portfolio]
-    # @param months_back [Integer]
+    # =============================================================
+    #                         INITIALIZATION
+    # =============================================================
+
+    # Initialises the calculator with portfolio and lookback window.
+    #
+    # @param portfolio [Portfolio] The portfolio being evaluated.
+    # @param months_back [Integer] Number of trailing months to return.
     def initialize(portfolio, months_back)
       @portfolio   = portfolio
       @months_back = months_back
     end
 
-    # @return [Array<Array(String, BigDecimal)>]
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
+
+    # Builds the cumulative equity timeline.
+    #
+    # @return [Array<Array(String, BigDecimal)>] Timeline series.
     def call
       running_total = ZERO
 
@@ -49,7 +66,13 @@ module Portfolios
 
     private
 
-    # @return [Hash]
+    # =============================================================
+    #                      CASH FLOW DATA
+    # =============================================================
+
+    # Returns application totals grouped by month.
+    #
+    # @return [Hash<Date, BigDecimal>]
     def applications_by_month
       @applications_by_month ||= Application
                                    .joins(:fund_investment)
@@ -63,7 +86,9 @@ module Portfolios
                                    .sum(:financial_value)
     end
 
-    # @return [Hash]
+    # Returns redemption totals grouped by month.
+    #
+    # @return [Hash<Date, BigDecimal>]
     def redemptions_by_month
       @redemptions_by_month ||= Redemption
                                   .joins(:fund_investment)
@@ -77,6 +102,12 @@ module Portfolios
                                   .sum(:redeemed_liquid_value)
     end
 
+    # =============================================================
+    #                        MONTH HELPERS
+    # =============================================================
+
+    # Returns all unique months sorted chronologically.
+    #
     # @return [Array<Date>]
     def all_months
       @all_months ||= (
@@ -85,7 +116,9 @@ module Portfolios
       ).uniq.sort
     end
 
-    # @param month [Date]
+    # Returns the total applications value for a given month.
+    #
+    # @param month [Date] Target month.
     # @return [BigDecimal]
     def applications_total_for(month)
       BigDecimal(
@@ -93,7 +126,9 @@ module Portfolios
       )
     end
 
-    # @param month [Date]
+    # Returns the total redemptions value for a given month.
+    #
+    # @param month [Date] Target month.
     # @return [BigDecimal]
     def redemptions_total_for(month)
       BigDecimal(

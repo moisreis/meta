@@ -55,3 +55,33 @@ module FundInvestments
     end
   end
 end
+
+    # =============================================================
+    #                       PRIVATE METHODS
+    # =============================================================
+
+    private_class_method
+
+    # Calculates total application value.
+    #
+    # @param fund_investment [FundInvestment]
+    #
+    # @return [BigDecimal]
+    def self.total_applications(fund_investment)
+      fund_investment
+        .applications
+        .sum(:financial_value)
+    end
+
+    # Calculates total redemption value.
+    #
+    # @param fund_investment [FundInvestment]
+    #
+    # @return [BigDecimal]
+    def self.total_redemptions(fund_investment)
+      fund_investment
+        .redemptions
+        .sum(:redeemed_liquid_value)
+    end
+  end
+end

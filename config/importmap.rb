@@ -7,16 +7,6 @@
 # paths, enabling native ES module loading in the browser
 # without a build step.
 #
-# Responsibilities:
-# - Register application entrypoint module.
-# - Map third-party JavaScript dependencies to asset files.
-# - Register Hotwire and Stimulus framework modules.
-# - Auto-register Stimulus controllers from the controllers directory.
-#
-# This file does NOT:
-# - Bundle or transpile JavaScript assets.
-# - Manage CSS or asset pipeline configuration.
-#
 # @author Moisés Reis
 
 # =============================================================

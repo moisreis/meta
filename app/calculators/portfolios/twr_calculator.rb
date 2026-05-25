@@ -1,26 +1,28 @@
 # frozen_string_literal: true
 
-# app/calculators/portfolios/twr_calculator.rb
+# Calculates the Time-Weighted Return (TWR) for a portfolio
+# between two dates.
+#
+# Reconstructs historical portfolio value day-by-day, neutralises
+# external cash flows, and compounds daily performance to produce
+# a time-weighted return percentage.
+#
+# @author Moisés Reis
 
 module Portfolios
-  ##
-  # Calculates the Time-Weighted Return (TWR) for a portfolio
-  # between two dates.
-  #
-  # The calculation:
-  # - reconstructs historical portfolio value day-by-day
-  # - neutralizes external cashflows
-  # - compounds daily performance
-  #
+
   class TwrCalculator
 
-    ##
-    # @param portfolio [Portfolio]
-    # @param start_date [Date]
-    # @param end_date [Date]
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
+
+    # Shortcut class method to instantiate and execute the calculator.
     #
-    # @return [BigDecimal]
-    #
+    # @param portfolio [Portfolio] The portfolio being evaluated.
+    # @param start_date [Date] Beginning of the calculation window.
+    # @param end_date [Date] End of the calculation window.
+    # @return [BigDecimal] The time-weighted return percentage.
     def self.call(portfolio, start_date:, end_date:)
       new(
         portfolio,
@@ -29,20 +31,28 @@ module Portfolios
       ).call
     end
 
-    ##
-    # @param portfolio [Portfolio]
-    # @param start_date [Date]
-    # @param end_date [Date]
+    # =============================================================
+    #                         INITIALIZATION
+    # =============================================================
+
+    # Initialises the TWR calculator with portfolio and date range.
     #
+    # @param portfolio [Portfolio] The portfolio being evaluated.
+    # @param start_date [Date] Beginning of the calculation window.
+    # @param end_date [Date] End of the calculation window.
     def initialize(portfolio, start_date:, end_date:)
       @portfolio  = portfolio
       @start_date = start_date.to_date
       @end_date   = end_date.to_date
     end
 
-    ##
-    # @return [BigDecimal]
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
+
+    # Executes the TWR calculation.
     #
+    # @return [BigDecimal] The compounded time-weighted return.
     def call
       return BigDecimal("0") if fund_investments.empty?
 
@@ -64,7 +74,7 @@ module Portfolios
         day_open = day_close - day_cashflow
 
         if day_open <= 0
-          previous_close = day_close  # anchor the chain before skipping
+          previous_close = day_close
           next
         end
 
@@ -78,13 +88,21 @@ module Portfolios
 
     private
 
+    # =============================================================
+    #                          ATTRIBUTES
+    # =============================================================
+
     attr_reader :portfolio,
                 :start_date,
                 :end_date
 
-    ##
-    # @return [Array<FundInvestment>]
+    # =============================================================
+    #                       FUND INVESTMENTS
+    # =============================================================
+
+    # Returns all fund investments active during the calculation period.
     #
+    # @return [Array<FundInvestment>]
     def fund_investments
       @fund_investments ||= portfolio
                               .fund_investments
@@ -93,25 +111,29 @@ module Portfolios
                               .to_a
     end
 
-    ##
-    # @return [Array<Integer>]
+    # Returns IDs of all active fund investments.
     #
+    # @return [Array<Integer>]
     def fund_investment_ids
       @fund_investment_ids ||= fund_investments.map(&:id)
     end
 
-    ##
-    # @return [Array<String>]
+    # Returns CNPJs of all active fund investments.
     #
+    # @return [Array<String>]
     def fund_cnpjs
       @fund_cnpjs ||= fund_investments
                         .map { |fi| fi.investment_fund.cnpj }
                         .uniq
     end
 
-    ##
-    # @return [Hash]
+    # =============================================================
+    #                      CASH FLOW DATA
+    # =============================================================
+
+    # Returns applications grouped by fund investment.
     #
+    # @return [Hash<Integer, Array<Hash>>]
     def applications_by_fi
       @applications_by_fi ||= Application
                                 .where(fund_investment_id: fund_investment_ids)
@@ -133,9 +155,9 @@ module Portfolios
       end
     end
 
-    ##
-    # @return [Hash]
+    # Returns redemptions grouped by fund investment.
     #
+    # @return [Hash<Integer, Array<Hash>>]
     def redemptions_by_fi
       @redemptions_by_fi ||= Redemption
                                .where(fund_investment_id: fund_investment_ids)
@@ -157,9 +179,13 @@ module Portfolios
       end
     end
 
-    ##
-    # @return [Hash]
+    # =============================================================
+    #                       VALUATION DATA
+    # =============================================================
+
+    # Returns fund valuations grouped by CNPJ.
     #
+    # @return [Hash<String, Hash<Date, BigDecimal>>]
     def valuations_by_cnpj
       @valuations_by_cnpj ||= FundValuation
                                 .where(fund_cnpj: fund_cnpjs)
@@ -179,12 +205,15 @@ module Portfolios
       end
     end
 
-    ##
-    # @param fi_id [Integer]
-    # @param date [Date]
+    # =============================================================
+    #                      QUOTA HELPERS
+    # =============================================================
+
+    # Calculates net quota balance for a fund investment on a date.
     #
-    # @return [BigDecimal]
-    #
+    # @param fi_id [Integer] Fund investment ID.
+    # @param date [Date] Target date.
+    # @return [BigDecimal] Net quota count.
     def quotas_on(fi_id, date)
       applications =
         applications_by_fi[fi_id]
@@ -199,12 +228,11 @@ module Portfolios
       BigDecimal(applications.to_s) - BigDecimal(redemptions.to_s)
     end
 
-    ##
-    # @param cnpj [String]
-    # @param date [Date]
+    # Looks up the quota price for a CNPJ on or before a date.
     #
-    # @return [BigDecimal, nil]
-    #
+    # @param cnpj [String] Fund CNPJ.
+    # @param date [Date] Target date.
+    # @return [BigDecimal, nil] Quota price or nil if unavailable.
     def quota_price_on(cnpj, date)
       dates = valuations_by_cnpj[cnpj]
 
@@ -218,11 +246,14 @@ module Portfolios
       closest_date ? dates[closest_date] : nil
     end
 
-    ##
-    # @param date [Date]
+    # =============================================================
+    #                     PORTFOLIO VALUATION
+    # =============================================================
+
+    # Calculates total portfolio value on a given date.
     #
-    # @return [BigDecimal]
-    #
+    # @param date [Date] Target date.
+    # @return [BigDecimal] Portfolio value.
     def portfolio_value_on(date)
       fund_investments.sum do |fi|
         quotas = quotas_on(fi.id, date)
@@ -237,11 +268,10 @@ module Portfolios
       end
     end
 
-    ##
-    # @param date [Date]
+    # Calculates net daily cash flow for the portfolio.
     #
-    # @return [BigDecimal]
-    #
+    # @param date [Date] Target date.
+    # @return [BigDecimal] Net cash flow value.
     def daily_cashflow_on(date)
       fund_investments.sum do |fi|
         applications =
@@ -258,11 +288,14 @@ module Portfolios
       end
     end
 
-    ##
-    # @param date [Date]
+    # =============================================================
+    #                         HELPERS
+    # =============================================================
+
+    # Checks whether a date falls on a weekend.
     #
-    # @return [Boolean]
-    #
+    # @param date [Date] Target date.
+    # @return [Boolean] True if Saturday or Sunday.
     def weekend?(date)
       date.saturday? || date.sunday?
     end

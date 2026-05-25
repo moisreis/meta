@@ -1,29 +1,26 @@
 # frozen_string_literal: true
 
-# Handles user creation and update form validation and transformation logic.
+# Form object responsible for validating and normalizing user
+# input data before persistence.
 #
-# This form object encapsulates user input validation rules and provides a
-# normalized interface for converting form data into model-compatible
-# attributes.
-#
-# It also manages avatar upload assignment compatibility with Active Storage.
-#
-# TABLE OF CONTENTS:
-#   1.  Model Naming Override
-#   2.  Attributes
-#   3.  Validations
-#   4.  Transformation Methods
-#   5.  Private Methods
+# Encapsulates attribute coercion, validation rules, avatar
+# attachment handling, and password confirmation logic used by
+# service objects.
 #
 # @author Moisés Reis
+#
+# ATTRIBUTE GROUPS:
+#   - Personal Information
+#   - Account Credentials
+#   - Avatar
 
 class UserForm
   include ActiveModel::Model
   include ActiveModel::Attributes
 
-  # ==========================================================================
-  # 1. MODEL NAMING OVERRIDE
-  # ==========================================================================
+  # =============================================================
+  #                          MODEL NAME
+  # =============================================================
 
   # Forces Rails to treat this form object as a `User` model for routing,
   # form builders, and parameter key inference.
@@ -33,9 +30,9 @@ class UserForm
     ActiveModel::Name.new(self, nil, "User")
   end
 
-  # ==========================================================================
-  # 2. ATTRIBUTES
-  # ==========================================================================
+  # =============================================================
+  #                          ATTRIBUTES
+  # =============================================================
 
   attribute :first_name, :string
   attribute :last_name,  :string
@@ -67,9 +64,9 @@ class UserForm
   # @return [ActionDispatch::Http::UploadedFile, ActiveStorage::Attached::One, nil]
   attr_accessor :avatar
 
-  # ==========================================================================
-  # 3. VALIDATIONS
-  # ==========================================================================
+  # =============================================================
+  #                          VALIDATIONS
+  # =============================================================
 
   validates :first_name,
             presence: true,
@@ -89,9 +86,9 @@ class UserForm
   validate :passwords_match,
            if: -> { password.present? }
 
-  # ==========================================================================
-  # 4. TRANSFORMATION METHODS
-  # ==========================================================================
+  # =============================================================
+  #                      TRANSFORMATION METHODS
+  # =============================================================
 
   # Converts form data into attributes compatible with the User model.
   #
@@ -140,9 +137,9 @@ class UserForm
     )
   end
 
-  # ==========================================================================
-  # 5. PRIVATE METHODS
-  # ==========================================================================
+  # =============================================================
+  #                         PRIVATE METHODS
+  # =============================================================
 
   private
 

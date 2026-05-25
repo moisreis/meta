@@ -12,9 +12,9 @@ module Charts
   # Constructs pie (donut) chart configuration options.
   class PieChartOptionsBuilder
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
 
     # Builds a pie/donut chart configuration.
     #

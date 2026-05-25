@@ -1,7 +1,10 @@
-# app/queries/portfolios/monthly_flows_query.rb
-#
+# frozen_string_literal: true
+
 # Returns monthly application and redemption totals for the current year,
 # formatted for chartkick column chart rendering.
+#
+# @author Moisés Reis
+
 module Portfolios
   class MonthlyFlowsQuery
     def self.call(portfolio)

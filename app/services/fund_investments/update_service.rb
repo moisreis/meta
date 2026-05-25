@@ -9,14 +9,6 @@ module FundInvestments
   # fund investments while enforcing authorization,
   # transactional integrity, and validation consistency.
   #
-  # Responsibilities:
-  # - Normalize incoming controller parameters.
-  # - Validate update payloads through {FundInvestmentForm}.
-  # - Enforce portfolio access restrictions.
-  # - Persist validated investment updates transactionally.
-  # - Promote persistence-layer validation errors back to the form.
-  # - Return standardized result objects.
-  #
   # This service does NOT implement controller behavior
   # or direct authorization policies.
   #
@@ -24,6 +16,7 @@ module FundInvestments
   # {FundInvestments::BaseService}.
   #
   # @author Moisés Reis  
+  
   class UpdateService < FundInvestments::BaseService
 
     # =============================================================

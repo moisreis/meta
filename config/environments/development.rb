@@ -4,16 +4,11 @@
 # Enables code reloading, verbose logging, N+1 detection via
 # Bullet, and local request handling for debugging.
 #
-# Responsibilities:
-# - Enable Bullet N+1 query detection in development.
-# - Configure semantic request logging.
-# - Toggle caching based on a sentinel file.
-# - Set local storage, mailer defaults, and verbose query logs.
-#
 # This file does not configure production-safe behaviour
 # such as eager loading or Solid Cache.
 #
 # @author Moisés Reis
+
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do

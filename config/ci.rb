@@ -6,16 +6,6 @@
 # all validation steps required before code is accepted into the
 # main branch.
 #
-# Responsibilities:
-# - Define deterministic setup of the application environment.
-# - Execute code style validation (RuboCop).
-# - Run dependency and application security audits.
-# - Execute automated test suites (unit, system, and seed validation).
-#
-# This file does NOT:
-# - Configure CI infrastructure (runners, caching, parallelism).
-# - Define deployment workflows.
-#
 # @author Moisés Reis
 
 # =============================================================

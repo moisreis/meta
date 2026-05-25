@@ -1,22 +1,19 @@
-# Provides user-related query objects and data access operations.
+# frozen_string_literal: true
+
+# Builds aggregated portfolio data for a user.
 #
-# This namespace groups query services responsible for encapsulating
-# user-specific database querying and reporting logic.
+# This query object retrieves portfolios associated with a user and
+# calculates investment-related aggregate metrics used for reporting
+# and dashboard presentation.
 #
 # @author Moisés Reis
 
 module Users
-
-  # Builds aggregated portfolio data for a user.
-  #
-  # This query object retrieves portfolios associated with a user and
-  # calculates investment-related aggregate metrics used for reporting
-  # and dashboard presentation.
   class PortfoliosQuery
 
-    # ==========================================================================
-    # PUBLIC CLASS METHODS
-    # ==========================================================================
+    # =============================================================
+    #                     PUBLIC CLASS METHODS
+    # =============================================================
 
     class << self
 
@@ -29,9 +26,9 @@ module Users
       end
     end
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the query object.
     #
@@ -40,9 +37,9 @@ module Users
       @user = user
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Returns aggregated portfolio investment metrics for the user.
     #

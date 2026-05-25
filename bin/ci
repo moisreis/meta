@@ -1,32 +1,7 @@
-#!/usr/bin/env ruby.exe
-
-# Entry point script for running Continuous Integration (CI) tasks.
-#
-# This script initializes the Rails environment, exposes the CI interface,
-# and loads the CI pipeline definition from the application configuration.
-#
-# @author Moisés Reis
-
-# ============================================================================
-# ENVIRONMENT BOOT
-# ============================================================================
-
 require_relative "../config/boot"
-
-# ============================================================================
-# CI INTERFACE SETUP
-# ============================================================================
 
 require "active_support/continuous_integration"
 
-# Reference to the ActiveSupport CI runner.
-#
-# @return [ActiveSupport::ContinuousIntegration]
 CI = ActiveSupport::ContinuousIntegration
 
-# ============================================================================
-# CI CONFIGURATION LOADING
-# ============================================================================
-
-# Load CI pipeline definition.
 require_relative "../config/ci.rb"

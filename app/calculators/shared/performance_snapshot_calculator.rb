@@ -13,7 +13,7 @@ module Shared
   class PerformanceSnapshotCalculator
 
     # =============================================================
-    # RESULT STRUCTURE
+    #                         RESULT STRUCTURE
     # =============================================================
 
     # Immutable result object containing all calculated performance metrics
@@ -33,7 +33,7 @@ module Shared
     )
 
     # =============================================================
-    # CLASS METHODS
+    #                         CLASS METHODS
     # =============================================================
 
     class << self
@@ -53,7 +53,7 @@ module Shared
     end
 
     # =============================================================
-    # INITIALIZATION
+    #                         INITIALIZATION
     # =============================================================
 
     # Initializes the performance snapshot calculator.
@@ -67,7 +67,7 @@ module Shared
     end
 
     # =============================================================
-    # PUBLIC METHODS
+    #                         PUBLIC METHODS
     # =============================================================
 
     # Calculates all performance snapshot metrics for the configured period.
@@ -96,7 +96,7 @@ module Shared
     private
 
     # =============================================================
-    # ATTRIBUTES
+    #                         ATTRIBUTES
     # =============================================================
 
     # @!attribute [r] fund_investment
@@ -108,7 +108,7 @@ module Shared
     attr_reader :fund_investment, :reference_date
 
     # =============================================================
-    # PERIOD BOUNDARIES
+    #                         PERIOD BOUNDARIES
     # =============================================================
 
     # Returns the first day of the reference month.
@@ -128,7 +128,7 @@ module Shared
     end
 
     # =============================================================
-    # QUOTA RECONSTRUCTION
+    #                         QUOTA RECONSTRUCTION
     # =============================================================
 
     # Reconstructs the quantity of quotas held before the reference month.
@@ -157,7 +157,7 @@ module Shared
     end
 
     # =============================================================
-    # PERIOD CASH FLOWS
+    #                         PERIOD CASH FLOWS
     # =============================================================
 
     # Returns all applications cotized within the reference period.
@@ -192,7 +192,7 @@ module Shared
     end
 
     # =============================================================
-    # BALANCE & EARNINGS CALCULATIONS
+    #               BALANCE & EARNINGS CALCULATIONS
     # =============================================================
 
     # Calculates the investment earnings for the reference month.
@@ -220,7 +220,7 @@ module Shared
     end
 
     # =============================================================
-    # RETURN CALCULATIONS
+    #                     RETURN CALCULATIONS
     # =============================================================
 
     # Calculates the monthly quota return percentage.
@@ -248,6 +248,10 @@ module Shared
       @quota_end ||= quota_value_on(period_end)
     end
 
+    # Returns the first quota value within the reference period.
+    #
+    # @return [BigDecimal, nil] The first quota value.
+    #
     def first_quota_in_period
       fund_investment.investment_fund
         .fund_valuations
@@ -314,7 +318,7 @@ module Shared
     end
 
     # =============================================================
-    # QUOTA VALUE HELPERS
+    #                      QUOTA VALUE HELPERS
     # =============================================================
 
     # Retrieves the investment fund quota value for a specific date.
@@ -328,7 +332,7 @@ module Shared
     end
 
     # =============================================================
-    # PERCENTAGE HELPERS
+    #                      PERCENTAGE HELPERS
     # =============================================================
 
     # Calculates the percentage variation between a delta and base value.

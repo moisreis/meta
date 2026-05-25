@@ -14,18 +14,18 @@ module Charts
   # Constructs a column chart configuration with conditional coloring rules.
   class ConditionalColumnChartOptionsBuilder
 
-    # ==========================================================================
-    # CONSTANTS
-    # ==========================================================================
+    # =============================================================
+    #                           CONSTANTS
+    # =============================================================
 
     POSITIVE_COLOR = ChartPalettes.rgba(:green, 0.85)
     NEGATIVE_COLOR = ChartPalettes.rgba(:red, 0.85)
 
     private_constant :POSITIVE_COLOR, :NEGATIVE_COLOR
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
 
     # Builds a conditional column chart configuration.
     #
@@ -52,9 +52,9 @@ module Charts
       }.deep_merge(overrides)
     end
 
-    # ==========================================================================
-    # PRIVATE METHODS
-    # ==========================================================================
+    # =============================================================
+    #                         PRIVATE METHODS
+    # =============================================================
 
     # Generates an array of background colors based on value polarity.
     #

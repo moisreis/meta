@@ -1,27 +1,22 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders boolean and state-based presentation values.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter provides helper methods for localized boolean
+# labels and visual state classification.
+#
+# Unlike markup-oriented presenters, this object primarily returns
+# primitive presentation values and symbolic state identifiers
+# rather than rendered HTML.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders boolean and state-based presentation values.
-  #
-  # This presenter provides helper methods for:
-  # - localized boolean labels
-  # - visual state classification
-  #
-  # Unlike markup-oriented presenters, this object primarily returns
-  # primitive presentation values and symbolic state identifiers.
   class StatePresenter < BasePresenter
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Resolves a human-readable boolean label.
     #

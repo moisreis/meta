@@ -1,35 +1,29 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders formatted textual presentation values.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter provides standardized rendering helpers for
+# titles and generic text content with automatic truncation.
+#
+# Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders formatted textual presentation values.
-  #
-  # This presenter provides standardized rendering helpers for:
-  # - titles
-  # - generic text content
-  #
-  # Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
   class TextPresenter < BasePresenter
 
-    # ==========================================================================
-    # CONSTANTS
-    # ==========================================================================
+    # =============================================================
+    #                          CONSTANTS
+    # =============================================================
 
     # Shared CSS utility classes applied to textual content rendering.
     #
     # @return [String] CSS class list used for text rendering.
     BASE_CLASSES = "line-clamp-2".freeze
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the presenter.
     #
@@ -40,9 +34,9 @@ module Ui
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Renders emphasized title-style textual content.
     #

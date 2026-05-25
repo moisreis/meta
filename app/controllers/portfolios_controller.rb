@@ -1,21 +1,33 @@
-# Handles portfolio management workflows, dashboard rendering,
+# Manages portfolio management workflows, dashboard rendering,
 # reporting, calculation orchestration, and portfolio lifecycle actions.
 #
-# Coordinates HTTP request handling for portfolio-related operations,
-# delegating business logic to query objects, service objects, form
-# objects, PDF generators, and background jobs.
+# This controller acts as the HTTP orchestration layer for
+# {Portfolio} resources. Business rules, dashboard composition,
+# PDF generation, and background job orchestration are delegated
+# to dedicated service and query objects under the Portfolios
+# namespace.
+#
+# This controller does NOT implement financial calculations
+# directly. Calculation logic belongs to dedicated calculators
+# under the Calculators namespace.
 #
 # @author Moisés Reis
-#
+
 class PortfoliosController < ApplicationController
 
-  # ============================================================================
-  # CONTROLLER CONFIGURATION
-  # ============================================================================
+  # =============================================================
+  #                   FILTERS & ERROR HANDLING
+  # =============================================================
+
+  # --- INCLUDES ------------------------------------------------
 
   include MonthlyReportable
 
+  # --- FILTERS -------------------------------------------------
+
   before_action :authenticate_user!
+
+  # --- RESOURCE LOADING ----------------------------------------
 
   before_action :set_portfolio,
                 only: %i[
@@ -28,6 +40,8 @@ class PortfoliosController < ApplicationController
                   calculation_progress
                 ]
 
+  # --- AUTHORIZATION -------------------------------------------
+
   before_action :authorize_portfolio_management!,
                 only: %i[
                   edit
@@ -38,12 +52,12 @@ class PortfoliosController < ApplicationController
                   calculation_progress
                 ]
 
+  # --- FORM DEPENDENCIES ---------------------------------------
+
   before_action :load_normative_articles,
                 only: %i[new edit create update]
 
-  # ============================================================================
-  # EXCEPTION HANDLING
-  # ============================================================================
+  # --- ERROR HANDLING ------------------------------------------
 
   # Handles missing portfolio records.
   #
@@ -77,14 +91,19 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # ============================================================================
-  # PUBLIC ACTIONS — DASHBOARD & LISTING
-  # ============================================================================
+  # =============================================================
+  #                    INDEX & VISUALIZATION
+  # =============================================================
 
-  # Lists portfolios.
+  # --- INDEX ---------------------------------------------------
+
+  # Displays a searchable and paginated collection of
+  # accessible portfolio records.
+  #
+  # Filtering, sorting, pagination, and authorization
+  # scoping are delegated to {Portfolios::IndexQuery}.
   #
   # @return [void]
-  # @raise [StandardError]
   def index
     result = Portfolios::IndexQuery.call(
       params[:q],
@@ -99,11 +118,15 @@ class PortfoliosController < ApplicationController
     @total_items = result.total_items
   end
 
-  # Shows portfolio dashboard.
+  # --- SHOW ----------------------------------------------------
+
+  # Displays the portfolio dashboard with aggregated
+  # metrics, charts, and recent activity.
+  #
+  # Dashboard data composition is delegated to
+  # {Portfolios::ShowService}.
   #
   # @return [void]
-  # @raise [ArgumentError]
-  # @raise [StandardError]
   def show
     @data = Portfolios::ShowService.call(
       @portfolio,
@@ -117,22 +140,28 @@ class PortfoliosController < ApplicationController
     @reference_period = @data.reference_period
   end
 
-  # ============================================================================
-  # PUBLIC ACTIONS — CREATION
-  # ============================================================================
+  # =============================================================
+  #                          CREATION
+  # =============================================================
 
-  # Renders creation form.
+  # --- NEW -----------------------------------------------------
+
+  # Renders the creation form for a new portfolio.
   #
   # @return [void]
   def new
     @form = PortfolioForm.new(user_id: current_user.id)
   end
 
-  # Creates portfolio.
+  # --- CREATE --------------------------------------------------
+
+  # Creates a portfolio associated with the
+  # authenticated user.
+  #
+  # Persistence logic and business validations are
+  # delegated to {Portfolios::CreationService}.
   #
   # @return [void]
-  # @raise [ActiveRecord::RecordInvalid]
-  # @raise [CanCan::AccessDenied]
   def create
     result = Portfolios::CreationService.call(portfolio_params, actor: current_user)
 
@@ -144,22 +173,30 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # ============================================================================
-  # PUBLIC ACTIONS — UPDATES
-  # ============================================================================
+  # =============================================================
+  #                           UPDATE
+  # =============================================================
 
-  # Renders edit form.
+  # --- EDIT ----------------------------------------------------
+
+  # Renders the edition form for an existing portfolio.
+  #
+  # The form is pre-populated from the persisted
+  # portfolio record via {PortfolioForm.from_portfolio}.
   #
   # @return [void]
   def edit
     @form = PortfolioForm.from_portfolio(@portfolio)
   end
 
-  # Updates portfolio.
+  # --- UPDATE --------------------------------------------------
+
+  # Updates an existing portfolio.
+  #
+  # Persistence workflows and validation rules are
+  # delegated to {Portfolios::UpdateService}.
   #
   # @return [void]
-  # @raise [ActiveRecord::RecordInvalid]
-  # @raise [CanCan::AccessDenied]
   def update
     result = Portfolios::UpdateService.call(
       @portfolio,
@@ -177,14 +214,18 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # ============================================================================
-  # PUBLIC ACTIONS — DELETION
-  # ============================================================================
+  # =============================================================
+  #                          DELETION
+  # =============================================================
 
-  # Deletes portfolio.
+  # --- DESTROY -------------------------------------------------
+
+  # Deletes an existing portfolio.
+  #
+  # Deletion workflows and integrity validation are
+  # delegated to {Portfolios::DeletionService}.
   #
   # @return [void]
-  # @raise [CanCan::AccessDenied]
   def destroy
     result = Portfolios::DeletionService.call(@portfolio, actor: current_user)
 
@@ -199,11 +240,14 @@ class PortfoliosController < ApplicationController
     end
   end
 
-  # ============================================================================
-  # PUBLIC ACTIONS — REPORTING & CALCULATIONS
-  # ============================================================================
+  # =============================================================
+  #                  REPORTING & CALCULATIONS
+  # =============================================================
 
-  # Enqueues portfolio calculations.
+  # --- RUN CALCULATIONS ----------------------------------------
+
+  # Enqueues portfolio performance calculations for
+  # a target month.
   #
   # @return [void]
   # @raise [ArgumentError]
@@ -217,7 +261,12 @@ class PortfoliosController < ApplicationController
                 notice: "Cálculo de #{I18n.l(selected_month, format: '%B/%Y')} iniciado!"
   end
 
-  # Generates monthly report PDF.
+  # --- MONTHLY REPORT ------------------------------------------
+
+  # Generates and streams a monthly report PDF.
+  #
+  # PDF generation is delegated to
+  # {PortfolioMonthlyReportGenerator}.
   #
   # @return [void]
   # @raise [ArgumentError]
@@ -241,7 +290,10 @@ class PortfoliosController < ApplicationController
     raise
   end
 
-  # Returns calculation progress.
+  # --- CALCULATION PROGRESS ------------------------------------
+
+  # Returns the current progress of portfolio calculations
+  # for a given month.
   #
   # @return [void]
   def calculation_progress
@@ -249,20 +301,24 @@ class PortfoliosController < ApplicationController
     render json: @portfolio.calculation_progress_for(month)
   end
 
-  # ============================================================================
-  # PRIVATE — DATA LOADING
-  # ============================================================================
-
   private
 
-  # Loads normative articles.
+  # =============================================================
+  #                        RESOURCE LOADING
+  # =============================================================
+
+  # --- FORM DEPENDENCIES ---------------------------------------
+
+  # Loads normative articles for form selectors.
   #
   # @return [Array<Array(String, Integer)>]
   def load_normative_articles
     @normative_articles = NormativeArticle.for_select
   end
 
-  # Resolves calculation month.
+  # --- MONTH RESOLUTION ----------------------------------------
+
+  # Resolves the target calculation month from parameters.
   #
   # @return [Date]
   def selected_calculation_month
@@ -271,33 +327,44 @@ class PortfoliosController < ApplicationController
     Date.strptime(params[:month], "%Y-%m")
   end
 
-  # Loads portfolio.
+  # --- RESOURCE FINDING ----------------------------------------
+
+  # Loads the target portfolio from request parameters.
+  #
+  # @raise [ActiveRecord::RecordNotFound]
+  #   Raised when the portfolio does not exist.
   #
   # @return [Portfolio]
-  # @raise [ActiveRecord::RecordNotFound]
   def set_portfolio
     @portfolio = Portfolio.for_user(current_user).find(params[:id])
   end
 
-  # ============================================================================
-  # PRIVATE — AUTHORIZATION
-  # ============================================================================
+  # =============================================================
+  #                        AUTHORIZATION
+  # =============================================================
 
-  # Authorizes portfolio management.
+  # Authorizes portfolio management actions for the
+  # current user.
+  #
+  # Authorization is enforced through CanCanCan.
+  #
+  # @raise [CanCan::AccessDenied]
+  #   Raised when the current user lacks permission.
   #
   # @return [void]
-  # @raise [CanCan::AccessDenied]
   def authorize_portfolio_management!
     authorize! :manage, @portfolio
   end
 
-  # ============================================================================
-  # PRIVATE — PARAMETER SANITIZATION
-  # ============================================================================
+  # =============================================================
+  #                      STRONG PARAMETERS
+  # =============================================================
 
-  # Strong parameters.
+  # Defines the permitted parameters for portfolio
+  # persistence operations.
   #
   # @return [ActionController::Parameters]
+  #   Sanitized parameters allowed for persistence.
   def portfolio_params
     params.require(:portfolio).permit(
       :name,

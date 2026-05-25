@@ -5,17 +5,11 @@
 # redemptions, and performance evolution for a specific
 # investment fund within a portfolio.
 #
-# Responsibilities:
-# - Track invested balances and held quotas.
-# - Manage allocation constraints within a portfolio.
-# - Expose authorization-aware query scopes.
-# - Reconstruct historical market values.
-# - Aggregate transactional investment data.
-#
 # This model does NOT calculate fund quota prices directly.
 # Quota valuation logic belongs to {InvestmentFund}.
 #
 # @author Moisés Reis
+
 class FundInvestment < ApplicationRecord
 
   # =============================================================

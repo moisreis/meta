@@ -1,24 +1,19 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders styled foreign-key and identifier reference values.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter formats reference values using compact outlined badge
+# styling and delegates blank-state rendering behavior to
+# {EmptyStatePresenter}.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders styled foreign-key and identifier reference values.
-  #
-  # This presenter formats reference values using compact outlined badge
-  # styling and delegates blank-state rendering behavior to
-  # {EmptyStatePresenter}.
   class FkPresenter < BasePresenter
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the presenter.
     #
@@ -29,9 +24,9 @@ module Ui
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Renders a styled foreign-key or identifier reference value.
     #

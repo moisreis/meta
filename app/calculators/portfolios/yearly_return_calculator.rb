@@ -1,30 +1,55 @@
 # frozen_string_literal: true
 
-# app/calculators/portfolios/yearly_return_calculator.rb
-#
 # Calculates the year-to-date portfolio return, weighted by each
 # fund investment's percentage allocation.
 #
+# Aggregates monthly returns across all fund investments and weights
+# them by their respective allocation percentage to produce a single
+# portfolio-level YTD return.
+#
+# @author Moisés Reis
+
 module Portfolios
   class YearlyReturnCalculator
 
     ZERO = BigDecimal("0")
 
-    # @param portfolio [Portfolio]
-    # @param reference_date [Date, nil]
-    # @return [BigDecimal]
+    private_constant :ZERO
+
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
+
+    # Shortcut class method to instantiate and execute the calculator.
+    #
+    # @param portfolio [Portfolio] The portfolio being evaluated.
+    # @param reference_date [Date, nil] Reference date for the YTD window.
+    #   Defaults to the latest available performance period.
+    # @return [BigDecimal] The weighted YTD return percentage.
     def self.call(portfolio, reference_date: nil)
       new(portfolio, reference_date: reference_date).call
     end
 
-    # @param portfolio [Portfolio]
-    # @param reference_date [Date, nil]
+    # =============================================================
+    #                         INITIALIZATION
+    # =============================================================
+
+    # Initialises the calculator with portfolio and optional reference date.
+    #
+    # @param portfolio [Portfolio] The portfolio being evaluated.
+    # @param reference_date [Date, nil] Reference date for the YTD window.
     def initialize(portfolio, reference_date: nil)
       @portfolio      = portfolio
       @reference_date = reference_date
     end
 
-    # @return [BigDecimal]
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
+
+    # Calculates the weighted YTD return.
+    #
+    # @return [BigDecimal] The weighted YTD return percentage.
     def call
       return ZERO unless target_period
       return ZERO if performances.empty?
@@ -46,15 +71,27 @@ module Portfolios
 
     private
 
+    # =============================================================
+    #                          ATTRIBUTES
+    # =============================================================
+
     attr_reader :portfolio, :reference_date
 
+    # =============================================================
+    #                     INTERMEDIATE DATA
+    # =============================================================
+
+    # Returns the target period date for the YTD calculation.
+    #
     # @return [Date, nil]
     def target_period
       @target_period ||= reference_date ||
                          portfolio.performance_histories.maximum(:period)
     end
 
-    # @return [ActiveRecord::Relation]
+    # Returns performance histories within the YTD window.
+    #
+    # @return [ActiveRecord::Relation<PerformanceHistory>]
     def performances
       @performances ||= portfolio
                           .performance_histories

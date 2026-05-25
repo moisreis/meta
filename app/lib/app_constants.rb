@@ -7,12 +7,7 @@
 # across views, components, and service layers.
 #
 # @author Moisés Reis
-#
-# CONSTANT GROUPS:
-#   - Company Branding
-#   - Pagination
-#   - Shared Messages
-#   - Action Button Labels
+
 module AppConstants
 
   # ===========================================================

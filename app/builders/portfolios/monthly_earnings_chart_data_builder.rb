@@ -15,9 +15,9 @@ module Portfolios
   # Constructs a normalized monthly earnings dataset for chart rendering.
   class MonthlyEarningsChartDataBuilder
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
 
     # Builds a 12-month time-series dataset for a given year.
     #

@@ -1,28 +1,24 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders directional financial trend indicators.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter combines trend classification, numeric formatting,
+# directional iconography, and semantic styling into a reusable
+# presentation component.
+#
+# Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
+#
+# This presenter does NOT calculate financial metrics or perform
+# trend analysis. Classification logic belongs to {TrendClassifier}.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders directional financial trend indicators.
-  #
-  # This presenter combines:
-  # - trend classification
-  # - numeric formatting
-  # - directional iconography
-  # - semantic styling
-  #
-  # Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
   class TrendPresenter < BasePresenter
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the presenter and supporting rendering dependencies.
     #
@@ -35,9 +31,9 @@ module Ui
       @classifier = TrendClassifier.new
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Renders a directional trend component.
     #
@@ -77,9 +73,9 @@ module Ui
 
     private
 
-    # ==========================================================================
-    # PRIVATE METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PRIVATE METHODS
+    # =============================================================
 
     # Returns semantic style definitions for each trend type.
     #

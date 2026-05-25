@@ -3,16 +3,11 @@
 # Disables code reloading, uses a null cache store, and
 # sets up test-friendly defaults for mailer and storage.
 #
-# Responsibilities:
-# - Disable reloading and conditionally enable eager loading.
-# - Use a null cache store to avoid cross-test pollution.
-# - Configure test delivery for mailer and storage.
-# - Allow forgery protection to be bypassed.
-#
 # This file does not configure development logging features
 # or production caching strategies.
 #
 # @author Moisés Reis
+
 Rails.application.configure do
 
   # =============================================================

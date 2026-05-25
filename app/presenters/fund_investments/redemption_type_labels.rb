@@ -3,19 +3,17 @@
 # Provides localized presentation labels for
 # fund investment redemption types.
 #
-# This module centralizes redemption type label
-# formatting to ensure consistency across
-# views, presenters, services, and reports.
+# This module centralizes redemption type label formatting
+# to ensure consistency across views, presenters, services,
+# and reports by mapping type identifiers to display labels,
+# providing safe fallback humanization, and standardizing
+# redemption terminology.
 #
-# Responsibilities:
-# - Map redemption type identifiers to display labels.
-# - Provide safe fallback humanization behavior.
-# - Standardize redemption terminology formatting.
-#
-# This module does NOT perform persistence,
-# validation, or business-rule enforcement.
+# This module does NOT perform persistence, validation,
+# or business-rule enforcement.
 #
 # @author Moisés Reis
+
 module FundInvestments
   module RedemptionTypeLabels
     extend self

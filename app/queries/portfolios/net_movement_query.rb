@@ -1,5 +1,15 @@
+# frozen_string_literal: true
+
+# Calculates the net movement (applications minus redemptions) per fund
+# investment for a given month.
+#
+# @author Moisés Reis
+
 module Portfolios
   class NetMovementQuery
+    # @param portfolio [Portfolio]
+    # @param date [Date]
+    # @return [Hash{Integer => BigDecimal}]
     def self.call(portfolio, date)
       start_date = date.to_date.beginning_of_month
       end_date   = date.to_date.end_of_month

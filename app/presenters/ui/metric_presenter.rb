@@ -1,27 +1,21 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders derived metric and trend-related presentation values.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter provides lightweight formatting helpers for
+# percentages and trend classifications.
+#
+# Unlike other presenters in this namespace, this object primarily
+# returns primitive presentation values rather than rendered HTML.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders derived metric and trend-related presentation values.
-  #
-  # This presenter provides lightweight formatting helpers for:
-  # - percentages
-  # - trend classifications
-  #
-  # Unlike other presenters in this namespace, this object primarily
-  # returns primitive presentation values rather than rendered HTML.
   class MetricPresenter < BasePresenter
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Formats a numeric value as a percentage string.
     #

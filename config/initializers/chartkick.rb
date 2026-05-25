@@ -6,15 +6,11 @@
 # covering animation, typography, element styles, plugin
 # configuration (legend, tooltip), and axis scales.
 #
-# Responsibilities:
-# - Define the default colour palette for all chart types.
-# - Set Brazilian locale formatting (dot as thousands, comma as decimal).
-# - Configure Chart.js animation, font, elements, plugins, and scales.
-#
 # This file does not define chart data queries or view-level
 # chart options. Those belong in the controller and view layer.
 #
 # @author Moisés Reis
+
 Chartkick.options = {
 
   # =============================================================

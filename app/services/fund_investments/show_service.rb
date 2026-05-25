@@ -6,20 +6,13 @@
 # to build the visualization payload for a single
 # {FundInvestment}.
 #
-# Responsibilities:
-# - Aggregate investment visualization data.
-# - Coordinate financial metric queries.
-# - Build chart datasets for dashboards.
-# - Expose ordered transactional collections.
-# - Cache intermediate calculations through memoization.
-# - Return a standardized immutable result object.
-#
 # This service does NOT implement persistence logic
 # or controller response behavior.
 #
 # Follows the Result + thin-call service pattern.
 #
 # @author Moisés Reis
+
 module FundInvestments
   class ShowService
 

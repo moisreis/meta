@@ -5,15 +5,11 @@
 # single source of truth for chart colouring across the
 # application.
 #
-# Responsibilities:
-# - Define named color constants in hex format.
-# - Group colours into semantic palettes for different chart types.
-# - Resolve palette names to CSS rgb(...) or rgba(...) strings.
-#
 # This module does not configure Chartkick itself. Chartkick
 # option configuration lives in config/initializers/chartkick.rb.
 #
 # @author Moisés Reis
+
 module ChartPalettes
 
   # =============================================================

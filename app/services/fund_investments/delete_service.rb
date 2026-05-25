@@ -9,16 +9,11 @@ module FundInvestments
   # transactional deletion, and standardized result
   # handling for investment removal operations.
   #
-  # Responsibilities:
-  # - Enforce deletion authorization rules.
-  # - Execute transactional destruction workflows.
-  # - Expose standardized success/failure responses.
-  # - Surface validation and persistence failures.
-  #
   # This service does NOT implement controller-level
   # HTTP response behavior.
   #
   # @author Moisés Reis
+  
   class DeleteService < FundInvestments::BaseService
 
     # =============================================================

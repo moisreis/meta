@@ -1,12 +1,19 @@
-# app/queries/portfolios/recent_performance_query.rb
-#
+# frozen_string_literal: true
+
 # Resolves the reference period and loads PerformanceHistory records for a
-# portfolio. Falls back to the latest available period if the requested
-# period has no data.
+# portfolio.
 #
-# @return [Array(Date, ActiveRecord::Relation<PerformanceHistory>)]
+# Falls back to the latest available period if the requested period has no
+# data.
+#
+# @author Moisés Reis
+
 module Portfolios
   class RecentPerformanceQuery
+    # @param portfolio [Portfolio]
+    # @param reference_date [Date]
+    #
+    # @return [Array(Date, ActiveRecord::Relation<PerformanceHistory>)]
     def self.call(portfolio, reference_date)
       new(portfolio, reference_date).call
     end

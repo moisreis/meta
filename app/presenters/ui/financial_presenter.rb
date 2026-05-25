@@ -1,38 +1,33 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders formatted financial and numeric presentation values.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter provides standardized formatting helpers for
+# currency values, quotas, percentages, numeric values, and
+# financial trends.
+#
+# Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
+#
+# This presenter does NOT perform financial calculations or
+# data aggregation. Formatting input is expected to be pre-computed.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders formatted financial and numeric presentation values.
-  #
-  # This presenter provides standardized formatting helpers for:
-  # - currency values
-  # - quotas
-  # - percentages
-  # - numeric values
-  # - financial trends
-  #
-  # Blank-state rendering behavior is delegated to {EmptyStatePresenter}.
   class FinancialPresenter < BasePresenter
 
-    # ==========================================================================
-    # CONSTANTS
-    # ==========================================================================
+    # =============================================================
+    #                          CONSTANTS
+    # =============================================================
 
     # Shared CSS utility classes applied to formatted financial values.
     #
     # @return [String] CSS class list used for financial rendering.
     BASE_CLASSES = "line-clamp-2 font-mono".freeze
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the presenter.
     #
@@ -43,9 +38,9 @@ module Ui
       @empty = EmptyStatePresenter.new(view_context)
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Renders a formatted currency value.
     #
@@ -200,9 +195,9 @@ module Ui
 
     private
 
-    # ==========================================================================
-    # PRIVATE METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PRIVATE METHODS
+    # =============================================================
 
     # Determines whether a value should be treated as visually empty.
     #

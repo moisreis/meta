@@ -7,4 +7,5 @@
 # or digest behaviour.
 #
 # @author Moisés Reis
+
 Rails.application.config.assets.version = "1.0"

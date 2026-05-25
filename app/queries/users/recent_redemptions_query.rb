@@ -1,31 +1,28 @@
-# Provides user-related query objects and data access operations.
+# frozen_string_literal: true
+
+# Retrieves the most recent redemption requests associated with a user.
 #
-# This namespace groups query services responsible for encapsulating
-# user-specific database querying and reporting logic.
+# This query object loads recent redemption records through portfolio-linked
+# fund investments while eager loading related associations to prevent
+# N+1 query behavior in dashboards and reporting interfaces.
 #
 # @author Moisés Reis
 
 module Users
-
-  # Retrieves the most recent redemption requests associated with a user.
-  #
-  # This query object loads recent redemption records through portfolio-linked
-  # fund investments while eager loading related associations to prevent
-  # N+1 query behavior in dashboards and reporting interfaces.
   class RecentRedemptionsQuery
 
-    # ==========================================================================
-    # DEFAULT CONFIGURATION
-    # ==========================================================================
+    # =============================================================
+    #                     DEFAULT CONFIGURATION
+    # =============================================================
 
     # Default number of recent redemptions returned by the query.
     #
     # @return [Integer] Default query result limit.
     DEFAULT_LIMIT = 5
 
-    # ==========================================================================
-    # PUBLIC CLASS METHODS
-    # ==========================================================================
+    # =============================================================
+    #                     PUBLIC CLASS METHODS
+    # =============================================================
 
     class << self
 
@@ -40,9 +37,9 @@ module Users
       end
     end
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the query object.
     #
@@ -53,9 +50,9 @@ module Users
       @limit = limit
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Returns the most recent redemptions associated with the user.
     #

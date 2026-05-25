@@ -10,18 +10,11 @@ module FundInvestments
   # and standardized response handling for fund
   # investment creation operations.
   #
-  # Responsibilities:
-  # - Normalize incoming parameters.
-  # - Validate form input consistency.
-  # - Build FundInvestment entities.
-  # - Enforce portfolio access authorization.
-  # - Persist investments transactionally.
-  # - Propagate validation errors to form objects.
-  #
   # This service does NOT implement controller concerns
   # or direct HTTP response behavior.
   #
   # @author Moisés Reis
+  
   class CreationService < FundInvestments::BaseService
 
     # =============================================================

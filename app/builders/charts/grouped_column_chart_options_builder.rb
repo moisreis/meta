@@ -13,9 +13,9 @@ module Charts
   # Constructs grouped column chart configuration options.
   class GroupedColumnChartOptionsBuilder
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
 
     # Builds a grouped column chart configuration.
     #

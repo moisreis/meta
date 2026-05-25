@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# app/queries/portfolios/benchmark_comparison_series_query.rb
-#
 # Builds a multi-series dataset comparing the portfolio's cumulative return
 # against its relevant benchmark indices over time.
 #
@@ -9,24 +7,12 @@
 # (i.e. +5.2 means +5.2% since the first available period), suitable
 # for Chartkick line charts.
 #
-# DATA SOURCES:
-#   - Portfolio returns  → performance_histories.monthly_return (aggregated via TWR)
-#   - Benchmark returns  → economic_index_histories.value
+# This query includes every economic index that has at least one history
+# record overlapping the portfolio's performance window, capped at
+# MAX_BENCHMARKS to keep the chart readable.
 #
-# SERIES SELECTION:
-#   The query includes every economic index that has at least one history
-#   record overlapping the portfolio's performance window, capped at
-#   MAX_BENCHMARKS to keep the chart readable.
-#
-# RETURN FORMAT (Chartkick-compatible):
-#   [
-#     { name: "Carteira",  data: { "Jan/25" => 0.0, "Fev/25" => 1.23, ... } },
-#     { name: "CDI",       data: { "Jan/25" => 0.0, "Fev/25" => 0.98, ... } },
-#     { name: "IBOVESPA",  data: { ... } },
-#     ...
-#   ]
-#
-# @author Project Team
+# @author Moisés Reis
+
 module Portfolios
   class BenchmarkComparisonSeriesQuery
 
@@ -139,8 +125,8 @@ module Portfolios
     # Converts a Hash of { Date => monthly_return_pct } into a cumulative
     # growth series rebased to 0 at the first period.
     #
-    # Formula: cumulative[t] = (1 + r1/100) * (1 + r2/100) * … * (1 + rt/100) - 1
-    # Result is expressed as percentage points (×100).
+    # Formula: cumulative[t] = (1 + r1/100) * (1 + r2/100) * ... * (1 + rt/100) - 1
+    # Result is expressed as percentage points (x100).
     #
     # @param monthly_returns [Hash<Date, Float>]
     # @return [Hash<String, Float>]

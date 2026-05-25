@@ -4,17 +4,11 @@
 # flags — password policy, session storage, confirmation,
 # reset timeouts, navigation formats, and HTTP response codes.
 #
-# Responsibilities:
-# - Define the mailer sender address for auth emails.
-# - Configure password length policy and email format regex.
-# - Set session, confirmation, and remember-me behaviour.
-# - Define navigational formats and sign-out HTTP method.
-# - Configure responder status codes for Turbo Streams.
-#
 # This file does not define routes, controllers, or views.
 # Those belong in config/routes.rb and the Devise views folder.
 #
 # @author Moisés Reis
+
 Devise.setup do |config|
 
   # --- MAILER SENDER -------------------------------------------

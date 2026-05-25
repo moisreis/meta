@@ -6,17 +6,6 @@
 # restart behavior, optional queue integration, and process
 # identification for external supervision tools.
 #
-# Responsibilities:
-# - Define thread pool sizing for concurrent request handling.
-# - Configure HTTP port binding via environment variables.
-# - Enable development and production runtime plugins.
-# - Define PID file location for process management systems.
-#
-# This file does NOT:
-# - Configure Rails middleware stack.
-# - Define routing, controllers, or application logic.
-# - Manage SSL termination or reverse proxy configuration.
-#
 # @author Moisés Reis
 
 # =============================================================

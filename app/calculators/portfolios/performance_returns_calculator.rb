@@ -1,22 +1,63 @@
-# app/calculators/portfolios/performance_returns_calculator.rb
+# frozen_string_literal: true
+
+# Computes total earnings, weighted portfolio return, and weighted
+# 12-month return from a set of PerformanceHistory records.
 #
-# Computes total earnings, weighted portfolio return, and weighted 12-month
-# return from a set of PerformanceHistory records.
+# Filters performance entries to only those with active holdings
+# and weights returns by their effective balance.
+#
+# @author Moisés Reis
+
 module Portfolios
   class PerformanceReturnsCalculator
-    Result = Struct.new(:total_earnings, :portfolio_return, :portfolio_12m_return, keyword_init: true)
+
+    # =============================================================
+    #                         RESULT STRUCTURE
+    # =============================================================
+
+    # Immutable result object containing portfolio-level return metrics.
+    Result = Struct.new(
+      :total_earnings,
+      :portfolio_return,
+      :portfolio_12m_return,
+      keyword_init: true
+    )
 
     ZERO = BigDecimal("0")
 
+    private_constant :ZERO
+
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
+
+    # Shortcut class method to instantiate and execute the calculator.
+    #
+    # @param recent_performance [ActiveRecord::Relation<PerformanceHistory>]
+    # @param reference_date [Date]
+    # @return [Result]
     def self.call(recent_performance, reference_date)
       new(recent_performance, reference_date).call
     end
 
+    # =============================================================
+    #                         INITIALIZATION
+    # =============================================================
+
+    # @param recent_performance [ActiveRecord::Relation<PerformanceHistory>]
+    # @param reference_date [Date]
     def initialize(recent_performance, reference_date)
       @recent_performance = recent_performance
       @reference_date     = reference_date
     end
 
+    # =============================================================
+    #                         PUBLIC METHODS
+    # =============================================================
+
+    # Computes portfolio-level return metrics.
+    #
+    # @return [Result]
     def call
       return empty_result if @recent_performance.none?
 
@@ -40,6 +81,13 @@ module Portfolios
 
     private
 
+    # =============================================================
+    #                     FILTERING & WEIGHTING
+    # =============================================================
+
+    # Filters performance entries to those with active holdings.
+    #
+    # @return [Array<PerformanceHistory>]
     def active_performance
       period = @reference_date.end_of_month
 
@@ -69,6 +117,10 @@ module Portfolios
       end
     end
 
+    # Resolves the effective initial balance for a performance record.
+    #
+    # @param perf [PerformanceHistory]
+    # @return [BigDecimal]
     def effective_balance(perf)
       if perf.initial_balance&.positive?
         perf.initial_balance
@@ -79,6 +131,13 @@ module Portfolios
       end
     end
 
+    # =============================================================
+    #                           HELPERS
+    # =============================================================
+
+    # Returns a zero-filled result object.
+    #
+    # @return [Result]
     def empty_result
       Result.new(total_earnings: ZERO, portfolio_return: ZERO, portfolio_12m_return: ZERO)
     end

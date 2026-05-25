@@ -1,32 +1,27 @@
 # frozen_string_literal: true
 
-# Provides UI presentation helpers and reusable rendering abstractions.
+# Renders standardized empty-state placeholder content.
 #
-# This namespace groups presenter objects responsible for encapsulating
-# reusable view rendering logic and presentation-specific formatting behavior.
+# This presenter provides a centralized visual representation for
+# missing, blank, or unavailable values throughout the UI layer.
 #
 # @author Moisés Reis
 
 module Ui
-
-  # Renders standardized empty-state placeholder content.
-  #
-  # This presenter provides a centralized visual representation for
-  # missing, blank, or unavailable values throughout the UI layer.
   class EmptyStatePresenter < BasePresenter
 
-    # ==========================================================================
-    # CONSTANTS
-    # ==========================================================================
+    # =============================================================
+    #                          CONSTANTS
+    # =============================================================
 
     # Default placeholder text rendered for empty values.
     #
     # @return [String] Default empty-state display content.
     EMPTY_TEXT = "-".freeze
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Renders empty-state placeholder content.
     #

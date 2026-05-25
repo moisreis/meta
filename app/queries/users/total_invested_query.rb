@@ -1,21 +1,18 @@
-# Provides user-related query objects and data access operations.
+# frozen_string_literal: true
+
+# Calculates the total invested value for a user.
 #
-# This namespace groups query services responsible for encapsulating
-# user-specific database querying and reporting logic.
+# This query object aggregates investment totals across all fund investments
+# associated with portfolios owned by the specified user.
 #
 # @author Moisés Reis
 
 module Users
-
-  # Calculates the total invested value for a user.
-  #
-  # This query object aggregates investment totals across all fund investments
-  # associated with portfolios owned by the specified user.
   class TotalInvestedQuery
 
-    # ==========================================================================
-    # PUBLIC CLASS METHODS
-    # ==========================================================================
+    # =============================================================
+    #                     PUBLIC CLASS METHODS
+    # =============================================================
 
     class << self
 
@@ -28,9 +25,9 @@ module Users
       end
     end
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the query object.
     #
@@ -39,9 +36,9 @@ module Users
       @user = user
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Calculates the total invested value across all user fund investments.
     #

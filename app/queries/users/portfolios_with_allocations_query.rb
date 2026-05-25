@@ -1,22 +1,19 @@
-# Provides user-related query objects and data access operations.
+# frozen_string_literal: true
+
+# Retrieves portfolios and associated investment allocations for a user.
 #
-# This namespace groups query services responsible for encapsulating
-# user-specific database querying and reporting logic.
+# This query object loads user portfolios together with their associated
+# fund investments to avoid N+1 queries during allocation rendering and
+# reporting workflows.
 #
 # @author Moisés Reis
 
 module Users
-
-  # Retrieves portfolios and associated investment allocations for a user.
-  #
-  # This query object loads user portfolios together with their associated
-  # fund investments to avoid N+1 queries during allocation rendering and
-  # reporting workflows.
   class PortfoliosWithAllocationsQuery
 
-    # ==========================================================================
-    # PUBLIC CLASS METHODS
-    # ==========================================================================
+    # =============================================================
+    #                     PUBLIC CLASS METHODS
+    # =============================================================
 
     class << self
 
@@ -30,9 +27,9 @@ module Users
       end
     end
 
-    # ==========================================================================
-    # INITIALIZATION
-    # ==========================================================================
+    # =============================================================
+    #                        INITIALIZATION
+    # =============================================================
 
     # Initializes the query object.
     #
@@ -41,9 +38,9 @@ module Users
       @user = user
     end
 
-    # ==========================================================================
-    # PUBLIC METHODS
-    # ==========================================================================
+    # =============================================================
+    #                        PUBLIC METHODS
+    # =============================================================
 
     # Returns portfolios with preloaded fund investment allocations.
     #
