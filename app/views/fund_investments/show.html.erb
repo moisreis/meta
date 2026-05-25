@@ -1,452 +1,442 @@
 <%#
-  # Partial: show.html.erb
-  # Date: 12/24/2025
-  # Author: Moisés Reis
-  # Package: Meta
-  #
-  # Description: Displays a comprehensive dashboard view for a single FundInvestment record.
-  #              Shows investment metrics, performance calculations, transaction history, allocation details,
-  #              and historical performance trends with interactive charts.
-  #
-  # Usage:: - What: Renders the complete show view for the FundInvestment resource with detailed
-  #                performance metrics, ROI calculations, transaction breakdowns, and trend analysis.
-  #         - How: Accessed via GET /fund_investments/:id. Uses the **@fund_investment** instance variable
-  #                loaded by **FundInvestmentsController#show** along with calculated metrics.
-  #         - Why: Provides users with a centralized dashboard to monitor a specific fund investment's
-  #                performance, track transactions, analyze returns, and understand their position.
-  %>
+  VIEW: app/views/fund_investments/show.html.erb
+  ACTION: FundInvestmentsController#show
 
-<%# Explanation:: This layout wrapper organizes the entire page content into a clean
-  #               dashboard structure to ensure consistency; it is used as the main
-  #               container and works by setting the fund name as the title and
-  #               the portfolio name as the description.
-  %>
-<%= render 'partials/route/dashboard/wrapper',
-           page_title: @fund_investment.investment_fund.fund_name,
-           page_desc: "Investimento no portfólio #{@fund_investment.portfolio.name}",
-           current_view: "show" do
+  DESCRIPTION:
+  Displays the complete fund investment dashboard, including
+  investment identification data, allocation metrics, position
+  summaries, profitability indicators, transaction analytics,
+  performance visualizations, and historical operational records.
+
+  INSTANCE VARIABLES:
+  - @fund_investment: [FundInvestment]
+    Investment allocation being displayed.
+  -
+    @data: [FundInvestments::ShowService::Result]
+    Aggregated investment analytics, charts, financial summaries,
+    and historical transaction data.
 %>
 
-<%# Explanation:: This section groups primary identifying information for the investment
-  #               to provide quick context; it is used to display basic registration
-  #               data and works by creating a four-column grid with an edit action button.
-  %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Visão Geral do Investimento",
-             section_desc: "Dados principais e identificação",
-             columns: 4,
-             has_action: false do
-  %>
+<%# ======================================================= %>
+<%#                    DASHBOARD WRAPPER                    %>
+<%# ======================================================= %>
 
-<%# Explanation:: This card identifies the specific portfolio containing the investment
-  #               to clarify asset location; it is used for navigation and works
-  #               by rendering a link to the portfolio's main page.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Carteira",
-               card_icon: "briefcase",
-               card_data: normalize_card_text(@fund_investment.portfolio.user.full_name),
-               status: :teal do
-    %>
+<%= render(Layout::DashboardWrapperComponent.new(
+  page_title: @fund_investment.investment_fund.fund_name,
+  page_desc: "Investimento na carteira #{@fund_investment.portfolio.name}",
+  current_view: "show"
+)) do %>
+
+  <%# ===================================================== %>
+  <%#                  INVESTMENT OVERVIEW                  %>
+  <%# ===================================================== %>
+
+  <%= render(
+    Blocks::SectionComponent.new(
+      title: "Visão Geral do Investimento",
+      description: "Dados principais e identificação",
+      columns: 4
+    )
+  ) do %>
+
+    <%# --- PORTFOLIO -------------------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Carteira",
+        header_icon: "briefcase",
+        badge_text: normalize_text(
+          @fund_investment.portfolio.user.full_name
+        ),
+      )
+    ) do %>
       <%= normalize_text(@fund_investment.portfolio.name) %>
     <% end %>
 
-<%# Explanation:: This card displays the associated investment fund to show the
-  #               nature of the asset; it is used to provide deep-dive access
-  #               and works by linking directly to the fund's detail page.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Fundo de Investimento",
-               card_icon: "building-2" do
-    %>
-      <%= normalize_text(@fund_investment.investment_fund.fund_name) %>
+    <%# --- INVESTMENT FUND ------------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Fundo de Investimento",
+        header_icon: "building-2",
+        badge_text: normalize_text(
+          @fund_investment.investment_fund.cnpj
+        ),
+      )
+    ) do %>
+      <%= normalize_text(
+        @fund_investment.investment_fund.fund_name
+      ) %>
     <% end %>
 
-<%# Explanation:: This card shows the percentage weight of this investment within
-  #               the portfolio to track strategy; it is used for balance monitoring
-  #               and works by rendering the calculated decimal value as a percentage.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Alocação na Carteira",
-               card_icon: "chart-pie",
-               status: :indigo do
-    %>
-      <%= normalize_percentage(@fund_investment.percentage_allocation) %>
+    <%# --- PORTFOLIO ALLOCATION -------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Alocação na Carteira",
+        header_icon: "chart-pie",
+      )
+    ) do %>
+      <%= normalize_percentage(
+        @fund_investment.percentage_allocation
+      ) %>
     <% end %>
 
-<%# Explanation:: This card displays the record's creation date to track the history
-  #               of the investment; it is used for audit purposes and works by
-  #               applying a standardized timestamp format to the entry date.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Criado em",
-               card_icon: "calendar-plus",
-               card_data: normalize_card_time_ago(@fund_investment.created_at) do
-    %>
-      <%= normalize_date(@fund_investment.created_at) %>
-    <% end %>
   <% end %>
 
-<%# Explanation:: This section groups live valuation metrics to show the current
-  #               financial status of the asset; it is used for position monitoring
-  #               and works by comparing invested capital against current market values.
-  %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Métricas de Posição",
-             section_desc: "Valores atuais e saldos",
-             columns: 4 do
-  %>
+  <%# ===================================================== %>
+  <%#                    POSITION METRICS                   %>
+  <%# ===================================================== %>
 
-<%# Explanation:: This card sums all net capital invested to show the total money
-  #               deployed; it is used to calculate the cost basis and works by
-  #               displaying the attribute as a standardized currency value.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Valor Total Investido",
-               card_icon: "banknote",
-               status: :secondary do
-    %>
-      <%= normalize_currency(@fund_investment.total_invested_value) %>
+  <%= render(
+    Blocks::SectionComponent.new(
+      title: "Métricas de Posição",
+      description: "Valores atuais e saldos",
+      columns: 4
+    )
+  ) do %>
+
+    <%# --- TOTAL INVESTED VALUE -------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Valor Total Investido",
+        header_icon: "banknote",
+        status: :secondary
+      )
+    ) do %>
+      <%= normalize_currency(
+        @fund_investment.total_invested_value
+      ) %>
     <% end %>
 
-<%# Explanation:: This card displays the quantity of ownership units held to
-  #               show position size; it is used for valuation math and works
-  #               by rendering the total quota count with two decimal points.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Cotas Detidas",
-               card_icon: "scale" do
-    %>
-      <%= normalize_number(@fund_investment.total_quotas_held) %>
+    <%# --- HELD QUOTAS ----------------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Cotas Detidas",
+        header_icon: "scale"
+      )
+    ) do %>
+      <%= normalize_number(
+        @fund_investment.total_quotas_held
+      ) %>
     <% end %>
 
-<%# Explanation:: This card shows what the investment is worth at today's prices
-  #               to visualize net worth; it is used for financial assessment
-  #               and works by applying conditional colors based on profit or loss.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Valor de Mercado Atual",
-               card_icon: card_data_icon_for(@fund_investment.current_market_value - @fund_investment.total_invested_value),
-               card_data: normalize_currency(@fund_investment.current_market_value - @fund_investment.total_invested_value),
-               card_data_icon: card_data_icon_for(@fund_investment.current_market_value - @fund_investment.total_invested_value),
-               status: card_status_trend_for(@fund_investment.current_market_value - @fund_investment.total_invested_value) do
-    %>
-      <%= normalize_currency(@fund_investment.current_market_value) %>
+    <%# --- CURRENT MARKET VALUE -------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Valor de Mercado Atual",
+      )
+    ) do %>
+      <%= normalize_currency(
+        @data.current_market_value
+      ) %>
     <% end %>
 
-<%# Explanation:: This card highlights the difference between invested and current
-  #               value to show financial performance; it is used for ROI tracking
-  #               and works by displaying gain or loss with dynamic arrow icons.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Ganhos e Perdas",
-               card_icon: card_data_icon_for(@fund_investment.unrealized_gain_loss),
-               card_data_icon: card_data_icon_for(@fund_investment.unrealized_gain_loss),
-               card_data: normalize_card_percentage(@fund_investment.return_percentage),
-               status: card_status_trend_for(@fund_investment.unrealized_gain_loss) do
-    %>
-      <%= normalize_currency(@fund_investment.unrealized_gain_loss) %>
+    <%# --- UNREALIZED RESULT ----------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Ganhos e Perdas",
+      )
+    ) do %>
+      <%= normalize_currency(
+        @data.unrealized_gain_loss
+      ) %>
     <% end %>
+
   <% end %>
 
-<%# Explanation:: This section summarizes transaction flows to analyze the
-  #               investment's profitability; it is used for historical performance
-  #               review and works by aggregating applications and redemptions.
-  %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Performance e Retorno",
-             section_desc: "Análise de rentabilidade do investimento",
-             columns: 4 do
-  %>
+  <%# ===================================================== %>
+  <%#                  PERFORMANCE METRICS                  %>
+  <%# ===================================================== %>
 
-<%# Explanation:: This card displays the total gross money applied to the fund
-  #               to show historical effort; it is used to track capital inflow
-  #               and works by rendering the sum of all application records.
-  %>
+  <%= render(
+    Blocks::SectionComponent.new(
+      title: "Performance e Retorno",
+      description: "Análise de rentabilidade do investimento",
+      columns: 4
+    )
+  ) do %>
 
-    <%= render "partials/route/dashboard/card",
-               card_title: "Total de Aplicações",
-               card_icon: "arrow-up-right",
-               status: :success do
-    %>
-      <%= normalize_currency(@fund_investment.total_applications) %>
+    <%# --- TOTAL APPLICATIONS ---------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Total de Aplicações",
+        header_icon: "arrow-up-right",
+        status: :success
+      )
+    ) do %>
+      <%= normalize_currency(
+        @data.total_applications
+      ) %>
     <% end %>
 
-<%# Explanation:: This card displays the total money withdrawn from the fund
-  #               to show capital exit; it is used to track outflows and works
-  #               by rendering the sum of all redemption records in red.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Total de Resgates",
-               card_icon: "arrow-down-left",
-               status: :honeysuckle do
-    %>
-      <%= normalize_currency(@fund_investment.total_redemptions) %>
+    <%# --- TOTAL REDEMPTIONS ----------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Total de Resgates",
+        header_icon: "arrow-down-left",
+        status: :honeysuckle
+      )
+    ) do %>
+      <%= normalize_currency(
+        @data.total_redemptions
+      ) %>
     <% end %>
 
-<%# Explanation:: This card identifies the net capital remaining after all
-  #               transactions to show current investment; it is used for flow
-  #               analysis and works by subtracting redemptions from applications.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Fluxo Líquido",
-               card_icon: "repeat",
-               status: :teal do
-    %>
-      <%= normalize_currency(@fund_investment.total_gain) %>
+    <%# --- NET CASH FLOW --------------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Fluxo Líquido",
+        header_icon: "repeat",
+        status: :teal
+      )
+    ) do %>
+      <%= normalize_currency(
+        @data.total_gain
+      ) %>
     <% end %>
 
-<%# Explanation:: This card calculates the percentage return on the capital
-  #               employed to show efficiency; it is used for ranking assets
-  #               and works by comparing net gains against the invested principal.
-  %>
-    <%= render "partials/route/dashboard/card",
-               card_title: "Retorno sobre Investimento",
-               card_icon: card_data_icon_for(
-                 @fund_investment.return_percentage,
-                 positive: "smile",
-                 negative: "frown",
-                 zero: "minus"
-               ),
-               card_data: normalize_card_boolean(
-                 @fund_investment.return_percentage.positive?,
-                 labels: { true: "Lucro", false: "Prejuízo" }
-               ),
-               card_data_icon: card_data_icon_for(@fund_investment.return_percentage),
-               status: card_status_trend_for(@fund_investment.return_percentage) do
-    %>
-      <%= normalize_card_percentage(@fund_investment.return_percentage) %>
+    <%# --- RETURN ON INVESTMENT -------------------------- %>
+
+    <%= render(
+      Blocks::CardComponent.new(
+        title: "Retorno sobre Investimento",
+        header_icon: "trending-up",
+        status: @data.return_percentage >= 0 ?
+                  :success :
+                  :danger
+      )
+    ) do %>
+      <%= normalize_percentage(
+        @data.return_percentage
+      ) %>
     <% end %>
+
   <% end %>
 
-<%# Explanation:: This section organizes visual graphs to provide a better
-  #               understanding of movement trends; it is used for data analysis
-  #               and works by rendering distribution and flow charts side-by-side.
-  %>
-  <%= render "partials/route/dashboard/section",
-             section_title: "Visualizações de Performance",
-             columns: 2 do
-  %>
+  <%# ===================================================== %>
+  <%#               PERFORMANCE VISUALIZATION               %>
+  <%# ===================================================== %>
 
-<%# Explanation:: This chart shows the balance between money added and money
-  #               taken out to visualize activity; it is used for flow review
-  #               and works by rendering a dynamic donut graph with currency labels.
-  %>
-    <%= render "partials/groups/chart-list",
-               chart_type: :pie_chart,
-               data_source: {
-                 "Aplicações" => @fund_investment.total_applications,
-                 "Resgates" => @fund_investment.total_redemptions
-               },
-               chart_title: "Distribuição de Transações",
-               chart_options: {
-                 prefix: "R$ ",
-                 thousands: ".",
-                 decimal: ",",
-                 donut: true,
-                 legend: "right"
-               } %>
+  <%= render(
+    Blocks::SectionComponent.new(
+      title: "Visualizações de Performance",
+      columns: 2
+    )
+  ) do %>
 
-    <%# Explanation:: This chart tracks the monthly flow of transactions to reveal
-      #               investing patterns over time; it is used for historical analysis
-      #               and works by plotting application and redemption values on a timeline.
-      %>
-    <%
-      monthly_data = {}
+    <%# --- TRANSACTION DISTRIBUTION ---------------------- %>
 
-      @fund_investment.applications.each do |app|
-        month_key = app.request_date.strftime("%m/%Y")
-        monthly_data[month_key] ||= { "Aplicações" => 0, "Resgates" => 0 }
-        monthly_data[month_key]["Aplicações"] += app.financial_value || 0
-      end
+    <%= render Groups::ChartListComponent.new(
+      chart_type: :pie_chart,
+      chart_title: "Distribuição de Transações",
+      data_source: @data.transaction_distribution_chart,
+      chart_options: Charts::PieChartOptionsBuilder.call(
+        @data.transaction_distribution_chart
+      )
+    ) %>
 
-      @fund_investment.redemptions.each do |red|
-        month_key = red.request_date.strftime("%m/%Y")
-        monthly_data[month_key] ||= { "Aplicações" => 0, "Resgates" => 0 }
-        monthly_data[month_key]["Resgates"] += red.redeemed_liquid_value || 0
-      end
+    <%# --- MONTHLY CASH FLOW ----------------------------- %>
 
-      monthly_flows = monthly_data.sort_by { |k, v| Date.strptime(k, "%m/%Y") }.to_h
-    %>
-    <%= render "partials/groups/chart-list",
-               chart_type: :line_chart,
-               data_source: monthly_flows,
-               chart_title: "Fluxo Mensal de Transações",
-               chart_options: {
-                 stacked: false,
-                 prefix: "R$ ",
-                 thousands: ".",
-                 decimal: ",",
-                 curve: true
-               } %>
+    <%= render Groups::ChartListComponent.new(
+      chart_type: :line_chart,
+      chart_title: "Fluxo Mensal de Transações",
+      data_source: @data.monthly_transaction_flows_chart,
+      chart_options: Charts::LineSeriesChartOptionsBuilder.call(
+        @data.monthly_transaction_flows_chart
+      )
+    ) %>
+
   <% end %>
 
-<%# Explanation:: This table lists all money deposits made into this specific
-  #               investment for record keeping; it is used to audit applications
-  #               and works by showing dates, values, and unit prices for each entry.
-  %>
-  <%= render "partials/groups/table-list",
-             section_title: "Histórico de Aplicações",
-             collection: @fund_investment.applications.order(request_date: :desc),
-             action_path: new_application_path(fund_investment_id: @fund_investment.id),
-             action_name: "Nova aplicação",
-             headers: ["Solicitação", "Valor Financeiro", "Cotas Adquiridas", "Cotação na Aplicação", "Cotização", "Liquidação"],
-             column_icons: [
-               "calendar-plus",
-               "banknote",
-               "percent",
-               "calculator",
-               "calendar-setting",
-               "calendar-check-2"
-             ],
-             body_procs: [
-               ->(app) do
-                 normalize_date(app.request_date)
-               end,
-               ->(app) do
-                 normalize_currency(app.financial_value)
-               end,
-               ->(app) do
-                 normalize_number(app.number_of_quotas)
-               end,
-               ->(app) do
-                 normalize_currency(app.quota_value_at_application)
-               end,
-               ->(app) do
-                 normalize_date(app.cotization_date)
-               end,
-               ->(app) do
-                 normalize_date(app.liquidation_date)
-               end,
-             ]
-  %>
+  <%# ===================================================== %>
+  <%#                  APPLICATION HISTORY                  %>
+  <%# ===================================================== %>
 
-<%# Explanation:: This table lists all money withdrawals made from this investment
-  #               for financial tracking; it is used to monitor redemptions and
-  #               works by showing liquidated values and calculated yields for each exit.
-  %>
-  <%= render "partials/groups/table-list",
-             section_title: "Histórico de Resgates",
-             collection: @fund_investment.redemptions.order(request_date: :desc),
-             action_path: new_redemption_path(fund_investment_id: @fund_investment.id),
-             action_name: "Novo resgate",
-             headers: ["Solicitação", "Cotas Resgatadas", "Valor Líquido", "Tipo de Resgate", "Rendimento", "Cotização", "Liquidação"],
-             column_icons: [
-               "calendar-plus",
-               "arrow-down-to-line",
-               "coins",
-               "tag",
-               "trending-up-down",
-               "calculator",
-               "calendar-check-2"
-             ],
-             body_procs: [
-               ->(red) do
-                 normalize_date(red.request_date)
-               end,
-               ->(red) do
-                 normalize_number(red.redeemed_quotas)
-               end,
-               ->(red) do
-                 normalize_currency(red.redeemed_liquid_value)
-               end,
-               ->(red) do
-                 translations = {
-                   "partial" => "Parcial",
-                   "total" => "Total",
-                   "emergency" => "Emergencial",
-                   "scheduled" => "Agendado"
-                 }
+  <%= render(Groups::TableListComponent.new(
+    title: "Histórico de Aplicações",
+    collection: @data.applications,
+  )) do |table| %>
 
-                 label = translations[red.redemption_type.to_s]
+    <%# --- TABLE COLUMNS --------------------------------- %>
 
-                 normalize_badge(label)
-               end,
-               ->(red) do
-                 normalize_trend(red.redemption_yield)
-               end,
-               ->(red) do
-                 normalize_date(red.cotization_date)
-               end,
-               ->(red) do
-                 normalize_date(red.liquidation_date)
-               end,
-             ]
-  %>
+    <% table.with_column(
+      label: "Solicitação",
+      icon: "calendar-plus"
+    ) %>
 
-<%# Explanation:: This section provides a quick summary of the very latest
-  #               movements to show current activity; it is used for fast review
-  #               and works by displaying the five most recent transactions of each type.
-  %>
-  <%= render "partials/route/dashboard/section",
-             columns: 2,
-             has_action: false do
-  %>
+    <% table.with_column(
+      label: "Valor Financeiro",
+      icon: "banknote"
+    ) %>
 
-<%# Explanation:: This list highlights the five newest deposits to track recent
-  #               growth; it is used for immediate visibility and works by
-  #               showing the added amounts with a success-themed color.
-  %>
-    <%= render "partials/groups/recent_activity",
-               section_title: "Aplicações",
-               section_columns: 1,
-               collection: @fund_investment.applications.order(request_date: :desc).limit(5),
-               color: "success",
-               see_all_path: applications_path(q: { fund_investment_id_eq: @fund_investment.id }),
-               title_proc: ->(app) { "Aplicação" },
-               value_proc: ->(app) { "+ R$#{app.financial_value}" },
-               sub_value_proc: ->(app) { "#{app.number_of_quotas} cotas" } %>
+    <% table.with_column(
+      label: "Cotas Adquiridas",
+      icon: "percent"
+    ) %>
 
-<%# Explanation:: This list highlights the five newest withdrawals to monitor
-  #               recent liquidity; it is used for immediate visibility and works
-  #               by showing the taken amounts with a danger-themed color.
-  %>
-    <%= render "partials/groups/recent_activity",
-               section_title: "Resgates",
-               section_columns: 1,
-               collection: @fund_investment.redemptions.order(request_date: :desc).limit(5),
-               color: "danger",
-               see_all_path: redemptions_path(q: { fund_investment_id_eq: @fund_investment.id }),
-               title_proc: ->(red) { "Resgate #{red.redemption_type || 'Padrão'}" },
-               value_proc: ->(red) { "- R$#{red.redeemed_liquid_value}" },
-               sub_value_proc: ->(red) { "#{red.redeemed_quotas} cotas" } %>
+    <% table.with_column(
+      label: "Cotação na Aplicação",
+      icon: "calculator"
+    ) %>
+
+    <% table.with_column(
+      label: "Cotização",
+      icon: "calendar-setting"
+    ) %>
+
+    <% table.with_column(
+      label: "Liquidação",
+      icon: "calendar-check-2"
+    ) %>
+
+    <%# --- TABLE ROWS ------------------------------------ %>
+
+    <% @data.applications.each do |app| %>
+
+      <% table.with_row(
+        model_id: app.id,
+        cells: [
+          normalize_date(app.request_date),
+          normalize_currency(app.financial_value),
+          normalize_number(app.number_of_quotas),
+          normalize_currency(app.quota_value_at_application),
+          normalize_date(app.cotization_date),
+          normalize_date(app.liquidation_date)
+        ]
+      ) %>
+
+    <% end %>
+
   <% end %>
 
-<%# Explanation:: This table displays periodic snapshots of performance to
-  #               show long-term growth; it is used for strategic review and
-  #               works by listing market vs. invested values over time.
-  %>
-  <%= render "partials/groups/table-list",
-             section_title: "Histórico de Performance",
-             collection: @fund_investment.performance_histories.order(created_at: :desc).limit(10),
-             action_path: nil,
-             action_name: nil,
-             headers: ["Data do Registro", "Valor de Mercado", "Valor Investido", "Ganho/Perda", "Retorno"],
-             column_icons: [
-               "calendar",
-               "trending-up",
-               "banknote",
-               "trending-up-down",
-               "percent"
-             ],
-             body_procs: [
-               ->(perf) do
-                 normalize_date(perf.created_at)
-               end,
-               ->(perf) do
-                 normalize_currency(perf.market_value)
-               end,
-               ->(perf) do
-                 normalize_currency(perf.invested_value)
-               end,
-               ->(perf) do
-                 normalize_currency(perf.market_value - perf.invested_value)
-               end,
-               ->(perf) do
-                 return_pct = perf.invested_value > 0 ? ((perf.market_value - perf.invested_value) / perf.invested_value * 100) : 0
+  <%# ===================================================== %>
+  <%#                   REDEMPTION HISTORY                  %>
+  <%# ===================================================== %>
 
-                 normalize_percentage(return_pct)
-               end,
-             ]
-  %>
+  <%= render(Groups::TableListComponent.new(
+    title: "Histórico de Resgates",
+    collection: @data.redemptions,
+  )) do |table| %>
+
+    <%# --- TABLE COLUMNS --------------------------------- %>
+
+    <% table.with_column(
+      label: "Solicitação",
+      icon: "calendar-plus"
+    ) %>
+
+    <% table.with_column(
+      label: "Cotas Resgatadas",
+      icon: "arrow-down-to-line"
+    ) %>
+
+    <% table.with_column(
+      label: "Valor Líquido",
+      icon: "coins"
+    ) %>
+
+    <% table.with_column(
+      label: "Tipo de Resgate",
+      icon: "tag"
+    ) %>
+
+    <% table.with_column(
+      label: "Rendimento",
+      icon: "trending-up-down"
+    ) %>
+
+    <% table.with_column(
+      label: "Cotização",
+      icon: "calculator"
+    ) %>
+
+    <% table.with_column(
+      label: "Liquidação",
+      icon: "calendar-check-2"
+    ) %>
+
+    <%# --- TABLE ROWS ------------------------------------ %>
+
+    <% @data.redemptions.each do |red| %>
+
+      <% table.with_row(
+        model_id: red.id,
+        cells: [
+          normalize_date(red.request_date),
+          normalize_number(red.redeemed_quotas),
+          normalize_currency(red.redeemed_liquid_value),
+          normalize_badge(
+            FundInvestments::RedemptionTypeLabels.call(
+              red.redemption_type
+            )
+          ),
+          normalize_trend(red.redemption_yield),
+          normalize_date(red.cotization_date),
+          normalize_date(red.liquidation_date)
+        ]
+      ) %>
+
+    <% end %>
+
+  <% end %>
+
+  <%# ===================================================== %>
+  <%#                  PERFORMANCE HISTORY                  %>
+  <%# ===================================================== %>
+
+  <%= render(Groups::TableListComponent.new(
+    title: "Histórico de Performance",
+    collection: @data.performance_histories,
+  )) do |table| %>
+
+    <%# --- TABLE COLUMNS --------------------------------- %>
+
+    <% table.with_column(
+      label: "Data do Registro",
+      icon: "calendar"
+    ) %>
+
+    <% table.with_column(
+      label: "Valor de Mercado",
+      icon: "trending-up"
+    ) %>
+
+    <% table.with_column(
+      label: "Valor Investido",
+      icon: "banknote"
+    ) %>
+
+    <% table.with_column(
+      label: "Ganho/Perda",
+      icon: "trending-up-down"
+    ) %>
+
+    <%# --- TABLE ROWS ------------------------------------ %>
+
+    <% @data.performance_histories.each do |perf| %>
+
+      <% table.with_row(
+        model_id: perf.id,
+        cells: [
+          normalize_date(perf.created_at),
+          normalize_currency(perf.market_value),
+          normalize_currency(perf.invested_value),
+          normalize_currency(
+            perf.market_value - perf.invested_value
+          ),
+        ]
+      ) %>
+
+    <% end %>
+
+  <% end %>
+
 <% end %>

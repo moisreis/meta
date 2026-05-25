@@ -3,17 +3,18 @@
   ACTION: FundInvestmentsController#edit
 
   DESCRIPTION:
-  Renders the fund investment update page using the dashboard layout
-  wrapper and the shared fund investment form partial configured for
-  record updates.
+  Renders the fund investment update page using the dashboard
+  layout wrapper and the shared fund investment form partial
+  configured for record updates.
 
   INSTANCE VARIABLES:
-  - @fund_investment: [FundInvestment] The fund investment record being edited.
+  - @fund_investment: [FundInvestment]
+    The fund investment record being edited.
 %>
 
-<%# ========================================================= %>
-<%#                    DASHBOARD WRAPPER                      %>
-<%# ========================================================= %>
+<%# ======================================================= %>
+<%#                    DASHBOARD WRAPPER                    %>
+<%# ======================================================= %>
 
 <%= render(
       Layout::DashboardWrapperComponent.new(
@@ -22,16 +23,18 @@
       )
     ) do %>
 
-  <%# ======================================================= %>
-  <%#               FUND INVESTMENT FORM PARTIAL              %>
-  <%# ======================================================= %>
+  <%# ===================================================== %>
+  <%#                FUND INVESTMENT FORM                   %>
+  <%# ===================================================== %>
+
+  <%# --- SHARED FORM PARTIAL ------------------------------ %>
 
   <%= render(
         "form",
         fund_investment: @fund_investment,
         form_method: :patch,
-        button_name: "Atualizar",
-        icon_name: "refresh-cw"
+        button_name: AppConstants::UPDATE_BUTTON_LABEL,
+        icon_name: AppConstants::UPDATE_BUTTON_ICON
       ) %>
 
 <% end %>

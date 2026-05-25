@@ -1,15 +1,11 @@
-# Loads the Rails application and registers all Rake tasks.
+# Loads the Rails application environment and all registered
+# Rake task definitions available within the application.
 #
-# The primary entry point for Rake tasks within the Rails application.
-# This file loads the Rails environment and registers all task definitions
-# from Rails itself, installed gems, and the `lib/tasks` directory.
+# This file serves as the main Rake entrypoint used for
+# task execution, including framework, engine, and custom
+# application tasks.
 #
 # @author Moisés Reis
-# @see http://railscasts.com/episodes/273-one-step-setup-with-rake
-
-# ============================================================================
-# CONFIGURATION & LOADING
-# ============================================================================
 
 require_relative "config/application"
 

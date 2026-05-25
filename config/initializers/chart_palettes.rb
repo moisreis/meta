@@ -17,12 +17,14 @@ module ChartPalettes
   # @return [Hash<Symbol, String>] Immutable mapping of color identifiers
   #   to six-character hexadecimal RGB values without the leading '#'.
   COLORS = {
-    violet: "6D28D9",
-    green:  "227857",
-    teal:   "115E59",
-    indigo: "4F46E5",
-    gray:   "9CA3AF",
-    red:    "B91C1C"
+    navy:       "1E3A5F",
+    slate:      "334155",
+    emerald:    "166534",
+    steel_blue: "1D4ED8",
+    charcoal:   "374151",
+    crimson:    "991B1B",
+    green:      "166534",
+    red:        "991B1B"
   }.freeze
 
   # ==========================================================================
@@ -34,11 +36,12 @@ module ChartPalettes
   # @return [Hash<Symbol, Array<Symbol>>] Immutable mapping of palette names
   #   to ordered color key collections.
   PALETTES = {
-    compliance:   %i[violet green teal].freeze,
-    performance:  %i[indigo gray].freeze,
-    default:      %i[indigo].freeze,
-    distribution: %i[indigo violet teal green gray].freeze,
-    line_series:  %i[indigo gray teal violet].freeze
+    compliance:   %i[navy emerald slate].freeze,
+    performance:  %i[steel_blue charcoal].freeze,
+    default:      %i[steel_blue].freeze,
+    distribution: %i[steel_blue navy emerald slate charcoal].freeze,
+    line_series:  %i[steel_blue charcoal slate navy].freeze,
+    risk:         %i[crimson charcoal].freeze
   }.freeze
 
   # ==========================================================================

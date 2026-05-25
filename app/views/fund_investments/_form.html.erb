@@ -1,30 +1,45 @@
 <%#
   PARTIAL: app/views/fund_investments/_form.html.erb
-  DESCRIPTION: Renders the structured form fields for recording how capital
-  is allocated to specific funds, linking investments to portfolios and
-  fund records.
+
+  DESCRIPTION:
+  Renders the structured form fields for recording how capital
+  is allocated to specific funds, linking investments to
+  portfolios and fund records.
 
   LOCAL VARIABLES:
-  - fund_investment: [FundInvestment] Form-backed fund investment instance. (required)
-  - icon_name:       [String]         Icon identifier rendered inside the submit button. (required)
-  - button_name:     [String]         Label text rendered inside the submit button. (required)
-  - form_method:     [Symbol]         HTTP method forwarded to the submit button component. (default: :post)
+  - fund_investment: [FundInvestment]
+    Form-backed fund investment instance. (required)
+
+  - icon_name: [String]
+    Icon identifier rendered inside the submit button. (required)
+
+  - button_name: [String]
+    Label text rendered inside the submit button. (required)
+
+  - form_method: [Symbol]
+    HTTP method forwarded to the submit button component.
+    (default: :post)
 
   INSTANCE VARIABLES:
-  - @investment_funds: [ActiveRecord::Relation] Collection of available investment funds.
-  - @portfolios:       [ActiveRecord::Relation] Collection of portfolios available for selection.
+  - @investment_funds: [ActiveRecord::Relation]
+    Collection of available investment funds.
+
+  - @portfolios: [ActiveRecord::Relation]
+    Collection of portfolios available for selection.
 %>
 
 <%= form_with(model: fund_investment, class: "contents") do |form| %>
 
-  <%# ==================================================================== %>
-  <%#                     INVESTMENT DESTINATION                           %>
-  <%# ==================================================================== %>
+  <%# ===================================================== %>
+  <%#                INVESTMENT DESTINATION                 %>
+  <%# ===================================================== %>
 
   <%= render Forms::FieldsetComponent.new(
         title: "Destino do Investimento",
         description: "Selecione o fundo de destino e a carteira onde o ativo será armazenado."
       ) do %>
+
+    <%# --- INVESTMENT FUND SELECT ------------------------ %>
 
     <%= render Forms::SelectComponent.new(
           f: form,
@@ -35,6 +50,8 @@
           desc: "Escolha o fundo que está sendo alocado.",
           is_inactive: false
         ) %>
+
+    <%# --- PORTFOLIO SELECT ------------------------------ %>
 
     <%= render Forms::SelectComponent.new(
           f: form,
@@ -47,14 +64,16 @@
 
   <% end %>
 
-  <%# ==================================================================== %>
-  <%#                        VALUES & QUOTAS                               %>
-  <%# ==================================================================== %>
+  <%# ===================================================== %>
+  <%#                    VALUES & QUOTAS                    %>
+  <%# ===================================================== %>
 
   <%= render Forms::FieldsetComponent.new(
         title: "Valores e Cotas",
         description: "Informe os detalhes financeiros e a quantidade de participação no fundo."
       ) do %>
+
+    <%# --- PERCENTAGE ALLOCATION ------------------------- %>
 
     <%= render Forms::InputFieldComponent.new(
           f: form,
@@ -67,6 +86,8 @@
           step: :any
         ) %>
 
+    <%# --- TOTAL QUOTAS HELD ----------------------------- %>
+
     <%= render Forms::InputFieldComponent.new(
           f: form,
           name: :total_quotas_held,
@@ -78,13 +99,15 @@
           step: :any
         ) %>
 
+    <%# --- HIDDEN TOTAL INVESTED VALUE ------------------- %>
+
     <%= form.hidden_field :total_invested_value, value: 0 %>
 
   <% end %>
 
-  <%# ==================================================================== %>
-  <%#                           SUBMISSION                                 %>
-  <%# ==================================================================== %>
+  <%# ===================================================== %>
+  <%#                       SUBMISSION                      %>
+  <%# ===================================================== %>
 
   <%= render Forms::SubmitButtonComponent.new(
         builder: form,

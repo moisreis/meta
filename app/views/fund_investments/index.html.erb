@@ -1,125 +1,147 @@
 <%#
-  VIEW: index.html.erb
+  VIEW: app/views/fund_investments/index.html.erb
   ACTION: FundInvestmentsController#index
-  DESCRIPTION: Lists all fund investments (allocations) with a data table,
-               sorting, search, and filter panel. Exports are also available.
+
+  DESCRIPTION:
+  Displays the fund investment listing page with searchable,
+  filterable, sortable, and paginated records using reusable
+  dashboard and table components.
+
   INSTANCE VARIABLES:
-    - @fund_investments: [ActiveRecord::Relation<FundInvestment>] Filtered collection.
-    - @q: [Ransack::Search] Search object for filtering/sorting.
+  - @fund_investments: [ActiveRecord::Relation<FundInvestment>]
+    Paginated fund investment collection.
+
+  - @q: [Ransack::Search]
+    Search object used for filtering and sorting.
+
+  - @total_items: [Integer]
+    Total filtered fund investment count.
 %>
 
-<%= render 'partials/route/dashboard/wrapper',
-           page_title: "Lista de Alocações",
-           page_desc: "Acompanhe como os fundos estão distribuídos entre as carteiras.",
-           current_view: "datatable" do
-%>
-  <%= render partial: "partials/blocks/data-table", locals: {
+<%# ======================================================= %>
+<%#                    DASHBOARD WRAPPER                    %>
+<%# ======================================================= %>
 
-    columns_header: [
-      "ID",
-      "Fundo",
-      "Carteira",
-      "Alocação",
-      "Valor investido",
-      "Cotas totais",
-      "Criado em",
-      "Retorno"
-    ],
+<%= render(
+      Layout::DashboardWrapperComponent.new(
+        page_title: "Lista de Alocações",
+        page_desc: "Acompanhe como os fundos estão distribuídos entre as carteiras.",
+        current_view: "datatable"
+      )
+    ) do %>
 
-    columns_icons: [
-      "wallet",
-      "layers",
-      "shuffle",
-      "banknote",
-      "percent",
-      "calendar",
-      "trending-up"
-    ],
+  <%# ===================================================== %>
+  <%#               FUND INVESTMENTS DATA TABLE             %>
+  <%# ===================================================== %>
 
-    columns_body: [
+  <%= render(
+        Groups::DataTableComponent.new(
+          columns: [
+            { label: "Fundo",           icon: "layers" },
+            { label: "Carteira",        icon: "wallet" },
+            { label: "Alocação",        icon: "shuffle" },
+            { label: "Valor investido", icon: "banknote" },
+            { label: "Cotas totais",    icon: "percent" },
+            { label: "Criado em",       icon: "calendar" },
+          ],
+          rows: @fund_investments,
+          turbo_frame_id: "fund_investments_table",
+          search_url: fund_investments_path,
+          new_path: new_fund_investment_path,
+          q_object: @q,
+        )
+      ) do %>
 
-      ->(fi) do
-        normalize_fk(fi.id)
-      end,
+    <%# --- TABLE ROWS ------------------------------------ %>
 
-      ->(fi) do
-        normalize_title(fi.investment_fund&.fund_name)
-      end,
+    <% @fund_investments.each do |fund_investment| %>
 
-      ->(fi) do
-        normalize_fk(fi.portfolio&.name)
-      end,
+      <%# --- FUND INVESTMENT ROW ------------------------- %>
 
-      ->(fi) do
-        normalize_percentage(fi.percentage_allocation)
-      end,
+      <%= render(
+            Modules::TableRowComponent.new(
+              cells: [
 
-      ->(fi) do
-        normalize_currency(fi.total_invested_value)
-      end,
+                normalize_title(
+                  fund_investment.investment_fund&.fund_name
+                ),
 
-      ->(fi) do
-        normalize_number(fi.total_quotas_held)
-      end,
+                normalize_badge(
+                  fund_investment.portfolio&.name
+                ),
 
-      ->(fi) do
-        normalize_date(fi.created_at)
-      end,
+                normalize_percentage(
+                  fund_investment.percentage_allocation
+                ),
 
-      ->(fi) do
-        normalize_trend(fi.return_percentage, format: :percentage)
-      end
-    ],
+                fund_investment.total_invested_value.present? ?
+                  normalize_currency(
+                    fund_investment.total_invested_value
+                  ) :
+                  normalize_no_data,
 
-    models: @fund_investments,
+                fund_investment.total_quotas_held.present? ?
+                  normalize_number(
+                    fund_investment.total_quotas_held
+                  ) :
+                  normalize_no_data,
 
-    sort_options: [],
+                normalize_date(
+                  fund_investment.created_at
+                ),
 
-    q_object: @q,
+              ],
+              model_id: fund_investment.id,
+              show_path: fund_investment_path(fund_investment),
+              edit_path: edit_fund_investment_path(fund_investment),
+              destroy_path: fund_investment_path(fund_investment)
+            )
+          ) %>
 
-    search_url: fund_investments_path,
+    <% end %>
 
-    turbo_frame_id: "fund_investments_table",
+  <% end %>
 
-    export_url: export_fund_investments_path(request.query_parameters.slice('q'))
-  } %>
 <% end %>
-<%= render partial: "partials/route/dashboard/filters", locals: {
 
-  q_object: @q,
+<%# ======================================================= %>
+<%#                      FILTERS PANEL                      %>
+<%# ======================================================= %>
 
-  search_url: fund_investments_path,
-
-  filters: [
-    {
-      key: :portfolio_name_cont,
-      label: "Carteira",
-      description: "Exibe alocações vinculadas a carteiras cujo nome corresponda.",
-      placeholder: "Nome da carteira",
-      icon_name: "wallet"
-    },
-    {
-      key: :investment_fund_fund_name_cont,
-      label: "Fundo",
-      description: "Filtra alocações pelo fundo investido.",
-      placeholder: "Nome do fundo",
-      icon_name: "chart-pie"
-    },
-    {
-      key: :percentage_allocation_gteq,
-      label: "Alocação",
-      description: "Exibe alocações com percentual igual ou superior ao informado.",
-      placeholder: "Percentual mínimo",
-      icon_name: "badge-percent"
-    },
-    {
-      key: :total_invested_value_gteq,
-      label: "Valor investido",
-      description: "Filtra alocações com valor investido acima do indicado.",
-      placeholder: "Valor mínimo",
-      icon_name: "banknote"
-    }
-  ],
-
-  turbo_frame_id: "fund_investments_table"
-} %>
+<%= render(
+      Groups::FiltersComponent.new(
+        q_object: @q,
+        search_url: fund_investments_path,
+        turbo_frame_id: "fund_investments_table",
+        filters: [
+          {
+            key: :portfolio_name_cont,
+            label: "Carteira",
+            description: "Exibe alocações vinculadas a carteiras cujo nome corresponda.",
+            placeholder: "Nome da carteira",
+            icon_name: "wallet"
+          },
+          {
+            key: :investment_fund_fund_name_cont,
+            label: "Fundo",
+            description: "Filtra alocações pelo fundo investido.",
+            placeholder: "Nome do fundo",
+            icon_name: "chart-pie"
+          },
+          {
+            key: :percentage_allocation_gteq,
+            label: "Alocação",
+            description: "Exibe alocações com percentual igual ou superior ao informado.",
+            placeholder: "Percentual mínimo",
+            icon_name: "badge-percent"
+          },
+          {
+            key: :total_invested_value_gteq,
+            label: "Valor investido",
+            description: "Filtra alocações com valor investido acima do indicado.",
+            placeholder: "Valor mínimo",
+            icon_name: "banknote"
+          }
+        ]
+      )
+    ) %>

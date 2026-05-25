@@ -5,14 +5,15 @@
   DESCRIPTION:
   Renders the fund investment creation page using the dashboard layout
   wrapper and the shared fund investment form partial configured for
-  record creation.
+  new allocation registration.
 
   INSTANCE VARIABLES:
-  - @fund_investment: [FundInvestment] Form-backed fund investment instance.
+  - @fund_investment: [FundInvestment]
+    Form-backed fund investment instance used during creation.
 %>
 
 <%# ========================================================= %>
-<%#                    DASHBOARD WRAPPER                      %>
+<%#                    DASHBOARD WRAPPER                     %>
 <%# ========================================================= %>
 
 <%= render(
@@ -23,14 +24,16 @@
     ) do %>
 
   <%# ======================================================= %>
-  <%#               FUND INVESTMENT FORM PARTIAL              %>
+  <%#                 FUND INVESTMENT FORM                   %>
   <%# ======================================================= %>
+
+  <%# --- SHARED FORM PARTIAL ------------------------------ %>
 
   <%= render(
         "form",
         fund_investment: @fund_investment,
-        button_name: "Adicionar",
-        icon_name: "plus"
+        button_name: AppConstants::CREATE_BUTTON_LABEL,
+        icon_name: AppConstants::CREATE_BUTTON_ICON
       ) %>
 
 <% end %>

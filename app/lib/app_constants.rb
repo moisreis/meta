@@ -1,40 +1,79 @@
-# Defines application-wide immutable constants shared across the system.
+# frozen_string_literal: true
+
+# Defines globally shared immutable application constants.
 #
-# This module centralizes static business and interface constants used by
-# multiple application layers to avoid duplication and maintain consistency.
+# Centralizes reusable UI labels, branding metadata,
+# pagination defaults, and shared interface values used
+# across views, components, and service layers.
 #
 # @author Moisés Reis
+#
+# CONSTANT GROUPS:
+#   - Company Branding
+#   - Pagination
+#   - Shared Messages
+#   - Action Button Labels
 module AppConstants
 
-  # ==========================================================================
-  # COMPANY INFORMATION
-  # ==========================================================================
+  # ===========================================================
+  #                     COMPANY BRANDING
+  # ===========================================================
 
-  # Official registered company name used in legal and formal contexts.
+  # Full registered company name.
   #
-  # @return [String] Immutable full company name.
+  # @return [String]
   COMPANY_NAME_LONG = "Meta Consultoria de Investimentos Institucionais Ltda".freeze
 
-  # Shortened company name used in interfaces and general presentation contexts.
+  # Short company display name used in UI contexts.
   #
-  # @return [String] Immutable abbreviated company name.
+  # @return [String]
   COMPANY_NAME_SHORT = "Meta Investimentos".freeze
 
-  # ==========================================================================
-  # PAGINATION SETTINGS
-  # ==========================================================================
+  # ===========================================================
+  #                        PAGINATION
+  # ===========================================================
 
-  # Default number of records displayed per paginated index page.
+  # Default number of records displayed per paginated page.
   #
-  # @return [Integer] Immutable pagination size used across index views.
+  # @return [Integer]
   INDEX_PER_PAGE = 14
 
-  # ==========================================================================
-  # DEFAULT MESSAGES
-  # ==========================================================================
+  # ===========================================================
+  #                      SHARED MESSAGES
+  # ===========================================================
 
-  # Message displayed when no data is available to present in a view.
+  # Default fallback message displayed when no records
+  # or datasets are available.
   #
-  # @return [String] Immutable default message for empty datasets.
+  # @return [String]
   NO_AVAILABLE_DATA_MESSAGE = "Nenhum dado disponível.".freeze
+
+  # ===========================================================
+  #                    UPDATE ACTION LABELS
+  # ===========================================================
+
+  # Default update button label.
+  #
+  # @return [String]
+  UPDATE_BUTTON_LABEL = "Atualizar".freeze
+
+  # Default update button icon identifier.
+  #
+  # @return [String]
+  UPDATE_BUTTON_ICON = "refresh-cw".freeze
+
+  # ===========================================================
+  #                    CREATE ACTION LABELS
+  # ===========================================================
+
+  # Default create button label.
+  #
+  # @return [String]
+  CREATE_BUTTON_LABEL = "Adicionar".freeze
+
+  # Default create button icon identifier.
+  #
+  # @return [String]
+  CREATE_BUTTON_ICON = "plus".freeze
+
 end

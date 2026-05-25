@@ -1,21 +1,5 @@
-# Configures Git ignore rules for temporary, generated, sensitive, and
-# environment-specific files.
-#
-# This file prevents local development artifacts, runtime data, compiled assets,
-# and secret credentials from being committed to version control.
-#
-# @author Moisés Reis
-
-# ============================================================================
-# ENVIRONMENT & CONFIGURATION
-# ============================================================================
-
-/.bundle
-/.env*
-
-# ============================================================================
-# LOGS & TEMPORARY FILES
-# ============================================================================
+.bundle
+.env*
 
 /log/*
 /tmp/*
@@ -25,10 +9,6 @@
 /tmp/pids/*
 !/tmp/pids/
 !/tmp/pids/.keep
-
-# ============================================================================
-# STORAGE & GENERATED ASSETS
-# ============================================================================
 
 /storage/*
 !/storage/.keep
@@ -41,9 +21,5 @@
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
-
-# ============================================================================
-# ENCRYPTION & SECRET KEYS
-# ============================================================================
 
 /config/*.key

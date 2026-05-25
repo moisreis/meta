@@ -5,10 +5,6 @@
 #
 # @author Moisés Reis
 
-# ============================================================================
-# APPLICATION INITIALIZATION
-# ============================================================================
-
 require_relative "config/environment"
 
 run Rails.application
