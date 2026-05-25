@@ -182,7 +182,15 @@
                end,
 
                ->(portfolio) do
-                 normalize_trend(portfolio.total_invested_value.to_f.positive? ? ((portfolio.fund_investments.sum(&:current_market_value) - portfolio.total_invested_value.to_f) / portfolio.total_invested_value.to_f * 100) : 0, format: :percentage)
+                normalize_trend(
+                  portfolio.total_invested_value.to_f.positive? ?
+                    (
+                      portfolio.fund_investments.sum do |fi|
+                        FundInvestments::CurrentMarketValueQuery.call(fi, Date.current)
+                      end - portfolio.total_invested_value.to_f
+                    ) / portfolio.total_invested_value.to_f * 100 : 0,
+                  format: :percentage
+                )
                end,
 
                ->(portfolio) do
