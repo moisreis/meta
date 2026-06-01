@@ -214,6 +214,10 @@ class FundInvestment < ApplicationRecord
     end
   end
 
+  def current_market_value(date = Date.current)
+    FundInvestments::CurrentMarketValueQuery.call(self, date)
+  end
+
   # =============================================================
   #                     HISTORICAL VALUATION
   # =============================================================
