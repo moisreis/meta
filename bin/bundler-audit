@@ -1,32 +1,27 @@
 #!/usr/bin/env ruby.exe
+# frozen_string_literal: true
 
-# Entry point script for executing Bundler Audit security checks.
+# bin/bundler-audit
 #
-# This script initializes the application environment, conditionally injects
-# a configuration file, and delegates execution to the Bundler Audit CLI.
+# Entry point for executing Bundler Audit security checks.
 #
-# @author Moisés Reis
+# Initializes the application environment, configures default
+# CLI arguments, and delegates execution to Bundler Audit.
+#
+# @author  Moisés Reis
 
-# =============================================================
-#                        ENVIRONMENT BOOT
-# =============================================================
+# == Environment Boot =======================================================
 
 require_relative "../config/boot"
 require "bundler/audit/cli"
 
-# =============================================================
-#                      ARGUMENT HANDLING
-# =============================================================
 
-# Inject default configuration file when:
-# - No arguments are provided, or
-# - The "check" command is explicitly used
-ARGV.concat %w[ --config config/bundler-audit.yml ] \
+# == Argument Handling ======================================================
+
+ARGV.concat %w[--config config/bundler-audit.yml] \
   if ARGV.empty? || ARGV.include?("check")
 
-# =============================================================
-#                            EXECUTION
-# =============================================================
 
-# Start Bundler Audit CLI.
+# == Execution ==============================================================
+
 Bundler::Audit::CLI.start

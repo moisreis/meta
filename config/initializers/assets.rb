@@ -1,11 +1,12 @@
-# Sets the asset pipeline version string.
+# frozen_string_literal: true
+
+# config/initializers/assets.rb
 #
-# Bumping this value forces all assets to be recompiled
-# and invalidates browser caches.
+# Defines asset pipeline versioning used for cache invalidation.
 #
-# This file does not configure asset precompilation paths
-# or digest behaviour.
+# Bumping the version forces recompilation of assets and
+# invalidates browser caches across deployments.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
 Rails.application.config.assets.version = "1.0"

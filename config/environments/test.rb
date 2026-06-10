@@ -1,18 +1,17 @@
-# Configures the Rails application for the test environment.
+# frozen_string_literal: true
+
+# config/environments/test.rb
 #
-# Disables code reloading, uses a null cache store, and
-# sets up test-friendly defaults for mailer and storage.
+# Configures Rails test environment behavior.
 #
-# This file does not configure development logging features
-# or production caching strategies.
+# Defines caching strategy, error handling, asset behavior,
+# and test-specific defaults for mailer and storage.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
 Rails.application.configure do
 
-  # =============================================================
-  #                      GENERAL SETTINGS
-  # =============================================================
+  # == General Settings ======================================================
 
   config.enable_reloading = false
   config.eager_load = ENV["CI"].present?
@@ -25,9 +24,8 @@ Rails.application.configure do
 
   config.active_support.deprecation = :stderr
 
-  # =============================================================
-  #                      CACHING & STORAGE
-  # =============================================================
+
+  # == Caching & Storage =====================================================
 
   config.public_file_server.headers = {
     "cache-control" => "public, max-age=3600"
@@ -37,10 +35,10 @@ Rails.application.configure do
 
   config.active_storage.service = :test
 
-  # =============================================================
-  #                          MAILER
-  # =============================================================
+
+  # == Mailer ================================================================
 
   config.action_mailer.delivery_method = :test
   config.action_mailer.default_url_options = { host: "example.com" }
+
 end

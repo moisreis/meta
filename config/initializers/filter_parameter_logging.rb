@@ -1,24 +1,26 @@
-# Registers parameter keys to be filtered from Rails logs.
-#
-# Prevents sensitive data — passwords, tokens, secrets, and
-# personal identifiers — from appearing in log output.
-#
-# This file does not configure encryption, authentication,
-# or network-level request filtering.
-#
-# @author Moisés Reis
+# frozen_string_literal: true
 
-Rails.application.config.filter_parameters += [
-  :passw,
-  :email,
-  :secret,
-  :token,
-  :_key,
-  :crypt,
-  :salt,
-  :certificate,
-  :otp,
-  :ssn,
-  :cvv,
-  :cvc
+# config/initializers/filter_parameter_logging.rb
+#
+# Configures parameter filtering for Rails logs.
+#
+# Sensitive request parameters such as credentials, tokens,
+# and personal identifiers are filtered to prevent exposure
+# in log output.
+#
+# @author  Moisés Reis
+
+Rails.application.config.filter_parameters += %i[
+  passw
+  email
+  secret
+  token
+  _key
+  crypt
+  salt
+  certificate
+  otp
+  ssn
+  cvv
+  cvc
 ]

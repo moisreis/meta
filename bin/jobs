@@ -1,6 +1,24 @@
 #!/usr/bin/env ruby
 
+# frozen_string_literal: true
+
+# bin/jobs
+#
+# Entry point for starting the Solid Queue job processor.
+#
+# Loads the application environment and starts the Solid Queue CLI
+# with the provided command-line arguments.
+#
+# @author  Moisés Reis
+
+
+# == Application Boot ========================================================
+
 require_relative "../config/environment"
+
+
+# == Job Processor ============================================================
+
 require "solid_queue/cli"
 
 SolidQueue::Cli.start(ARGV)

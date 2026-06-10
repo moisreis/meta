@@ -1,42 +1,60 @@
 # frozen_string_literal: true
 
-# Provides logic for reconstructing historical quota positions
-# of a fund investment at a given point in time.
+# app/lib/portfolios/quota_reconstruction.rb
 #
-# This module aggregates application and redemption movements
-# up to a specific date to compute the net quota balance.
+# Provides logic for reconstructing historical quota positions of a fund
+# investment at a given point in time.
 #
-# @author Moisés Reis
+# Aggregates application and redemption movements up to a specific date
+# to compute the net quota balance.
+#
+# @author  Moisés Reis
 
 module Portfolios
   module QuotaReconstruction
 
-    # ===========================================================
-    #                   PUBLIC INTERFACE
-    # ===========================================================
+    # == Public Interface =====================================================
 
-    # Reconstructs the quota balance of a fund investment at a
-    # specific date based on historical applications and redemptions.
+    # Reconstructs the quota balance of a fund investment at a specific date
+    # based on historical applications and redemptions.
     #
-    # @param fund_investment [FundInvestment]
-    #   The investment whose quota history is being reconstructed.
-    #
-    # @param date [Date, Time]
-    #   Cutoff date used to filter financial movements.
-    #
-    # @return [BigDecimal]
-    #   Net quota balance at the specified date.
-    #
+    # @param fund_investment [FundInvestment] the investment whose quota history is being reconstructed.
+    # @param date            [Date, Time]     cutoff date used to filter financial movements.
+    # @return [BigDecimal] net quota balance at the specified date.
     def reconstruct_quotas_at(fund_investment, date)
-      apps = fund_investment.applications
-                            .where("cotization_date <= ?", date)
-                            .sum(:number_of_quotas)
-
-      reds = fund_investment.redemptions
-                            .where("cotization_date <= ?", date)
-                            .sum(:redeemed_quotas)
+      apps = applications_up_to(fund_investment, date)
+      reds = redemptions_up_to(fund_investment, date)
 
       BigDecimal(apps.to_s) - BigDecimal(reds.to_s)
     end
+
+
+    private
+
+
+    # == Private Methods ======================================================
+
+    # Sums all application quotas for a fund investment up to a given date.
+    #
+    # @param fund_investment [FundInvestment] the target investment.
+    # @param date            [Date, Time]     cutoff date for filtering.
+    # @return [Numeric] total number of applied quotas.
+    def applications_up_to(fund_investment, date)
+      fund_investment.applications
+                     .where("cotization_date <= ?", date)
+                     .sum(:number_of_quotas)
+    end
+
+    # Sums all redeemed quotas for a fund investment up to a given date.
+    #
+    # @param fund_investment [FundInvestment] the target investment.
+    # @param date            [Date, Time]     cutoff date for filtering.
+    # @return [Numeric] total number of redeemed quotas.
+    def redemptions_up_to(fund_investment, date)
+      fund_investment.redemptions
+                     .where("cotization_date <= ?", date)
+                     .sum(:redeemed_quotas)
+    end
+
   end
 end

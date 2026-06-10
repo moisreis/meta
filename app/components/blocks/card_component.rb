@@ -1,18 +1,20 @@
 # frozen_string_literal: true
 
+# app/components/blocks/card_component.rb
+#
 # Component responsible for rendering a configurable UI card with status-based
 # styling, optional header elements, and badge support.
 #
 # This component enforces a strict set of allowed status values to ensure
 # consistent visual semantics across the application.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
 class Blocks::CardComponent < ApplicationComponent
 
-  # ==========================================================================
-  # CONSTANTS
-  # ==========================================================================
+  # == Constants ==============================================================
+
+  # -- Status Configurations --------------------------------------------------
 
   # Allowed status keys for visual semantic mapping.
   STATUSES = %i[
@@ -32,15 +34,17 @@ class Blocks::CardComponent < ApplicationComponent
     default:     "bg-neutral-300"
   }.freeze
 
-  # ==========================================================================
-  # INITIALIZATION
-  # ==========================================================================
 
+  # == Class Methods ==========================================================
+
+  # Initializes the card component with visual constraints and content options.
+  #
   # @param status [Symbol, String] The status key for the card (must be in STATUSES).
   # @param title [String, nil] The title displayed in the card header.
   # @param header_icon [String, nil] Lucide icon name for the header.
   # @param badge_text [String, nil] Text for the optional status badge.
   # @param badge_icon [String, nil] Lucide icon name for the optional badge.
+  # @return [Blocks::CardComponent]
   # @raise [ArgumentError] If the provided status is not permitted.
   def initialize(
     status: :default,
@@ -56,38 +60,50 @@ class Blocks::CardComponent < ApplicationComponent
     @badge_icon   = badge_icon
   end
 
-  # ==========================================================================
-  # PRESENTATION HELPERS
-  # ==========================================================================
+
+  # == Instance Methods =======================================================
+
+  # -- Style Helpers ----------------------------------------------------------
 
   # Returns the CSS class for the status dot.
-  # @return [String]
+  #
+  # @return [String] The background utility class name.
   def dot_color
     DOT_COLORS.fetch(status)
   end
 
-  # @return [Boolean]
+  # -- Visibility Predicates --------------------------------------------------
+
+  # Determines if the optional status badge should render.
+  #
+  # @return [Boolean] True if badge text is present.
   def show_badge?
     badge_text.present?
   end
 
-  # @return [Boolean]
+  # Determines if an icon should be included within the badge element.
+  #
+  # @return [Boolean] True if badge icon name is present.
   def show_badge_icon?
     badge_icon.present?
   end
 
-  # ==========================================================================
-  # PRIVATE
-  # ==========================================================================
 
   private
 
+
+  # == Private Methods ========================================================
+
+  # -- Attributes -------------------------------------------------------------
+
   attr_reader :status, :title, :header_icon, :badge_text, :badge_icon
+
+  # -- Normalization & Validation ---------------------------------------------
 
   # Normalizes input and validates against allowed statuses.
   #
-  # @param value [Object] The input status.
-  # @return [Symbol]
+  # @param value [Object] The input status value.
+  # @return [Symbol] The validated status key.
   # @raise [ArgumentError] If status is invalid.
   def normalize_status(value)
     sym = value.to_sym
@@ -95,4 +111,5 @@ class Blocks::CardComponent < ApplicationComponent
 
     raise ArgumentError, "Invalid status: #{value}. Allowed: #{STATUSES.join(', ')}"
   end
+
 end

@@ -1,22 +1,21 @@
+# frozen_string_literal: true
+
+# app/lib/chart_palettes.rb
+#
 # Provides named color palettes used by Chartkick chart rendering.
 #
-# Maps semantic palette names (e.g. :compliance, :performance)
-# to ordered sequences of CSS color values. Serves as the
-# single source of truth for chart colouring across the
-# application.
+# Maps semantic palette names (e.g. :compliance, :performance) to ordered
+# sequences of CSS color values. Single source of truth for chart colouring
+# across the application. Chartkick option configuration lives in
+# config/initializers/chartkick.rb.
 #
-# This module does not configure Chartkick itself. Chartkick
-# option configuration lives in config/initializers/chartkick.rb.
-#
-# @author Moisés Reis
+# @author  Moisés Reis
 
 module ChartPalettes
 
-  # =============================================================
-  #                          CONSTANTS
-  # =============================================================
+  # == Constants ==============================================================
 
-  # Named colour values in hex format (without leading #).
+  # Named colour values in hex format without leading #.
   #
   # @return [Hash<Symbol, String>]
   COLORS = {
@@ -30,8 +29,8 @@ module ChartPalettes
     red:        "991B1B"
   }.freeze
 
-  # Semantic palette definitions mapping a logical name to
-  # an ordered sequence of {COLORS} keys.
+  # Semantic palette definitions mapping a logical name to an ordered
+  # sequence of {COLORS} keys.
   #
   # @return [Hash<Symbol, Array<Symbol>>]
   PALETTES = {
@@ -43,40 +42,31 @@ module ChartPalettes
     risk:         %i[crimson charcoal].freeze
   }.freeze
 
-  # =============================================================
-  #                       PUBLIC INTERFACE
-  # =============================================================
+
+  # == Public Interface =======================================================
 
   # Resolves a palette key to an array of CSS rgb(...) strings.
   #
-  # @param key [Symbol] A key in {PALETTES}.
-  #
-  # @return [Array<String>]
-  #   CSS colour strings, e.g. ["rgb(30, 58, 95)", ...].
+  # @param key [Symbol] a key defined in {PALETTES}.
+  # @return [Array<String>] CSS colour strings, e.g. ["rgb(30, 58, 95)", ...].
   def self.css(key)
     resolve(key).map { |hex| hex_to_css(hex) }
   end
 
   # Resolves a palette key to an array of hex colour strings.
   #
-  # @param key [Symbol] A key in {PALETTES}.
-  #
-  # @return [Array<String>]
-  #   Hex colour strings without leading #, e.g. ["1E3A5F", ...].
+  # @param key [Symbol] a key defined in {PALETTES}.
+  # @return [Array<String>] hex colour strings without leading #, e.g. ["1E3A5F", ...].
   def self.hex(key)
     resolve(key)
   end
 
-  # Resolves a palette key to an array of rgba(...) strings
-  # with a uniform opacity.
+  # Resolves a palette key to an array of rgba(...) strings with uniform opacity.
   #
-  # @param key [Symbol] A key in {PALETTES}.
-  # @param opacity [Float] Opacity value between 0.0 and 1.0.
-  #
-  # @return [Array<String>]
-  #   CSS rgba strings, e.g. ["rgba(30, 58, 95, 0.8)", ...].
-  #
-  # @raise [KeyError] If key is not present in {COLORS}.
+  # @param key     [Symbol] a key defined in {PALETTES}.
+  # @param opacity [Float]  opacity value between 0.0 and 1.0.
+  # @return [Array<String>] CSS rgba strings, e.g. ["rgba(30, 58, 95, 0.8)", ...].
+  # @raise  [KeyError] if the key is not present in {COLORS}.
   def self.rgba(key, opacity = 1.0)
     hex = COLORS.fetch(key) do
       raise KeyError, "Unknown color: #{key.inspect}"
@@ -87,19 +77,16 @@ module ChartPalettes
     "rgba(#{r}, #{g}, #{b}, #{opacity})"
   end
 
-  # =============================================================
-  #                          PRIVATE
-  # =============================================================
+
+  # == Private Methods ========================================================
 
   private_class_method
 
-  # Resolves a palette key to an array of hex colour values.
+  # Resolves a palette key to an array of raw hex colour values.
   #
-  # @param key [Symbol] A key in {PALETTES}.
-  #
-  # @return [Array<String>] Hex colour strings.
-  #
-  # @raise [KeyError] If the palette key is not defined.
+  # @param key [Symbol] a key defined in {PALETTES}.
+  # @return [Array<String>] hex colour strings without leading #.
+  # @raise  [KeyError] if the palette key is not defined.
   def self.resolve(key)
     palette = PALETTES.fetch(key) do
       raise KeyError,
@@ -112,12 +99,12 @@ module ChartPalettes
 
   # Converts a hex colour string to a CSS rgb(...) string.
   #
-  # @param hex [String] Hex colour without leading #, e.g. "1E3A5F".
-  #
+  # @param hex [String] hex colour without leading #, e.g. "1E3A5F".
   # @return [String] CSS rgb string, e.g. "rgb(30, 58, 95)".
   def self.hex_to_css(hex)
     r, g, b = hex.scan(/../).map { |component| component.to_i(16) }
 
     "rgb(#{r}, #{g}, #{b})"
   end
+
 end

@@ -1,39 +1,11 @@
-<%#
-VIEW: app/views/shared/_fieldset.html.erb
-
-DESCRIPTION: Renders a structured section form wrapper layout. Displays a section 
-header consisting of a tracking title and optional subtitle description alongside 
-a context-aware primary action element (either a Stimulus drawer-triggering button 
-or a standard routing hyperlink). The body content is injected inside a dynamic 
-grid configuration wrapper block.
-
-INSTANCE VARIABLES:
- - @title: [String] Header label text tracking the fieldset boundary context.
- - @description: [String] Explanatory subtitle or description rendered underneath the title text.
- - @action: [Hash] Remote control options configuring the right-aligned action element.
-   - :name [String] Unique identifier for the action, used for data attributes and DOM targeting.
-   - :label [String] Visible text label for the action element. Falls back to :name if not provided.
-   - :icon [String] Name of the icon to render within the action element, using the shared icon helper.
-   - :route or :path [String] URL or path helper string defining the destination of a standard link action.
-   - :sidebar [String] Unique name of a Layout::DrawerComponent instance to trigger open on click, if this is a drawer action.
-   - :data [Hash] Additional data attributes to be passed to the link element, used for custom JavaScript hooks or Stimulus controllers.
-
-LOCAL VARIABLES:
- - content: [String/HTML] Inner layout markup component injected directly within the content grid block.
-%>
-
-<%# ========================================================= %>
-<%#                      SECTION CONTAINER                    %>
-<%# ========================================================= %>
-
 <!-- Blocks::Section [<%= @title %>] -->
 <section class="flex flex-col gap-4">
 
-  <%# ========================================================= %>
-  <%#                    SECTION HEADER ACTIONS                 %>
-  <%# ========================================================= %>
+  <%# == Header Layout ======================================================== %>
 
   <div class="flex flex-row items-center justify-between">
+
+    <%# -- Labels & Screen-Reader Descriptions --------------------------------- %>
 
     <% if title? %>
       <div class="flex flex-col gap-1">
@@ -52,6 +24,8 @@ LOCAL VARIABLES:
         <%= content_tag :h2, @description, class: "text-sm text-muted text-left" %>
       </div>
     <% end %>
+
+    <%# -- Contextual Action Elements ------------------------------------------ %>
 
     <% if action? %>
       <% if @action[:sidebar] %>
@@ -76,9 +50,9 @@ LOCAL VARIABLES:
 
   </div>
 
-  <%# ========================================================= %>
-  <%#                     CONTENT GRID LAYOUT                   %>
-  <%# ========================================================= %>
+  <%# == Content Body ========================================================= %>
+
+  <%# -- Responsive Grid System ---------------------------------------------- %>
 
   <div class="grid <%= grid_classes %> <%= gap_classes %> <%= separator_classes %>">
     <%= content %>

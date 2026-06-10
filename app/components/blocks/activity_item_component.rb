@@ -1,18 +1,20 @@
 # frozen_string_literal: true
 
+# app/components/blocks/activity_item_component.rb
+#
 # Component responsible for rendering a single activity item with
 # contextual color coding, icon selection, and formatted metadata.
 #
 # This component is used inside activity feeds and grouped dashboards
 # to standardize presentation of state-driven events.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
 class Blocks::ActivityItemComponent < ApplicationComponent
 
-  # ==========================================================================
-  # CONSTANTS
-  # ==========================================================================
+  # == Constants ==============================================================
+
+  # -- Color Styling ----------------------------------------------------------
 
   # Style mapping for various activity states.
   COLORS = {
@@ -30,15 +32,17 @@ class Blocks::ActivityItemComponent < ApplicationComponent
   # Fallback styling if an invalid color key is provided.
   FALLBACK_COLOR = COLORS[:default]
 
-  # ==========================================================================
-  # INITIALIZATION
-  # ==========================================================================
 
+  # == Class Methods ==========================================================
+
+  # Initializes the activity item component with necessary display metrics and context.
+  #
   # @param title [String] The main descriptive text for the activity.
   # @param value [String] The primary metric or value associated with the event.
   # @param sub [String] Secondary information or label.
   # @param date [DateTime, Time, nil] The timestamp of the event.
   # @param color [Symbol] The theme key from the COLORS constant.
+  # @return [Blocks::ActivityItemComponent]
   def initialize(title:, value:, sub:, date: nil, color: :default)
     @title = title
     @value = value
@@ -47,25 +51,32 @@ class Blocks::ActivityItemComponent < ApplicationComponent
     @color = color.to_sym
   end
 
-  # ==========================================================================
-  # PRESENTATION HELPERS
-  # ==========================================================================
+
+  # == Instance Methods =======================================================
 
   # Returns the Tailwind class mapping for the current color theme.
-  # @return [Hash]
+  #
+  # @return [Hash{Symbol => String}] Map of Tailwind classes.
   def color_classes
     COLORS.fetch(@color, FALLBACK_COLOR)
   end
 
+  # -- Asset Helpers ----------------------------------------------------------
+
   # Determines the Lucide icon based on the activity state.
-  # @return [String]
+  #
+  # @return [String] The name of the icon asset to render.
   def icon_name
     @color == :success ? "arrow-up-right" : "arrow-down-left"
   end
 
-  # Formats the date using the shared timestamp helper.
-  # @return [String, nil]
+  # -- Formatting -------------------------------------------------------------
+
+  # Formats the localized date using the shared application timestamp helper.
+  #
+  # @return [String, nil] The formatted date string, or nil if no date is present.
   def formatted_date
     formatted_timestamp(@date)
   end
+
 end

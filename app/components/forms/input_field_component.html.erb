@@ -1,94 +1,99 @@
-<%#
-  PARTIAL: app/components/forms/input_field_component.html.erb
-%>
+<%# == Field Label ========================================================== %>
 
-<!-- Forms::InputField [<%= @label %>] -->
-<div class="relative flex flex-col justify-start gap-1.5">
+<% if @label.present? %>
+  <%= @f.label @name, @label, class: FormStyles::LABEL_CLASSES %>
+<% end %>
 
-  <% if @label.present? %>
-    <%= @f.label @name, @label, class: FormStyles::LABEL_CLASSES %>
-  <% end %>
+<%# == Input Container & Mask Resolvers ===================================== %>
 
-  <div class="relative <%= wrapper_width_class %>">
+<%# -- Monetary Masking ---------------------------------------------------- %>
 
-    <% if @currency_mask %>
-      <div data-controller="currency-mask">
-        <input
-          type="text"
-          placeholder="<%= @placeholder %>"
-          class="<%= full_input_classes %>"
-          inputmode="numeric"
-          autocomplete="off"
-          data-currency-mask-target="display"
-          data-action="input->currency-mask#format"
-          aria-describedby="<%= aria_describedby %>"
-          aria-invalid="<%= has_error? %>"
-        >
-        <%= @f.hidden_field @name, data: { "currency-mask-target": "hidden" } %>
-      </div>
-
-    <% elsif @cnpj_mask %>
-      <div data-controller="cnpj-mask">
-        <input
-          type="text"
-          placeholder="<%= @placeholder || '00.000.000/0000-00' %>"
-          class="<%= full_input_classes %>"
-          inputmode="numeric"
-          autocomplete="off"
-          maxlength="18"
-          data-cnpj-mask-target="display"
-          data-action="input->cnpj-mask#format"
-          aria-describedby="<%= aria_describedby %>"
-          aria-invalid="<%= has_error? %>"
-        >
-        <%= @f.hidden_field @name, data: { "cnpj-mask-target": "hidden" } %>
-      </div>
-
-    <% elsif @bank_account_mask %>
-      <div data-controller="bank-account-mask">
-        <input
-          type="text"
-          placeholder="<%= @placeholder || '00000-0' %>"
-          class="<%= full_input_classes %>"
-          inputmode="numeric"
-          autocomplete="off"
-          maxlength="13"
-          data-bank-account-mask-target="display"
-          data-action="input->bank-account-mask#format"
-          aria-describedby="<%= aria_describedby %>"
-          aria-invalid="<%= has_error? %>"
-        >
-        <%= @f.hidden_field @name, data: { "bank-account-mask-target": "hidden" } %>
-      </div>
-
-    <% else %>
-      <%= @f.send(
-            @field_type,
-            @name,
-            placeholder:  @placeholder,
-            class:        full_input_classes,
-            step:         @step,
-            inputmode:    @inputmode,
-            autocomplete: "off",
-            aria: {
-              describedby: aria_describedby,
-              invalid:     has_error?
-            }
-          ) %>
-    <% end %>
-
-    <% if @icon_name.present? %>
-      <div class="absolute right-0 top-1/2 -translate-y-1/2 w-9 rounded-tr-base rounded-tb-base bg-input h-full flex items-center justify-center border border-border border-l-0">
-        <%= render_icon(@icon_name, class: "size-4 stroke-muted") %>
-      </div>
-    <% end %>
-
+<% if @currency_mask %>
+  <div data-controller="currency-mask">
+    <input
+      type="text"
+      placeholder="<%= @placeholder %>"
+      class="<%= full_input_classes %>"
+      inputmode="numeric"
+      autocomplete="off"
+      data-currency-mask-target="display"
+      data-action="input->currency-mask#format"
+      aria-describedby="<%= aria_describedby %>"
+      aria-invalid="<%= has_error? %>"
+    >
+    <%= @f.hidden_field @name, data: { "currency-mask-target": "hidden" } %>
   </div>
 
-  <% if has_error? %>
-    <%= content_tag :p, error_message, class: desc_classes, id: aria_describedby %>
-  <% elsif @desc.present? %>
-    <%= content_tag :p, @desc, class: desc_classes, id: aria_describedby %>
-  <% end %>
+<%# -- Corporate ID Masking ------------------------------------------------ %>
 
-</div>
+<% elsif @cnpj_mask %>
+  <div data-controller="cnpj-mask">
+    <input
+      type="text"
+      placeholder="<%= @placeholder || '00.000.000/0000-00' %>"
+      class="<%= full_input_classes %>"
+      inputmode="numeric"
+      autocomplete="off"
+      maxlength="18"
+      data-cnpj-mask-target="display"
+      data-action="input->cnpj-mask#format"
+      aria-describedby="<%= aria_describedby %>"
+      aria-invalid="<%= has_error? %>"
+    >
+    <%= @f.hidden_field @name, data: { "cnpj-mask-target": "hidden" } %>
+  </div>
+
+<%# -- Financial Account Masking ------------------------------------------- %>
+
+<% elsif @bank_account_mask %>
+  <div data-controller="bank-account-mask">
+    <input
+      type="text"
+      placeholder="<%= @placeholder || '00000-0' %>"
+      class="<%= full_input_classes %>"
+      inputmode="numeric"
+      autocomplete="off"
+      maxlength="13"
+      data-bank-account-mask-target="display"
+      data-action="input->bank-account-mask#format"
+      aria-describedby="<%= aria_describedby %>"
+      aria-invalid="<%= has_error? %>"
+    >
+    <%= @f.hidden_field @name, data: { "bank-account-mask-target": "hidden" } %>
+  </div>
+
+<%# -- Native Standard Inputs ---------------------------------------------- %>
+
+<% else %>
+  <%= @f.send(
+        @field_type,
+        @name,
+        placeholder: @placeholder,
+        class: full_input_classes,
+        step: @step,
+        inputmode: @inputmode,
+        autocomplete: "off",
+        aria: {
+          describedby: aria_describedby,
+          invalid: has_error?
+        }
+      ) %>
+<% end %>
+
+<%# -- Structural Input Icons ---------------------------------------------- %>
+
+<% if @icon_name.present? %>
+  <div class="absolute right-0 top-1/2 -translate-y-1/2 w-9 rounded-tr-base rounded-tb-base bg-input h-full flex items-center justify-center border border-border border-l-0">
+    <%= render_icon(@icon_name, class: "size-4 stroke-muted") %>
+  </div>
+<% end %>
+
+<%# == Feedback & Validation Messaging ====================================== %>
+
+<%# -- Support Labels or Structural Error Text ------------------------------ %>
+
+<% if has_error? %>
+  <%= content_tag :p, error_message, class: desc_classes, id: aria_describedby %>
+<% elsif @desc.present? %>
+  <%= content_tag :p, @desc, class: desc_classes, id: aria_describedby %>
+<% end %>

@@ -1,29 +1,17 @@
 # frozen_string_literal: true
 
-# Bootstraps the Rails application and loads all Rake tasks.
+# Rakefile
 #
-# This file initializes the Rails environment and exposes
-# application-defined and framework-provided Rake tasks to the
-# command-line interface.
+# Loads the Rails application and registers all available
+# framework and application Rake tasks.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
-# =============================================================
-#                        APPLICATION BOOT
-# =============================================================
+# == Application Boot ========================================================
 
-# Loads the Rails application definition and environment setup.
-#
-# @return [void]
 require_relative "config/application"
 
-# =============================================================
-#                        TASK REGISTRATION
-# =============================================================
 
-# Loads all Rake tasks defined by Rails and the application.
-#
-# This makes tasks available via `bin/rake` or `rails` CLI.
-#
-# @return [void]
+# == Task Registration =======================================================
+
 Rails.application.load_tasks

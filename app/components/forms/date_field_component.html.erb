@@ -1,12 +1,17 @@
 <!-- Forms::DateField [<%= @name %>] -->
-
 <div class="relative flex flex-col justify-start gap-1.5">
+
+  <%# == Field Label ========================================================== %>
 
   <% if @label.present? %>
     <%= @f.label @name, @label, class: FormStyles::LABEL_CLASSES %>
   <% end %>
 
+  <%# == Input Container ====================================================== %>
+
   <div class="relative <%= wrapper_width_class %>">
+
+    <%# -- Dynamic Form Helper ------------------------------------------------- %>
 
     <%= @f.send(
           @field_type,
@@ -20,6 +25,8 @@
           autocomplete: "off"
         ) %>
 
+    <%# -- Contextual Status/Action Icon -------------------------------------- %>
+
     <% if @icon_name.present? %>
       <%= helpers.inline_svg_tag(
             "icons/#{@icon_name}.svg",
@@ -28,6 +35,10 @@
     <% end %>
 
   </div>
+
+  <%# == Help Text & Feedback ================================================= %>
+
+  <%# -- Validation Errors or Secondary Descriptions -------------------------- %>
 
   <% if has_error? %>
     <%= content_tag :p, error_message, class: desc_classes, id: aria_describedby %>

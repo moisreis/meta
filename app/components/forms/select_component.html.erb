@@ -1,7 +1,7 @@
-<%# app/components/forms/select_component.html.erb %>
-
 <!-- Forms::Select [<%= @name %>] -->
 <div class="relative flex flex-col justify-start gap-1.5">
+
+  <%# == Field Label ========================================================== %>
 
   <% if @label.present? %>
     <%= @f.label @name, @label,
@@ -9,7 +9,12 @@
           id: "#{@f.object_name}_#{@name}-ts-label" %>
   <% end %>
 
+  <%# == Select Element Container ============================================= %>
+
   <div class="relative <%= wrapper_width_class %>">
+
+    <%# -- Select Element with Client-Side Hydration -------------------------- %>
+
     <%= @f.select @name,
           @options_collection,
           { selected: @selected },
@@ -18,9 +23,15 @@
           data:     { controller: "tom-select", tom_select_rich_value: @rich },
           aria:     { describedby: aria_describedby, invalid: has_error? } %>
 
+    <%# -- Layout Indicator Icon ---------------------------------------------- %>
+
     <%= helpers.inline_svg_tag "icons/chevron-down.svg",
           class: "size-3.5 z-10 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 stroke-muted" %>
   </div>
+
+  <%# == Help Text & Feedback ================================================= %>
+
+  <%# -- Validation Errors or Secondary Descriptions -------------------------- %>
 
   <% if has_error? %>
     <%= content_tag :p, error_message, class: desc_classes, id: aria_describedby %>

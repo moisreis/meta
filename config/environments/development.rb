@@ -1,21 +1,20 @@
-# Configures the Rails application for the development
-# environment.
+# frozen_string_literal: true
+
+# config/environments/development.rb
 #
-# Enables code reloading, verbose logging, N+1 detection via
-# Bullet, and local request handling for debugging.
+# Configures the Rails application for the development environment.
 #
-# This file does not configure production-safe behaviour
-# such as eager loading or Solid Cache.
+# Enables code reloading, verbose logging, N+1 detection via Bullet,
+# and local request handling for debugging. Production-safe behaviour
+# such as eager loading or Solid Cache is not configured here.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
 
-  # =============================================================
-  #                        N+1 DETECTION
-  # =============================================================
+  # == N+1 Detection =========================================================
 
   config.after_initialize do
     Bullet.enable        = true
@@ -26,38 +25,35 @@ Rails.application.configure do
     Bullet.add_footer    = true
   end
 
-  # =============================================================
-  #                           LOGGING
-  # =============================================================
+
+  # == Logging ================================================================
 
   config.rails_semantic_logger.started    = true
   config.rails_semantic_logger.processing = true
   config.rails_semantic_logger.rendered   = true
 
-  # --- LOG LEVEL & FORMATTING ----------------------------------
+  # -- Level & Formatting -----------------------------------------------------
 
-  config.logger = ActiveSupport::Logger.new($stdout)
-  config.log_level = :debug
-  config.active_support.deprecation = :silence
-  config.active_job.verbose_enqueue_logs = true
+  config.logger                                = ActiveSupport::Logger.new($stdout)
+  config.log_level                             = :debug
+  config.active_support.deprecation            = :silence
+  config.active_job.verbose_enqueue_logs       = true
   config.action_dispatch.verbose_redirect_logs = true
 
-  # =============================================================
-  #                      GENERAL SETTINGS
-  # =============================================================
 
-  config.enable_reloading = true
-  config.eager_load = false
-  config.server_timing = true
-  config.consider_all_requests_local = true
+  # == General Settings =======================================================
+
+  config.enable_reloading                                    = true
+  config.eager_load                                          = false
+  config.server_timing                                       = true
+  config.consider_all_requests_local                         = true
   config.action_controller.raise_on_missing_callback_actions = true
 
-  # =============================================================
-  #                          CACHING
-  # =============================================================
+
+  # == Caching ================================================================
 
   if Rails.root.join("tmp/caching-dev.txt").exist?
-    config.action_controller.perform_caching = true
+    config.action_controller.perform_caching               = true
     config.action_controller.enable_fragment_cache_logging = true
     config.public_file_server.headers = {
       "cache-control" => "public, max-age=#{2.days.to_i}"
@@ -68,31 +64,31 @@ Rails.application.configure do
 
   config.cache_store = :memory_store
 
-  # =============================================================
-  #                    STORAGE & MAILER
-  # =============================================================
+
+  # == Storage & Mailer =======================================================
 
   config.active_storage.service = :local
 
+  # -- Mailer -----------------------------------------------------------------
+
   config.action_mailer.raise_delivery_errors = false
-  config.action_mailer.perform_caching = false
-  config.action_mailer.default_url_options = {
+  config.action_mailer.perform_caching       = false
+  config.action_mailer.default_url_options   = {
     host: "localhost",
     port: 3000
   }
 
-  # =============================================================
-  #                      DATABASE & JOBS
-  # =============================================================
 
-  config.active_record.migration_error = :page_load
-  config.active_record.verbose_query_logs = true
+  # == Database & Jobs ========================================================
+
+  config.active_record.migration_error        = :page_load
+  config.active_record.verbose_query_logs     = true
   config.active_record.query_log_tags_enabled = true
 
-  # =============================================================
-  #                        ASSETS & VIEWS
-  # =============================================================
 
-  config.assets.quiet = true
-  config.action_view.annotate_rendered_view_with_filenames = false
+  # == Assets & Views =========================================================
+
+  config.assets.quiet                                        = true
+  config.action_view.annotate_rendered_view_with_filenames   = false
+
 end

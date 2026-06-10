@@ -1,558 +1,388 @@
-<%#
-  VIEW: app/views/portfolios/show.html.erb
-  ACTION: PortfoliosController#show
-
-  DESCRIPTION:
-  Displays the complete portfolio analytics dashboard, including
-  KPIs, compliance analysis, allocation breakdowns, diversification
-  metrics, benchmark comparisons, operational summaries, and
-  investment performance tables.
-
-  INSTANCE VARIABLES:
-  - @portfolio: [Portfolio] The portfolio being displayed.
-  - @data: [Portfolios::ShowService::Result] Aggregated portfolio reporting and analytics data.
-  - @reference_date: [Date] Reference date used for charts, metrics, and snapshots.
-  - @reference_period: [Date] Monthly reporting period used in performance analysis.
-%>
-
-<%# ========================================================= %>
-<%#                    1. DASHBOARD WRAPPER                  %>
-<%# ========================================================= %>
+<%# == Layout Shell Wrapper =================================================== %>
 
 <%= render(Layout::DashboardWrapperComponent.new(
-  page_title: @portfolio.name,
-  page_desc: "Carteira de #{@portfolio.user.full_name}",
-  current_view: "show"
-)) do %>
+      page_title: @portfolio.name,
+      page_desc: "Carteira de #{@portfolio.user.full_name}",
+      current_view: "show"
+    )) do %>
 
-  <%# ======================================================= %>
-  <%#                       2. KPI SECTION                   %>
-  <%# ======================================================= %>
+  <%# == Macro Key Performance Indicators ===================================== %>
 
-  <%= render(
-    Blocks::SectionComponent.new(
-      title: "KPIs",
-      description: "Indicadores-chave de desempenho da carteira",
-      columns: 4,
-    )
-  ) do %>
+  <%= render(Blocks::SectionComponent.new(
+        title: "KPIs",
+        description: "Indicadores-chave de desempenho da carteira",
+        columns: 4
+      )) do %>
 
-    <%# ===================================================== %>
-    <%#                2a. PORTFOLIO TOTAL VALUE             %>
-    <%# ===================================================== %>
+    <%# -- Total Vault Value -------------------------------------------------- %>
 
-    <%= render(
-      Blocks::CardComponent.new(
-        title: "Total da Carteira",
-        header_icon: "banknote",
-      )
-    ) do %>
+    <%= render(Blocks::CardComponent.new(
+          title: "Total da Carteira",
+          header_icon: "banknote"
+        )) do %>
       <%= normalize_currency(@data.total_market_value) %>
     <% end %>
 
-    <%# ===================================================== %>
-    <%#                    2b. YEARLY EARNINGS               %>
-    <%# ===================================================== %>
+    <%# -- Yearly Cumulative Profits ------------------------------------------ %>
 
-    <%= render(
-      Blocks::CardComponent.new(
-        title: "Rendimento Acumulado do Ano",
-        header_icon: "wallet",
-      )
-    ) do %>
+    <%= render(Blocks::CardComponent.new(
+          title: "Rendimento Acumulado do Ano",
+          header_icon: "wallet"
+        )) do %>
       <%= normalize_currency(@data.yearly_earnings) %>
     <% end %>
 
-    <%# ===================================================== %>
-    <%#                    2c. MONTHLY EARNINGS              %>
-    <%# ===================================================== %>
+    <%# -- Local Month Fluctuations ------------------------------------------- %>
 
-    <%= render(
-      Blocks::CardComponent.new(
-        title: "Rendimento do Mês",
-        header_icon: "wallet",
-        badge_text: "Ref. #{l(@reference_date, format: :default)}",
-      )
-    ) do %>
+    <%= render(Blocks::CardComponent.new(
+          title: "Rendimento do Mês",
+          header_icon: "wallet",
+          badge_text: "Ref. #{l(@reference_date, format: :default)}"
+        )) do %>
       <%= normalize_trend(@data.monthly_total_earnings) %>
     <% end %>
 
-    <%# ===================================================== %>
-    <%#             2d. YEARLY TIME-WEIGHTED RETURN          %>
-    <%# ===================================================== %>
+    <%# -- Macro Yearly Time-Weighted Return ----------------------------------- %>
 
-    <%= render(
-      Blocks::CardComponent.new(
-        title: "Rendimento Acumulado do Ano",
-        header_icon: "wallet",
-      )
-    ) do %>
+    <%= render(Blocks::CardComponent.new(
+          title: "Rendimento Acumulado do Ano",
+          header_icon: "wallet"
+        )) do %>
       <%= normalize_trend(@data.portfolio_yearly_twr, format: :percentage) %>
     <% end %>
 
-    <%# ===================================================== %>
-    <%#             2e. MONTHLY TIME-WEIGHTED RETURN         %>
-    <%# ===================================================== %>
+    <%# -- Local Month Time-Weighted Return ------------------------------------ %>
 
-    <%= render(
-      Blocks::CardComponent.new(
-        title: "Rendimento do Mês",
-        header_icon: "wallet",
-        badge_text: "Ref. #{l(@reference_date, format: :default)}",
-      )
-    ) do %>
+    <%= render(Blocks::CardComponent.new(
+          title: "Rendimento do Mês",
+          header_icon: "wallet",
+          badge_text: "Ref. #{l(@reference_date, format: :default)}"
+        )) do %>
       <%= normalize_trend(@data.portfolio_monthly_twr, format: :percentage) %>
     <% end %>
 
-    <%# ===================================================== %>
-    <%#                 2f. TWELVE-MONTH RETURN              %>
-    <%# ===================================================== %>
+    <%# -- Rolling 12-Month Performance --------------------------------------- %>
 
-    <%= render(
-      Blocks::CardComponent.new(
-        title: "Rentabilidade dos Últimos 12 meses",
-        header_icon: "trending-up",
-        badge_text: "Ref. #{l(@reference_date, format: :default)}",
-      )
-    ) do %>
+    <%= render(Blocks::CardComponent.new(
+          title: "Rentabilidade dos Últimos 12 meses",
+          header_icon: "trending-up",
+          badge_text: "Ref. #{l(@reference_date, format: :default)}"
+        )) do %>
       <%= normalize_trend(@data.portfolio_12m_return, format: :percentage) %>
     <% end %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#               3. COMPLIANCE & LEGAL LIMITS             %>
-  <%# ======================================================= %>
+  <%# == Regulatory Enforcement & Compliance ================================== %>
 
-  <%= render(
-    Blocks::SectionComponent.new(
-      title: "Compliance e Limites Legais",
-      description: "Comparativo entre alocação atual e limites da política de investimento.",
-      columns: 1,
-    )
-  ) do %>
+  <%= render(Blocks::SectionComponent.new(
+        title: "Compliance e Limites Legais",
+        description: "Comparativo entre alocação atual e limites da política de investimento.",
+        columns: 1
+      )) do %>
 
     <%= render Groups::ChartListComponent.new(
-      chart_type:  :bar_chart,
-      chart_title: "Enquadramento por Artigo (%)",
-      palette:     :compliance,
-      data_source: Portfolios::ComplianceChartDataBuilder.call(
-        @data.compliance_report
-      ),
-      chart_options: Charts::BarChartOptionsBuilder.call
-    ) %>
+          chart_type: :bar_chart,
+          chart_title: "Enquadramento por Artigo (%)",
+          palette: :compliance,
+          data_source: Portfolios::ComplianceChartDataBuilder.call(@data.compliance_report),
+          chart_options: Charts::BarChartOptionsBuilder.call
+        ) %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                  4. DETAILED ANALYTICS                 %>
-  <%# ======================================================= %>
+  <%# == Capital Historical Analytics ========================================= %>
 
-  <%= render(
-    Blocks::SectionComponent.new(
-      title: "Análise Detalhada",
-      description: "Gráficos e tabelas para uma visão aprofundada da carteira.",
-      columns: 2,
-    )
-  ) do %>
+  <%= render(Blocks::SectionComponent.new(
+        title: "Análise Detalhada",
+        description: "Gráficos e tabelas para uma visão aprofundada da carteira.",
+        columns: 2
+      )) do %>
 
-    <%# ===================================================== %>
-    <%#                4a. MONTHLY EARNINGS CHART            %>
-    <%# ===================================================== %>
+    <%# -- Net Earnings Chronology -------------------------------------------- %>
 
     <%= render Groups::ChartListComponent.new(
-      chart_type:  :column_chart,
-      chart_title: "Rendimento Mensal",
-      palette:     nil,
-      data_source: @data.monthly_earnings_history,
-      chart_options: Charts::ConditionalColumnChartOptionsBuilder.call(
-        @data.monthly_earnings_history
-      )
-    ) %>
+          chart_type: :column_chart,
+          chart_title: "Rendimento Mensal",
+          palette: nil,
+          data_source: @data.monthly_earnings_history,
+          chart_options: Charts::ConditionalColumnChartOptionsBuilder.call(@data.monthly_earnings_history)
+        ) %>
 
-    <%# ===================================================== %>
-    <%#                4b. EQUITY EVOLUTION CHART            %>
-    <%# ===================================================== %>
+    <%# -- Equity Compounding History ------------------------------------------ %>
 
     <%= render Groups::ChartListComponent.new(
-      chart_type:  :column_chart,
-      chart_title: "Evolução do Patrimônio",
-      palette:     nil,
-      data_source: @data.equity_evolution,
-      chart_options: Charts::ConditionalColumnChartOptionsBuilder.call(
-        @data.equity_evolution
-      )
-    ) %>
+          chart_type: :column_chart,
+          chart_title: "Evolução do Patrimônio",
+          palette: nil,
+          data_source: @data.equity_evolution,
+          chart_options: Charts::ConditionalColumnChartOptionsBuilder.call(@data.equity_evolution)
+        ) %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                  5. MONTHLY MOVEMENTS                  %>
-  <%# ======================================================= %>
+  <%# == Fluidity and Transaction Flow Metrics ================================ %>
 
-  <%= render(
-    Blocks::SectionComponent.new(
-      title: "Movimentações Mensais",
-      description: "Gráfico detalhado das entradas e saídas mensais",
-      columns: 1,
-    )
-  ) do %>
+  <%= render(Blocks::SectionComponent.new(
+        title: "Movimentações Mensais",
+        description: "Gráfico detalhado das entradas e saídas mensais",
+        columns: 1
+      )) do %>
 
     <%= render Groups::ChartListComponent.new(
-      chart_type:  :column_chart,
-      chart_title: "Movimentações",
-      palette:     nil,
-      data_source: @data.monthly_flows,
-      chart_options: Charts::GroupedColumnChartOptionsBuilder.call(
-        @data.monthly_flows
-      )
-    ) %>
+          chart_type: :column_chart,
+          chart_title: "Movimentações",
+          palette: nil,
+          data_source: @data.monthly_flows,
+          chart_options: Charts::GroupedColumnChartOptionsBuilder.call(@data.monthly_flows)
+        ) %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                   6. CURRENT ALLOCATION                %>
-  <%# ======================================================= %>
+  <%# == Real Estate & Asset Allocations ======================================= %>
 
-  <%= render(
-    Blocks::SectionComponent.new(
-      title: "Alocação Atual",
-      description: "Visão detalhada da composição atual da carteira por fundos",
-      columns: 1,
-    )
-  ) do %>
+  <%= render(Blocks::SectionComponent.new(
+        title: "Alocação Atual",
+        description: "Visão detalhada da composição atual da carteira por fundos",
+        columns: 1
+      )) do %>
 
     <%= render Groups::ChartListComponent.new(
-      chart_type:  :pie_chart,
-      chart_title: "Fundos alocados",
-      palette:     :distribution,
-      data_source: @data.allocation_data,
-      chart_options: Charts::PieChartOptionsBuilder.call(
-        @data.allocation_data
-      )
-    ) %>
+          chart_type: :pie_chart,
+          chart_title: "Fundos alocados",
+          palette: :distribution,
+          data_source: @data.allocation_data,
+          chart_options: Charts::PieChartOptionsBuilder.call(@data.allocation_data)
+        ) %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                7. DIVERSIFICATION ANALYSIS             %>
-  <%# ======================================================= %>
+  <%# == Structural Diversification Matrices =================================== %>
 
-  <%= render(
-    Blocks::SectionComponent.new(
-      title: "Análise de Diversificação",
-      description: "Distribuição da carteira por índices de referência e instituições financeiras",
-      columns: 2,
-    )
-  ) do %>
+  <%= render(Blocks::SectionComponent.new(
+        title: "Análise de Diversificação",
+        description: "Distribuição da carteira por índices de referência e instituições financeiras",
+        columns: 2
+      )) do %>
 
-    <%# ===================================================== %>
-    <%#                 7a. INDEX DISTRIBUTION               %>
-    <%# ===================================================== %>
+    <%# -- Benchmark Index Breakdowns ------------------------------------------ %>
 
     <%= render Groups::ChartListComponent.new(
-      chart_type:  :pie_chart,
-      chart_title: "Distribuição por Índice",
-      palette:     :distribution,
-      data_source: @data.indices_data,
-      chart_options: Charts::PieChartOptionsBuilder.call(
-        @data.indices_data
-      )
-    ) %>
+          chart_type: :pie_chart,
+          chart_title: "Distribuição por Índice",
+          palette: :distribution,
+          data_source: @data.indices_data,
+          chart_options: Charts::PieChartOptionsBuilder.call(@data.indices_data)
+        ) %>
 
-    <%# ===================================================== %>
-    <%#              7b. INSTITUTION DISTRIBUTION            %>
-    <%# ===================================================== %>
+    <%# -- Safe custody entity allocations ------------------------------------ %>
 
     <%= render Groups::ChartListComponent.new(
-      chart_type:  :pie_chart,
-      chart_title: "Distribuição por Instituição",
-      palette:     :distribution,
-      data_source: @data.institution_distribution,
-      chart_options: Charts::PieChartOptionsBuilder.call(
-        @data.institution_distribution
-      )
-    ) %>
+          chart_type: :pie_chart,
+          chart_title: "Distribuição por Instituição",
+          palette: :distribution,
+          data_source: @data.institution_distribution,
+          chart_options: Charts::PieChartOptionsBuilder.call(@data.institution_distribution)
+        ) %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                 8. PORTFOLIO VS BENCHMARKS             %>
-  <%# ======================================================= %>
+  <%# == Evolution Tracking vs Benchmarks ====================================== %>
 
-  <%= render(
-    Blocks::SectionComponent.new(
-      title: "Carteira vs Benchmarks",
-      description: "Comparativo da evolução da carteira em relação aos principais índices de referência",
-      columns: 1,
-    )
-  ) do %>
+  <%= render(Blocks::SectionComponent.new(
+        title: "Carteira vs Benchmarks",
+        description: "Comparativo da evolução da carteira em relação aos principais índices de referência",
+        columns: 1
+      )) do %>
 
     <%= render Groups::ChartListComponent.new(
-      chart_type:    :line_chart,
-      chart_title:   "Carteira vs Benchmarks",
-      palette:       :line_series,
-      data_source:   @data.benchmark_comparison_series,
-      chart_options: Charts::LineSeriesChartOptionsBuilder.call(
-        @data.benchmark_comparison_series
-      )
-    ) %>
+          chart_type: :line_chart,
+          chart_title: "Carteira vs Benchmarks",
+          palette: :line_series,
+          data_source: @data.benchmark_comparison_series,
+          chart_options: Charts::LineSeriesChartOptionsBuilder.call(@data.benchmark_comparison_series)
+        ) %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                 9. ALLOCATED FUNDS TABLE                %>
-  <%# ======================================================= %>
+  <%# == Detailed Fund Allocation Logs ======================================== %>
 
   <%= render(Groups::TableListComponent.new(
-      title:       "Lista de fundos alocados",
-      description: "Dados de #{l(@reference_date, format: :long)}",
-      collection:  @data.fund_investments
-    )) do |table| %>
+        title: "Lista de fundos alocados",
+        description: "Dados de #{l(@reference_date, format: :long)}",
+        collection: @data.fund_investments
+      )) do |table| %>
 
-    <% table.with_column(label: "Fundo",             icon: nil, description: nil) %>
-    <% table.with_column(label: "Alocação",          icon: nil, description: nil) %>
-    <% table.with_column(label: "Movimentação",      icon: nil, description: nil) %>
-    <% table.with_column(label: "Cota mais recente", icon: nil, description: l(@reference_date, format: :default)) %>
-    <% table.with_column(label: "Valor Atual",       icon: nil, description: l(@reference_date, format: :default)) %>
-    <% table.with_column(label: "Rendimento",        icon: nil, description: l(@reference_date, format: :default)) %>
-    <% table.with_column(label: "Rent.",             icon: nil, description: l(@reference_date, format: :default)) %>
+    <% table.with_column(label: "Fundo") %>
+    <% table.with_column(label: "Alocação") %>
+    <% table.with_column(label: "Movimentação") %>
+    <% table.with_column(label: "Cota mais recente", description: l(@reference_date, format: :default)) %>
+    <% table.with_column(label: "Valor Atual", description: l(@reference_date, format: :default)) %>
+    <% table.with_column(label: "Rendimento", description: l(@reference_date, format: :default)) %>
+    <% table.with_column(label: "Rent.", description: l(@reference_date, format: :default)) %>
 
     <% @data.fund_investments.each do |fi| %>
-
       <% table.with_row(
-        model_id:     fi.id,
-        show_path:    fund_investment_path(fi),
-        edit_path:    edit_fund_investment_path(fi),
-        destroy_path: fund_investment_path(fi),
-        cells: [
-          normalize_title(fi.investment_fund.fund_name),
-          normalize_percentage([fi.percentage_allocation, 0].max),
-          normalize_trend(@data.net_movement_by_fund[fi.id], format: :currency),
-          normalize_currency(@data.fund_quota_value[fi.id]),
-          normalize_currency(@data.market_value_by_fund[fi.id]),
-          normalize_trend(@data.performance_by_fund[fi.id]&.earnings,       format: :currency),
-          normalize_trend(@data.performance_by_fund[fi.id]&.monthly_return, format: :percentage)
-        ]
-      ) %>
-
+            model_id: fi.id,
+            show_path: fund_investment_path(fi),
+            edit_path: edit_fund_investment_path(fi),
+            destroy_path: fund_investment_path(fi),
+            cells: [
+              normalize_title(fi.investment_fund.fund_name),
+              normalize_percentage([fi.percentage_allocation, 0].max),
+              normalize_trend(@data.net_movement_by_fund[fi.id], format: :currency),
+              normalize_currency(@data.fund_quota_value[fi.id]),
+              normalize_currency(@data.market_value_by_fund[fi.id]),
+              normalize_trend(@data.performance_by_fund[fi.id]&.earnings, format: :currency),
+              normalize_trend(@data.performance_by_fund[fi.id]&.monthly_return, format: :percentage)
+            ]
+          ) %>
     <% end %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                10. INVESTMENT POLICY TABLE             %>
-  <%# ======================================================= %>
+  <%# == Investment Strategy and Rule Mappings ================================ %>
 
   <%= render(Groups::TableListComponent.new(
-      title:       "Política de Investimentos",
-      description: "Metas da carteira comparadas aos limites de cada artigo.",
-      collection:  @data.normative_articles
-    )) do |table| %>
+        title: "Política de Investimentos",
+        description: "Metas da carteira comparadas aos limites de cada artigo.",
+        collection: @data.normative_articles
+      )) do |table| %>
 
-    <% table.with_column(label: "Artigo",    icon: nil) %>
-    <% table.with_column(label: "Categoria", icon: nil) %>
-
-    <% table.with_column(
-      label: "Benchmark",
-      icon: nil,
-      description: "Artigo"
-    ) %>
-
-    <% table.with_column(
-      label: "Benchmark",
-      icon: nil,
-      description: "Carteira"
-    ) %>
-
-    <% table.with_column(label: "Desvio", icon: nil) %>
-
-    <% table.with_column(
-      label: "Mín.",
-      icon: nil,
-      description: "Artigo"
-    ) %>
-
-    <% table.with_column(
-      label: "Mín.",
-      icon: nil,
-      description: "Carteira"
-    ) %>
-
-    <% table.with_column(
-      label: "Máx.",
-      icon: nil,
-      description: "Artigo"
-    ) %>
-
-    <% table.with_column(
-      label: "Máx.",
-      icon: nil,
-      description: "Carteira"
-    ) %>
+    <% table.with_column(label: "Artigo") %>
+    <% table.with_column(label: "Categoria") %>
+    <% table.with_column(label: "Benchmark", description: "Artigo") %>
+    <% table.with_column(label: "Benchmark", description: "Carteira") %>
+    <% table.with_column(label: "Desvio") %>
+    <% table.with_column(label: "Mín.", description: "Artigo") %>
+    <% table.with_column(label: "Mín.", description: "Carteira") %>
+    <% table.with_column(label: "Máx.", description: "Artigo") %>
+    <% table.with_column(label: "Máx.", description: "Carteira") %>
 
     <% @data.normative_articles.each do |pna| %>
-
       <% table.with_row(
-        model_id: pna.id,
-        cells: [
-          normalize_title(NormativeArticlesPresenter.new(pna.normative_article)),
-          normalize_text(pna.normative_article.category),
-          normalize_percentage(pna.normative_article.benchmark_target),
-          normalize_percentage(pna.benchmark_target),
-          normalize_trend(
-            @data.benchmark_deviation_by_pna[pna.id],
-            format: :percentage
-          ),
-          normalize_percentage(pna.normative_article.minimum_target),
-          normalize_percentage(pna.minimum_target),
-          normalize_percentage(pna.normative_article.maximum_target),
-          normalize_percentage(pna.maximum_target)
-        ]
-      ) %>
-
+            model_id: pna.id,
+            cells: [
+              normalize_title(NormativeArticlesPresenter.new(pna.normative_article)),
+              normalize_text(pna.normative_article.category),
+              normalize_percentage(pna.normative_article.benchmark_target),
+              normalize_percentage(pna.benchmark_target),
+              normalize_trend(@data.benchmark_deviation_by_pna[pna.id], format: :percentage),
+              normalize_percentage(pna.normative_article.minimum_target),
+              normalize_percentage(pna.minimum_target),
+              normalize_percentage(pna.normative_article.maximum_target),
+              normalize_percentage(pna.maximum_target)
+            ]
+          ) %>
     <% end %>
 
   <% end %>
+
+  <%# == Fragmented Performance Records ======================================= %>
 
   <% if @data.recent_performance.any? %>
-
-    <%# ===================================================== %>
-    <%#               11. FUND PERFORMANCE TABLE             %>
-    <%# ===================================================== %>
-
     <%= render(Groups::TableListComponent.new(
-      title:      "Performance dos Fundos",
-      collection: @data.recent_performance
-    )) do |table| %>
+          title: "Performance dos Fundos",
+          collection: @data.recent_performance
+        )) do |table| %>
 
-      <% table.with_column(
-        label: "Fundo",
-        icon: nil,
-        description: nil
-      ) %>
-
-      <% table.with_column(
-        label: "Rentabilidade",
-        icon: nil,
-        description: l(@reference_period, format: :month_year)
-      ) %>
-
-      <% table.with_column(
-        label: "Rendimento",
-        icon: nil,
-        description: l(@reference_period, format: :month_year)
-      ) %>
+      <% table.with_column(label: "Fundo") %>
+      <% table.with_column(label: "Rentabilidade", description: l(@reference_period, format: :month_year)) %>
+      <% table.with_column(label: "Rendimento", description: l(@reference_period, format: :month_year)) %>
 
       <% @data.recent_performance.each do |ph| %>
-
         <% table.with_row(
-          model_id: ph.id,
-          cells: [
-            normalize_title(ph.fund_investment.investment_fund.fund_name),
-            normalize_trend(ph.monthly_return, format: :percentage),
-            normalize_currency(ph.earnings)
-          ]
-        ) %>
-
+              model_id: ph.id,
+              cells: [
+                normalize_title(ph.fund_investment.investment_fund.fund_name),
+                normalize_trend(ph.monthly_return, format: :percentage),
+                normalize_currency(ph.earnings)
+              ]
+            ) %>
       <% end %>
 
     <% end %>
-
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                12. CHECKING ACCOUNTS TABLE             %>
-  <%# ======================================================= %>
+  <%# == Transaction Liquid Cash Accounts ===================================== %>
 
   <%= render "portfolios/create_checking_account" %>
-<%= render(Groups::TableListComponent.new(
-  title:      "Contas Correntes",
-  collection: @data.checking_accounts,
-  action:     { label: "Nova", icon: "plus", sidebar: "checking-account" }
-)) do |table| %>
+
+  <%= render(Groups::TableListComponent.new(
+        title: "Contas Correntes",
+        collection: @data.checking_accounts,
+        action: { label: "Nova", icon: "plus", sidebar: "checking-account" }
+      )) do |table| %>
 
     <% table.with_column(label: "Instituição", icon: "building") %>
-    <% table.with_column(label: "Conta",       icon: "hash") %>
-    <% table.with_column(label: "Saldo",       icon: "banknote") %>
-    <% table.with_column(label: "Referência",  icon: "calendar") %>
+    <% table.with_column(label: "Conta", icon: "hash") %>
+    <% table.with_column(label: "Saldo", icon: "banknote") %>
+    <% table.with_column(label: "Referência", icon: "calendar") %>
 
     <% @data.checking_accounts.each do |ca| %>
-
       <% table.with_row(
-        model_id: ca.id,
-        cells: [
-          normalize_title(ca.institution.presence),
-          normalize_code(ca.account_number.presence),
-          normalize_currency(ca.balance),
-          l(ca.reference_date, format: :long)
-        ],
-        edit_path:    edit_portfolio_checking_account_path(@portfolio, ca),
-        show_path:    portfolio_checking_account_path(@portfolio, ca),
-        destroy_path: portfolio_checking_account_path(@portfolio, ca)
-      ) %>
-
+            model_id: ca.id,
+            cells: [
+              normalize_title(ca.institution.presence),
+              normalize_code(ca.account_number.presence),
+              normalize_currency(ca.balance),
+              l(ca.reference_date, format: :long)
+            ],
+            edit_path: edit_portfolio_checking_account_path(@portfolio, ca),
+            show_path: portfolio_checking_account_path(@portfolio, ca),
+            destroy_path: portfolio_checking_account_path(@portfolio, ca)
+          ) %>
     <% end %>
 
   <% end %>
 
-  <%# ======================================================= %>
-  <%#                      13. APR SECTION                   %>
-  <%# ======================================================= %>
+  <%# == Application & Redemption (APR) Management Workflows ================== %>
 
-  <%= render(
-    Blocks::SectionComponent.new(
-      title: "APR",
-      description: "Autorização de Aplicação e Resgate",
-      columns: 2,
-      separator: :vertical
-    )
-  ) do %>
+  <%= render(Blocks::SectionComponent.new(
+        title: "APR",
+        description: "Autorização de Aplicação e Resgate",
+        columns: 2,
+        separator: :vertical
+      )) do %>
 
-    <%# ===================================================== %>
-    <%#                    13a. APPLICATIONS                 %>
-    <%# ===================================================== %>
+    <%# -- Capital Outlays (Applications) ------------------------------------- %>
 
     <%= render "portfolios/create_application" %>
+
     <%= render(Groups::RecentActivityComponent.new(
-      title: "Aplicações",
-      action: { label: "Nova", icon: "plus", sidebar: "application" }
-    )) do |component| %>
+          title: "Aplicações",
+          action: { label: "Nova", icon: "plus", sidebar: "application" }
+        )) do |component| %>
 
       <% @data.recent_applications.each do |app| %>
-
         <%= component.with_item(
-          title: app.fund_investment.investment_fund.fund_name,
-          value: normalize_currency(app.financial_value),
-          sub: "#{strip_tags(normalize_number(app.number_of_quotas))} cotas",
-          date: app.request_date,
-          color: :success
-        ) %>
-
+              title: app.fund_investment.investment_fund.fund_name,
+              value: normalize_currency(app.financial_value),
+              sub: "#{strip_tags(normalize_number(app.number_of_quotas))} cotas",
+              date: app.request_date,
+              color: :success
+            ) %>
       <% end %>
 
     <% end %>
 
-    <%# ===================================================== %>
-    <%#                     13b. REDEMPTIONS                 %>
-    <%# ===================================================== %>
+    <%# -- Capital Inflows (Redemptions) -------------------------------------- %>
 
     <%= render "portfolios/create_redemption" %>
+
     <%= render(Groups::RecentActivityComponent.new(
-      title: "Resgates",
-      action: { label: "Novo", icon: "plus", sidebar: "redemption" }
-    )) do |component| %>
+          title: "Resgates",
+          action: { label: "Novo", icon: "plus", sidebar: "redemption" }
+        )) do |component| %>
 
       <% @data.recent_redemptions.each do |red| %>
-
         <%= component.with_item(
-          title: red.fund_investment.investment_fund.fund_name,
-          value: normalize_currency(red.redeemed_liquid_value),
-          sub: "#{strip_tags(normalize_number(red.redeemed_quotas))} cotas",
-          date: red.request_date,
-          color: :danger
-        ) %>
-
+              title: red.fund_investment.investment_fund.fund_name,
+              value: normalize_currency(red.redeemed_liquid_value),
+              sub: "#{strip_tags(normalize_number(red.redeemed_quotas))} cotas",
+              date: red.request_date,
+              color: :danger
+            ) %>
       <% end %>
 
     <% end %>

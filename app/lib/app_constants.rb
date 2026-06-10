@@ -1,51 +1,48 @@
 # frozen_string_literal: true
 
+# app/lib/app_constants.rb
+#
 # Defines globally shared immutable application constants.
 #
-# Centralizes reusable UI labels, branding metadata,
-# pagination defaults, and shared interface values used
-# across views, components, and service layers.
+# Centralizes reusable UI labels, branding metadata, pagination defaults,
+# and shared interface values used across views, components, and services.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
 module AppConstants
 
-  # ===========================================================
-  #                     COMPANY BRANDING
-  # ===========================================================
+  # == Company Branding =======================================================
 
   # Full registered company name.
   #
   # @return [String]
   COMPANY_NAME_LONG = "Meta Consultoria de Investimentos Institucionais Ltda".freeze
 
-  # Short company display name used in UI contexts.
+  # Short display name used in UI contexts.
   #
   # @return [String]
   COMPANY_NAME_SHORT = "Meta Investimentos".freeze
 
-  # ===========================================================
-  #                        PAGINATION
-  # ===========================================================
+
+  # == Pagination =============================================================
 
   # Default number of records displayed per paginated page.
   #
   # @return [Integer]
   INDEX_PER_PAGE = 14
 
-  # ===========================================================
-  #                      SHARED MESSAGES
-  # ===========================================================
 
-  # Default fallback message displayed when no records
-  # or datasets are available.
+  # == Shared Messages ========================================================
+
+  # Fallback message displayed when no records or datasets are available.
   #
   # @return [String]
   NO_AVAILABLE_DATA_MESSAGE = "Nenhum dado disponível.".freeze
 
-  # ===========================================================
-  #                    UPDATE ACTION LABELS
-  # ===========================================================
+
+  # == Action Labels ==========================================================
+
+  # -- Update -----------------------------------------------------------------
 
   # Default update button label.
   #
@@ -57,9 +54,7 @@ module AppConstants
   # @return [String]
   UPDATE_BUTTON_ICON = "refresh-cw".freeze
 
-  # ===========================================================
-  #                    CREATE ACTION LABELS
-  # ===========================================================
+  # -- Create -----------------------------------------------------------------
 
   # Default create button label.
   #

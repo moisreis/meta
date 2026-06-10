@@ -1,30 +1,25 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
-# Entry point script for executing Rails command-line operations.
+# bin/rails
 #
-# This script defines the application path, boots the Rails environment,
+# Entry point for executing Rails command-line operations.
+#
+# Defines the application path, boots the Rails environment,
 # and delegates execution to the Rails command dispatcher.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
-# =============================================================
-#                  APPLICATION PATH RESOLUTION
-# =============================================================
+# == Application Path Resolution ============================================
 
-# Absolute path to the Rails application configuration file.
-#
-# @return [String] Path to config/application.rb
 APP_PATH = File.expand_path("../config/application", __dir__)
 
-# =============================================================
-#                         ENVIRONMENT BOOT
-# =============================================================
+
+# == Environment Boot =======================================================
 
 require_relative "../config/boot"
 
-# =============================================================
-#                       COMMAND EXECUTION
-# =============================================================
 
-# Load Rails command dispatcher.
+# == Command Execution ======================================================
+
 require "rails/commands"

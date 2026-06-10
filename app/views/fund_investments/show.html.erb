@@ -303,6 +303,9 @@
 
       <% table.with_row(
         model_id: app.id,
+        show_path:    application_path(app),
+        edit_path:    edit_application_path(app),
+        destroy_path: application_path(app),
         cells: [
           normalize_date(app.request_date),
           normalize_currency(app.financial_value),
@@ -323,6 +326,7 @@
 
   <%= render(Groups::TableListComponent.new(
     title: "Histórico de Resgates",
+    
     collection: @data.redemptions,
   )) do |table| %>
 
@@ -369,6 +373,8 @@
 
       <% table.with_row(
         model_id: red.id,
+        show_path:    redemption_path(red),
+        destroy_path: redemption_path(red),
         cells: [
           normalize_date(red.request_date),
           normalize_number(red.redeemed_quotas),

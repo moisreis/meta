@@ -1,88 +1,83 @@
+# frozen_string_literal: true
+
+# config/application.rb
+#
+# Application configuration for the Meta platform.
+#
+# Extends Rails::Application with custom autoload paths, locale settings,
+# asset configuration, exception routing, and time zone defaults.
+# Environment-specific overrides belong in config/environments/*.rb.
+#
+# @author  Moisés Reis
+
 require_relative "boot"
 require "rails/all"
 
 Bundler.require(*Rails.groups)
 
-# Application configuration for the Meta platform.
-#
-# Extends Rails::Application with custom autoload paths,
-# locale settings, asset configuration, exception routing,
-# and time zone defaults.
-#
-# This class does not define environment-specific behaviour.
-# Environment overrides belong in config/environments/*.rb.
-#
-# @author Moisés Reis
-
 module Meta
   class Application < Rails::Application
 
-    # =============================================================
-    #                         EXCEPTIONS
-    # =============================================================
+    # == Exceptions ============================================================
 
     config.exceptions_app = self.routes
 
-    # =============================================================
-    #                           ASSETS
-    # =============================================================
+
+    # == Assets ================================================================
 
     config.assets.enabled = true
     config.assets.paths << Rails.root.join("app", "assets", "fonts")
 
-    # =============================================================
-    #                    INTERNATIONALIZATION
-    # =============================================================
 
-    config.i18n.default_locale = :'pt-BR'
+    # == Internationalization ===================================================
+
+    config.i18n.default_locale   = :'pt-BR'
     config.i18n.available_locales = [:'pt-BR', :en]
 
-    # =============================================================
-    #                        AUTOLOAD PATHS
-    # =============================================================
+
+    # == Autoload Paths ========================================================
 
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # --- SERVICES ------------------------------------------------
+    # -- Services --------------------------------------------------------------
 
     config.eager_load_paths << Rails.root.join("app/services")
 
-    # --- QUERIES -------------------------------------------------
+    # -- Queries ---------------------------------------------------------------
 
-    config.autoload_paths << Rails.root.join("app/queries")
+    config.autoload_paths  << Rails.root.join("app/queries")
     config.eager_load_paths << Rails.root.join("app/queries")
 
-    # --- COMPONENT CONCERNS --------------------------------------
+    # -- Component Concerns ----------------------------------------------------
 
     config.autoload_paths  << Rails.root.join("app/components/concerns")
     config.eager_load_paths << Rails.root.join("app/components/concerns")
 
-    # --- FORM OBJECTS --------------------------------------------
+    # -- Form Objects ----------------------------------------------------------
 
-    config.autoload_paths << Rails.root.join("app/forms")
+    config.autoload_paths  << Rails.root.join("app/forms")
     config.eager_load_paths << Rails.root.join("app/forms")
 
-    # --- CALCULATORS ---------------------------------------------
+    # -- Calculators -----------------------------------------------------------
 
-    config.autoload_paths << Rails.root.join("app/calculators")
+    config.autoload_paths  << Rails.root.join("app/calculators")
     config.eager_load_paths << Rails.root.join("app/calculators")
 
-    # --- BUILDERS ------------------------------------------------
+    # -- Builders --------------------------------------------------------------
 
-    config.autoload_paths << Rails.root.join("app/builders")
+    config.autoload_paths  << Rails.root.join("app/builders")
     config.eager_load_paths << Rails.root.join("app/builders")
 
-    # =============================================================
-    #                         TIME ZONE
-    # =============================================================
 
-    config.time_zone = "Brasilia"
+    # == Time Zone =============================================================
+
+    config.time_zone                     = "Brasilia"
     config.active_record.default_timezone = :local
 
-    # =============================================================
-    #                       RAILS DEFAULTS
-    # =============================================================
+
+    # == Rails Defaults ========================================================
 
     config.load_defaults 8.1
+
   end
 end

@@ -1,65 +1,62 @@
 # frozen_string_literal: true
 
+# ci.rb
+#
 # Defines the CI pipeline execution flow for automated verification.
 #
-# This configuration is executed by the CI runner and orchestrates
-# all validation steps required before code is accepted into the
-# main branch.
+# Orchestrates all validation steps required before code is accepted
+# into the main branch. Executed by the CI runner in the order defined.
 #
-# @author Moisés Reis
-
-# =============================================================
-#                          PIPELINE
-# =============================================================
+# @author  Moisés Reis
 
 CI.run do
 
-  # --- ENVIRONMENT SETUP --------------------------------------
+  # == Environment Setup ======================================================
 
   # Prepares the application environment for CI execution.
-  #
-  # @return [void]
   step "Setup", "bin/setup --skip-server"
 
-  # --- CODE STYLE ---------------------------------------------
+
+  # == Code Style =============================================================
 
   # Enforces Ruby style consistency using RuboCop.
-  #
-  # @return [void]
   step "Style: Ruby", "bin/rubocop"
 
-  # --- SECURITY AUDITS ----------------------------------------
+
+  # == Security ===============================================================
+
+  # -- Gem Audit --------------------------------------------------------------
 
   # Audits installed gems for known vulnerabilities.
-  #
-  # @return [void]
   step "Security: Gem audit", "bin/bundler-audit"
 
-  # Audits Importmap dependencies for vulnerabilities.
-  #
-  # @return [void]
+  # -- Importmap --------------------------------------------------------------
+
+  # Audits Importmap dependencies for known vulnerabilities.
   step "Security: Importmap vulnerability audit", "bin/importmap audit"
 
-  # Static security analysis of Rails application codebase.
-  #
-  # @return [void]
+  # -- Brakeman ---------------------------------------------------------------
+
+  # Static security analysis of the Rails application codebase.
   step "Security: Brakeman code analysis",
        "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
 
-  # --- TEST SUITES --------------------------------------------
 
-  # Executes Rails unit and integration tests.
-  #
-  # @return [void]
+  # == Test Suites ============================================================
+
+  # -- Rails ------------------------------------------------------------------
+
+  # Executes unit and integration tests.
   step "Tests: Rails", "bin/rails test"
 
-  # Executes system tests (browser-level integration tests).
-  #
-  # @return [void]
+  # -- System -----------------------------------------------------------------
+
+  # Executes browser-level integration tests.
   step "Tests: System", "bin/rails test:system"
 
-  # Re-seeds and validates database seed consistency in test environment.
-  #
-  # @return [void]
+  # -- Seeds ------------------------------------------------------------------
+
+  # Re-seeds and validates database seed consistency in the test environment.
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
+
 end

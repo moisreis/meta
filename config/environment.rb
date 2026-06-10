@@ -1,13 +1,13 @@
-# Loads the Rails application and initializes it.
+# frozen_string_literal: true
+
+# config/environment.rb
 #
-# This is the entry point that bootstraps the full Rails
-# framework. It must be required before any application
-# code runs.
+# Entry point that bootstraps the full Rails framework.
 #
-# This file does not define application logic, routing,
-# or configuration overrides.
+# Loads the application and initializes it. Must be required before any
+# application code runs. Does not define logic, routing, or configuration.
 #
-# @author Moisés Reis
+# @author  Moisés Reis
 
 require_relative "application"
 

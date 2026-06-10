@@ -1,21 +1,22 @@
 #!/usr/bin/env ruby
 
-# Entry point script for executing Importmap commands within the Rails application.
-#
-# This script loads the Rails application environment and exposes Importmap CLI
-# commands for managing JavaScript module mappings.
-#
-# @author Moisés Reis
+# frozen_string_literal: true
 
-# =============================================================
-#                        APPLICATION BOOT
-# =============================================================
+# bin/importmap
+#
+# Entry point for executing Importmap commands within the Rails application.
+#
+# Loads the application environment and exposes the Importmap CLI for
+# managing JavaScript module mappings.
+#
+# @author  Moisés Reis
+
+
+# == Application Boot ========================================================
 
 require_relative "../config/application"
 
-# =============================================================
-#                        COMMAND LOADING
-# =============================================================
 
-# Load Importmap command interface.
+# == Command Loading ==========================================================
+
 require "importmap/commands"

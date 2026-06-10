@@ -1,19 +1,11 @@
-<%#
-  PARTIAL: app/components/blocks/card_component.html.erb
-  DESCRIPTION: Renders a status-driven UI card with optional header icon, title, content slot, and badge footer.
-
-  LOCAL VARIABLES:
-  - status:        [Symbol] Card status used for color dot rendering.
-  - title:         [String, nil] Optional card title.
-  - header_icon:   [String, nil] Optional header icon.
-  - badge_text:    [String, nil] Optional footer badge text.
-  - badge_icon:    [String, nil] Optional badge icon.
-%>
-
-<!-- Blocks::Card [<%= @title %>] -->
+<!-- Blocks::CardComponent -->
 <div class="rounded-base border border-border bg-white flex flex-col gap-5 px-5 pt-5 pb-4">
 
+  <%# == Header Layout ======================================================== %>
+
   <div class="flex justify-between items-center gap-3">
+
+    <%# -- Status Dot & Title ------------------------------------------------- %>
 
     <div class="flex items-center gap-3">
       <span class="relative -top-[1px] size-[5px] rounded-full flex-shrink-0 <%= dot_color %>"></span>
@@ -25,6 +17,8 @@
       <% end %>
     </div>
 
+    <%# -- Contextual Header Icon --------------------------------------------- %>
+
     <% if header_icon.present? %>
       <span class="[&>svg]:size-4 [&>svg]:stroke-muted">
         <%= render_icon(header_icon) %>
@@ -32,11 +26,20 @@
     <% end %>
   </div>
 
+  <%# == Content Body ========================================================= %>
+
+  <%# -- Slot Component Integration ------------------------------------------ %>
+
   <div class="[&>div>span]:!font-heading [&>div>svg]:!w-6 [&>div>svg]:!h-6 [&>span]:!font-heading [&>div>span]:!text-4xl [&>span]:!text-4xl [&>div>span]:font-bold [&>div>span]:tracking-tight [&>div>span]:text-heading line-clamp-1">
     <%= content %>
   </div>
 
+  <%# == Footer Actions / Badges ============================================== %>
+
   <div class="border-t border-border pt-3">
+
+    <%# -- Dynamic Badge Container -------------------------------------------- %>
+
     <% if show_badge? %>
       <div class="badge badge-accent">
 

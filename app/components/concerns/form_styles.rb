@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
+# app/components/concerns/form_styles.rb
+#
 # Shared CSS class constants for all Forms::* components.
 # Include this module instead of duplicating class strings across components.
 #
-# Usage:
-#   class Forms::MyComponent < ApplicationComponent
-#     include FormStyles
-#   end
+# @author  Moisés Reis
 
 module FormStyles
-  # --------------------------------------------------------------------------
-  # Label
-  # --------------------------------------------------------------------------
+
+  # == Constants ==============================================================
+
+  # -- Label Typography & State -----------------------------------------------
 
   LABEL_CLASSES = %w[
     flex items-center gap-1.5 text-muted text-2xs font-mono uppercase
@@ -22,9 +22,7 @@ module FormStyles
     peer-disabled:opacity-50
   ].join(" ").freeze
 
-  # --------------------------------------------------------------------------
-  # Input
-  # --------------------------------------------------------------------------
+  # -- Input Structure & Interaction ------------------------------------------
 
   INPUT_BASE_CLASSES = %w[
     placeholder:text-muted bg-input border border-border pr-6 h-9 w-full
@@ -45,13 +43,13 @@ module FormStyles
     !border-danger ring-1 ring-danger-600/20 focus-visible:!outline-danger-600
   ].join(" ").freeze
 
+  # -- Input Sizing & Font Alternates -----------------------------------------
+
   INPUT_SMALL_CLASSES = "!h-fit !w-fit !px-2.5 !py-0.75"
 
   INPUT_MONO_CLASSES = "!font-mono placeholder:!font-mono"
 
-  # --------------------------------------------------------------------------
-  # Description / help text
-  # --------------------------------------------------------------------------
+  # -- Description & Support Typography ---------------------------------------
 
   DESC_BASE_CLASSES = %w[
     flex items-center gap-1.5 text-xs text-muted leading-none font-normal
@@ -67,30 +65,39 @@ module FormStyles
     border border-danger-100 rounded-base w-fit
   ].join(" ").freeze
 
-  # --------------------------------------------------------------------------
-  # Textarea-specific (extends INPUT_BASE_CLASSES)
-  # --------------------------------------------------------------------------
+  # -- Textarea Multi-line Structural Overrides -------------------------------
 
   TEXTAREA_EXTRA_CLASSES = %w[
     shadow-xs resize-none outline-none py-2
   ].join(" ").freeze
 
-  # --------------------------------------------------------------------------
-  # Shared helpers (available on any including component)
-  # --------------------------------------------------------------------------
 
-  # @return [String] Combined desc classes, with error variant when applicable.
+  # == Instance Methods =======================================================
+
+  # -- Element Class Compilation ----------------------------------------------
+
+  # Combined description utility classes, applying the error layout variant when applicable.
+  #
+  # @return [String] Compiled Tailwind CSS utility classes.
   def desc_classes
     has_error? ? "#{DESC_BASE_CLASSES} #{DESC_ERROR_CLASSES}" : DESC_BASE_CLASSES
   end
 
-  # @return [String, nil] aria-describedby ID when a desc or error is present.
+  # Returns the layout constraint class that restricts component width to half on desktop profiles.
+  #
+  # @return [String] Tailwind configuration string for full width or medium breakpoint half width.
+  def wrapper_width_class
+    @is_half_width ? "w-full md:w-1/2" : "w-full"
+  end
+
+  # -- Accessibility Helpers --------------------------------------------------
+
+  # Generates an aria-describedby DOM targeting reference ID if an active description
+  # or validation error is present.
+  #
+  # @return [String, nil] Unique tracking element slug, or nil if no active support labels exist.
   def aria_describedby
     "#{@name}-desc" if @desc.present? || has_error?
   end
 
-  # @return [String] CSS class that constrains width to 50%.
-  def wrapper_width_class
-    @is_half_width ? "w-full md:w-1/2" : "w-full"
-  end
 end
