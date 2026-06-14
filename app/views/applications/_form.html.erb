@@ -55,6 +55,17 @@
                step: :any,
                currency_mask: true
     %>
+
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :number_of_quotas,
+               label: "Quantidade de cotas",
+               placeholder: "Ex: 154.321",
+               desc: "Opcional. Se vazio, o sistema calculará com base na cota da data informada.",
+               field_type: :number_field,
+               icon_name: "pie-chart",
+               step: :any
+    %>
   <% end %>
 
   <%# ====== TRANSACTION SCHEDULE ====== %>

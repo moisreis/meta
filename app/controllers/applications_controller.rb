@@ -52,7 +52,7 @@ class ApplicationsController < ApplicationController
 
   # This gathers the necessary lists of funds and portfolios
   # needed to populate dropdown menus in the investment forms.
-  before_action :load_form_dependencies, only: %i[new edit create]
+  before_action :load_form_dependencies, only: %i[new edit create update]
 
   # =============================================================
   #                        ERROR HANDLING
@@ -282,7 +282,11 @@ class ApplicationsController < ApplicationController
       end
 
       @application.quota_value_at_application = quota_value
-      @application.number_of_quotas = BigDecimal(@application.financial_value.to_s) / quota_value
+      
+      # [MODIFICADO]: Só sobrescreve se o usuário não preencheu manualmente no formulário
+      if application_params[:number_of_quotas].blank?
+        @application.number_of_quotas = BigDecimal(@application.financial_value.to_s) / quota_value
+      end
     end
 
     # Guarda: não permite reduzir cotas abaixo do que já foi alocado em resgates.

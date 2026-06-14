@@ -80,6 +80,17 @@
                step: :any
     %>
 
+    <%= render "partials/modules/input-field",
+               f: form,
+               name: :redeemed_quotas,
+               label: "Cotas resgatadas",
+               placeholder: "Ex: 50.123",
+               desc: "Opcional. Se vazio, será calculado com base no valor líquido.",
+               field_type: :number_field,
+               icon_name: "pie-chart",
+               step: :any
+    %>
+
     <%= form.hidden_field :redemption_yield, value: 0 %>
   <% end %>
 

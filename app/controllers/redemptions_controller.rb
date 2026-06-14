@@ -265,12 +265,74 @@ class RedemptionsController < ApplicationController
   #
   # Updates the attributes of an existing redemption and redirects to its detail page.
   # This handles the persistence of changes made through the edit form.
+# == update
+  #
+  # Atualiza os atributos de um resgate existente com total segurança.
+  # Reverte temporariamente os saldos do resgate anterior e refaz a alocação FIFO
+  # para garantir que nenhuma cota ou saldo de aplicação fique corrompido.
   def update
-    if @redemption.update(redemption_params)
-      redirect_to redemption_path(@redemption), notice: "Resgate atualizado com sucesso."
-    else
-      render :edit, status: :unprocessable_entity
+    fund_investment = @redemption.fund_investment
+
+    ActiveRecord::Base.transaction do
+      # 1. Devolve as cotas para as aplicações originais (como se fosse excluir)
+      revert_quotas_on_destroy(fund_investment)
+      @redemption.redemption_allocations.destroy_all
+
+      # 2. Atribui os novos valores do formulário
+      @redemption.assign_attributes(redemption_params)
+
+      # 3. Recalcula cotas do novo valor SE o usuário deixou em branco
+      if @redemption.cotization_date.present? && @redemption.redeemed_liquid_value.present? && redemption_params[:redeemed_quotas].blank?
+        if @redemption.redemption_type == "total"
+          @redemption.redeemed_quotas = fund_investment.total_quotas_held
+        else
+          quota_value = fund_investment.investment_fund.quota_value_on(@redemption.cotization_date)
+          unless quota_value
+            @redemption.errors.add(:base, "Sem cota disponível para esta data.")
+            raise ActiveRecord::RecordInvalid, @redemption
+          end
+          @redemption.redeemed_quotas = BigDecimal(@redemption.redeemed_liquid_value.to_s) / quota_value
+        end
+      end
+
+      # 4. Trava de segurança: Saldo suficiente
+      if (@redemption.redeemed_quotas || 0) > (fund_investment.total_quotas_held || 0)
+        @redemption.errors.add(:base, "Cotas insuficientes: disponível #{fund_investment.total_quotas_held}.")
+        raise ActiveRecord::RecordInvalid, @redemption
+      end
+
+      # 5. Salva o registro
+      @redemption.save!
+
+      # 6. Refaz a alocação FIFO usando a nova quantidade de cotas
+      allocate_quotas_fifo(fund_investment, @redemption.redeemed_quotas)
+
+      # 7. Reduz os novos saldos do FundInvestment
+      value_delta = if fund_investment.total_quotas_held > 0
+                      proportion = BigDecimal(@redemption.redeemed_quotas.to_s) /
+                                   BigDecimal(fund_investment.total_quotas_held.to_s)
+                      -(proportion * fund_investment.total_invested_value)
+                    else
+                      BigDecimal("0")
+                    end
+
+      fund_investment.update_balances!(
+        quotas_delta: -@redemption.redeemed_quotas,
+        value_delta: value_delta
+      )
+
+      # 8. Recalcula portfólio
+      PortfolioAllocationCalculator.recalculate!(fund_investment.portfolio)
     end
+
+    # Dispara job de recálculo de performance de forma assíncrona
+    PerformanceCalculationJob.perform_later(target_date: Date.current.end_of_month)
+
+    redirect_to redemption_path(@redemption), notice: "Resgate atualizado com sucesso."
+
+  rescue ActiveRecord::RecordInvalid => e
+    @redemption = e.record
+    render :edit, status: :unprocessable_entity
   end
 
   def destroy
