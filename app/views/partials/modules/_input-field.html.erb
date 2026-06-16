@@ -23,6 +23,8 @@
 <% currency_mask ||= false %>
 <% cnpj_mask ||= false %>
 <% bank_account_mask ||= false %>
+<% hidden_data ||= {} %>
+<% input_data  ||= {} %>
 
 <%
   has_error =
@@ -216,7 +218,7 @@
           aria-describedby="<%= (desc.present? || has_error) ? "#{name}-desc" : nil %>"
           aria-invalid="<%= has_error %>"
 >
-        <%= f.hidden_field name, data: { "currency-mask-target": "hidden" } %>
+        <%= f.hidden_field name, data: { "currency-mask-target": "hidden" }.merge(hidden_data) %>
       </div>
 
     <% elsif cnpj_mask %>
@@ -254,20 +256,21 @@
       </div>
 
     <% else %>
-      <%= f.send(
-            field_type,
-            name,
-            placeholder: placeholder,
-            class: full_input_classes,
-            step: step,
-            inputmode: inputmode,
-            aria: {
-              describedby: (desc.present? || has_error) ? "#{name}-desc" : nil,
-              invalid: has_error
-            },
-            autocomplete: "off"
-          )
-      %>
+<%= f.send(
+      field_type,
+      name,
+      placeholder: placeholder,
+      class: full_input_classes,
+      step: step,
+      inputmode: inputmode,
+      aria: {
+        describedby: (desc.present? || has_error) ? "#{name}-desc" : nil,
+        invalid: has_error
+      },
+      autocomplete: "off",
+      data: input_data
+    )
+%>
     <% end %>
 
     <% if icon_name.present? %>

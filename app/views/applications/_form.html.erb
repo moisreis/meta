@@ -1,13 +1,3 @@
-<%#
-  PARTIAL: _form.html.erb
-  DESCRIPTION: Form for recording financial transactions (applications/redemptions).
-               Collects amounts, quotas, and relevant dates via nested fieldset partials.
-  LOCAL VARIABLES:
-    - application: [Application] The application model instance bound to the form.
-    - button_name: [String] Label for the submit button.
-    - icon_name: [String] SVG icon filename for the submit button.
-%>
-
 <%# ====== ERROR DISPLAY ====== %>
 <%= form_with(model: application, class: "contents") do |form| %>
 
@@ -39,7 +29,8 @@
     %>
   <% end %>
 
-  <%# ====== FINANCIAL VALUES ====== %>
+<%# ====== FINANCIAL VALUES ====== %>
+<div data-controller="quota-calculator">
   <%= render "partials/blocks/fieldset",
              fieldset_title: "Valores Financeiros",
              fieldset_desc: "Informe o capital investido, a quantidade de cotas e o preço unitário da cota." do %>
@@ -53,7 +44,9 @@
                field_type: :text_field,
                icon_name: "banknote",
                step: :any,
-               currency_mask: true
+               currency_mask: true,
+               hidden_data: { "quota-calculator-target": "financialValue",
+                              action: "change->quota-calculator#calculate" }
     %>
 
     <%= render "partials/modules/input-field",
@@ -64,9 +57,16 @@
                desc: "Opcional. Se vazio, o sistema calculará com base na cota da data informada.",
                field_type: :number_field,
                icon_name: "pie-chart",
-               step: :any
+               step: :any,
+               input_data: { "quota-calculator-target": "numberOfQuotas",
+                             action: "input->quota-calculator#calculate" }
     %>
+
+    <%= form.hidden_field :quota_value_at_application,
+                          data: { "quota-calculator-target": "quotaValue" } %>
+
   <% end %>
+</div>
 
   <%# ====== TRANSACTION SCHEDULE ====== %>
   <%= render "partials/blocks/fieldset",
@@ -85,9 +85,9 @@
   <%# ====== SUBMIT BUTTON ====== %>
   <%= form.button :submit,
                   name: nil,
-                  class: "button button-primary w-fit flex items-center gap-2" do
-  %>
+                  class: "button button-primary w-fit flex items-center gap-2" do %>
     <%= inline_svg_tag "icons/#{icon_name}.svg" %>
     <%= content_tag :span, button_name %>
   <% end %>
+
 <% end %>

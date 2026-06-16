@@ -86,3 +86,6 @@ application.register("drawer", DrawerController)
 
 import DrawerOpenerController from "controllers/drawer_opener_controller"
 application.register("drawer-opener", DrawerOpenerController)
+
+import QuotaCalculatorController from "controllers/quota_calculator_controller"
+application.register("quota-calculator", QuotaCalculatorController)
