@@ -1349,26 +1349,26 @@ end
       pdf.start_new_page
 
       draw_section(title: 'Relação dos Fundos e Ativos', border: true, spacing: 20) do
-        rel_rows = [['CNPJ do Fundo', 'Nome do Fundo', 'Enq. 5.272/25', 'Taxa Adm.']]
+  rel_rows = [['CNPJ do Fundo', 'Nome do Fundo', 'Enq. 5.272/25', 'Taxa Adm.']]
 
-        data[:fund_investments].select do |fi|
-          perf = perf_by_fi[fi.id]
-          earn = perf&.earnings.to_f
-          apps = monthly_apps_for(fi)
-          reds = monthly_reds_for(fi)
-          earn != 0 || apps != 0 || reds != 0
-        end.each do |fi|
-          fund = fi.investment_fund
-          enq = fund.investment_fund_articles.first&.normative_article&.article_number || '-'
-          adm = fund.administration_fee.present? ? "#{fmt_num(fund.administration_fee.to_f, 2)}%" : '-'
+  data[:fund_investments].select do |fi|
+    perf = perf_by_fi[fi.id]
+    earn = perf&.earnings.to_f
+    apps = monthly_apps_for(fi)
+    reds = monthly_reds_for(fi)
+    earn != 0 || apps != 0 || reds != 0
+  end.sort_by { |fi| fi.investment_fund.fund_name }.each do |fi|
+    fund = fi.investment_fund
+    enq = fund.investment_fund_articles.first&.normative_article&.article_number || '-'
+    adm = fund.administration_fee.present? ? "#{fmt_num(fund.administration_fee.to_f, 2)}%" : '-'
 
-          rel_rows << [
-            fund.cnpj.presence || '-', fund.fund_name, enq, adm
-          ]
-        end
+    rel_rows << [
+      fund.cnpj.presence || '-', fund.fund_name, enq, adm
+    ]
+  end
 
-        styled_table(rel_rows, col_widths: [100, 220, 80, 45])
-      end
+  styled_table(rel_rows, col_widths: [100, 220, 80, 45])
+end
     end
   end
 
@@ -1779,49 +1779,49 @@ end
       article_colors = { 'Art. 7º, Inciso I "b"' => '4faaa0', 'Art. 7º, Inciso III "a"' => '609ed2' }
       default_colors = C[:chart]
 
-      draw_page(title: @portfolio.name) do
-        draw_section(title: 'Carteira em relação a política de investimentos', border: true, spacing: 0) do
-          [
-            { title: 'Carteira Atual por Artigo', key: :carteira_atual },
-            { title: 'Alvo Carteira por Artigo', key: :alvo },
-            { title: 'Máximo por Artigo', key: :maximo },
-            { title: 'Mínimo por Artigo', key: :minimo }
-          ].each do |grp|
-            pdf.fill_color C[:body]
-            pdf.font('Geist Pixel Square', size: 8) do
-              pdf.text_box grp[:title], at: [0, pdf.cursor], width: CONTENT_W, align: :center
-            end
-            pdf.move_down 16
+      # draw_page(title: @portfolio.name) do
+      #   draw_section(title: 'Carteira em relação a política de investimentos', border: true, spacing: 0) do
+      #     [
+      #       { title: 'Carteira Atual por Artigo', key: :carteira_atual },
+      #       { title: 'Alvo Carteira por Artigo', key: :alvo },
+      #       { title: 'Máximo por Artigo', key: :maximo },
+      #       { title: 'Mínimo por Artigo', key: :minimo }
+      #     ].each do |grp|
+      #       pdf.fill_color C[:body]
+      #       pdf.font('Geist Pixel Square', size: 8) do
+      #         pdf.text_box grp[:title], at: [0, pdf.cursor], width: CONTENT_W, align: :center
+      #       end
+      #       pdf.move_down 16
 
-            max_pct = [policy.map { |a| a[grp[:key]].to_f }.max, 1.0].max
-            label_w = 130
-            bar_area = CONTENT_W - label_w - 60
-            bar_h = 14
-            gap = 20
+      #       max_pct = [policy.map { |a| a[grp[:key]].to_f }.max, 1.0].max
+      #       label_w = 130
+      #       bar_area = CONTENT_W - label_w - 60
+      #       bar_h = 14
+      #       gap = 20
 
-            policy.each_with_index do |art, idx|
-              val = art[grp[:key]].to_f
-              bar_w = [(val / max_pct * bar_area).round(1), val > 0 ? 1.0 : 0].max
-              color = article_colors[art[:article_number]] || default_colors[idx % default_colors.size]
-              by = pdf.cursor - (idx * gap) - bar_h
+      #       policy.each_with_index do |art, idx|
+      #         val = art[grp[:key]].to_f
+      #         bar_w = [(val / max_pct * bar_area).round(1), val > 0 ? 1.0 : 0].max
+      #         color = article_colors[art[:article_number]] || default_colors[idx % default_colors.size]
+      #         by = pdf.cursor - (idx * gap) - bar_h
 
-              pdf.fill_color C[:muted]
-              pdf.font('Geist Pixel Square', size: 6.5) { pdf.draw_text truncate(art[:article_number], 24), at: [0, by + 6] }
+      #         pdf.fill_color C[:muted]
+      #         pdf.font('Geist Pixel Square', size: 6.5) { pdf.draw_text truncate(art[:article_number], 24), at: [0, by + 6] }
 
-              pdf.fill_color color
-              pdf.fill_rounded_rectangle [label_w, by + bar_h], [bar_w, 0.5].max, bar_h - 2, 2
+      #         pdf.fill_color color
+      #         pdf.fill_rounded_rectangle [label_w, by + bar_h], [bar_w, 0.5].max, bar_h - 2, 2
 
-              pdf.fill_color C[:muted]
-              pdf.font('Geist Pixel Square', size: 6.5) { pdf.draw_text "#{fmt_num(val, 2)}%", at: [label_w + bar_w + 4, by + 6] }
-            end
+      #         pdf.fill_color C[:muted]
+      #         pdf.font('Geist Pixel Square', size: 6.5) { pdf.draw_text "#{fmt_num(val, 2)}%", at: [label_w + bar_w + 4, by + 6] }
+      #       end
 
-            pdf.move_down policy.size * gap + 8
-            draw_policy_legend(policy, article_colors, default_colors)
-            pdf.move_down 16
-          end
-        end
-        pdf.move_down 20
-      end
+      #       pdf.move_down policy.size * gap + 8
+      #       draw_policy_legend(policy, article_colors, default_colors)
+      #       pdf.move_down 16
+      #     end
+      #   end
+      #   pdf.move_down 20
+      # end
     end
 
     return if pna_data.empty?
@@ -1997,7 +1997,7 @@ end
   def draw_grouped_bar_chart(data:, labels:, colors:, height:, y:, skip_auto_total: false)
     if data.empty?
       pdf.fill_color C[:gray]
-      pdf.font('Plus Jakarta Sans', size: 9, style: :italic) do
+      pdf.font('Plus Jakarta Sans', size: 10, style: :italic) do
         pdf.text_box 'Dados não disponíveis para o período', at: [0, y - 20], width: CONTENT_W, align: :center
       end
       return
@@ -2040,7 +2040,7 @@ end
         next if val == 0
 
         pdf.fill_color C[:body]
-        pdf.font('Geist Pixel Square', size: 4) do
+        pdf.font('Geist Pixel Square', size: 5) do
           lbl = fmt_pct(val)
           lw = pdf.width_of(lbl)
           pdf.draw_text lbl, at: [[x + (bar_w - lw) / 2.0, 0].max, baseline + bar_h + 2]
@@ -2048,7 +2048,7 @@ end
       end
 
       pdf.fill_color C[:muted]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         mlw = pdf.width_of(label.to_s)
         pdf.draw_text label.to_s, at: [slot_x + (pair_w - mlw) / 2.0, baseline - 9]
       end
@@ -2068,7 +2068,7 @@ end
       next if val == 0
 
       pdf.fill_color C[:body]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         lbl = fmt_pct(val)
         lw = pdf.width_of(lbl)
         pdf.draw_text lbl, at: [[x + (bar_w - lw) / 2.0, 0].max, baseline + bar_h + 2]
@@ -2076,7 +2076,7 @@ end
     end
 
     pdf.fill_color C[:muted]
-    pdf.font('Geist Pixel Square', size: 4) do
+    pdf.font('Geist Pixel Square', size: 5) do
       tlw = pdf.width_of('Total')
       pdf.draw_text 'Total', at: [slot_x + (pair_w - tlw) / 2.0, baseline - 9]
     end
@@ -2440,14 +2440,14 @@ end
       pdf.fill_rounded_rectangle [x, baseline + bar_h], w, bar_h, radius
 
       pdf.fill_color C[:body]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         lbl = fmt_cur(val)
         lw = pdf.width_of(lbl)
         pdf.draw_text lbl, at: [[x + (w - lw) / 2.0, 0].max, baseline + bar_h + 2]
       end
 
       pdf.fill_color C[:muted]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         mlw = pdf.width_of(label)
         pdf.draw_text label, at: [x + (w - mlw) / 2.0, baseline - 9]
       end
@@ -2462,14 +2462,14 @@ end
     pdf.fill_rounded_rectangle [x, baseline + bar_h], w, bar_h, radius
 
     pdf.fill_color C[:body]
-    pdf.font('Geist Pixel Square', size: 4) do
+    pdf.font('Geist Pixel Square', size: 5) do
       lbl = fmt_cur(total)
       lw = pdf.width_of(lbl)
       pdf.draw_text lbl, at: [[x + (w - lw) / 2.0, 0].max, baseline + bar_h + 2]
     end
 
     pdf.fill_color C[:muted]
-    pdf.font('Geist Pixel Square', size: 4) do
+    pdf.font('Geist Pixel Square', size: 5) do
       tlw = pdf.width_of('Total')
       pdf.draw_text 'Total', at: [x + (w - tlw) / 2.0, baseline - 9]
     end
