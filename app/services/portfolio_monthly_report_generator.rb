@@ -2240,7 +2240,7 @@ end
 
       if val != 0
         pdf.fill_color C[:body]
-        pdf.font('Geist Pixel Square', size: 4) do
+        pdf.font('Geist Pixel Square', size: 5) do
           lbl = val.abs >= 1000 ? fmt_cur(val) : fmt_pct(val)
           lw = pdf.width_of(lbl)
           pdf.draw_text lbl, at: [[x + (w - lw) / 2.0, 0].max, baseline + bar_h + 2]
@@ -2248,7 +2248,7 @@ end
       end
 
       pdf.fill_color C[:muted]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         mlw = pdf.width_of(label.to_s)
         pdf.draw_text label.to_s, at: [x + (w - mlw) / 2.0, baseline - 9]
       end
@@ -2266,14 +2266,14 @@ end
       pdf.fill_rounded_rectangle [x, baseline + bar_h], w, bar_h, radius
 
       pdf.fill_color C[:body]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         lbl = fmt_cur(total_val)
         lw = pdf.width_of(lbl)
         pdf.draw_text lbl, at: [[x + (w - lw) / 2.0, 0].max, baseline + bar_h + 2]
       end
 
       pdf.fill_color C[:muted]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         tlw = pdf.width_of('Total')
         pdf.draw_text 'Total', at: [x + (w - tlw) / 2.0, baseline - 9]
       end
@@ -2349,7 +2349,7 @@ end
       end
 
       pdf.fill_color C[:body]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         val_label = fmt_cur(net)
         lw = pdf.width_of(val_label)
         lx = [x + (w - lw) / 2.0, 0].max
@@ -2358,7 +2358,7 @@ end
       end
 
       pdf.fill_color C[:muted]
-      pdf.font('Geist Pixel Square', size: 4) do
+      pdf.font('Geist Pixel Square', size: 5) do
         ml = short_month(seg[:period])[0..2]
         mlw = pdf.width_of(ml)
         pdf.draw_text ml, at: [x + (w - mlw) / 2.0, baseline - 9]
@@ -2376,7 +2376,7 @@ end
     pdf.fill_rounded_rectangle [x, y_bottom + bh], w, bh, radius
 
     pdf.fill_color C[:body]
-    pdf.font('Geist Pixel Square', size: 4) do
+    pdf.font('Geist Pixel Square', size: 5) do
       val_label = fmt_cur(total_net)
       lw = pdf.width_of(val_label)
       lx = [x + (w - lw) / 2.0, 0].max
@@ -2385,7 +2385,7 @@ end
     end
 
     pdf.fill_color C[:muted]
-    pdf.font('Geist Pixel Square', size: 4) do
+    pdf.font('Geist Pixel Square', size: 5) do
       tl = 'Total'
       tlw = pdf.width_of(tl)
       pdf.draw_text tl, at: [x + (w - tlw) / 2.0, baseline - 9]
