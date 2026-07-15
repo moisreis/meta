@@ -1840,25 +1840,29 @@ end
           'Em conformidade'
         ]
 
-        body = pna_data.map do |r|
-          compliant = if r[:portfolio_minimum] && r[:portfolio_maximum] && r[:portfolio_maximum] > 0
-                        r[:carteira_atual] >= r[:portfolio_minimum] && r[:carteira_atual] <= r[:portfolio_maximum]
-                      elsif r[:portfolio_minimum]
-                        r[:carteira_atual] >= r[:portfolio_minimum]
-                      elsif r[:portfolio_maximum]
-                        r[:carteira_atual] <= r[:portfolio_maximum]
-                      else
-                        true
-                      end
-          [
-            r[:display_name],
-            r[:carteira_atual]      ? "#{fmt_num(r[:carteira_atual],      2)}%" : '—',  # ← alocação real
-            r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 2)}%" : '—',  # ← alvo
-            r[:portfolio_maximum]   ? "#{fmt_num(r[:portfolio_maximum],   2)}%" : '—',  # ← máximo do portfólio
-            r[:portfolio_minimum]   ? "#{fmt_num(r[:portfolio_minimum],   2)}%" : '—',  # ← mínimo do portfólio
-            compliant ? 'Sim' : 'Não'
-          ]
-        end
+body = pna_data.map do |r|
+  carteira_atual      = r[:carteira_atual]&.round(2)
+  portfolio_minimum   = r[:portfolio_minimum]&.round(2)
+  portfolio_maximum   = r[:portfolio_maximum]&.round(2)
+
+  compliant = if portfolio_minimum && portfolio_maximum && portfolio_maximum > 0
+                carteira_atual >= portfolio_minimum && carteira_atual <= portfolio_maximum
+              elsif portfolio_minimum
+                carteira_atual >= portfolio_minimum
+              elsif portfolio_maximum
+                carteira_atual <= portfolio_maximum
+              else
+                true
+              end
+  [
+    r[:display_name],
+    carteira_atual      ? "#{fmt_num(carteira_atual,      2)}%" : '—',
+    r[:portfolio_benchmark] ? "#{fmt_num(r[:portfolio_benchmark], 2)}%" : '—',
+    portfolio_maximum   ? "#{fmt_num(portfolio_maximum,   2)}%" : '—',
+    portfolio_minimum   ? "#{fmt_num(portfolio_minimum,   2)}%" : '—',
+    compliant ? 'Sim' : 'Não'
+  ]
+end
 
         rows = [header] + body
         sanitized = rows.map do |row|
