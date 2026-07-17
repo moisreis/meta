@@ -7,7 +7,7 @@
 
 module Portfolios
   class TotalEarningsQuery
-    
+
     # @param portfolio [Portfolio]
     # @param reference_date [Date]
     def initialize(portfolio, reference_date)
@@ -17,9 +17,7 @@ module Portfolios
 
     # @return [BigDecimal]
     def call
-      @portfolio.performance_histories
-                .where(period: target_period)
-                .sum(:earnings)
+      recent_performance.sum { |perf| perf.earnings.to_f }
     end
 
     # @param portfolio [Portfolio]
@@ -32,9 +30,13 @@ module Portfolios
 
     private
 
-    # @return [Date]
-    def target_period
-      @reference_date.to_date.end_of_month
+    # Reuses the same source used by the dashboard's fund table
+    # (Portfolios::ShowService#performance_fields), so totals always
+    # match what's shown per fund.
+    #
+    # @return [ActiveRecord::Relation]
+    def recent_performance
+      Portfolios::RecentPerformanceQuery.call(@portfolio, @reference_date).last
     end
   end
 end

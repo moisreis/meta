@@ -299,50 +299,48 @@ end
   #   * +:total_value+     [Float] current total market value in currency
   #   * +:initial_balance+ [Float] sum of initial balances for the period
   #   * +:performances+    [Array<PerformanceHistory>] raw records
-  def collect_performance_data
-    performances = @portfolio.performance_histories
-                             .where(period: @reference_date)
-                             .includes(fund_investment: :investment_fund)
+def collect_performance_data
+  performance_result = Portfolios::RecentPerformanceQuery.call(@portfolio, @reference_date)
+  effective_period    = performance_result.first
+  performances         = performance_result.last
+                            .order("monthly_return DESC")
+                            .includes(fund_investment: :investment_fund)
 
-    if performances.empty?
-      latest = @portfolio.performance_histories.maximum(:period)
-      return empty_performance if latest.nil?
-
-      @reference_date = latest
-      performances = @portfolio.performance_histories
-                               .where(period: latest)
-                               .includes(fund_investment: :investment_fund)
-    end
-
-    monthly_return = Portfolios::TwrCalculator.call(
-      @portfolio,
-      start_date: @reference_date.beginning_of_month - 1.day,
-      end_date:   @reference_date
-    )
-    yearly_return = Portfolios::TwrCalculator.call(
-      @portfolio,
-      start_date: @reference_date.beginning_of_year - 1.day,
-      end_date:   @reference_date
-    )
-    total_earnings = Portfolios::TotalEarningsQuery.call(@portfolio, @reference_date)
-    yearly_earnings = Portfolios::YearlyEarningsQuery.new(@portfolio, @reference_date).call
-
-    total_value = @portfolio.fund_investments
-                            .includes(:investment_fund, :applications, :redemptions)
-                            .sum { |fi| fi.current_market_value_on(@reference_date) }
-
-    total_initial = performances.sum(:initial_balance).to_f
-
-    {
-      monthly_return: monthly_return.to_f,
-      yearly_return: yearly_return.to_f,
-      total_earnings: total_earnings.to_f,
-      yearly_earnings: yearly_earnings.to_f,
-      total_value: total_value.to_f,
-      initial_balance: total_initial,
-      performances: performances
-    }
+  if performances.empty?
+    return empty_performance
   end
+
+  @reference_date = effective_period
+
+  monthly_return = Portfolios::TwrCalculator.call(
+    @portfolio,
+    start_date: @reference_date.beginning_of_month - 1.day,
+    end_date:   @reference_date
+  )
+  yearly_return = Portfolios::TwrCalculator.call(
+    @portfolio,
+    start_date: @reference_date.beginning_of_year - 1.day,
+    end_date:   @reference_date
+  )
+  total_earnings  = Portfolios::TotalEarningsQuery.call(@portfolio, @reference_date)
+  yearly_earnings = Portfolios::YearlyEarningsQuery.new(@portfolio, @reference_date).call
+
+  total_value = @portfolio.fund_investments
+                          .includes(:investment_fund, :applications, :redemptions)
+                          .sum { |fi| fi.current_market_value_on(@reference_date) }
+
+  total_initial = performances.sum { |p| p.initial_balance.to_f }
+
+  {
+    monthly_return:   monthly_return.to_f,
+    yearly_return:    yearly_return.to_f,
+    total_earnings:   total_earnings.to_f,
+    yearly_earnings:  yearly_earnings.to_f,
+    total_value:      total_value.to_f,
+    initial_balance:  total_initial,
+    performances:     performances
+  }
+end
 
   # Builds the portfolio-to-article comparison data from
   # +PortfolioNormativeArticle+.
