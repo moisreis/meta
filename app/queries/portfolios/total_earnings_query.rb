@@ -16,9 +16,9 @@ module Portfolios
     end
 
     # @return [BigDecimal]
-    def call
-      recent_performance.sum { |perf| perf.earnings.to_f }
-    end
+def call
+  recent_performance.sum(:earnings)
+end
 
     # @param portfolio [Portfolio]
     # @param reference_date [Date]
